@@ -1,5 +1,9 @@
 # Pixelcraft
 
+<p align="center">
+  <img src="assets/pixelcraft-banner.png" alt="Pixelcraft — Agent Frontend Skills, with a pixel-art code and gear logo" width="900">
+</p>
+
 Portable Agent Skills for distinctive, evidence-verified UI and rigorous UX across frontend stacks.
 
 Pixelcraft is an open-source skill pack for coding agents. It helps agents move beyond interchangeable “AI-generated” interfaces by forcing design divergence before implementation, applying a cross-platform UX/accessibility floor, translating decisions idiomatically into the target stack, and reporting what was actually verified.
@@ -334,6 +338,8 @@ docs/DESIGN-RATIONALE.md      contributor rationale for major rules
 .claude-plugin/              Claude marketplace metadata
 .github/workflows/           validation and tag-release workflows
 ```
+
+See [brand assets](assets/README.md) for logos, the banner, and the social preview.
 
 ## Roadmap
 
