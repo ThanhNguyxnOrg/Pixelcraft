@@ -1,0 +1,10 @@
+/* button:focus-visible { outline: none; } */
+button:focus-visible {
+  /* outline: none; */
+  outline: none currentColor;
+  outline: solid 2px currentColor;
+}
+
+input:focus-visible {
+  outline: /* inline comment */ none;
+}

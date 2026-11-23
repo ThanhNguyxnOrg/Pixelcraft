@@ -1,0 +1,43 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<style>
+:root {
+  --surface: Canvas;
+  --ink: CanvasText;
+  --accent: LinkText;
+  --focus: Highlight;
+}
+body {
+  font-family: ui-serif, Georgia, 'Times New Roman', serif;
+  background: var(--surface);
+  color: var(--ink);
+}
+.task-layout {
+  max-width: 68ch;
+  margin-inline: auto;
+  padding-inline: 1rem;
+}
+.button:focus-visible {
+  outline: 3px solid var(--focus);
+  outline-offset: 3px;
+}
+.status-panel {
+  border-block-start: 1px solid color-mix(in srgb, var(--ink), transparent 75%);
+}
+@media (prefers-reduced-motion: no-preference) {
+  .status-panel { transition: opacity 160ms ease-out; }
+}
+</style>
+</head>
+<body>
+<main class="task-layout">
+  <h1>Review harvest measurements</h1>
+  <p>Compare observed moisture readings before approving the batch.</p>
+  <label for="batch">Batch identifier</label>
+  <input id="batch" name="batch" autocomplete="off">
+  <button class="button">Review batch</button>
+</main>
+</body>
+</html>

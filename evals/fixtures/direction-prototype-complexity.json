@@ -1,0 +1,29 @@
+{
+  "schemaVersion": 1,
+  "id": "direction-prototype-complexity",
+  "skill": "pixelcraft-direction",
+  "title": "Distinctiveness respects operational familiarity",
+  "contextSnapshot": {
+    "surface": "high-frequency dispatch console",
+    "platform": "cross-platform desktop/tablet",
+    "mode": "Operate",
+    "states": ["dense data", "alarm state", "keyboard workflow"],
+    "constraints": ["user rejected generic dashboard", "existing history contains dark neon console"]
+  },
+  "prompt": "Generate a distinctive direction for this expert dispatch console.",
+  "expectedRouting": ["pixelcraft-direction", "references/direction-scoring.md", "references/repetition-history.md", "references/composition-library.md"],
+  "forbiddenBehaviors": ["scrambles familiar operational anatomy only for novelty", "changes hue/font and calls it divergent", "ignores repetition history"],
+  "rubricDimensions": [
+    { "dimension": "prototypicality", "pass": "learned task structure preserved with deliberate deviation", "fail": "unfamiliar layout increases task cost without reason" },
+    { "dimension": "complexity budget", "pass": "density/grouping/focal competition assigned by mode", "fail": "noise or emptiness treated as quality" },
+    { "dimension": "evidence scoring", "pass": "scorecard records tradeoffs and losing reasons", "fail": "instant convergence using taste adjectives" }
+  ],
+  "negativeControls": [
+    { "name": "history repeat", "input": "prior fingerprint dark neon console", "mustNot": "repeat it without explicit continuity rationale" },
+    { "name": "unusual equals better", "input": "novel radial navigation impairs dispatch scanning", "mustNot": "score novelty above task success" }
+  ],
+  "baseline": {
+    "withoutSkill": "returns generic dashboard or arbitrary experimental layout",
+    "withSkill": "chooses a scored direction balancing familiarity, task fit, and distinctiveness"
+  }
+}

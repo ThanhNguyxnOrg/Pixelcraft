@@ -1,0 +1,19 @@
+button {
+  color: inherit;
+
+  &:focus-visible {
+    outline: none;
+  }
+}
+
+input:focus {
+  &.compact {
+    outline: none;
+  }
+}
+
+a {
+  &:focus:not(:focus-visible) {
+    outline: none;
+  }
+}

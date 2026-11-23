@@ -1,0 +1,52 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1">
+<title>Style inventory edge fixture</title>
+<style>
+:root, body {
+  margin: 0;
+  min-height: 100vh;
+  background: #000000;
+  color: #f5f5f5;
+  font: 400 16px/1.5 Arial, sans-serif;
+}
+main {
+  padding: 24px;
+}
+h1 {
+  margin: 0 0 12px;
+  font-size: 32px;
+}
+.faded {
+  opacity: 0.25;
+}
+.clipped-box {
+  width: 0;
+  height: 0;
+  overflow: hidden;
+}
+.clipped-box p {
+  color: #111111;
+  background: #000000;
+}
+</style>
+</head>
+<body>
+<header role="presentation"></header>
+<nav aria-hidden="true"></nav>
+<aside hidden></aside>
+<main>
+  <article>
+    <header></header>
+    <h1>Zero-channel dark surface</h1>
+    <p>Pure black background must resolve as dark mode with #000000 dominant color.</p>
+    <p class="faded">Low opacity text must fail contrast even though its color is light.</p>
+    <div class="clipped-box"><p>Clipped low-contrast text inside zero-size overflow hidden ancestor.</p></div>
+    <footer></footer>
+  </article>
+</main>
+<footer></footer>
+</body>
+</html>

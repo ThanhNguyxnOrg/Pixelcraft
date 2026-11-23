@@ -1,0 +1,32 @@
+{
+  "name": "pixelcraft",
+  "version": "0.1.0",
+  "description": "Portable Agent Skills pack for distinctive UI and rigorous UX across frontend stacks",
+  "license": "MIT",
+  "type": "module",
+  "bin": {
+    "pixelcraft": "bin/pixelcraft.mjs"
+  },
+  "engines": {
+    "node": ">=18"
+  },
+  "scripts": {
+    "validate": "node scripts/validate-skills.mjs",
+    "build:adapters": "node scripts/build-adapters.mjs",
+    "test:adapters": "node scripts/test-build-adapters.mjs",
+    "test:tokens": "node scripts/test-export-tokens.mjs",
+    "test:validator": "node scripts/test-validate-skills.mjs",
+    "test:style-inventory": "node scripts/test-style-inventory.mjs"
+  },
+  "files": [
+    "bin/",
+    "scripts/",
+    "skills/",
+    "evals/",
+    "docs/",
+    "LICENSE",
+    "README.md",
+    "install.sh",
+    "install.ps1"
+  ]
+}

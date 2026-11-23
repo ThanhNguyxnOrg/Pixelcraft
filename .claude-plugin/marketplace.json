@@ -1,0 +1,47 @@
+{
+  "name": "pixelcraft",
+  "owner": {
+    "name": "Pixelcraft contributors"
+  },
+  "metadata": {
+    "description": "Portable Agent Skills for distinctive UI and rigorous UX across frontend stacks",
+    "version": "0.1.0"
+  },
+  "plugins": [
+    {
+      "name": "pixelcraft",
+      "description": "Core Pixelcraft loop, visual direction, craft, and design-token skills",
+      "version": "0.1.0",
+      "source": "./",
+      "strict": false,
+      "skills": [
+        "./skills/pixelcraft",
+        "./skills/pixelcraft-plan",
+        "./skills/pixelcraft-direction",
+        "./skills/pixelcraft-craft",
+        "./skills/pixelcraft-tokens",
+        "./skills/pixelcraft-ux",
+        "./skills/pixelcraft-patterns",
+        "./skills/pixelcraft-dataviz",
+        "./skills/pixelcraft-accessibility",
+        "./skills/pixelcraft-review",
+        "./skills/pixelcraft-visual-qa",
+        "./skills/pixelcraft-extensions",
+        "./skills/pixelcraft-web",
+        "./skills/pixelcraft-mobile",
+        "./skills/pixelcraft-data-apps",
+        "./skills/pixelcraft-desktop",
+        "./skills/pixelcraft-tui",
+        "./skills/pixelcraft-email",
+        "./skills/pixelcraft-document",
+        "./skills/pixelcraft-media",
+        "./skills/pixelcraft-chat-ui",
+        "./skills/pixelcraft-constrained",
+        "./skills/pixelcraft-handoff",
+        "./skills/pixelcraft-spatial",
+        "./skills/pixelcraft-game-ui",
+        "./skills/pixelcraft-brandkit"
+      ]
+    }
+  ]
+}

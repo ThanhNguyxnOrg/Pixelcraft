@@ -1,0 +1,71 @@
+{
+  "$schema": "https://www.designtokens.org/TR/2025.10/format/",
+  "color": {
+    "$type": "color",
+    "brand": {
+      "$value": { "colorSpace": "oklch", "components": [0.55, 0.16, 250], "alpha": 1 },
+      "$description": "Primary subject accent"
+    },
+    "surface": {
+      "$value": { "colorSpace": "oklch", "components": [0.98, 0.01, 95], "alpha": 1 }
+    },
+    "ink": {
+      "$value": { "colorSpace": "oklch", "components": [0.22, 0.02, 265], "alpha": 1 }
+    },
+    "danger": {
+      "$value": { "colorSpace": "oklch", "components": [0.55, 0.2, 28], "alpha": 1 }
+    }
+  },
+  "space": {
+    "$type": "dimension",
+    "base": { "$value": { "value": 4, "unit": "px" } },
+    "control": {
+      "inline": { "$value": "{space.base}" }
+    }
+  },
+  "radius": {
+    "$type": "dimension",
+    "medium": { "$value": { "value": 10, "unit": "px" } }
+  },
+  "font": {
+    "family": {
+      "$type": "fontFamily",
+      "body": { "$value": ["System UI", "Arial", "sans-serif"] }
+    },
+    "size": {
+      "$type": "dimension",
+      "body": { "$value": { "value": 16, "unit": "px" } }
+    }
+  },
+  "motion": {
+    "duration": {
+      "$type": "duration",
+      "fast": { "$value": { "value": 120, "unit": "ms" } }
+    }
+  },
+  "semantic": {
+    "color": {
+      "$type": "color",
+      "action": { "$value": "{color.brand}" },
+      "background": { "$value": "{color.surface}" },
+      "foreground": { "$value": "{color.ink}" },
+      "error": { "$value": "{color.danger}" }
+    },
+    "space": {
+      "$type": "dimension",
+      "controlInline": { "$value": "{space.control.inline}" }
+    }
+  },
+  "component": {
+    "button": {
+      "background": {
+        "$type": "color",
+        "$value": "{semantic.color.action}"
+      },
+      "radius": {
+        "$type": "dimension",
+        "$value": "{radius.medium}"
+      }
+    }
+  }
+}

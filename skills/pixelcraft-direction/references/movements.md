@@ -1,0 +1,68 @@
+# Design movements as operational rules
+
+Use movements as materials, not costumes. Translate their structural logic into the target platform; do not paste historical surface decoration onto every brief. Treat design history as material vocabulary while guarding against a new monoculture.
+
+| Movement/aesthetic | Grid + composition | Type + color | Material, motion, imagery | Taboos | Best fit / transferability |
+|---|---|---|---|---|---|
+| Swiss International Style | strict modular grid, flush-left asymmetric alignment, generous negative space | neutral grotesque sans, limited sizes; restrained palette often black/red/white | flat print, purposeful transition only, documentary photography | decorative texture, centered clutter | Operate/Read; transfers excellently to all platforms |
+| Bauhaus | geometric construction, diagonal/orthogonal tension, functional modularity | sans/type as shape; primary red/yellow/blue with black | industrial material, simple geometric imagery, mechanical motion | random decoration, fake nostalgia | Persuade/education/tools; strong cross-platform geometry |
+| De Stijl | orthogonal blocks, thick black divisions, exact rectangles | sparse sans; red/yellow/blue/black/white | flat color planes, abrupt/state-based motion | gradients, organic texture, extra colors | art/structural UI; hard for dense Operate |
+| Russian Constructivism | dynamic diagonals, photomontage, aggressive layering | condensed bold sans, uppercase; red/black/off-white | print grain, cutout photography, propagandistic urgency | polite SaaS spacing, subtlety | campaigns/editorial; moderate mobile transfer |
+| Brutalist architecture/digital | exposed structure, monolithic blocks, visible seams | monospace or heavy grotesque; concrete gray plus limited signal color | raw material, minimal easing, no ornamental chrome | random ugliness without system | developer/tools/art; strong if contrast/type remain usable |
+| Mid-century modern | organic geometry, airy horizontal composition | warm humanist serif/sans; muted olive/teal/orange/wood tones | wood/ceramic/print texture, gentle motion, optimistic illustration | plastic gloss, ironic retro excess | consumer/editorial; good transfer via shape/color |
+| Scandinavian design | functional sparse layout, natural rhythm, human scale | readable sans/serif; low-contrast natural palette | wood/wool/light, quiet transitions, real material photography | sterile minimalism, cold gray default | wellbeing/home/product; excellent cross-platform restraint |
+| Japanese Mingei/wabi-sabi | irregular handmade balance, ma/negative space | restrained calligraphic or textural type; earth/indigo/ash | clay/paper/wood grain, slow reveal, imperfection | perfect synthetic gloss, clutter | craft/food/culture; use texture subtly on digital surfaces |
+| Art Deco | symmetrical verticality, stepped geometry, radiating lines | high-contrast display caps; black/gold/jade/ivory | metal/enamel/lacquer, ceremonial motion, geometric ornament | applying ornament to dense controls | luxury/events; display surfaces only, simplify controls |
+| Art Nouveau | flowing asymmetry, whiplash curves, framed composition | ornamental display + readable body contrast | botanical line work, slow organic motion | rigid tech imagery, excessive illegible ornament | culture/beauty; poor TUI transfer, use line rhythm |
+| Psychedelia | liquid nested forms, dense pattern fields | warped lettering; saturated complementary color | optical vibration, morphing motion, concert-poster imagery | long body text in warped type | Play/Experience; isolate readability-critical UI |
+| Punk zine | cut-and-paste collage, broken grid, intentional misregistration | mixed typewriter/condensed caps; black/white + fluorescent spot | tape/photocopy grain, abrupt cuts, handwriting | fake randomness with no message | activism/music; use restrained chaos around readable core |
+| Postmodern/New Wave | layered contradictory scale, tilted axes, hybrid rules | mixed serif/sans/decor; saturated discordant color | collage, playful glitch, rules visible then broken | incoherence without concept | editorial/experimental; hard for Operate |
+| Memphis Milano | scattered geometric modules, squiggle/terrazzo rhythm | rounded geometric sans; pastel + black + saturated accents | laminate/plastic patterns, bouncy motion | using decoration as mere background | Play/retail; moderate transfer if density controlled |
+| Vaporwave | spatial collage, impossible perspective, nostalgic grids | classical/retro digital mix; cyan/magenta/purple sunset gradients | chrome/statuary/VHS artifacts, slow drift | default AI purple-blue gradient resemblance | music/art/irony; use only when culturally intentional |
+| Cyberpunk | dense urban layering, HUD overlays, vertical signage contrast | mono/condensed sans; black + cyan/magenta/amber phosphor | neon/rain/glass, scan/glitch motion, dense signage | unreadable glow everywhere | games/security fiction; strong HUD but strict legibility floor |
+| Y2K chrome | liquid metal blobs, bubble forms, iridescent shine | rounded techno fonts; silver/ice blue/lime/pink | chrome/plastic, elastic motion, lens flare | clutter and inaccessible low contrast | music/fashion/Play; use as accents not body surfaces |
+| Flat design | simple geometry, edge alignment, little depth | clear sans; bright constrained palette | minimal motion, icon clarity | childish generic illustration | broad Operate; highly transferable |
+| Material Design 3-inspired | adaptive layout, clear elevation/state layers | platform type scale; dynamic tonal color | physics-like easing, stateful surfaces | copying Android chrome onto every platform | Operate/mobile; transfer principles not visuals |
+| Neumorphism | soft extruded monochrome forms | low-contrast monochrome | dual shadows, minimal motion | contrast failure; use as default style | rare decorative use; poor accessibility/transfer |
+| Glassmorphism | layered translucent panels over meaningful context | crisp type over controlled background | blur/specular edge, depth motion | default glass cards; contrast/perf cost | spatial/media overlays; platform-dependent |
+| Claymorphism | chunky soft forms, inflated geometry | rounded friendly type; pastel matte color | clay-like inner/outer shadows, squash motion | infantilizing serious domains | children/play/casual; moderate transfer |
+| Editorial broadsheet | narrow columns, hairlines, dense indexing | serif display/text + small caps/meta sans; ink/paper palette | still print-like transitions, documentary imagery | decorative fake numbering | Read/news/analysis; excellent text-heavy transfer |
+| Magazine maximalism | overlapping editorial blocks, varied pacing, strong image crops | multiple coordinated display/text families; assertive color stories | art-directed photography, expressive but sequenced motion | every page competing equally | Persuade/Read; web/editorial strong, simplify native controls |
+| Corporate Memphis | flat oversized limbs, generic diversity scenes | neutral sans; bright primary palette | vector blob people | homogeneous tech triviality; often a slop signal | avoid unless existing brand requires |
+| Neo-brutalist web | hard borders, visible blocks, offset shadows | bold sans/mono; saturated flat color on white | abrupt hover translation, sticker-like imagery | random harshness that hurts scanning | indie/dev tools; easy web/TUI, harder native |
+| Retro terminal | character-cell grid, scanline/CRT rhythm | monospace; phosphor green/amber/cyan on black | cursor blink, scanline, log/ascii imagery | using terminal look where users need rich data | devops/game/debugging; excellent TUI, moderate web |
+| Blueprint/technical drawing | measurement grid, orthographic alignment, callouts | mono/technical sans; cobalt/white or paper/ink | line weights, snap/stepped motion, diagrams | fake labels without meaning | engineering/devtools; strong across platforms |
+| Risograph print | layered registration, flattened print shapes | textured display + simple body; limited spot colors | ink grain/misregistration, no gloss | overusing noise texture | publishing/culture; translate spot-color discipline cross-platform |
+| Dada/collage | torn edges, discontinuity, nested scale shifts | ransom-like mixed type used sparingly | photo fragments, abrupt cut motion | illegibility and novelty without argument | art/critique/Experience; low Operate transfer |
+| Grunge | distressed texture, irregular layering, dirty edges | condensed/eroded type; muted black/red/off-white | photocopy/paint/grain, rough cuts | fake distress over usability | music/fashion; keep controls clean |
+| Pixel art | integer pixel grid, low-resolution modules | bitmap/condensed fonts; indexed color ramps | sprite/tile animation, dithering | non-integer scaling/blur | games/tools/Play; strong game/TUI transfer |
+| Isometric toy world | consistent 30° projection, modular spatial tiles | rounded geometric sans; cheerful saturated palette | miniature objects, bounce/physics motion | perspective inconsistency | education/games/data spatialization; costly on text-heavy UI |
+| Botanical/naturalist plate | specimen grid, annotated margins, measured whitespace | serif captions + fine labels; leaf/ochre/ink palette | archival paper, slow reveal, accurate illustration | generic leaf decoration | science/food/nature; strong if real subject imagery exists |
+| Afrofuturism | cosmic geometry, diasporic pattern systems, radiant symmetry | expressive display + readable body; metallics, deep space, saturated earth/sun palettes | speculative craft/material fusion, rhythmic motion | treating culture as superficial ornament | culture/music/tech/speculative work; requires cultural competence/review |
+| Islamic geometric/arabesque-inspired | tessellated mathematical grids, radial symmetry | respect script hierarchy; jewel/mineral/neutral palettes | pattern as structure, precise geometry, calligraphic imagery | sacred/cultural appropriation, text clipping in Arabic script | architecture/culture/finance in relevant locales; require local review |
+| Soviet/retro space age | circular charts, poster geometry, optimistic instrument panels | geometric sans/serif mix; cream/red/cobalt/metallic | enamel/metal, orbital motion, technical diagrams | costume-like nostalgia | science/education; moderate transfer |
+| Alpine/wayfinding system | sign hierarchy, pictogram grid, high scanning contrast | grotesque sans; high-contrast safety colors | weatherproof material, instant directional motion | decorative icon inconsistency | navigation/transport/Operate; excellent cross-platform logic |
+
+## Selection rules
+
+1. Choose structure before surface. If only palette/texture changes, it is not a different direction.
+2. Define what does **not** transfer: print grain, blur, terminal scanlines, physical texture, or platform chrome may need symbolic translation.
+3. Keep body text and controls boring enough to remain usable; put historical force into composition, imagery, sequence, or signature element.
+4. For culturally specific movements, use knowledgeable reviewers and real context. Do not extract sacred or identity-bearing motifs as decoration.
+
+## Award-level technique references
+
+Use these as constraints that raise execution quality; they are not styles to copy. Strong juried interface work usually balances visual authorship with usability, technical execution, uniqueness, interactivity, and appropriate use of the medium. Spectacle does not excuse confusion.
+
+| Technique reference | Compatible catalog families | Execution constraint | Slop risk |
+|---|---|---|---|
+| typographic structure carrying the page | Swiss, editorial broadsheet, neo-brutalist web, retro terminal | build the grid/measure/casing system before selecting display lettering | giant cropped word as generic hero decoration |
+| narrative scroll with persistent artifact | botanical plate, blueprint/technical drawing, mid-century, object-led wildcard | sticky media changes state in response to chapter content; static reading order remains complete | scrolljacking or forcing a cinematic sequence unrelated to decisions |
+| experimental navigation | punk zine, Postmodern/New Wave, cyberpunk, archive wildcard | unusual navigation must expose orientation, escape, keyboard/controller access, and direct deep links | mystery-meat navigation that tests patience rather than boundaries |
+| WebGL/shader accent | cyberpunk, vaporwave, isometric, spatial wildcard | reserve GPU cost for the signature scene; static image/fallback preserves content | orb/blob/shader background with no subject relation |
+| controlled overlap/collage | Constructivism, punk zine, Dada/collage, magazine maximalism | one intentional collision per scene; DOM order remains logical | overlapping clutter mistaken for avant-garde design |
+| restrained curated minimalism | Scandinavian, Mingei/wabi-sabi, flat design | spacing, alignment, image crop, and typographic detail carry the identity | blank white page confused with taste |
+| index/archive as interface | botanical plate, editorial broadsheet, blueprint, alpine wayfinding | row anatomy, metadata alignment, sorting/filtering, and empty states receive craft | pseudo-editorial numbers/rules with no indexing behavior |
+| material/texture system | risograph, grunge, botanical, mid-century | texture has physical cause and a strict opacity/contrast budget | noise overlay sprinkled over a conventional layout |
+
+Selection rule: name the source of each technique as a mechanism (“sticky annotated specimen”, “asymmetric editorial grid”), never as an imitation target (“make it look like that winner”). Document what was deliberately not copied.

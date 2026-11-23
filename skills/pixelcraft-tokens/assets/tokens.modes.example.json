@@ -1,0 +1,47 @@
+{
+  "$schema": "https://www.designtokens.org/TR/2025.10/format/",
+  "color": {
+    "$type": "color",
+    "brand": {
+      "$value": { "colorSpace": "oklch", "components": [0.55, 0.16, 250], "alpha": 1 },
+      "$extensions": {
+        "pixelcraft": {
+          "modes": {
+            "dark": { "$value": { "colorSpace": "oklch", "components": [0.68, 0.11, 250], "alpha": 1 } },
+            "high-contrast": { "$value": { "colorSpace": "oklch", "components": [0.45, 0.2, 250], "alpha": 1 } }
+          }
+        }
+      }
+    },
+    "surface": {
+      "$value": { "colorSpace": "oklch", "components": [0.98, 0.005, 95], "alpha": 1 },
+      "$extensions": {
+        "pixelcraft": {
+          "modes": {
+            "dark": { "$value": { "colorSpace": "oklch", "components": [0.2, 0.01, 265], "alpha": 1 } },
+            "high-contrast": { "$value": { "colorSpace": "oklch", "components": [1, 0, 0], "alpha": 1 } }
+          }
+        }
+      }
+    },
+    "ink": {
+      "$value": { "colorSpace": "oklch", "components": [0.22, 0.02, 265], "alpha": 1 },
+      "$extensions": {
+        "pixelcraft": {
+          "modes": {
+            "dark": { "$value": { "colorSpace": "oklch", "components": [0.93, 0.01, 95], "alpha": 1 } },
+            "high-contrast": { "$value": { "colorSpace": "oklch", "components": [0, 0, 0], "alpha": 1 } }
+          }
+        }
+      }
+    }
+  },
+  "semantic": {
+    "color": {
+      "$type": "color",
+      "action": { "$value": "{color.brand}" },
+      "background": { "$value": "{color.surface}" },
+      "foreground": { "$value": "{color.ink}" }
+    }
+  }
+}

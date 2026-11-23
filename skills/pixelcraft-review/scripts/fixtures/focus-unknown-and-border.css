@@ -1,0 +1,15 @@
+button:focus-visible {
+  outline: var(--focus-ring);
+}
+
+input:focus-visible {
+  outline: none;
+  border-width: 1px;
+  border-style: solid;
+}
+
+a:focus-visible {
+  outline: 0 var(--focus-outline);
+  border-width: 0;
+  border-style: solid;
+}

@@ -1,0 +1,11 @@
+button:focus-visible {
+  outline: none currentColor;
+}
+
+input:focus-visible {
+  outline: 0 solid red;
+}
+
+a:focus-visible {
+  outline: 0px dashed red;
+}

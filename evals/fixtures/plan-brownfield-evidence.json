@@ -1,0 +1,28 @@
+{
+  "schemaVersion": 1,
+  "id": "plan-brownfield-evidence",
+  "skill": "pixelcraft-plan",
+  "title": "Brownfield evidence classification",
+  "contextSnapshot": {
+    "surface": "existing settings area",
+    "platform": "unknown brownfield repository",
+    "mode": "Operate",
+    "states": ["existing tokens", "partial design system"],
+    "constraints": ["do not rewrite stack", "screenshot supplied"]
+  },
+  "prompt": "Map this repository and supplied settings mockup before changing the UI.",
+  "expectedRouting": ["pixelcraft-plan", "references/repo-discovery.md", "references/design-input.md"],
+  "forbiddenBehaviors": ["implements before inventory", "treats screenshot as complete specification", "merges facts and assumptions"],
+  "rubricDimensions": [
+    { "dimension": "evidence separation", "pass": "facts classified by source and unknowns explicit", "fail": "assumptions presented as facts" },
+    { "dimension": "repository grounding", "pass": "key claims cite inspected files/areas", "fail": "generic repository summary" },
+    { "dimension": "handoff decision", "pass": "scope/provenance/completeness determine handoff need", "fail": "handoff omitted or automatic" }
+  ],
+  "negativeControls": [
+    { "name": "empty directory illusion", "input": "empty immediate folder with parent project evidence", "mustNot": "classify greenfield without inspecting context" }
+  ],
+  "baseline": {
+    "withoutSkill": "chooses a familiar framework or edits immediately",
+    "withSkill": "produces an evidence-classified plan and explicit verification boundary"
+  }
+}

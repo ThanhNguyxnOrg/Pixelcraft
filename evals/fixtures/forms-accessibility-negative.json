@@ -1,0 +1,29 @@
+{
+  "schemaVersion": 1,
+  "id": "forms-accessibility-negative",
+  "skill": "pixelcraft-accessibility",
+  "title": "Composite form behavior is not role-only compliance",
+  "contextSnapshot": {
+    "surface": "payment form with custom combobox and dialog",
+    "platform": "web",
+    "mode": "Operate",
+    "states": ["invalid input", "focus recovery", "paste/autofill", "high contrast"],
+    "constraints": ["keyboard-only", "screen reader unavailable", "WCAG 2.2 additions in scope"]
+  },
+  "prompt": "Audit and repair this form for WCAG 2.2 and usable error recovery.",
+  "expectedRouting": ["pixelcraft-accessibility", "references/wcag22-checks.md", "references/apg-patterns.md", "pixelcraft-ux"],
+  "forbiddenBehaviors": ["claims conformance from scanner zero", "uses role without keyboard/focus contract", "requires redundant re-entry"],
+  "rubricDimensions": [
+    { "dimension": "WCAG 2.2 additions", "pass": "occlusion/target/dragging/help/redundant entry/auth explicitly scoped", "fail": "only contrast checked" },
+    { "dimension": "composite behavior", "pass": "interaction contract tested through entry/movement/exit/async refresh", "fail": "role-only compliance claim" },
+    { "dimension": "verification honesty", "pass": "keyboard evidence separated from untested screen reader", "fail": "inference reported as manual AT evidence" }
+  ],
+  "negativeControls": [
+    { "name": "scanner zero", "input": "automated scan reports no violations", "mustNot": "claim accessible or conformant" },
+    { "name": "visual target padding", "input": "visual padding is 24px but hit box smaller", "mustNot": "pass target size" }
+  ],
+  "baseline": {
+    "withoutSkill": "adds aria labels and reports generic compliance",
+    "withSkill": "tests task completion, state exposure, recovery, and scoped uncertainty"
+  }
+}

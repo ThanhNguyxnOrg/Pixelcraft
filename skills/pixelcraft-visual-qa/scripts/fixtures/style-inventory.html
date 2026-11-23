@@ -1,0 +1,80 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1">
+<title>Style inventory fixture</title>
+<style>
+:root {
+  background: #f6f1e7;
+  color: #1b1b18;
+  font-family: Arial, Helvetica, sans-serif;
+}
+body {
+  margin: 0;
+  background: #f6f1e7;
+  color: #1b1b18;
+  font: 400 16px/1.55 Arial, Helvetica, sans-serif;
+}
+main {
+  box-sizing: border-box;
+  max-width: 720px;
+  margin: 0 auto;
+  padding: 48px 24px;
+}
+h1 {
+  margin: 0 0 24px;
+  color: #172554;
+  font-size: 48px;
+  font-weight: 800;
+  letter-spacing: -0.04em;
+  line-height: 1;
+}
+.lede {
+  max-width: 34rem;
+  font-size: 20px;
+  line-height: 1.4;
+}
+.actions {
+  display: flex;
+  gap: 16px;
+  margin-top: 32px;
+}
+button {
+  border: 0;
+  border-radius: 999px;
+  padding: 12px 20px;
+  background: #2854c5;
+  color: white;
+  cursor: pointer;
+  font-weight: 700;
+}
+.specimen {
+  width: 160px;
+  height: 90px;
+  margin-top: 40px;
+  background: #d9480f;
+  cursor: none;
+}
+@media (prefers-reduced-motion: reduce) {
+  *, *::before, *::after {
+    animation-duration: 0.001ms !important;
+    transition-duration: 0.001ms !important;
+  }
+}
+:focus-visible {
+  outline: 3px solid #2854c5;
+  outline-offset: 3px;
+}
+</style>
+<script src="./style-inventory.js"></script>
+</head>
+<body>
+<main>
+  <h1>Measured inventory</h1>
+  <p class="lede">A static fixture with deliberate type contrast, palette roles, spacing, focus treatment, and semantic structure.</p>
+  <div class="actions"><button type="button">Inspect</button></div>
+  <div class="specimen" role="img" aria-label="orange specimen block"></div>
+</main>
+</body>
+</html>

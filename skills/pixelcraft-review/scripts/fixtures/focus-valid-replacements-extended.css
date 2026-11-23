@@ -1,0 +1,29 @@
+button:focus-visible {
+  outline: none;
+  outline: 2px solid currentColor;
+}
+
+input:focus-visible {
+  outline: none;
+  border: 1px solid currentColor;
+}
+
+a:focus-visible {
+  outline: none;
+  border-color: currentColor;
+}
+
+span:focus-visible {
+  outline: none;
+  text-decoration: underline;
+}
+
+strong:focus-visible {
+  outline: none;
+  box-shadow: 0 0 0 2px currentColor;
+}
+
+em:focus-visible {
+  outline: none;
+  outline: thin dotted;
+}

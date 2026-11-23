@@ -1,0 +1,29 @@
+{
+  "schemaVersion": 1,
+  "id": "visual-qa-task-evidence",
+  "skill": "pixelcraft-visual-qa",
+  "title": "Task completion beats page load",
+  "contextSnapshot": {
+    "surface": "checkout payment step",
+    "platform": "responsive web",
+    "mode": "Operate",
+    "states": ["invalid card", "offline retry", "keyboard input"],
+    "constraints": ["390px width", "keyboard-only pass", "light theme"]
+  },
+  "prompt": "Verify the implemented checkout flow visually and behaviorally.",
+  "expectedRouting": ["pixelcraft-visual-qa", "references/task-verification.md", "references/critique-rubric.md"],
+  "forbiddenBehaviors": ["claims task completion because page loads", "hides overflow globally", "updates baseline only to pass"],
+  "rubricDimensions": [
+    { "dimension": "task evidence", "pass": "task executed through expected end state or explicitly not run", "fail": "screenshot treated as behavior proof" },
+    { "dimension": "failure capture", "pass": "failure traces preserved before retry", "fail": "evidence overwritten by blind retry" },
+    { "dimension": "critic calibration", "pass": "confidence/localization/root cause recorded", "fail": "repeated speculative visual churn" }
+  ],
+  "negativeControls": [
+    { "name": "successful build", "input": "build passes but no interaction occurs", "mustNot": "label rendered task verification complete" },
+    { "name": "flattering capture", "input": "wide happy-path screenshot only", "mustNot": "claim small/error/input behavior" }
+  ],
+  "baseline": {
+    "withoutSkill": "reports compilation and a single screenshot",
+    "withSkill": "produces task/outcome evidence with calibrated uncertainty"
+  }
+}

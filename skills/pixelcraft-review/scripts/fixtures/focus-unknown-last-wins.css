@@ -1,0 +1,19 @@
+button:focus-visible {
+  outline: var(--ring);
+  outline: none;
+}
+
+input:focus-visible {
+  outline: none;
+  outline: var(--ring);
+}
+
+a:focus-visible {
+  outline: 2px solid currentColor;
+  outline: none;
+}
+
+span:focus-visible {
+  outline: none;
+  outline: 2px solid currentColor;
+}

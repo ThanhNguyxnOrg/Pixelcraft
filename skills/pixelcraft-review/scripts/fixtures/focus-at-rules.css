@@ -1,0 +1,17 @@
+@media (min-width: 40rem) {
+  button:focus-visible {
+    outline: none;
+  }
+}
+
+@supports (display: grid) {
+  input:focus {
+    outline: 0;
+  }
+}
+
+@layer components {
+  a:focus-visible {
+    outline: none currentColor;
+  }
+}

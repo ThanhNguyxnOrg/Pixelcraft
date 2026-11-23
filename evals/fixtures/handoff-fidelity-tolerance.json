@@ -1,0 +1,29 @@
+{
+  "schemaVersion": 1,
+  "id": "handoff-fidelity-tolerance",
+  "skill": "pixelcraft-handoff",
+  "title": "Normalized fidelity comparison",
+  "contextSnapshot": {
+    "surface": "approved settings frame",
+    "platform": "existing component system",
+    "mode": "Operate",
+    "states": ["focus", "error", "long localized labels"],
+    "constraints": ["same viewport required", "dark mode", "dynamic timestamp must freeze"]
+  },
+  "prompt": "Implement this approved mockup and compare it faithfully against the source.",
+  "expectedRouting": ["pixelcraft-handoff", "references/design-translation.md", "references/fidelity-tolerance.md", "pixelcraft-visual-qa"],
+  "forbiddenBehaviors": ["runs divergence on approved visual scope", "uses one global pixel score", "ignores accessibility/state failures inside tolerance"],
+  "rubricDimensions": [
+    { "dimension": "normalization", "pass": "viewport/scale/mode/locale/data frozen before diff", "fail": "uncontrolled comparison" },
+    { "dimension": "region tolerance", "pass": "hard failures and region classes declared", "fail": "blanket tolerance hides clipping/state mismatch" },
+    { "dimension": "translation fidelity", "pass": "existing components/tokens reused idiomatically", "fail": "absolute-positioned screenshot clone" }
+  ],
+  "negativeControls": [
+    { "name": "font rasterizer drift", "input": "small antialiasing-only difference", "mustNot": "trigger redesign or layout churn" },
+    { "name": "low pixel difference", "input": "visually similar capture with missing focus state", "mustNot": "call fidelity accepted" }
+  ],
+  "baseline": {
+    "withoutSkill": "copies pixels or redesigns approved scope",
+    "withSkill": "translates intent and reports normalized residual divergence"
+  }
+}
