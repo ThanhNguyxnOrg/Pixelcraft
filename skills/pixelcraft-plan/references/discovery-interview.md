@@ -1,6 +1,6 @@
 # Project discovery and decision interview
 
-Use this workflow only when a project or feature still has meaningful decisions to make. It is a conversation pattern inside \`pixelcraft-plan\`, not a separate skill and not a mandatory questionnaire.
+Use this workflow only when a project or feature still has meaningful decisions to make. It is a conversation pattern inside `pixelcraft-plan`, not a separate skill and not a mandatory questionnaire.
 
 ## Choose the right path
 
@@ -86,8 +86,8 @@ Treat stack choice as a consequence of product requirements, not the opening que
 
 Use the existing Pixelcraft artifacts as the source of truth:
 
-- \`.pixelcraft/brief.md\` records product outcome, audience, constraints, material, boundaries, and validation.
-- \`.pixelcraft/plan.md\` records project mode, repository/system evidence, platform/stack, implementation routing, verification, risks, and discovery outcome.
+- `.pixelcraft/brief.md` records product outcome, audience, constraints, material, boundaries, and validation.
+- `.pixelcraft/plan.md` records project mode, repository/system evidence, platform/stack, implementation routing, verification, risks, and discovery outcome.
 
 Do not create parallel specification files when these artifacts are sufficient. Preserve prior decisions when updating a plan.
 
