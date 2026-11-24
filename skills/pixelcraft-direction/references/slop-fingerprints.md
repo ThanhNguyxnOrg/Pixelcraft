@@ -29,15 +29,32 @@ Evidence base: recurring generated-UI patterns and output-homogenization evidenc
 | `✨` sparkle icon spam on buttons and headings | default “AI feature” shorthand | name the concrete capability in plain language (`Summarize`, `Generate SQL`) with a system-coherent icon |
 | default shadcn zinc + 1px border + pill badge hero | unexamined starter-kit collapse | treat primitives as unstyled behavior; author tokens, type voice, spacing rhythm, and surface contrast from the committed direction |
 | cargo-cult Liquid Glass blur | copying iOS/macOS 26 chrome onto web/apps without layered context | restrict translucency to floating chrome over rich media, verify composited contrast over worst-case backgrounds, and provide a `prefers-reduced-transparency` solid fallback |
+| generic icon inside tinted `40×40` rounded-square card badge | automated feature-card kit | drop decorative icon badges; use real product crops, structured specification rows, inline diagrams, or typography-led hierarchy |
+| fake SVG sparklines & arbitrary KPI deltas (`+24.5%`, `+12.8%`) | fabricated dashboard decoration | bind charts to real data via a vetted dataviz library, show honest empty/loading states, or omit metrics entirely when no data exists |
+| pulsing `animate-ping` green-dot “Live” / “v2.0” pill badge | template launch-page cliché | reserve live status indicators for real telemetry/WebSocket state paired with accessible status text, never decorative hero chrome |
+| indigo-purple-pink mesh gradients & glowing border-beam cards | 2025–2026 AI wrapper cliché | derive lighting, surface contrast, and borders from the domain material and semantic elevation hierarchy |
+| unstyled or half-wired forms (floating inputs, missing focus/validation/submit feedback) | rushing past operational states | author real labels, tolerant parsing, accessible error summaries, disabled/pending submit states, and input preservation |
 
 ## Copy fingerprints
 
-- “supercharge/elevate/revolutionize/unlock/seamless/cutting-edge” without concrete evidence;
+- generic AI marketing clichés without concrete evidence: `supercharge`, `elevate`, `revolutionize`, `unlock`, `seamless`, `cutting-edge`, `next-gen`, `effortless`, `empower`, `streamline`, `all-in-one`, `reimagine`, `unleash`, `AI-powered`, `built for modern teams`, `delve`, `transform your`;
 - fake statistics, logos, testimonials, customer counts, awards, or case studies;
 - headings that say “Features/Benefits/Why choose us” instead of subject-specific claims;
 - error copy that apologizes but gives no recovery path;
 - empty-state copy that explains the obvious (“No items yet”) without the next useful action;
-- buttons that all say “Learn more” regardless of consequence.
+- buttons that all say “Learn more” or “Get started” regardless of consequence.
+
+## Implementation laziness fingerprints
+
+Treat these as hard delivery defects (`P0`/`P1`), never acceptable shortcuts:
+
+- `// TODO`, `// FIXME`, or placeholder comments standing in for requested UI or state logic;
+- ellipsis code truncation (`// ... rest of component`, `/* ... */`, omitted branches);
+- empty or no-op event handlers (`onClick={() => {}}`, `onSubmit={() => {}}`, buttons wired to `console.log`);
+- dead `href="#"` or `javascript:void(0)` links pretending to be working navigation;
+- unapproved 3-item hardcoded mock arrays (`const items = [item1, item2, item3]`) masquerading as live, fetched, or persisted data;
+- unwired mobile navigation (hamburger button that toggles nothing, traps focus, or silently drops desktop routes);
+- lazy DIY substitutes for complex capabilities (hand-rolled `<div>` modals without focus traps, `contenteditable` rich editors, hardcoded inline SVG charts, unvirtualized massive tables, mouse-only drag-and-drop).
 
 ## Behavior fingerprints
 
@@ -63,4 +80,4 @@ A page can have zero fingerprints and still be bad; absence of slop is not prese
 | `transition: all`, emoji icons, cliché copy, hardcoded hexes | `transition-all`, `emoji-as-icon`, `generic-copy`, `hardcoded-color-literals` | `static` (P2, non-waivable) |
 | Default fonts, purple-blue gradients | `default-font-only`, `purple-blue-gradient` | `static` (P2 advisory, waivable for approved brand) |
 | Repeated `rounded-2xl`, uniform shadows, centered hero + 2 CTAs, gradient text, rounded accent rails | `rounded-2xl-repetition`, `uniform-shadow`, `centered-hero-two-ctas`, `gradient-text-treatment`, `rounded-accent-rail` | `static` (P3, waivable for approved brand) |
-| Cream+serif+terracotta defaults, spotlight Bento grids, fake terminal chrome, logo marquees, fake avatar proof stacks, `✨` sparkle spam, default shadcn zinc hero, cargo-cult Liquid Glass blur, shallow UX states | — | `rendered` / `model-judgment` |
+| Cream+serif+terracotta defaults, spotlight Bento grids, tinted `40×40` icon card badges, fake sparklines/KPI deltas, pulsing `animate-ping` pill badges, mesh/border-beam glow cards, fake terminal chrome, logo marquees, fake avatar proof stacks, `✨` sparkle spam, default shadcn zinc hero, cargo-cult Liquid Glass blur, implementation laziness stubs & DIY widgets | — (plus static stub/handler inspection during review) | `rendered` / `static` / `model-judgment` |

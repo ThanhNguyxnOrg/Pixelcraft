@@ -154,6 +154,22 @@ Brand governance exists because generated imagery is not yet a usable identity s
 
 **Trade-off:** reference files can become deep. Progressive disclosure keeps top-level skills concise while adding detailed implementation guidance without expanding the install catalog. A future standalone skill requires evidence of independent usage and an evaluation showing that the split improves behavior.
 
+## Anti-laziness enforcement, Grill-Me discovery, and pre-code sign-off
+
+**Rule:** pair polite principles with adversarial Iron Laws, rationalization tables, concrete pre-submit checklists, one-question-at-a-time Grill-Me discovery for unresolved scope, and a pre-code Design Approval gate before implementing greenfield or undecided redesign work.
+
+**Why:** under turn pressure, models systematically rationalize skipping planning, guessing vague requirements, leaving `// TODO` or empty click handlers, reusing one screenshot across breakpoints, and self-approving conventional templates. Explicit refusal tables and structural ASCII wireframes close those shortcuts without turning narrow bug fixes or approved handoffs into bureaucracy.
+
+**Trade-off:** asking one targeted question per turn and confirming a direction card adds conversational turns on open briefs. Pixelcraft accepts that cost on greenfield and redesign work while preserving a direct execution path for narrowly scoped edits and approved specifications.
+
+## Stack and sub-stack library craft
+
+**Rule:** reject path-of-least-resistance platform defaults (such as Tkinter for greenfield Python desktop, unjustified heavy WebViews, bare `print()` TUIs, `window.print()` PDFs, or Flexbox HTML emails) and resolve complex UI capabilities (rich text, code editors, large grids, maps, search, command palettes, drawers, toasts, carousels, drag-and-drop) to native platform primitives or vetted purpose-built libraries rather than fragile DIY substitutes.
+
+**Why:** choosing a macro framework alone does not stop agents from hand-rolling broken `contenteditable` editors, static-pixel charts, or keyboard-trapping custom overlays. Escalating sub-stack capabilities during planning prevents structural defects that visual polish cannot repair.
+
+**Trade-off:** purpose-built libraries add dependency evaluation and version verification work. Pixelcraft still prefers native HTML/OS primitives whenever they cover the interaction cleanly, escalating to specialized libraries only where native semantics fall short.
+
 ## Changing these rules
 
 Do not weaken a rule merely because a task is inconvenient. Change the rule when the underlying trade-off changed, when evidence shows the rule produces worse outcomes, or when a platform/standard changed. Record the reason in the commit and update affected skills, evals, and verification tooling together.

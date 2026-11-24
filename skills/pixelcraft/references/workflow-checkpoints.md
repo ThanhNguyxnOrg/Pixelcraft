@@ -12,13 +12,28 @@ Classify both the project (greenfield, brownfield or hybrid) and the requested c
 | Redesign or rebuild | Inventory existing routes or entry points, task outcomes, content/data, accessibility and localization, and other relevant contracts. Record what stays, what changes, and how each preserved or migrated contract will be checked before replacing anything. Diverge only in the undecided scope. A rebuild does not by itself authorize a new stack, dropped routes or changed outcomes. |
 | Behavior-preserving refactor | Inventory consumers and observable contracts first. Reuse the approved direction and assert output, interactions, accessibility behavior and public contracts before/after where affected. Do not turn an internal change into a visual redesign. |
 
-## Optional discovery interview boundary
+## Adaptive discovery and approval boundary
 
-Use the discovery path inside `pixelcraft-plan` only when the user asks to shape/brainstorm/compare options, or when a material decision remains unresolved and could change the product outcome, scope, platform, architecture, data model, or major constraints. Inspect the repository and artifacts before asking. The agent must research discoverable facts; the user decides priorities, preferences, and approvals.
+Choose one of three modes inside `pixelcraft-plan` after inspecting the repository and supplied artifacts first (never ask the user facts readable from the repo):
 
-For each material choice, explain why it matters, offer a small set of credible options, recommend one with evidence and trade-offs, and allow a free-form answer or “you decide”. Ask one principal question per turn by default; defer dependent choices until prerequisites are resolved. Stop when the plan is actionable rather than interrogating every implementation detail.
+| Mode | When to use | Interaction & gate |
+|---|---|---|
+| **Grill-Me / Deep Shaping** | Greenfield product, vague or ambiguous brief, major redesign, or user asks to brainstorm / grill / compare options | Walk unresolved branches of the decision tree strictly **one principal question per turn** with 2–4 concrete options leading with **(Recommended)** + trade-offs. Stop once the plan and direction constraints are actionable. |
+| **Fast Confirm** | Clear feature or scoped surface with 1–2 undecided design, IA, or stack/library choices | Inspect the repo/brief, propose concrete defaults with trade-offs in one focused turn, and confirm before coding. |
+| **Direct Execution** | Narrow bug fix, copy tweak, visual polish, behavior-preserving refactor, or implementation of an already-approved design | Skip the interview, record a compact scoped brief/plan with reversible defaults, and execute directly. |
 
-Do not interview for a complete brief, approved design, straightforward fix, or narrow edit. For low-impact unknowns, choose a reversible default and record the assumption. For high-impact or hard-to-reverse choices, obtain the user's decision before committing to that direction. If the user skips discovery, use conservative defaults and surface material risks.
+The agent researches discoverable facts; the user owns priorities, anti-goals, preferences, and approvals. Accept a direct answer, correction, "you decide", or "skip". If the user explicitly says to decide and build directly, record conservative, reversible defaults and surface material risks.
+
+## Design Approval `<HARD-GATE>` (Phase 2 → Phase 3 → Phase 4)
+
+For **new products, new multi-screen features, or undecided redesigns**, do **not** write implementation code until the user approves the committed design proposal:
+
+1. Present 2–3 materially different direction options (leading with your `(Recommended)` choice and evidence-backed trade-offs),
+2. Include a compact **ASCII structural skeleton** and **real-copy headline/primary action draft** for each option (not vague adjectives),
+3. State the **stack and sub-stack capability library choices** (rejecting lazy defaults and DIY substitutes), and
+4. Wait for user confirmation (or explicit approval of one option / hybrid) before entering **Phase 4 (Build)**.
+
+Bypass this `<HARD-GATE>` **only** when the user explicitly says to decide and build directly without stopping, or when an already-approved design / narrow fix puts the task in **Direct Execution**.
 
 ## Check before advancing
 
@@ -26,11 +41,11 @@ Use the existing brief, plan, direction card, checks and report; link or summari
 
 | Phase | Exit evidence |
 |---|---|
-| 0. Plan | Record the task route, scoped requirements, stack/version decision, applicable platform and reference, and verification capabilities. For existing products, cite the inspected conventions, runtime/lock, affected UI/state path (or the new surface's integration points) and relevant tests; identify preserved behavior and its verification baseline. Where a stack must be selected, include requirements, weighted stack comparison and version sources. |
+| 0. Plan | Record the task route, adaptive discovery mode (`Grill-Me` / `Fast Confirm` / `Direct Execution`), scoped requirements, stack/version decision, **Sub-Stack Capability → Purpose-Built Library resolution** (for any rich editor, chart, large table, modal/drawer, search, toast, carousel, DnD, calendar, map, node graph, or PDF capability — rejecting lazy defaults and fragile DIY hand-rolls), applicable platform skill and reference, and verification capabilities. For existing products, cite the inspected conventions, runtime/lock, affected UI/state path (or the new surface's integration points) and relevant tests; identify preserved behavior and its verification baseline. Where a stack must be selected, include requirements, weighted stack comparison and version sources. |
 | 1. Frame | Record the target user, job, real material, surface mode, constraints and a concrete task success condition in the brief. Reuse a brief only after checking those facts against the current scope. |
-| 2. Diverge | Record the selected direction, scored alternatives and repetition check for undecided scope. Where direction is already fixed, cite the approved design or existing convention and state why divergence is not applicable. |
-| 3. Specify | Record the direction card or scoped decision, task flows, applicable states and acceptance checks, including how preserved behavior will be verified. Resolve material assumptions that determine implementation before building. |
-| 4. Build | Point to implementation and its platform/reference decisions. Check against the spec, applicable floor, and preserved contracts before handing off to verification. Do not count stubs, simulated production outcomes, or unapproved dependency changes as delivery. |
+| 2. Diverge | Record the 2–3+ contrasting directions (with ASCII structural skeletons and real-copy lead drafts), evidence-backed scores, repetition check, and **Design Approval `<HARD-GATE>`** outcome for undecided scope. Where direction is already fixed, cite the approved design or existing convention and state why divergence is not applicable. If the winning creative direction requires a stack/renderer upgrade, update `.pixelcraft/plan.md` before advancing. |
+| 3. Specify | Record the approved direction card (including ASCII skeleton and real-copy draft), finalized **Sub-Stack Capability → Purpose-Built Library** picks wired into the architecture (confirming zero fragile DIY modals, editors, charts, tables, search, drawers, toasts, or carousels), task flows, applicable states and acceptance checks, including how preserved behavior will be verified. Resolve material assumptions that determine implementation before building. |
+| 4. Build | Point to implementation and its platform/reference decisions. Check against the spec, applicable floor, and preserved contracts before handing off to verification. Do not count stubs, `// TODO`s, empty handlers, unwired mobile nav, simulated production outcomes, or unapproved dependency changes as delivery. |
 | 5. Verify | Record checks and observed outcomes for the actual task and relevant regressions. Include rendered evidence when the runtime is available and the finish gate for new or materially changed flows. Compilation or a loaded screen alone proves neither behavior nor visual quality. |
 | 6. Report | Point to the results and artifacts, report open failures and unchecked scope, and include the next discriminating check when work remains. |
 

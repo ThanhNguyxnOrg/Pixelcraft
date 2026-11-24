@@ -55,7 +55,11 @@ Adjust weights only because the brief says so. Record the reason.
 | A |  |  |  |  |  |  |  |  |  |  |  |  |  |
 ```
 
-Add a short evidence note under the table for any score of 0–1 or uncertain 2. Do not write only adjectives such as “clean,” “premium,” or “bold.”
+Add concise, concrete evidence notes under the table for **both**:
+- **High scores (3–4)** — cite the exact structural mechanism, real material, ASCII region, or constraint fit that earns the 3 or 4. Unsubstantiated 4s are invalid; never rubber-stamp a favorite template with empty high scores.
+- **Low or uncertain scores (0–2)** — name the exact risk, missing material, or floor tension and what mitigation (if any) resolves it.
+
+Do not write taste adjectives such as “clean,” “premium,” “modern,” or “bold” as score justification.
 
 ## Selection rules
 

@@ -7,10 +7,16 @@ The floor is non-negotiable unless the user explicitly waives a scoped item. It 
 ## 1. Truthfulness
 
 - Do not invent facts, testimonials, usage counts, customer logos, case studies, screenshots, measurements, certifications, or image content.
-- Missing material must be omitted, requested, or visibly marked as an approved placeholder.
+- Missing material must be omitted, requested, or visibly marked as a *user-requested* placeholder (never a silent agent-invented filler).
 - Never use stock-looking fake proof to fill a layout. Empty space is better than false evidence.
 - Generated imagery must match the brief and must not accidentally include illegible pseudo-text unless intentionally abstract.
-- Deliver the in-scope behavior, not a stub: no dead primary actions, unfinished handlers, or omitted implementation represented by TODO or ellipsis. Approved placeholders, fixtures, and intentional display truncation are not defects; label demo data and do not present it as production truth.
+- Deliver the complete in-scope behavior, never a stub or half-wired shell:
+  - zero `// TODO`, `// FIXME`, or unimplemented comments standing in for requested UI or logic;
+  - zero ellipsis code truncation (`// ... rest`, `/* ... */`, omitted branches);
+  - zero empty or no-op handlers (`onClick={() => {}}`, `onSubmit={() => {}}`, dead `href="#"` links, or decorative buttons that do nothing);
+  - zero unwired mobile navigation (e.g. a hamburger toggle that never opens, traps focus, or omits desktop routes);
+  - zero unapproved 3-item hardcoded mock arrays masquerading as live or persisted data.
+- User-requested placeholders, explicit test fixtures, and intentional UI display truncation are not defects; visibly label any requested demo/fixture data and never present it as live production truth.
 
 ## 2. Accessibility
 

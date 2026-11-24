@@ -1,32 +1,31 @@
 # Project discovery and decision interview
 
-Use this workflow only when a project or feature still has meaningful decisions to make. It is a conversation pattern inside `pixelcraft-plan`, not a separate skill and not a mandatory questionnaire.
+Discovery is how `pixelcraft-plan` turns an under-specified brief into an actionable plan without guessing silently. Choose the lightest mode that actually resolves uncertainty: **Grill-Me / Deep Shaping** for open-ended or ambiguous scope, **Fast Confirm** for clear features with 1–2 open choices, and **Direct Execution** for narrow fixes or approved designs.
 
-## Choose the right path
+## Choose the right mode
 
-Planning is required; a long interview is not.
+Planning is always required. **Do not jump straight to code on a greenfield product, vague brief, or undecided redesign**—silently filling major product, IA, visual, and stack blanks with model assumptions produces generic output that has to be rewritten.
 
-| Situation | Path |
-|---|---|
-| The request is specific, the target and constraints are clear, and the remaining choices are low-risk | **Direct plan** — inspect evidence, state small assumptions, and proceed |
-| The user explicitly asks to brainstorm, shape an idea, define scope, compare options, or choose a stack | **Discovery interview** — explore unresolved decisions before finalizing the plan |
-| A greenfield product or feature brief is too broad to determine its outcome, primary workflow, platform, or constraints | **Discovery interview** — inspect supplied context, then ask only questions that affect the result |
-| An existing repository is involved | **Brownfield first** — inspect code, design system, runtime, data contracts, and docs before asking |
-| The request is a narrow bug fix, copy change, visual tweak, or implementation of an approved design | **Scoped/direct plan** — do not turn it into product discovery |
+| Situation | Mode | What to do |
+|---|---|---|
+| Greenfield product, vague or ambiguous brief, major redesign, or user asks to brainstorm / grill / compare options | **Grill-Me / Deep Shaping** | Inspect the repo/brief first, then run [grill-me-protocol.md](grill-me-protocol.md): walk unresolved branches one principal question per turn with **(Recommended)** options until actionable. |
+| Clear feature or scoped surface with 1–2 undecided design, IA, or stack/library choices | **Fast Confirm** | Inspect code and artifacts, propose concrete options with a recommendation and trade-offs in one focused turn, and confirm before coding. |
+| An existing repository is involved | **Brownfield first** | Always run the codebase-first inspection gate (code, design system, runtime, data contracts, docs) *before* deciding between Grill-Me, Fast Confirm, or Direct Execution. |
+| Narrow bug fix, copy change, visual tweak, behavior-preserving refactor, or already-approved design spec | **Direct Execution** | Skip product discovery; write a compact scoped plan, use safe reversible defaults for minor details, and build directly. |
 
-Enter discovery when at least one material decision is unresolved and the answer could change product scope, user outcome, core flow, platform, architecture, data model, security/privacy posture, distribution, or cost. An explicit request to brainstorm also starts discovery.
+Actively enter **Grill-Me / Deep Shaping** whenever the brief leaves any of these materially undecided: primary user/job, anti-goals/taboos, core workflow/IA shape, visual ambition, platform/stack or sub-stack capability libraries, data/auth model, or acceptance criteria. An explicit request to brainstorm or shape an idea always triggers Grill-Me.
 
-Do not enter discovery merely because some detail is unspecified. Use the smallest safe, reversible default for low-impact details and record it as an assumption. If the user says to decide, make an evidence-backed recommendation rather than returning the decision to them.
+Reserve **Direct Execution** for genuinely complete briefs, approved designs, or narrow edits. If the user explicitly says "you decide and build directly," honor that override, record conservative defaults and risks in `.pixelcraft/plan.md`, and proceed.
 
 ## Principles
 
-1. **Read before asking.** Inspect the request, conversation context, repository, existing plan/brief, design artifacts, manifests and lockfiles, API contracts, analytics or product docs, and relevant tests. Check current official documentation or registries for facts that can change. Never ask the user for something already available in the environment.
-2. **Separate facts from decisions.** Facts are the agent's responsibility to find. User-owned preferences, priorities, budgets, business constraints, and approval decisions belong to the user. Label observations, research, assumptions, and unknowns separately.
-3. **Ask about outcomes, not trivia.** Find out what users need to accomplish before asking about components, libraries, or framework preferences. Do not make a non-technical user choose technologies without explaining the consequence in product terms.
-4. **Recommend, do not dump options.** For a material choice, offer 2–4 plausible options, explain practical trade-offs, and lead with the recommended option and why it fits the evidence. Include “Other / not sure” when useful. Never fabricate a recommendation when evidence is insufficient.
-5. **Keep the conversation adaptive.** Ask one principal question per turn by default. Ask a small group only when decisions are genuinely independent and easy to answer together. Dependent decisions wait until prerequisites are resolved.
-6. **The user owns the decision.** A recommendation is not approval. Accept a direct answer, correction, “you decide”, or “skip this”; preserve explicit user decisions over model preference.
-7. **Stop when the plan is actionable.** Do not settle every implementation detail before implementation. Resolve material branches, record remaining assumptions and risks, then move forward at the appropriate approval boundary.
+1. **Read before asking (Codebase-First Gate).** Inspect the request, conversation context, repository, existing plan/brief, design artifacts, manifests and lockfiles, API contracts, analytics or product docs, and relevant tests. Check current official documentation or registries for facts that can change. Never ask the user for something already readable in the environment.
+2. **Separate facts from decisions.** Facts are the agent's responsibility to find. User-owned preferences, anti-goals/hate-lists, priorities, budgets, business constraints, and approval decisions belong to the user. Label observations, research, assumptions, and unknowns separately.
+3. **Ask about outcomes and anti-goals before trivia.** Establish what users must accomplish and what competitor tropes or UX patterns the user rejects before debating component details. Do not make a non-technical user choose technologies without explaining the product consequence.
+4. **Recommend, do not dump options.** For every material choice, explain why it matters in one sentence, offer 2–4 concrete options, lead with **(Recommended)** and evidence-backed trade-offs, and allow free-form answers, "you decide", or "skip". Never fabricate a recommendation when evidence is insufficient.
+5. **One principal question per turn.** Follow [grill-me-protocol.md](grill-me-protocol.md): never dump a 10-question questionnaire wall. Wait for upstream answers before asking dependent downstream questions.
+6. **The user owns the decision.** A recommendation is not approval. Preserve explicit user decisions over model preference, and pause for design sign-off before coding on undecided greenfield or redesign scope.
+7. **Stop when the plan is actionable.** Resolve material branches, record remaining assumptions and risks, then move to `pixelcraft-direction` and the Design Approval `<HARD-GATE>`.
 
 ## Build the decision map
 
@@ -97,14 +96,14 @@ Create an ADR only when a decision is difficult to reverse, surprising without c
 
 Discovery is complete when:
 
-- the primary user outcome and task are clear enough to define success;
+- the primary user outcome, task, and anti-goals/hate-list are clear enough to define success;
 - project scope and non-goals are bounded;
-- the platform and stack are selected, constrained by the repository, or explicitly deferred;
+- the platform, stack (rejecting lazy defaults), and Sub-Stack Capability libraries are selected, constrained by the repository, or explicitly deferred;
 - important data, integration, privacy, security, accessibility, localization, and operational constraints are known or recorded as risks;
 - major flows and critical states are understood well enough to plan;
 - acceptance criteria and verification evidence are actionable; and
 - each remaining material unknown has an owner, consequence, and next check.
 
-Present the resulting brief/plan in a concise summary. Ask for explicit approval before an irreversible or high-impact product/architecture decision, a major scope expansion, or implementation when the user requested planning only. Do not add an approval ceremony to a routine, clearly requested implementation; ordinary user instructions remain authorization for the scoped work.
+Present the resulting brief/plan in a concise summary. **For undecided greenfield products, multi-screen features, or major redesigns, require explicit design sign-off** (combining the plan summary with `pixelcraft-direction`'s 2–3 contrasting directions + ASCII structural skeletons + stack/library choices) before writing implementation code. Preserve the **Direct Execution** path without extra ceremony for narrow bug fixes, copy tweaks, visual polish, behavior-preserving refactors, or implementations of an already-approved design.
 
-If the user asks to skip questions or move quickly, stop interviewing. Use conservative, reversible defaults, mark assumptions, and surface only risks that could materially change the result.
+If the user explicitly asks to skip questions or says "you decide and build directly," stop interviewing, record conservative reversible defaults and rejected lazy defaults in `.pixelcraft/plan.md`, surface only material risks, and proceed.

@@ -81,7 +81,12 @@ Reject or revise if the output contains random floating icons, generic startup g
 
 ## Final output standard
 
-The image must look like a premium identity deck, senior designer's presentation board, brand-system case study, visual launch direction, or professional logo concept board. It should be clean, strategic, symbolic, minimal, coherent, premium, art-directed, implementation-friendly, and stronger than ordinary AI-generated brand visuals.
+Pass the board only when every observable visual-system criterion holds:
+- **Exact grid geometry:** uniform gutters, aligned panel edges, and one clear anchor panel with deliberate density contrast across panels.
+- **Single-mark fidelity:** identical mark proportions and construction repeated across every panel, legible as a solid-black silhouette at 16/32/64 px.
+- **Controlled palette & contrast:** one dominant base, neutral ramp, and 1–2 repeating accents with verifiable foreground/background contrast (`≥ 4.5:1` for text labels) and zero stray colors.
+- **Sparse, legible, domain-real text:** exact brand spelling, zero lorem ipsum, zero tiny unreadable copy, and zero generic AI tagline clichés.
+- **Implementation readiness:** every color, type role, spacing ratio, and mark treatment translates directly into DTCG tokens (`pixelcraft-tokens`) and production SVG/raster exports without inventing missing rules.
 
 ## Delivery report
 

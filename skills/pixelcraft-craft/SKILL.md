@@ -30,15 +30,18 @@ Craft is controlled decision-making under constraints. Apply the committed direc
 7. Keep platform translation idiomatic: CSS pixels are not pt/dp/sp/native units; desktop windows are not mobile screens; terminal cells and email clients are not browsers.
 8. Measure a craft choice in its own units: text scaling or terminal cells for hierarchy, actual output/client crop for geometry and color, and input-to-feedback or frame stability for motion. A web corpus range is not a quota for native or exported surfaces.
 
-## Rapid critique checklist
+## Anti-slop craft guard
 
-Before implementation, answer in concrete terms:
+- **No untouched library defaults:** never ship stock framework themes (untouched shadcn zinc, uncalibrated Material purple, default Bootstrap/Tkinter chrome, Inter/Geist everywhere without reason) unless the existing project explicitly locks that system.
+- **No decorative clutter:** ban tinted `40×40` rounded-square icon badges on feature cards, universal `rounded-2xl` + heavy drop shadows, card-inside-card nesting, ambient purple-pink mesh gradients, glowing border beams, pulsing `animate-ping` hero pills, and decorative entrance animations on every scroll block.
+- Hierarchy comes from scale, weight, measure, contrast, whitespace, and alignment—never extra chrome.
 
-- What is the first thing the user should notice, and what visual property makes that happen?
-- Which single element carries the signature? What stays quiet around it?
-- What are the exact semantic color/type/spacing roles? Which raw values are intentionally absent?
-- How does composition change at narrow, wide, text-scaled, RTL, and dense states?
-- What motion communicates causality or feedback? What is its reduced-motion equivalent?
-- What imagery/icon provenance is real, licensed, generated, or missing?
+## Pre-submit checklist
 
-If any answer is “the library default,” verify that default is a deliberate project/system choice rather than unexamined model collapse.
+- [ ] First fixation point and scan path are established by scale, position, spacing, and contrast (not extra borders or shadows).
+- [ ] Exactly one subject-derived signature element carries expression; surrounding chrome stays quiet for the mode.
+- [ ] All color, type, spacing, elevation, and motion decisions map to semantic roles/tokens—zero untouched starter defaults or arbitrary raw-value sprawl.
+- [ ] Composition, type measure, and density adapt cleanly across narrow, wide, text-scaled (`200%`), RTL, dark/light, and dense/empty states.
+- [ ] Motion communicates spatial causality or immediate feedback (`≤ 100ms` ack), avoids `transition: all`, and provides a complete `prefers-reduced-motion` equivalent.
+- [ ] Imagery and icons share one coherent system with verified provenance (real, licensed, generated, or visibly marked user-requested placeholder).
+- [ ] Every visual-craft claim is labeled with its actual evidence (`rendered`, `static`, `model-judgment`, or `not-checked`).

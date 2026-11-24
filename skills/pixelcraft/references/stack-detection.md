@@ -19,8 +19,9 @@ Detect from concrete files; do not infer from repository age, buzzwords, or one 
 | `lit`, custom elements/`.ce`/`shadowRoot` UI | `pixelcraft-web` → `lit-web-components` |
 | `tailwindcss`, `@import "tailwindcss"`, `@theme`, Tailwind config | `pixelcraft-web` → `tailwind` |
 | `@pandacss/*`, `@vanilla-extract/*`, `@stylexjs/*`, `unocss`, `lightningcss`, `cva`, `tamagui` | `pixelcraft-web` → `styling-ecosystem` |
-| `components.json` (shadcn), `@base-ui/react`, `radix-ui`, `react-aria`, `@ark-ui/*`, `@kobalte/*` | `pixelcraft-web` → `component-systems` |
-| Rails/Hotwire, Laravel Blade/Livewire, Inertia.js, Django/Jinja, FastHTML, Phoenix LiveView, Blazor, Go templ | `pixelcraft-web` → `server-rendered` |
+| `components.json` (shadcn), `@base-ui/react`, `radix-ui`, `react-aria`, `@ark-ui/*`, `@zag-js/*`, `@kobalte/*`, `@ariakit/react`, `melt-ui` | `pixelcraft-web` → `component-systems` |
+| `cmdk`, `kbar`, `vaul`, `sonner`, `embla-carousel-*`, `react-day-picker`, `react-resizable-panels`, `pagefind`, `@orama/orama`, `fuse.js`, `react-instantsearch`, `lucide-*`, `@phosphor-icons/*`, `@fontsource/*`, `@unpic/*` | `pixelcraft-web` → `interaction-and-search-primitives` |
+| Rails/Hotwire/ViewComponent/Phlex, Laravel Blade/Livewire/Filament/Flux, Symfony UX (Turbo/LiveComponent/Twig), WordPress Gutenberg/`@wordpress/interactivity`, Inertia.js, Django/Unfold/Ninja/FastAPI+Jinja2, FastHTML, Phoenix LiveView, Blazor (MudBlazor/FluentUI Blazor/Radzen), Go `templ`/Gomponents, Dart Jaspr | `pixelcraft-web` → `server-rendered` |
 | `Cargo.toml` deps `leptos`/`yew`/`dioxus-web`, `Trunk.toml`, `Leptos.toml`, `Dioxus.toml` | `pixelcraft-web` → `leptos-yew` |
 | Kotlin web/Compose Multiplatform `wasmJs`/Kobweb in Gradle project | `pixelcraft-web` → `kotlin-web` |
 | `elm.json` | `pixelcraft-web` → `elm` |
@@ -28,9 +29,9 @@ Detect from concrete files; do not infer from repository age, buzzwords, or one 
 | `.fsproj`, Fable/Feliz/Elmish deps | `pixelcraft-web` → `fsharp-fable` |
 | `build.sbt`, Scala.js/Laminar deps | `pixelcraft-web` → `scala-laminar` |
 | `pom.xml`/Gradle Vaadin/Hilla/Thymeleaf/JTE/Qute deps | `pixelcraft-web` → `java-web` |
-| `gsap`, `motion`, `lenis`, `@rive-app/*`, `dotlottie`, `three`, `@react-three/fiber`, `pixi.js`, `@babylonjs/core`, `playcanvas`, `@threlte/core`, `@tresjs/core`, `<model-viewer>`, `luma.gl` | `pixelcraft-web` → matching motion/3D/shader/creative ref (`gsap`, `motion-react`, `smooth-scroll`, `rive-lottie`, `scene-architecture`, `r3f-integration`, `web-3d-engines`, `rendering-choice`, `shader-workflow`) |
+| `gsap`, `motion`, `lenis`, `@rive-app/*`, `dotlottie`, `three`, `@react-three/fiber`, `@theatre/core`, `@splinetool/react-spline`, Unicorn Studio, `pixi.js`, `@babylonjs/core`, `playcanvas`, `@threlte/core`, `@tresjs/core`, `<model-viewer>`, `luma.gl` | `pixelcraft-web` → matching motion/3D/shader/creative ref (`gsap`, `motion-react`, `smooth-scroll`, `rive-lottie`, `scene-architecture`, `r3f-integration`, `web-3d-engines`, `rendering-choice`, `shader-workflow`) |
 | `hls.js`, `shaka-player`, `dashjs`, `video.js`, `vidstack`, `media-chrome`, `@mux/mux-player`, `wavesurfer.js`, `howler`, `tone` | `pixelcraft-web` → `media-players` (plus `video-media`/`audio-reactive`) |
-| `@tanstack/react-table`, `ag-grid-*`, `@mui/x-data-grid`, `handsontable`, `fullcalendar`, `@tiptap/*`, `lexical`, `@blocknote/*`, `@codemirror/*`, `monaco-editor`, `@xyflow/react`, `tldraw`, `konva` | `pixelcraft-web` → `enterprise-data-ui`, `rich-text-and-code-editors`, or `canvas-and-node-editors` |
+| `@tanstack/react-table`, `@tanstack/react-virtual`, `ag-grid-*`, `@mui/x-data-grid`, `handsontable`, `fullcalendar`, `@tiptap/*`, `prosemirror-*`, `lexical`, `@blocknote/*`, `@codemirror/*`, `monaco-editor`, `@xyflow/react`, `tldraw`, `konva`, `@dnd-kit/*`, `@atlaskit/pragmatic-drag-and-drop` | `pixelcraft-web` → `enterprise-data-ui`, `rich-text-and-code-editors`, or `canvas-and-node-editors` |
 | `yjs`, `@automerge/*`, `@liveblocks/*`, `rxdb`, `@rocicorp/zero`, `@electric-sql/*`, `@tanstack/db`, `@powersync/*`, `jazz-tools`, `@instantdb/*`, `convex` | `pixelcraft-web` → `local-first-sync` |
 | `better-auth`, `@clerk/*`, `next-auth`, `@stripe/react-stripe-js`, `@simplewebauthn/*`, `@uppy/*`, `filepond`, `uploadthing` | `pixelcraft-web` → `auth-and-checkout-ui` or `file-upload-media-ui` |
 
@@ -38,7 +39,7 @@ Detect from concrete files; do not infer from repository age, buzzwords, or one 
 
 | Signal | Platform skill → framework reference |
 |---|---|
-| SwiftUI imports/types, `Package.swift`, Xcode project | `pixelcraft-mobile` → `swiftui` |
+| SwiftUI imports/types, `ComposableArchitecture` (TCA), `Package.swift`, Xcode project | `pixelcraft-mobile` → `swiftui` |
 | UIKit imports/view controllers/storyboards | `pixelcraft-mobile` → `uikit` |
 | `build.gradle(.kts)` Compose dependencies, `@Composable` | `pixelcraft-mobile` → `jetpack-compose` |
 | `pubspec.yaml`, Flutter imports | `pixelcraft-mobile` → `flutter` |
@@ -46,6 +47,7 @@ Detect from concrete files; do not infer from repository age, buzzwords, or one 
 | `@lynx-js/react`, `@lynx-js/rspeedy`, `lynx.config.*` | `pixelcraft-mobile` → `lynxjs` |
 | Kotlin Multiplatform/Compose Multiplatform source sets | `pixelcraft-mobile` → `kotlin-multiplatform` |
 | `@nativescript/core`, `nativescript.config.*`, `skip.yml`/`SkipUI` | `pixelcraft-mobile` → `nativescript-and-skip` |
+| HarmonyOS ArkUI/ArkTS (`.ets`, `oh-package.json5`), Elixir LiveView Native (`.swiftui.heex`/`.jetpack.heex`), Taro (`@tarojs/*`), `uni-app` (`pages.json`) | `pixelcraft-mobile` → `harmonyos-and-emerging-mobile` |
 | Ionic/Capacitor config/dependencies | `pixelcraft-mobile` → `ionic-capacitor` |
 | MAUI `.csproj`/XAML/AppShell references | `pixelcraft-mobile` → `dotnet-maui` |
 | `flet` controls/page | `pixelcraft-mobile` → `flet` |
@@ -57,7 +59,7 @@ Detect from concrete files; do not infer from repository age, buzzwords, or one 
 |---|---|
 | `streamlit` import/dependency or `.streamlit/config.toml` | `pixelcraft-data-apps` → `streamlit` |
 | `gradio`/`gr.Blocks`/`gr.Interface`/`gr.ChatInterface` | `pixelcraft-data-apps` → `gradio` |
-| `marimo`/`import marimo as mo`, `solara`, `mesop`, `taipy` | `pixelcraft-data-apps` → `reactive-data-apps` |
+| `marimo`/`import marimo as mo`, `solara`, `mesop`, `taipy`, `polars`/`narwhals` reactive pipelines | `pixelcraft-data-apps` → `reactive-data-apps` |
 | `chainlit`/`.chainlit/config.toml`, `python-fasthtml`, `preswald`, Retool/Appsmith/ToolJet/Budibase configs | `pixelcraft-data-apps` → `ai-and-internal-data-apps` |
 | `reflex`/`rx.App` | `pixelcraft-data-apps` → `reflex` |
 | `nicegui`/`from nicegui import ui` | `pixelcraft-data-apps` → `nicegui` |
@@ -76,14 +78,14 @@ Detect from concrete files; do not infer from repository age, buzzwords, or one 
 |---|---|
 | `src-tauri/tauri.conf.json` or Tauri dependency | `pixelcraft-desktop` → `tauri` |
 | Electron main/preload/package config, `electrobun.config.*` | `pixelcraft-desktop` → `electron` |
-| Qt `.pro`/CMake Qt modules/PySide6/PyQt6/`.qml` | `pixelcraft-desktop` → `qt-pyside-qml` |
+| Qt `.pro`/CMake Qt modules/PySide6/PyQt6/`.ui`/`.qml`, brownfield `customtkinter`/`dearpygui` (reject greenfield `tkinter`) | `pixelcraft-desktop` → `qt-pyside-qml` |
 | WinUI/WPF `.csproj`/XAML/WindowsAppSDK references | `pixelcraft-desktop` → `winui-wpf` |
 | AppKit/Cocoa or macOS SwiftUI `WindowGroup`/`MenuBarExtra` targets | `pixelcraft-desktop` → `appkit` |
 | GTK4/libadwaita build definitions/imports/Blueprint `.blp` | `pixelcraft-desktop` → `gtk` |
 | Avalonia `.csproj`/AXAML references | `pixelcraft-desktop` → `avalonia` |
-| `gpui`, `egui`, `slint`, `dioxus`, `iced`, `floem`, `makepad`, `xilem`, `freya`, `relm4` in Rust deps | `pixelcraft-desktop` → `rust-gui` |
+| `gpui`, `egui`, `slint`, `dioxus`, `iced`, `libcosmic`, `vizia`, `floem`, `makepad`, `xilem`, `freya`, `relm4` in Rust deps | `pixelcraft-desktop` → `rust-gui` |
 | `pom.xml`/Gradle JavaFX, Swing/FlatLaf UI entry points/FXML | `pixelcraft-desktop` → `javafx-swing` |
-| `CMakeLists.txt` Qt C++/Dear ImGui/wxWidgets/FLTK, Zig `dvui`/C `clay`/`raygui` | `pixelcraft-desktop` → `cpp-gui` |
+| `CMakeLists.txt` Qt C++/JUCE (VST3/AU/CLAP)/Dear ImGui/wxWidgets/FLTK/GTKmm/Nuklear/Ultralight, Zig `dvui`/C `clay`/`raygui` | `pixelcraft-desktop` → `cpp-gui` |
 | `go.mod` Fyne/Wails (v2/v3)/Gio deps | `pixelcraft-desktop` → `go-gui` |
 | Uno Platform `.csproj`/XAML/config references | `pixelcraft-desktop` → `uno-platform` |
 
@@ -164,7 +166,7 @@ Detect from concrete files; do not infer from repository age, buzzwords, or one 
 
 | Signal | Platform skill → framework reference |
 |---|---|
-| `d3`, `@observablehq/plot`, `vega-lite`, `echarts`, `plotly`, `chart.js`, `recharts`, `@visx/*`, `@nivo/*`, `highcharts`, `uplot`, `lightweight-charts`, `@antv/*`, `maplibre-gl`, `mapbox-gl`, `deck.gl`, `leaflet`, `pmtiles`, `@turf/*`, `cytoscape`, `sigma`, `cosmograph`, `@finos/perspective`, `@uwdata/mosaic-*`, `matplotlib`/`seaborn`/`altair`/`bokeh`/`holoviews`/`datashader`, `ggplot2`, `Makie`, Swift Charts, Compose Vico | `pixelcraft-dataviz` → `libraries`, `maps-geospatial`, or `realtime-graphs-maps-scale` (alongside the platform skill) |
+| `d3`, `@observablehq/plot`, `vega-lite`, `echarts`, `plotly`, `chart.js`, `recharts`, `@visx/*`, `@nivo/*`, `highcharts`, `uplot`, `lightweight-charts`, `@antv/*`, `@grafana/ui`/`@grafana/scenes`, Superset/Metabase embeds, `maplibre-gl`, `mapbox-gl`, `deck.gl`, `leaflet`, `pmtiles`, `@turf/*`, `cytoscape`, `sigma`, `cosmograph`, `@finos/perspective`, `@uwdata/mosaic-*`, `matplotlib`/`seaborn`/`altair`/`bokeh`/`holoviews`/`datashader`, `ggplot2`, `Makie`, Swift Charts, Compose Vico | `pixelcraft-dataviz` → `libraries`, `maps-geospatial`, or `realtime-graphs-maps-scale` (alongside the platform skill) |
 
 ## Game UI signals
 
@@ -172,13 +174,13 @@ Detect from concrete files; do not infer from repository age, buzzwords, or one 
 |---|---|
 | `ProjectSettings/`, `.unity`, UXML/USS/UI Builder assets | `pixelcraft-game-ui` → `unity-ui-toolkit` |
 | Unity `Canvas`/`CanvasScaler`/`RectTransform`/TextMeshPro (`.prefab`, `TMPro`) | `pixelcraft-game-ui` → `unity-ugui` |
-| `project.godot`, `.tscn`, `.gd`, Control/Theme resources | `pixelcraft-game-ui` → `godot` |
+| `project.godot`, `.tscn`, `.gd`, Godot C# `.csproj`, Control/Theme resources | `pixelcraft-game-ui` → `godot` |
 | `.uproject`, UMG/Slate/CommonUI/MVVM assets or references | `pixelcraft-game-ui` → `unreal-umg` |
 | HUD/controller/safe-area/certification/accessibility question | `pixelcraft-game-ui` → `hud-principles` |
 | `main.lua` + `conf.lua`, `love.*` calls | `pixelcraft-game-ui` → `love2d` |
 | `Cargo.toml` with `bevy` dependency | `pixelcraft-game-ui` → `bevy` |
 | MonoGame `.csproj`/Content Pipeline/Gum/Myra/FontStashSharp | `pixelcraft-game-ui` → `monogame` |
-| `phaser`, `@pixi/ui`, `excalibur`, `kaplay`, NoesisGUI, RmlUi, Coherent Gameface, Dear ImGui HUD, Raylib `raygui`, SDL3, Defold, Cocos Creator | `pixelcraft-game-ui` → `web-and-middleware-game-ui` |
+| `phaser`, `@pixi/ui`, `excalibur`, `kaplay`, Go `ebitengine`/`ebitenui`, Rust `macroquad`, Dart `flame`, Python `pygame`/`arcade`, NoesisGUI, RmlUi, Coherent Gameface, Dear ImGui HUD, Raylib `raygui`, SDL3, Defold, Cocos Creator | `pixelcraft-game-ui` → `web-and-middleware-game-ui` |
 
 ## Design handoff and brand identity signals
 
@@ -193,26 +195,26 @@ Detect from concrete files; do not infer from repository age, buzzwords, or one 
 
 | Language | Frameworks/surfaces | Skill → reference |
 |---|---|---|
-| C / C++ | Qt/QML, Dear ImGui, wxWidgets, FLTK, Clay, raygui, LVGL, FTXUI, Notcurses, RmlUi, NoesisGUI, SDL3, Raylib | `pixelcraft-desktop` → `cpp-gui`; `pixelcraft-tui` → `extended-tui-toolkits`; `pixelcraft-constrained` → `specialized-hardware`; `pixelcraft-game-ui` → `web-and-middleware-game-ui` |
-| C# | Blazor, MAUI, WinUI/WPF, Avalonia, Uno, Terminal.Gui/Spectre.Console, Unity uGUI/UI Toolkit, MonoGame | `pixelcraft-web` → `server-rendered`; `pixelcraft-mobile` → `dotnet-maui`; `pixelcraft-desktop` → `winui-wpf`/`avalonia`/`uno-platform`; `pixelcraft-tui` → `extended-tui-toolkits`; `pixelcraft-game-ui` → `unity-ugui`/`unity-ui-toolkit`/`monogame` |
+| C / C++ | Qt/QML, JUCE (VST3/AU/CLAP), Dear ImGui, wxWidgets, FLTK, GTKmm, Nuklear, Ultralight, Clay, raygui, LVGL, FTXUI, Notcurses, RmlUi, NoesisGUI, SDL3, Raylib | `pixelcraft-desktop` → `cpp-gui`; `pixelcraft-tui` → `extended-tui-toolkits`; `pixelcraft-constrained` → `specialized-hardware`; `pixelcraft-game-ui` → `web-and-middleware-game-ui` |
+| C# | Blazor (MudBlazor/FluentUI Blazor/Radzen), MAUI, WinUI/WPF, Avalonia, Uno, Terminal.Gui/Spectre.Console, Unity uGUI/UI Toolkit, Godot C#, MonoGame | `pixelcraft-web` → `server-rendered`; `pixelcraft-mobile` → `dotnet-maui`; `pixelcraft-desktop` → `winui-wpf`/`avalonia`/`uno-platform`; `pixelcraft-tui` → `extended-tui-toolkits`; `pixelcraft-game-ui` → `unity-ugui`/`unity-ui-toolkit`/`godot`/`monogame` |
 | Clojure | ClojureScript/Reagent/re-frame/UIx/Helix | `pixelcraft-web` → `clojurescript` |
-| Dart | Flutter mobile/desktop/web | `pixelcraft-mobile` → `flutter`; pair `pixelcraft-desktop` or `pixelcraft-web` checks by primary surface |
+| Dart | Flutter mobile/desktop/web, Flame (2D game), Jaspr (web) | `pixelcraft-mobile` → `flutter`; `pixelcraft-game-ui` → `web-and-middleware-game-ui`; `pixelcraft-web` → `server-rendered` |
 | Elm | Elm Browser UI | `pixelcraft-web` → `elm` |
-| Elixir | Phoenix LiveView | `pixelcraft-web` → `server-rendered` |
+| Elixir | Phoenix LiveView, LiveView Native (SwiftUI/Compose) | `pixelcraft-web` → `server-rendered`; `pixelcraft-mobile` → `harmonyos-and-emerging-mobile` |
 | F# | Fable/Feliz/Elmish, .NET desktop | `pixelcraft-web` → `fsharp-fable`; desktop by actual XAML framework |
-| Go | templ/templates, Bubble Tea/Lip Gloss/Huh/tview, Fyne/Wails (v2/v3)/Gio | `pixelcraft-web` → `server-rendered`; `pixelcraft-tui` → `bubbletea-lipgloss`/`extended-tui-toolkits`; `pixelcraft-desktop` → `go-gui` |
+| Go | templ/Gomponents/htmx, Bubble Tea/Lip Gloss/Huh/tview, Fyne/Wails (v2/v3)/Gio, Ebitengine | `pixelcraft-web` → `server-rendered`; `pixelcraft-tui` → `bubbletea-lipgloss`/`extended-tui-toolkits`; `pixelcraft-desktop` → `go-gui`; `pixelcraft-game-ui` → `web-and-middleware-game-ui` |
 | Java | Vaadin/Hilla/Thymeleaf/JTE/Qute, JavaFX/Swing/FlatLaf | `pixelcraft-web` → `java-web`; `pixelcraft-desktop` → `javafx-swing` |
 | Julia | Genie/Stipple, Makie | `pixelcraft-data-apps` → `julia-genie`; `pixelcraft-dataviz` → `libraries` |
 | Kotlin | Compose Android/TV/Wear/XR, KMP, Compose Web `wasmJs`/Kobweb, JetBrains Jewel/UI DSL | `pixelcraft-mobile` → `jetpack-compose`/`kotlin-multiplatform`; `pixelcraft-web` → `kotlin-web`; `pixelcraft-constrained` → `tv-wearables`; `pixelcraft-spatial` → `platforms`; `pixelcraft-extensions` → `ide-and-saas-plugins` |
 | Lua | LÖVE2D, Defold | `pixelcraft-game-ui` → `love2d`/`web-and-middleware-game-ui` |
-| PHP | Laravel Blade/Livewire/Inertia | `pixelcraft-web` → `server-rendered` |
-| Python | marimo/Solara/Mesop/Taipy/Streamlit/Gradio/Chainlit/Reflex/NiceGUI/Dash/Panel/Shiny/Jupyter/AnyWidget/FastHTML; Django; Flet/Kivy/KivyMD; Qt/PySide6; Textual/Rich/prompt_toolkit; WeasyPrint/ReportLab | `pixelcraft-data-apps` matching ref; `pixelcraft-web` → `server-rendered`; `pixelcraft-mobile` → `flet`/`kivy`; `pixelcraft-desktop` → `qt-pyside-qml`; `pixelcraft-tui` → `textual`/`rich`/`extended-tui-toolkits`; `pixelcraft-document` → `pdf-tools` |
+| PHP | Laravel Blade/Livewire/Filament/Inertia, Symfony UX (Turbo/LiveComponent/Twig), WordPress Gutenberg | `pixelcraft-web` → `server-rendered` |
+| Python | marimo/Solara/Mesop/Taipy/Streamlit/Gradio/Chainlit/Reflex/NiceGUI/Dash/Panel/Shiny/Jupyter/AnyWidget/FastHTML (Polars/Narwhals); Django/Unfold/FastAPI+Jinja2; Flet/Kivy; Qt/PySide6/PyQt6 (CustomTkinter/Dear PyGui brownfield); Textual/Rich/prompt_toolkit; Pygame/Arcade; WeasyPrint/ReportLab | `pixelcraft-data-apps` matching ref; `pixelcraft-web` → `server-rendered`; `pixelcraft-mobile` → `flet`/`kivy`; `pixelcraft-desktop` → `qt-pyside-qml`; `pixelcraft-tui` → `textual`/`rich`/`extended-tui-toolkits`; `pixelcraft-game-ui` → `web-and-middleware-game-ui`; `pixelcraft-document` → `pdf-tools` |
 | R | Shiny/bslib, ggplot2, Quarto | `pixelcraft-data-apps` → `r-shiny`; `pixelcraft-dataviz` → `libraries`; `pixelcraft-document` → `pdf-tools` |
-| Ruby | Rails/Hotwire/Turbo 8/Inertia | `pixelcraft-web` → `server-rendered` |
-| Rust | Leptos/Yew/Dioxus Web, GPUI/Slint/Dioxus/Iced/egui/Floem/Xilem/Relm4, Ratatui, Bevy, Typst, `embedded-graphics`/Slint MCU | `pixelcraft-web` → `leptos-yew`; `pixelcraft-desktop` → `rust-gui`; `pixelcraft-tui` → `ratatui`; `pixelcraft-game-ui` → `bevy`; `pixelcraft-document` → `pdf-tools`; `pixelcraft-constrained` → `specialized-hardware` |
+| Ruby | Rails/Hotwire/Turbo 8/ViewComponent/Phlex/Inertia | `pixelcraft-web` → `server-rendered` |
+| Rust | Leptos/Yew/Dioxus Web, GPUI/Slint/Dioxus/Iced/`libcosmic`/Vizia/egui/Floem/Xilem/Relm4, Ratatui, Bevy/Macroquad, Typst, `embedded-graphics`/Slint MCU | `pixelcraft-web` → `leptos-yew`; `pixelcraft-desktop` → `rust-gui`; `pixelcraft-tui` → `ratatui`; `pixelcraft-game-ui` → `bevy`/`web-and-middleware-game-ui`; `pixelcraft-document` → `pdf-tools`; `pixelcraft-constrained` → `specialized-hardware` |
 | Scala | Laminar/Scala.js | `pixelcraft-web` → `scala-laminar` |
-| Swift | SwiftUI/UIKit, macOS AppKit/SwiftUI, visionOS, Skip, tvOS/watchOS, Siri App Intents | `pixelcraft-mobile` → `swiftui`/`uikit`/`nativescript-and-skip`; `pixelcraft-desktop` → `appkit`; `pixelcraft-spatial` → `platforms`; `pixelcraft-constrained` → `tv-wearables`/`voice-ui` |
-| TS/JS | React/Next/RR7/TanStack Start, Vue/Nuxt, Svelte, Solid, Angular, Astro, Qwik, Preact/Fresh/Hono, htmx/Alpine/Datastar, Lit, RN/Expo/LynxJS/NativeScript/Ionic, Tauri/Electron/Electrobun, Ink/OpenTUI/Clack, Observable/Evidence, React Email/Maizzle/MJML, Slidev/PDF.js/PptxGenJS, Satori/Remotion, AI SDK/assistant-ui/CopilotKit, WXT/VS Code/Raycast/Figma, Phaser/PixiJS | route by surface (`pixelcraft-web`, `pixelcraft-mobile`, `pixelcraft-desktop`, `pixelcraft-tui`, `pixelcraft-data-apps`, `pixelcraft-email`, `pixelcraft-document`, `pixelcraft-media`, `pixelcraft-chat-ui`, `pixelcraft-extensions`, `pixelcraft-game-ui`) |
+| Swift | SwiftUI/TCA/UIKit, macOS AppKit/SwiftUI, visionOS, Skip, tvOS/watchOS, Siri App Intents | `pixelcraft-mobile` → `swiftui`/`uikit`/`nativescript-and-skip`; `pixelcraft-desktop` → `appkit`; `pixelcraft-spatial` → `platforms`; `pixelcraft-constrained` → `tv-wearables`/`voice-ui` |
+| TS/JS / ArkTS | React/Next/RR7/TanStack Start, Vue/Nuxt, Svelte, Solid, Angular, Astro, Qwik, Preact/Fresh/Hono, htmx/Alpine/Datastar, Lit, RN/Expo/LynxJS/NativeScript/Ionic/HarmonyOS ArkUI/Taro/uni-app, Tauri/Electron/Electrobun, Ink/OpenTUI/Clack, Observable/Evidence, React Email/Maizzle/MJML, Slidev/PDF.js/PptxGenJS, Satori/Remotion, AI SDK/assistant-ui/CopilotKit, WXT/VS Code/Raycast/Figma, Phaser/PixiJS | route by surface (`pixelcraft-web`, `pixelcraft-mobile`, `pixelcraft-desktop`, `pixelcraft-tui`, `pixelcraft-data-apps`, `pixelcraft-email`, `pixelcraft-document`, `pixelcraft-media`, `pixelcraft-chat-ui`, `pixelcraft-extensions`, `pixelcraft-game-ui`) |
 | Zig | DVUI, C interop (`clay`/`raygui`/`SDL3`), Electrobun host | `pixelcraft-desktop` → `cpp-gui`/`electron`; verify current library APIs in `pixelcraft-plan` |
 
 ## Existing system inventory
