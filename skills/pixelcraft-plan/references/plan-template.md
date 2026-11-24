@@ -5,6 +5,7 @@
 
 ## Mode and scope
 - Planning mode: brownfield / greenfield / hybrid
+- Task route: new project / edit or fix / redesign or rebuild / behavior-preserving refactor
 - Task:
 - Date/agent:
 - Prior plan change/waiver:
@@ -76,6 +77,11 @@
 - Available here: rendered / static / device / browser / simulator / snapshot / CI
 - Commands/tools:
 - Cannot verify here (`not-checked`):
+
+## Existing behavior and replacement boundaries
+| Contract (entry point, flow, content, data, accessibility/localization, etc.) | Inspected source and current evidence | Preserve or authorized change | Baseline and regression check |
+|---|---|---|---|
+|  |  |  |  |
 
 ## Risks and open questions
 - Risks:

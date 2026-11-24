@@ -20,6 +20,8 @@ Classify the task before acting:
 
 Do not infer greenfield merely because the current folder is empty; inspect parent context, user brief, linked assets, and whether an existing product/database/API constrains the choice.
 
+Record the task route separately: new project, edit/fix, redesign/rebuild, or behavior-preserving refactor. For a hybrid, map existing contracts first and constrain the new surface to those contracts.
+
 ## Brownfield workflow
 
 1. **Scope the read.** Enumerate repository roots, packages/apps, generated/vendor directories, and ownership boundaries. Do not skim only `package.json`.
@@ -29,6 +31,8 @@ Do not infer greenfield merely because the current folder is empty; inspect pare
 5. **Map existing authority.** Decide whether tokens/components/conventions are authoritative, partial, inconsistent, or absent. Existing project decisions outrank Pixelcraft taste.
 6. **Check resolved versions and APIs.** Before using a version-sensitive API or changing a dependency, apply [references/stack-freshness.md](references/stack-freshness.md) to the affected package/runtime and API. Use the installed or locked version unless an upgrade is in scope.
 7. **Write `.pixelcraft/plan.md`** using [references/plan-template.md](references/plan-template.md). Include exact platform skill/framework reference routing and available verification capabilities.
+
+Before modifying an existing surface, read the affected entry point, implementation, shared conventions/tokens, state or data flow, resolved dependencies and relevant tests or fixtures. Record inspected paths or symbols and what each establishes. Capture the current task outcome or failure where tools allow; otherwise record which baseline is `not-checked`. For a redesign or rebuild, map what must be preserved, what may change, and the regression check for each material contract. An implementation replacement is not authorization to remove existing behavior.
 
 ## Greenfield workflow
 

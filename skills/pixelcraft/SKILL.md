@@ -30,6 +30,7 @@ When the user asks to implement an approved design, do **not** run divergence or
 
 - Read [references/stack-detection.md](references/stack-detection.md) when identifying the frontend stack, rendering surface, input modality, or existing design system.
 - Read [references/design-brief.md](references/design-brief.md) during framing whenever the work changes a user-facing surface.
+- Read [references/workflow-checkpoints.md](references/workflow-checkpoints.md) before planning; it selects the task route and defines what must exist before advancing each phase.
 - Read [references/surface-acceptance.md](references/surface-acceptance.md) before choosing platform-specific acceptance evidence.
 - Read [references/floor.md](references/floor.md) before implementation and again before reporting; every rule is mandatory unless the user explicitly waives it.
 - Read [references/report-template.md](references/report-template.md) before the final response or handoff.
@@ -51,7 +52,7 @@ Hybrid surfaces pick one primary mode per screen or region. Do not let a persuas
 
 ## The Pixelcraft loop
 
-0. **Plan** — use the `pixelcraft-plan` skill first. In brownfield work, read the repository systematically and write `.pixelcraft/plan.md`; in greenfield work, intake constraints and justify stack selection with a weighted matrix before any visual direction. If `pixelcraft-plan` is not installed, perform a minimal inline fallback before continuing: map repo/framework evidence, make or record the stack decision, create/update `.pixelcraft/plan.md` when writable, and label the reduced plan `not-checked` rather than pretending full planning happened.
+0. **Plan** — use the `pixelcraft-plan` skill first. In brownfield work, read the repository systematically and write `.pixelcraft/plan.md`; in greenfield work, intake constraints and justify stack selection with a weighted matrix before any visual direction. If `pixelcraft-plan` is not installed, meet the applicable Plan checkpoint inline and record missing evidence as `not-checked`; a missing skill is not permission to skip planning.
 1. **Frame** — detect stack/surface/input modality; identify audience, job-to-be-done, real material inventory, constraints, locale scope, and existing design system. Create or update the design brief artifact using `references/design-brief.md`; classify facts as user-provided, repo-observed, artifact-observed, research/analytics, assumption, or unknown. Ask only for information that materially changes the design.
 2. **Diverge** — only for undecided visual scope. Use the `pixelcraft-direction` skill to generate 3–5 far-apart directions with probabilities, score them, select one, record why the others lost, and inspect repetition history. Do not rediverge an approved design; handoff preserves that intent. For brand-kit, identity-board, logo-system, moodboard, or visual-identity image generation, use the `pixelcraft-brandkit` skill by name and its 2–3 brand-world divergence flow before image prompting.
 3. **Specify** — produce the direction card; use `pixelcraft-tokens` for DTCG tokens, `pixelcraft-handoff` when translating Figma/design-system artifacts into implementation, `pixelcraft-ux` for flows plus the state matrix, `pixelcraft-patterns` when the work matches a named product pattern, and `pixelcraft-dataviz` when the work communicates quantitative data, dashboards, maps, graphs, or visualization-heavy interfaces. Do not start with component trivia before direction and constraints exist.
@@ -60,6 +61,8 @@ Hybrid surfaces pick one primary mode per screen or region. Do not let a persuas
 6. **Report** — decisions, verification evidence, unresolved risks, and waived items using the report contract.
 
 One repair round is normal. Use at most three for reproducible, measurable failures, then report unresolved defects as OPEN and state unchecked scope. A command with a suppressed failure is a probe, not evidence of a passing check.
+
+Before advancing, record the applicable phase result and its evidence using the workflow checkpoints. Reuse current artifacts rather than making new copies. If a prerequisite is missing, resolve it before dependent work or report the blocker; a skill name, unchecked box, or polished output is not phase evidence.
 
 ## Scoped work and stopping
 
