@@ -1,0 +1,79 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Halden Roasters (with Pixelcraft)</title>
+<link rel="stylesheet" href="../../fonts/gallery.css">
+<style>
+  :root {
+    --roast: #16120e; --roast-2: #1f1912; --rule: #33291d;
+    --ink: #efe6d6; --ink-dim: #a3977f; --amber: #e9a23b; --on-amber: #16120e;
+    --display: "Barlow Condensed", "Arial Narrow", sans-serif;
+    --body: "Work Sans", system-ui, sans-serif;
+    --data: "IBM Plex Mono", ui-monospace, monospace;
+  }
+  * { box-sizing: border-box; }
+  body { margin: 0; background: var(--roast); color: var(--ink); font-family: var(--body); }
+  a { color: inherit; }
+  header { display: flex; justify-content: space-between; align-items: baseline; padding: 28px 64px; border-bottom: 1px solid var(--rule); font-family: var(--data); font-size: 13px; color: var(--ink-dim); }
+  header strong { font-family: var(--display); font-size: 26px; letter-spacing: .06em; color: var(--ink); font-weight: 800; }
+  nav a { margin-inline-start: 28px; text-decoration: none; }
+  nav a:hover { color: var(--ink); }
+  main { display: grid; grid-template-columns: 1.1fr 1fr; gap: 72px; padding: 44px 64px 0; align-items: start; }
+  .lot { font-family: var(--data); font-size: 13px; color: var(--amber); margin: 0; }
+  h1 { font-family: var(--display); font-weight: 800; text-transform: uppercase; font-size: 108px; line-height: .88; margin: 20px 0 26px; max-width: 9.5em; letter-spacing: -.005em; }
+  .lede { font-size: 19px; line-height: 1.55; color: var(--ink-dim); max-width: 44ch; margin: 0 0 32px; }
+  .cta { display: inline-flex; align-items: center; gap: 14px; background: var(--amber); color: var(--on-amber); padding: 18px 28px; font-weight: 600; font-size: 17px; text-decoration: none; }
+  .cta:focus-visible { outline: 3px solid var(--ink); outline-offset: 3px; }
+  .cta span { font-family: var(--data); font-weight: 500; }
+  .note { font-family: var(--data); font-size: 13px; color: var(--ink-dim); margin-top: 18px; }
+  figure { margin: 0; }
+  svg { width: 100%; height: auto; display: block; }
+  figcaption { font-family: var(--data); font-size: 12px; color: var(--ink-dim); margin-top: 8px; }
+  dl { grid-column: 1 / -1; display: grid; grid-template-columns: repeat(4, 1fr); margin: 8px 0 0; border-top: 1px solid var(--rule); }
+  dl div { padding: 22px 0 26px; border-inline-end: 1px solid var(--rule); padding-inline: 24px; }
+  dl div:first-child { padding-inline-start: 0; }
+  dl div:last-child { border-inline-end: 0; }
+  dt { font-family: var(--data); font-size: 12px; color: var(--ink-dim); text-transform: uppercase; letter-spacing: .08em; }
+  dd { margin: 8px 0 0; font-family: var(--display); font-size: 30px; font-weight: 600; }
+</style>
+</head>
+<body>
+  <header>
+    <strong>HALDEN ROASTERS</strong>
+    <nav aria-label="Primary"><a href="#">This week</a><a href="#">Archive</a><a href="#">Subscribe</a><a href="#">Wholesale</a></nav>
+  </header>
+  <main>
+    <section>
+      <p class="lot">Lot 214 · Huila, Colombia · washed Caturra</p>
+      <h1>Roasted Tuesday. On your counter Friday.</h1>
+      <p class="lede">Grown at 1,850 m and roasted light to keep the panela and red apple. Sixty bags this week, then it is gone.</p>
+      <a class="cta" href="#">Reserve 250 g <span>$18</span></a>
+      <p class="note">Ships Friday in compostable paper. Cancel a subscription in one click.</p>
+    </section>
+    <figure>
+      <svg viewBox="0 0 520 380" role="img" aria-labelledby="curve-t curve-d">
+        <title id="curve-t">Roast curve for lot 214</title>
+        <desc id="curve-d">Bean temperature falls to a turning point near 1 minute 30, then climbs through yellowing at 4:30 and first crack at 8:50, dropping at 10:40 at 205 degrees Celsius. A dashed line shows the rate of rise, which slows steadily.</desc>
+        <g stroke="#33291d" stroke-width="1">
+          <line x1="40" x2="510" y1="40" y2="40"/><line x1="40" x2="510" y1="120" y2="120"/><line x1="40" x2="510" y1="200" y2="200"/><line x1="40" x2="510" y1="280" y2="280"/><line x1="40" x2="510" y1="340" y2="340"/>
+        </g>
+        <path d="M40 100 C 80 250, 120 292, 170 280 S 270 210, 330 168 S 450 80, 508 56" fill="none" stroke="#e9a23b" stroke-width="4"/>
+        <path d="M40 330 C 140 318, 260 250, 508 214" fill="none" stroke="#a3977f" stroke-width="2" stroke-dasharray="6 6"/>
+        <g fill="#efe6d6"><rect x="164" y="274" width="12" height="12"/><rect x="324" y="162" width="12" height="12"/><rect x="502" y="50" width="12" height="12"/></g>
+        <g font-family="IBM Plex Mono, monospace" font-size="14" fill="#efe6d6" text-anchor="end">
+          <text x="150" y="262">yellowing 4:30</text><text x="310" y="150">first crack 8:50</text><text x="490" y="38">drop 10:40 · 205°C</text>
+        </g>
+      </svg>
+      <figcaption>Bean temperature (amber) and rate of rise (dashed). Lot 214, 12 kg drum.</figcaption>
+    </figure>
+    <dl>
+      <div><dt>Process</dt><dd>Washed</dd></div>
+      <div><dt>Altitude</dt><dd>1,850 m</dd></div>
+      <div><dt>Roast</dt><dd>Light · 10:40</dd></div>
+      <div><dt>In the cup</dt><dd>Panela, red apple</dd></div>
+    </dl>
+  </main>
+</body>
+</html>

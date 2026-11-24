@@ -1,0 +1,88 @@
+import test from "node:test";
+import assert from "node:assert/strict";
+import { readFile, readdir, stat } from "node:fs/promises";
+import { fileURLToPath } from "node:url";
+import { resolve, dirname } from "node:path";
+
+const root = resolve(dirname(fileURLToPath(import.meta.url)), "..");
+const read = (file) => readFile(resolve(root, file), "utf8");
+
+test("showcase identities, version and install package match the authoritative pack", async () => {
+  const product = JSON.parse(await read("../package.json"));
+  const site = JSON.parse(await read("package.json"));
+  const data = await read("src/data.ts");
+  assert.equal(site.version, product.version);
+  assert.ok(data.includes(`export const VERSION = "${product.version}"`));
+  assert.ok(data.includes(`export const NPM_PKG = "${product.name}"`));
+  const actual = [...data.matchAll(/name:\s*["'](pixelcraft-[a-z-]+)["']/g)]
+    .map((m) => m[1])
+    .sort();
+  const expected = (await readdir(resolve(root, "../skills")))
+    .filter((s) => s.startsWith("pixelcraft-"))
+    .sort();
+  assert.deepEqual(actual, expected);
+});
+
+test("gallery metadata matches source scanner output, and all paired assets exist", async () => {
+  const { execFileSync } = await import("node:child_process");
+  const meta = JSON.parse(await read("src/generated/gallery.json"));
+  for (const [id, pair] of Object.entries(meta.items)) {
+    for (const side of ["before", "after"]) {
+      const path = resolve(root, `public/gallery/${id}/${side}.html`);
+      const scan = JSON.parse(
+        execFileSync(
+          process.execPath,
+          [
+            resolve(root, "../skills/pixelcraft-review/scripts/slop-scan.mjs"),
+            path,
+            "--json",
+          ],
+          { encoding: "utf8" },
+        ),
+      );
+      assert.equal(pair[side].score, scan.score, `${id}/${side} score`);
+      assert.deepEqual(
+        pair[side].findings.map((f) => [f.rule, f.severity, f.line]),
+        scan.findings.map((f) => [f.rule, f.severity, f.line]),
+        `${id}/${side} findings`,
+      );
+      assert.ok(
+        (await stat(resolve(root, `public/gallery/${id}/${side}.webp`))).size >
+          1000,
+      );
+    }
+  }
+});
+
+test("shipped source has no host scaffold, remote font or superseded 3D dependency", async () => {
+  async function files(path) {
+    const out = [];
+    for (const e of await readdir(resolve(root, path), {
+      withFileTypes: true,
+    })) {
+      if (e.isDirectory()) out.push(...(await files(`${path}/${e.name}`)));
+      else if (/\.(tsx?|css|html|json)$/.test(e.name))
+        out.push(`${path}/${e.name}`);
+    }
+    return out;
+  }
+  for (const file of [
+    "package.json",
+    "index.html",
+    "vite.config.ts",
+    ...(await files("src")),
+    ...(await files("public")),
+  ]) {
+    const source = await read(file);
+    assert.doesNotMatch(
+      source,
+      /make-kit-plugin|fonts\.googleapis\.com|fonts\.gstatic\.com|@react-three|["']three["']/i,
+      file,
+    );
+  }
+  const shell = await read("dist/index.html");
+  assert.match(shell, /lang="en"/);
+  assert.match(shell, /<noscript\s*>/);
+  for (const match of shell.matchAll(/(?:src|href)="(\/assets\/[^"#]+)"/g))
+    await stat(resolve(root, `dist${match[1]}`));
+});
