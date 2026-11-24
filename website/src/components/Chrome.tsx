@@ -40,7 +40,6 @@ function Progress() {
 }
 
 export function Header() {
-  const { paused, setPaused } = useMotionPause();
   const [open, setOpen] = useState(false);
   const [scrolled, setScrolled] = useState(false);
   const btnRef = useRef<HTMLButtonElement>(null);
@@ -107,21 +106,9 @@ export function Header() {
             ))}
           </ul>
         </nav>
-        <button
-          type="button"
-          onClick={() => setPaused(!paused)}
-          aria-pressed={paused}
-          title={paused ? "Resume page motion" : "Pause page motion"}
-          className="inline-flex size-10 shrink-0 items-center justify-center rounded-full bg-white/8 text-ink-muted transition-colors hover:bg-white/14 hover:text-ink max-xl:ms-auto motion-reduce:transition-none"
-        >
-          <PixelIcon name={paused ? "play" : "pause"} size={12} />
-          <span className="sr-only">
-            {paused ? "Resume page motion" : "Pause page motion"}
-          </span>
-        </button>
         <a
           href={REPO_URL}
-          className="inline-flex min-h-10 items-center gap-2 rounded-full bg-action px-5 font-mono text-[0.8125rem] font-medium text-on-action shadow-glow-action transition-[background-color,transform] duration-150 hover:bg-ink active:scale-[0.97] motion-reduce:transition-none"
+          className="inline-flex min-h-10 items-center gap-2 rounded-full bg-action px-5 font-mono text-[0.8125rem] font-medium text-on-action shadow-glow-action transition-[background-color,transform] duration-150 hover:bg-ink active:scale-[0.97] max-xl:ms-auto motion-reduce:transition-none"
         >
           <PixelIcon name="star" size={12} />
           <span className="max-sm:sr-only">GitHub</span>

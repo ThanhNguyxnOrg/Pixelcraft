@@ -4,7 +4,10 @@
   "private": true,
   "type": "module",
   "scripts": {
+    "sync": "node scripts/sync-repo-data.mjs",
+    "predev": "node scripts/sync-repo-data.mjs",
     "dev": "vite --host 0.0.0.0",
+    "prebuild": "node scripts/sync-repo-data.mjs",
     "build": "vite build",
     "preview": "node scripts/serve.mjs",
     "start": "node scripts/serve.mjs",

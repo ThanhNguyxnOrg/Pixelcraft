@@ -9,20 +9,40 @@ const read = (file) => readFile(resolve(root, file), "utf8");
 // Matches vite.config.ts: "/" locally, "/<repository>/" for the GitHub Pages build.
 const siteBase = (process.env.SITE_BASE || "/").replace(/\/*$/, "/");
 
-test("showcase identities, version and install package match the authoritative pack", async () => {
+test("showcase identities, version, references, and agent count stay synced with the authoritative pack", async () => {
   const product = JSON.parse(await read("../package.json"));
   const site = JSON.parse(await read("package.json"));
-  const data = await read("src/data.ts");
+  const meta = JSON.parse(await read("src/generated/repo-meta.json"));
   assert.equal(site.version, product.version);
-  assert.ok(data.includes(`export const VERSION = "${product.version}"`));
-  assert.ok(data.includes(`export const NPM_PKG = "${product.name}"`));
-  const actual = [...data.matchAll(/name:\s*["'](pixelcraft-[a-z-]+)["']/g)]
-    .map((m) => m[1])
+  assert.equal(meta.version, product.version);
+  assert.equal(meta.npmPkg, product.name);
+
+  const actualSkills = meta.skills.map((s) => s.name).sort();
+  const expectedSkills = (await readdir(resolve(root, "../skills")))
+    .filter((s) => s.startsWith("pixelcraft"))
     .sort();
-  const expected = (await readdir(resolve(root, "../skills")))
-    .filter((s) => s.startsWith("pixelcraft-"))
-    .sort();
-  assert.deepEqual(actual, expected);
+  assert.deepEqual(actualSkills, expectedSkills);
+
+  let expectedRefs = 0;
+  let expectedScripts = 0;
+  for (const name of expectedSkills) {
+    try {
+      const refs = (
+        await readdir(resolve(root, `../skills/${name}/references`))
+      ).filter((f) => f.endsWith(".md"));
+      expectedRefs += refs.length;
+    } catch {}
+    try {
+      const scripts = (
+        await readdir(resolve(root, `../skills/${name}/scripts`))
+      ).filter((f) => f.endsWith(".mjs"));
+      expectedScripts += scripts.length;
+    } catch {}
+  }
+  assert.equal(meta.totalReferences, expectedRefs);
+  assert.equal(meta.totalScripts, expectedScripts);
+  assert.ok(meta.agentTargetCount >= 14);
+  assert.ok(meta.stacks.length > 0);
 });
 
 test("gallery metadata matches source scanner output, and all paired assets exist", async () => {
