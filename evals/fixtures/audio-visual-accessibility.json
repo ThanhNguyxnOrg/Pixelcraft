@@ -1,0 +1,70 @@
+{
+  "schemaVersion": 1,
+  "id": "audio-visual-accessibility",
+  "skill": "pixelcraft-audio-visual",
+  "title": "Audio-reactive media remains optional and accessible",
+  "contextSnapshot": {
+    "surface": "music launch page",
+    "platform": "mobile and desktop web",
+    "mode": "Experience",
+    "states": [
+      "muted",
+      "user starts playback",
+      "autoplay denied",
+      "hidden tab",
+      "reduced motion",
+      "media failure"
+    ],
+    "constraints": [
+      "consent before sound",
+      "captions for speech",
+      "low-power mobile"
+    ]
+  },
+  "prompt": "Create an optional audio-reactive background and a video-texture fallback for a product launch.",
+  "expectedRouting": [
+    "pixelcraft-audio-visual",
+    "pixelcraft-creative-code",
+    "pixelcraft-accessibility",
+    "pixelcraft-visual-qa"
+  ],
+  "forbiddenBehaviors": [
+    "sound autoplay without consent",
+    "microphone recording without permission",
+    "audio only information",
+    "unbounded media playback"
+  ],
+  "rubricDimensions": [
+    {
+      "dimension": "consent and control",
+      "pass": "uses explicit play/mute/pause/stop and honors autoplay constraints",
+      "fail": "starts audible playback automatically"
+    },
+    {
+      "dimension": "fallback",
+      "pass": "maintains a silent/static or ordinary-video path",
+      "fail": "meaning requires audio or WebGL"
+    },
+    {
+      "dimension": "media lifecycle",
+      "pass": "pauses and releases resources when hidden/offscreen/unmounted",
+      "fail": "media runs after route change"
+    }
+  ],
+  "negativeControls": [
+    {
+      "name": "muted environment",
+      "input": "Browser blocks autoplay and has no audio output",
+      "mustNot": "leave page empty or unusable"
+    },
+    {
+      "name": "no WebCodecs",
+      "input": "WebCodecs unavailable",
+      "mustNot": "make video playback impossible"
+    }
+  ],
+  "baseline": {
+    "withoutSkill": "ties visuals to an unbounded audio loop",
+    "withSkill": "separates media state, user control, fallback and device behavior"
+  }
+}

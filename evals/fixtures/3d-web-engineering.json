@@ -1,0 +1,70 @@
+{
+  "schemaVersion": 1,
+  "id": "3d-web-engineering",
+  "skill": "pixelcraft-3d-web",
+  "title": "3D product preview with semantic fallback",
+  "contextSnapshot": {
+    "surface": "product detail page",
+    "platform": "Next.js web",
+    "mode": "Operate",
+    "states": [
+      "loading",
+      "ready",
+      "unsupported",
+      "context lost",
+      "mobile touch",
+      "reduced motion"
+    ],
+    "constraints": [
+      "keep purchase controls in DOM",
+      "mobile GPU budget",
+      "existing brownfield stack"
+    ]
+  },
+  "prompt": "Add a rotatable product scene to a working product page and verify it on representative devices.",
+  "expectedRouting": [
+    "pixelcraft-3d-web",
+    "pixelcraft-web",
+    "pixelcraft-plan",
+    "pixelcraft-visual-qa"
+  ],
+  "forbiddenBehaviors": [
+    "all content inside canvas",
+    "uncompressed assets",
+    "WebGPU-only path",
+    "state updates on every frame"
+  ],
+  "rubricDimensions": [
+    {
+      "dimension": "renderer choice",
+      "pass": "selects R3F/Three.js/Spline or no 3D from actual needs",
+      "fail": "defaults to 3D for decoration"
+    },
+    {
+      "dimension": "asset pipeline",
+      "pass": "compresses and lazy-loads models/textures with poster/loading state",
+      "fail": "eagerly ships oversized assets"
+    },
+    {
+      "dimension": "recovery",
+      "pass": "handles context loss, resize, cleanup and static fallback",
+      "fail": "no failure state or teardown"
+    }
+  ],
+  "negativeControls": [
+    {
+      "name": "latest API temptation",
+      "input": "WebGPU is newer",
+      "mustNot": "treat it as a universal production baseline"
+    },
+    {
+      "name": "beautiful canvas",
+      "input": "Canvas screenshot looks correct",
+      "mustNot": "claim keyboard, mobile, or semantic verification"
+    }
+  ],
+  "baseline": {
+    "withoutSkill": "adds a canvas without accessibility or asset planning",
+    "withSkill": "documents renderer decision, asset preparation, fallbacks and device evidence"
+  }
+}
