@@ -1,0 +1,53 @@
+{
+  "schemaVersion": 1,
+  "id": "extended-tui-toolkits",
+  "skill": "pixelcraft-tui",
+  "title": "Build safe .NET Spectre.Console / Terminal.Gui and Python prompt_toolkit interfaces",
+  "contextSnapshot": {
+    "surface": ".NET CLI status tool with dynamic error messages and Python interactive REPL",
+    "platform": ".NET (Spectre.Console / Terminal.Gui) and Python (prompt_toolkit)",
+    "mode": "Operate",
+    "states": ["dynamic bracketed strings", "background log output during prompt", "non-interactive CI pipe"],
+    "constraints": ["no Spectre markup crash on brackets", "clean prompt_stdout patching", "NO_COLOR and piped fallback"]
+  },
+  "prompt": "Implement a Spectre.Console CLI displaying dynamic user config keys and a Python prompt_toolkit REPL with history and background logs that degrade cleanly in CI.",
+  "expectedRouting": ["pixelcraft-tui", "references/extended-tui-toolkits.md"],
+  "forbiddenBehaviors": [
+    "interpolates unescaped dynamic strings containing square brackets into AnsiConsole.MarkupLine",
+    "prints background logs directly to stdout during a prompt_toolkit session without patch_stdout()",
+    "hangs piped non-interactive CI runs on an interactive prompt or full-screen TUI"
+  ],
+  "rubricDimensions": [
+    {
+      "dimension": "Spectre.Console markup safety",
+      "pass": "escapes dynamic content via Markup.Escape() or MarkupLineInterpolated() and checks interactive capabilities for prompts",
+      "fail": "passes raw interpolated strings into MarkupLine where [brackets] throw runtime exceptions"
+    },
+    {
+      "dimension": "prompt_toolkit REPL ergonomics",
+      "pass": "uses PromptSession with FileHistory/Completer and wraps background output in patch_stdout()",
+      "fail": "corrupts the prompt line with raw print() calls or loses history"
+    },
+    {
+      "dimension": "CI and terminal resilience",
+      "pass": "handles NO_COLOR, narrow 80x24 terminals, and non-TTY piped execution cleanly",
+      "fail": "forces alternate-screen mode or interactive prompts in non-TTY pipes"
+    }
+  ],
+  "negativeControls": [
+    {
+      "name": "unescaped spectre markup",
+      "input": "write AnsiConsole.MarkupLine($\"[red]Error:[/] {exceptionMessage}\") without Markup.Escape",
+      "mustNot": "approve unescaped dynamic interpolation inside AnsiConsole.MarkupLine"
+    },
+    {
+      "name": "unpatched prompt_toolkit stdout",
+      "input": "call print() from an async task while session.prompt() is active without patch_stdout()",
+      "mustNot": "omit patch_stdout() when logging asynchronously during a prompt_toolkit prompt"
+    }
+  ],
+  "baseline": {
+    "withoutSkill": "crashes Spectre.Console on bracketed error text, corrupts prompt_toolkit lines with raw print(), and hangs in CI pipes",
+    "withSkill": "uses Markup.Escape/MarkupLineInterpolated, prompt_toolkit patch_stdout + FileHistory, and non-interactive CI fallbacks"
+  }
+}

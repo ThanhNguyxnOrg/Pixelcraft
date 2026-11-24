@@ -1,0 +1,53 @@
+{
+  "schemaVersion": 1,
+  "id": "reactive-data-apps",
+  "skill": "pixelcraft-data-apps",
+  "title": "Select and implement reactive Python data apps (marimo, Solara, Mesop, Taipy) cleanly",
+  "contextSnapshot": {
+    "surface": "interactive ML evaluation explorer with threshold slider and filtered table",
+    "platform": "Python (marimo / Solara / Mesop / Taipy)",
+    "mode": "Operate",
+    "states": ["debounced slider update", "empty filter result", "expensive query feedback"],
+    "constraints": ["no hidden notebook state", "no cross-session global leakage", "debounced heavy queries"]
+  },
+  "prompt": "Build a reproducible reactive Python data explorer with a confidence threshold slider and results table using marimo or Solara without hidden state or runaway reruns.",
+  "expectedRouting": ["pixelcraft-data-apps", "references/reactive-data-apps.md", "pixelcraft-dataviz"],
+  "forbiddenBehaviors": [
+    "triggers expensive downstream ML/SQL computation on every slider drag tick without debounce=True",
+    "stores per-user filter state in mutable module-level globals shared across concurrent sessions",
+    "leaves empty filter results blank with no explanation"
+  ],
+  "rubricDimensions": [
+    {
+      "dimension": "framework fit",
+      "pass": "selects marimo (DAG notebooks/apps), Solara (React-like ipywidgets), Mesop (typed Python Material UI), or Taipy (scenario pipelines) appropriately",
+      "fail": "ignores rerun/DAG semantics or picks a mismatched framework"
+    },
+    {
+      "dimension": "reactive execution hygiene",
+      "pass": "uses debounce=True on expensive sliders, keeps cells/components free of cross-session globals, and separates marimo edit vs run",
+      "fail": "fires unthrottled heavy queries or mutates shared globals"
+    },
+    {
+      "dimension": "data UX clarity",
+      "pass": "links controls, freshness, and empty/error states visibly",
+      "fail": "shows silent blank outputs on empty filters or failures"
+    }
+  ],
+  "negativeControls": [
+    {
+      "name": "undebounced expensive slider",
+      "input": "create mo.ui.slider(0, 1, 0.01) feeding a 3-second SQL query without debounce=True",
+      "mustNot": "omit debounce=True when a slider drives expensive downstream computation"
+    },
+    {
+      "name": "shared module global state",
+      "input": "store selected_rows = [] in a global list mutated by multiple Mesop/Solara users",
+      "mustNot": "approve mutable module-level globals for per-user session state"
+    }
+  ],
+  "baseline": {
+    "withoutSkill": "triggers expensive recomputes on every drag tick, leaks globals across sessions, and omits empty states",
+    "withSkill": "uses marimo DAG cells with debounce=True or scoped Solara/Mesop state with explicit empty/error/freshness UX"
+  }
+}

@@ -1,0 +1,53 @@
+{
+  "schemaVersion": 1,
+  "id": "token-tooling",
+  "skill": "pixelcraft-tokens",
+  "title": "Configure Style Dictionary v4, Tokens Studio, and Figma Code Connect pipelines cleanly",
+  "contextSnapshot": {
+    "surface": "cross-platform design system synced between Figma and Web/iOS/Android",
+    "platform": "Style Dictionary v4 + Figma Code Connect",
+    "mode": "Operate",
+    "states": ["DTCG token build", "semantic CSS var references", "Code Connect prop mapping", "CI drift check"],
+    "constraints": ["pure DTCG $value/$type format", "preserve semantic references in CSS", "generated artifacts never hand-edited"]
+  },
+  "prompt": "Set up a Style Dictionary v4 build pipeline for DTCG tokens with semantic CSS references and Figma Code Connect mappings for our Button component.",
+  "expectedRouting": ["pixelcraft-tokens", "references/token-tooling.md", "references/format.md"],
+  "forbiddenBehaviors": [
+    "mixes legacy value/type and DTCG $value/$type tokens in the same Style Dictionary v4 instance",
+    "hand-edits generated dist/tokens.css output instead of source token JSON",
+    "flattens semantic CSS variables without outputReferences when runtime theme switching is needed"
+  ],
+  "rubricDimensions": [
+    {
+      "dimension": "Style Dictionary v4 configuration",
+      "pass": "uses consistent DTCG $value/$type (usesDtcg: true), outputReferences for semantic CSS var chains, and @tokens-studio/sd-transforms when using Tokens Studio",
+      "fail": "mixes DTCG and legacy token formats or loses semantic variable references"
+    },
+    {
+      "dimension": "Figma Code Connect accuracy",
+      "pass": "maps Figma properties via figma.connect with figma.enum/boolean/string/children to real component props and validates in CI",
+      "fail": "hardcodes static non-mapped snippets or omits CI validation"
+    },
+    {
+      "dimension": "artifact governance",
+      "pass": "treats compiled platform files as generated build outputs and validates references in CI",
+      "fail": "instructs developers to patch generated CSS/Swift/Kotlin token files manually"
+    }
+  ],
+  "negativeControls": [
+    {
+      "name": "mixed dtcg and legacy tokens",
+      "input": "put both $value and legacy value keys inside the same Style Dictionary v4 config",
+      "mustNot": "approve mixing legacy value/type and DTCG $value/$type in one Style Dictionary v4 instance"
+    },
+    {
+      "name": "manual edit of generated tokens",
+      "input": "edit dist/tokens.css directly to tweak the dark mode accent color",
+      "mustNot": "recommend hand-editing generated token build outputs"
+    }
+  ],
+  "baseline": {
+    "withoutSkill": "mixes DTCG/legacy token syntax, flattens CSS references, and omits Code Connect CI checks",
+    "withSkill": "configures pure DTCG Style Dictionary v4 with outputReferences, typed Figma Code Connect mappings, and CI validation"
+  }
+}
