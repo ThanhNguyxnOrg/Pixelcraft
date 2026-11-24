@@ -43,6 +43,25 @@ A plugin's presence in a bundle is not proof that a given interaction uses it. V
 - Test React Strict Mode mount/cleanup/remount behavior in development.
 - Do not use a global query that accidentally animates another instance of a repeated component.
 
+```ts
+// Scoped GSAP + matchMedia cleanup (safe under React Strict Mode)
+const mm = gsap.matchMedia();
+const ctx = gsap.context(() => {
+  mm.add('(prefers-reduced-motion: no-preference)', () => {
+    gsap.from('.chapter-item', {
+      y: 24,
+      opacity: 0,
+      stagger: 0.08,
+      duration: 0.6,
+      ease: 'power3.out',
+      scrollTrigger: { trigger: rootRef.current, start: 'top 80%', once: true },
+    });
+  });
+}, rootRef);
+
+// Cleanup: ctx.revert(); mm.revert();
+```
+
 ## Official references
 
 - GSAP docs: https://gsap.com/docs/v3/

@@ -12,6 +12,26 @@ Set budgets during planning and measure on representative devices. A fixed FPS t
 - Pause when document hidden or scene offscreen; avoid idle animation on operational pages.
 - Use lower quality presets for mobile/thermal pressure and expose a non-3D fallback.
 - Dispose resources and test memory after route changes or repeated open/close.
+- Avoid blanket `will-change: transform` on large lists; apply compositor promotion only to actively animating elements to prevent VRAM exhaustion.
+
+```ts
+// Cap DPR, pause offscreen via IntersectionObserver, and handle context loss
+const dpr = Math.min(window.devicePixelRatio || 1, 2);
+renderer.setPixelRatio(dpr);
+
+let visible = true;
+const io = new IntersectionObserver(([entry]) => {
+  visible = entry.isIntersecting;
+}, { threshold: 0.01 });
+io.observe(canvas);
+
+canvas.addEventListener('webglcontextlost', (e) => {
+  e.preventDefault();
+  cancelAnimationFrame(rafId);
+});
+
+// On teardown: io.disconnect(); geometry.dispose(); material.dispose(); renderer.dispose();
+```
 
 ## Evidence
 

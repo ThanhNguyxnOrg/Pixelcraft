@@ -5,7 +5,7 @@
 - Do not autoplay audible media.
 - Provide visible play/pause, mute/unmute, stop, and replay where relevant.
 - Make current playback state understandable to keyboard and assistive technology.
-- Captions are required for speech/video dialogue; provide transcript for long-form audio where appropriate.
+- Synchronized captions are required for both spoken dialogue **and** meaningful non-speech audio (alarms, status cues, sound effects) in informative synchronized media; provide a transcript for audio-only or long-form media as well.
 - Important information must remain available in text and must not depend on hearing, seeing animation, or perceiving color.
 
 ## Motion and sensory safety

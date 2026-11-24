@@ -27,6 +27,21 @@ Use Motion for React for component-level state transitions, gestures, layout ani
 - Do not wrap an entire application tree in a client-only boundary for one animated component.
 - Verify focus order, keyboard activation, and touch behavior independent of hover.
 
+```tsx
+// Zero-rerender scroll progress + reduced-motion boundary
+import { MotionConfig, motion, useScroll, useSpring } from 'motion/react';
+
+export function ScrollMeter() {
+  const { scrollYProgress } = useScroll();
+  const scaleX = useSpring(scrollYProgress, { stiffness: 220, damping: 32 });
+  return (
+    <MotionConfig reducedMotion="user">
+      <motion.div className="fixed inset-x-0 top-0 h-0.5 origin-left" style={{ scaleX }} />
+    </MotionConfig>
+  );
+}
+```
+
 ## Official references
 
 - Motion documentation: https://motion.dev/docs

@@ -19,6 +19,18 @@ The common integration pattern forwards Lenis scroll updates to ScrollTrigger an
 - Avoid disabling GSAP lag smoothing globally unless the verified integration requires it.
 - Refresh ScrollTrigger only after meaningful layout changes.
 - Preserve direct anchor navigation and normal browser scrolling when the script fails.
+- Remove `html { scroll-behavior: smooth; }` when Lenis is active so native smooth scroll does not fight Lenis interpolation; use `overflow-x: clip` (never `overflow-x: hidden`) on `body` so `position: sticky` keeps working.
+
+```ts
+// Single-clock Lenis + ScrollTrigger sync (skip when reduced motion is preferred)
+if (!window.matchMedia('(prefers-reduced-motion: reduce)').matches) {
+  const lenis = new Lenis({ duration: 1.05, smoothWheel: true });
+  lenis.on('scroll', ScrollTrigger.update);
+  const tick = (time: number) => lenis.raf(time * 1000);
+  gsap.ticker.add(tick);
+  // Cleanup: gsap.ticker.remove(tick); lenis.destroy();
+}
+```
 
 ## Progressive fallback
 

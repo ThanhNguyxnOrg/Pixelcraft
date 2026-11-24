@@ -28,3 +28,27 @@ These recipes describe reusable behavior, not a visual template. Choose only wha
 - Do not randomize a motion on every render. Seed or stabilize randomized values for deterministic QA.
 - Clamp pointer displacement and velocity; cancel stale tweens on repeated input.
 - Use animation for cause/effect and state, not to conceal loading or fake activity.
+
+## Native CSS motion before JS runtimes
+
+Prefer native browser primitives when the effect does not need JS physics or timeline callbacks:
+
+- **CSS Scroll-Driven Animations** (`animation-timeline: view()` / `scroll()`): gate with `@supports (animation-timeline: view())` and `@media (prefers-reduced-motion: no-preference)`.
+- **View Transitions API** (`@view-transition { navigation: auto; }` for MPA or `document.startViewTransition()` for SPA): check feature support and fall back to instant DOM update when unsupported or reduced-motion is set.
+
+```css
+@supports (animation-timeline: view()) {
+  @media (prefers-reduced-motion: no-preference) {
+    .reveal-plate {
+      animation: plate-rise linear both;
+      animation-timeline: view();
+      animation-range: entry 10% cover 35%;
+    }
+  }
+}
+
+@keyframes plate-rise {
+  from { opacity: 0; transform: translateY(24px); }
+  to { opacity: 1; transform: translateY(0); }
+}
+```

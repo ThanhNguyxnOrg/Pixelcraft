@@ -19,7 +19,7 @@ Use these as content/interaction patterns, not as fixed page templates. Select b
 
 ## Section library workflow
 
-Use Lapa/Land-book/One Page Love for section-level composition ideas; use Awwwards/FWA for complete experiences; use Mobbin for shipped product flow and states. Convert a reference into a content/interaction recipe rather than copying its composition.
+Use section-level pattern catalogs for layout rhythm ideas, full-experience interactive showcases for pacing and transitions, and shipped product flow libraries for multi-step states. Convert any reference into a content/interaction recipe rather than copying its composition, branding, or visual assets.
 
 ## Acceptance
 

@@ -22,6 +22,13 @@ Use the R3F frame loop for per-frame updates. Use demand rendering when scene st
 - Ensure hit targets are large enough and do not rely on hover-only object affordances.
 - Handle pointer cancellation, resize, session changes, and lost context.
 
+```tsx
+// Cap DPR, use demand rendering when static, and mutate refs (never setState) in useFrame
+<Canvas dpr={[1, 2]} frameloop="demand" gl={{ antialias: true, powerPreference: 'high-performance' }}>
+  <Scene />
+</Canvas>
+```
+
 ## SSR and hydration
 
 Do not instantiate WebGL during server render. Use the framework's client boundary/dynamic loading pattern for the installed router/framework. Avoid hydration-dependent random values in the initial scene; seed them or initialize after mount. Keep the server-rendered fallback useful if the Canvas cannot initialize.
