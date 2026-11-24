@@ -1,7 +1,7 @@
 #!/usr/bin/env bash
 set -euo pipefail
 
-repo="${PIXELCRAFT_REPO:-ThanhNguyxn07/Pixelcraft}"
+repo="${PIXELCRAFT_REPO:-ThanhNguyxnOrg/Pixelcraft}"
 ref="${PIXELCRAFT_REF:-main}"
 archive="${PIXELCRAFT_ARCHIVE:-}"
 agents_arg="agents"
@@ -30,11 +30,11 @@ Options:
   --dry-run        Print copies without writing files.
   --docs-mcp       Print optional Context7 setup guidance without configuring any host.
   --ref REF        Git branch, tag, or commit archive to download (default: main).
-  --repo OWNER/REPO  GitHub repository (default: ThanhNguyxn07/Pixelcraft).
+  --repo OWNER/REPO  GitHub repository (default: ThanhNguyxnOrg/Pixelcraft).
   --archive PATH   Use a local repository .tar.gz instead of downloading.
 
 Example:
-  curl -fsSL https://raw.githubusercontent.com/ThanhNguyxn07/Pixelcraft/main/install.sh | bash -s -- --agent claude --skills all
+  curl -fsSL https://raw.githubusercontent.com/ThanhNguyxnOrg/Pixelcraft/main/install.sh | bash -s -- --agent claude --skills all
 
 The script never uses sudo, refuses symlinked target/skill directories, and
 skips existing skill directories unless --force is passed.

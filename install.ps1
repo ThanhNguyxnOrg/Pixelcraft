@@ -7,7 +7,7 @@ param(
   [switch]$DryRun,
   [switch]$DocsMcp,
   [string]$Ref = 'main',
-  [string]$Repo = 'ThanhNguyxn07/Pixelcraft',
+  [string]$Repo = 'ThanhNguyxnOrg/Pixelcraft',
   [string]$Archive
 )
 
