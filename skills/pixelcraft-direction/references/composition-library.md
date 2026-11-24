@@ -60,7 +60,7 @@ Complexity must be controlled by structure: grouping, focal hierarchy, whitespac
 
 ## Recurring high-end mechanisms observed in live inspection
 
-The following mechanisms recur across strongly art-directed interfaces. Corpus numbers represent the typical range in strong examples as calibration, never targets to hit: 1–3 active families were typical; rendered max/min type ratios clustered around 2.6–5.7; restrained rendered palettes clustered around 6–9 quantized color groups; estimated whitespace commonly fell around 0.42–0.68; payload and accessibility outcomes varied widely and often exposed what not to copy.
+The following mechanisms recur across strongly art-directed interfaces. In an earlier corpus, 1–3 active families were typical, rendered max/min type ratios clustered around 2.6–5.7, rendered palettes around 6–9 quantized color groups, and estimated whitespace around 0.42–0.68. Use these as calibration for comparable captures, never targets. A later first-viewport sample of media-heavy sites showed fewer detectable DOM colors and much lower geometric whitespace; separate the art layer from the UI before drawing a design conclusion from either sample.
 
 | Pattern and mechanism | When to use it | Why it works | How it fails | Measurable checks |
 |---|---|---|---|---|

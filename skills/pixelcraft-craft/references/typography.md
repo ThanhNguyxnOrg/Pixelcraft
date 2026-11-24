@@ -59,13 +59,13 @@ Web: preload only critical files, reserve metrics/space, use `font-display` inte
 
 ## Rendered typography inventory
 
-Measure what the browser actually rendered rather than counting only the authored scale. Record active families, weight/style faces, distinct rendered sizes, dominant line-heights, display letter-spacing, and maximum-to-minimum rendered size ratio. In the live corpus the median page used **2 active families** (upper quartile **3**), **4 distinct rendered sizes** (upper quartile **7**), and a rendered max/min ratio near **4.6** (middle half roughly **2.6–5.7**). These are calibration ranges for strong examples, not quotas.
+Measure what the browser actually rendered rather than counting only the authored scale. Record active families, weight/style faces, distinct rendered sizes, dominant line-heights, display letter-spacing, and maximum-to-minimum rendered size ratio. An earlier gallery corpus had medians of **2 active families**, **4 rendered sizes**, and a **4.6×** ratio. A later first-viewport sample with many canvas and media scenes had medians of **1 family** and **2 sizes** in the detectable DOM. Keep these cohorts separate: a first-screen DOM sample cannot count type painted into a graphic, and neither corpus sets a quota.
 
 Audit rules:
 
 - inventory every loaded/rendered family-weight-style face and delete faces without a hierarchy role;
 - separate modular-step ratio from the observed display/body extreme ratio;
-- compress desktop display-to-body ratio by roughly 25–35% at narrow viewports (e.g., `~4.5× → ~2.5–3.0×` via fluid `clamp()`) so display headlines stay commanding without excessive wrapping, while dense instrumental surfaces keep a tight ratio (`~1.4–1.8×`) steady across widths;
+- remeasure the display and body roles at narrow and short heights; reduce display size or recompose when it consumes the task or produces poor wrapping, rather than chasing a fixed compression percentage. Test long localized copy and text zoom;
 - verify display letter-spacing only at rendered sizes where it occurs; subtle negative tracking (`-0.02em` to `-0.04em`) belongs on large Latin display headlines, never on body copy or scripts with combining diacritics/shaping;
 - preload at most 1–2 truly critical font files, choose `font-display` deliberately, subset required scripts, and never preload every weight or starve LCP media;
 - canvas-rendered display type still needs semantic text and a fallback type specification.

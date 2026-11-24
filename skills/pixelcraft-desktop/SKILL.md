@@ -53,6 +53,8 @@ Rendered verification requires running the actual app/windowing stack or platfor
 
 ## Framework routing
 
+- Read [references/working-context.md](references/working-context.md) for editors, debuggers, inspectors, and workspaces whose secondary panes act on a specific object.
+
 - Read [references/tauri.md](references/tauri.md) for Tauri.
 - Read [references/electron.md](references/electron.md) for Electron.
 - Read [references/qt-pyside-qml.md](references/qt-pyside-qml.md) for Qt Widgets, PySide/PyQt, and QML.

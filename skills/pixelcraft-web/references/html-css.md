@@ -18,6 +18,8 @@ Do not bypass semantic roles with primitive color variables in component rules. 
 
 Use semantic HTML structure first, then CSS Grid for two-dimensional composition, flexbox for one-dimensional groups, container queries for component adaptation, and logical properties for direction-sensitive spacing. Prefer `clamp()` and intrinsic sizing over hard breakpoints alone. Restructure at narrow widths rather than scaling a desktop mockup.
 
+For an editorial or commerce shell, separate the primary task or active state from the destination index. If inline navigation becomes a disclosure on touch, consider keeping booking, a cart count, or the current chapter exposed outside it. Keep the same destination and state across layouts. Test the closed and open menu at phone portrait and landscape: reach the primary action, dismiss the menu with the supported inputs, and confirm focus returns to its trigger. If the scene cannot fit in a shallow viewport, use a purposeful crop or a static composition instead of burying the action below empty scene space.
+
 ## Typography/custom fonts
 
 Use `font-face` with `font-display: swap` or `optional` deliberately, preload only critical fonts, set metric overrides/fallbacks where needed, and use system fonts when platform fit/performance matters. Control measure with `max-inline-size: 65ch`–`75ch` rather than arbitrary containers.
@@ -33,6 +35,8 @@ Use CSS transitions/animations only for purposeful transform/opacity/state chang
 ```
 
 JavaScript should query `matchMedia('(prefers-reduced-motion: reduce)')` when motion is imperative.
+
+If a static poster replaces a decorative scene, make that decision before starting its JS, video, or GPU work when the task does not need it. Keep the poster and live semantic content independent of the scene bundle. A small or reduced-motion layout that looks static can still download and initialize the desktop effect.
 
 ## Modern browser-native craft idioms
 

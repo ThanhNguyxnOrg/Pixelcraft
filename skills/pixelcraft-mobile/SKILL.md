@@ -53,6 +53,8 @@ Rendered verification is possible only through simulator/emulator/device tooling
 
 ## Framework routing
 
+- Read [references/task-state-composition.md](references/task-state-composition.md) for a branded timer, recording flow, or other activity with a distinct before/during/after state.
+
 - Read [references/swiftui.md](references/swiftui.md) for SwiftUI/iOS/watchOS/visionOS-style declarative Apple UI.
 - Read [references/uikit.md](references/uikit.md) for UIKit/AppKit-adjacent imperative iOS UI.
 - Read [references/jetpack-compose.md](references/jetpack-compose.md) for Android Compose.
