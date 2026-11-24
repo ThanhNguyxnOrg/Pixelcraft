@@ -1,0 +1,49 @@
+name: Bug report
+description: Report a broken skill rule, script defect, installer issue, or showcase website bug
+title: "[bug]: "
+labels: ["bug"]
+body:
+  - type: dropdown
+    id: area
+    attributes:
+      label: Affected area
+      options:
+        - Skills / references
+        - Verification scripts (slop-scan, export-tokens, shoot, finish-gate, check-*)
+        - Installers / CLI (bin/pixelcraft.mjs, install.sh, install.ps1)
+        - Showcase website & gallery (website/)
+        - Documentation / packaging manifests
+    validations:
+      required: true
+  - type: textarea
+    id: description
+    attributes:
+      label: What happened?
+      description: Describe the defect clearly, including exact file:line or command output.
+    validations:
+      required: true
+  - type: textarea
+    id: repro
+    attributes:
+      label: Reproduction steps
+      placeholder: |
+        1. Run `node ...`
+        2. Observe ...
+    validations:
+      required: true
+  - type: input
+    id: env
+    attributes:
+      label: Environment
+      description: OS, Node.js version, agent host (if relevant)
+      placeholder: "Ubuntu 24.04 / Node 22.x / Claude Code"
+  - type: dropdown
+    id: evidence
+    attributes:
+      label: Evidence label
+      options:
+        - rendered
+        - static
+        - model-judgment
+    validations:
+      required: true
