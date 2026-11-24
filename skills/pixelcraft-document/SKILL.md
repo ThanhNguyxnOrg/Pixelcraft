@@ -10,6 +10,10 @@ metadata:
 
 Documents are fixed-fragmentation interfaces. Screen scrolling assumptions do not apply: page size, margin boxes, breaks, running navigation, physical units, print color behavior, and final-file legibility are part of the design. Choose the renderer before writing print CSS because browser print, Paged.js, WeasyPrint, React-PDF, Typst, and LaTeX implement different subsets.
 
+## Surface craft
+
+Build a reading sequence around repeated headers, explicit units and page boundaries, not screen-size sections. Keep related rows or notes together when pagination allows, and verify totals, source facts, selectable text and reading order in the final tagged/exported artifact. Check the actual zoom, grayscale or projector distance; do not flatten a useful document to slides-as-images.
+
 ## References
 
 - Read [references/print-css.md](references/print-css.md) for `@page`, named pages, counters, margin boxes, fragmentation, physical units, print color, bleed, and browser-support boundaries.

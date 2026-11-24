@@ -10,6 +10,10 @@ metadata:
 
 Use this skill when the surface is a phone/tablet/foldable/watch-adjacent app. Respect the host platform: iOS uses Apple HIG idioms, Android uses Material behavior, and cross-platform runtimes must translate rather than average them.
 
+## Surface craft
+
+Give the primary task a short route with native back/dismiss behavior; add delight at a meaningful state transition, not at every tap. Compare Compact and large-text layouts, resume after interruption, and make haptics optional reinforcement rather than the only confirmation. Do not copy a gallery's onboarding screens without following the activation and recovery steps.
+
 ## Detection signals
 
 `Package.swift`, Xcode projects/workspaces, SwiftUI/UIKit imports, `build.gradle(.kts)` Compose dependencies, `pubspec.yaml`, React Native/Expo config, KMP shared modules, Ionic/Capacitor config, `.csproj` MAUI references, Flet controls/page setup, Kivy KV/App classes, platform folders (`ios/`, `android/`), and target/device family declarations.

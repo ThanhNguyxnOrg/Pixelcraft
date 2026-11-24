@@ -10,6 +10,10 @@ metadata:
 
 Use this skill when the rendering surface is HTML/CSS/DOM, including server-rendered pages and hybrid islands. Do not assume React or Tailwind; detect the actual framework nearest the changed files.
 
+## Surface craft
+
+Use one memorable device when the brief warrants it: a real product as the spatial anchor, editorial rows around comparable facts, or expressive type constrained by an underlying grid. Keep navigation and primary controls ordinary. Inspect normal scroll, mobile reflow, first-load payload and the reduced-motion path; never trade orientation for scroll hijacking, a custom cursor or delayed essential content.
+
 ## Detection signals
 
 `package.json` dependencies, framework config files, template extensions, server routes/controllers, component imports, CSS/Tailwind entry files, hydration/islands markers, and server framework conventions. Multiple web stacks can coexist; scope each decision to the route/component surface.

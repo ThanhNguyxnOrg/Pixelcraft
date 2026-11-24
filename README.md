@@ -110,12 +110,12 @@ The full architecture is documented in [`docs/ARCHITECTURE.md`](docs/ARCHITECTUR
 |---|---|---|
 | Guided installer | `node <checkout>/bin/pixelcraft.mjs` | First-time setup; choose agents, skills, and scope interactively |
 | Direct CLI | `node <checkout>/bin/pixelcraft.mjs add all --agent claude` | Reproducible Node-based setup and automation |
-| Vercel `skills` CLI | `npx skills add ThanhNguyxn07/Pixelcraft` | The cross-agent skills ecosystem and agent auto-detection |
-| Claude Code plugin | `/plugin marketplace add ThanhNguyxn07/Pixelcraft` then `/plugin install pixelcraft@pixelcraft` | Claude Code users who want plugin-managed updates |
-| curl/bash installer | `curl -fsSL https://raw.githubusercontent.com/ThanhNguyxn07/Pixelcraft/main/install.sh \| bash -s -- --agent claude --skills all` | Linux/macOS without Node.js |
-| PowerShell installer | `irm https://raw.githubusercontent.com/ThanhNguyxn07/Pixelcraft/main/install.ps1 \| iex` | Windows without Node.js |
+| Vercel `skills` CLI | `npx skills add ThanhNguyxnOrg/Pixelcraft` | The cross-agent skills ecosystem and agent auto-detection |
+| Claude Code plugin | `/plugin marketplace add ThanhNguyxnOrg/Pixelcraft` then `/plugin install pixelcraft@pixelcraft` | Claude Code users who want plugin-managed updates |
+| curl/bash installer | `curl -fsSL https://raw.githubusercontent.com/ThanhNguyxnOrg/Pixelcraft/main/install.sh \| bash -s -- --agent claude --skills all` | Linux/macOS without Node.js |
+| PowerShell installer | `irm https://raw.githubusercontent.com/ThanhNguyxnOrg/Pixelcraft/main/install.ps1 \| iex` | Windows without Node.js |
 | GitHub Release asset | Download `pixelcraft-skills.zip` or `pixelcraft-skills.tar.gz` from Releases | Controlled offline/manual distribution |
-| git clone/copy | `git clone --depth 1 https://github.com/ThanhNguyxn07/Pixelcraft.git` | Pinning, inspection, and manual per-agent copying |
+| git clone/copy | `git clone --depth 1 https://github.com/ThanhNguyxnOrg/Pixelcraft.git` | Pinning, inspection, and manual per-agent copying |
 
 Details and target-specific paths follow. The matrix below records the targets implemented by Pixelcraft's bundled installers. Agent directories evolve quickly; verify target behavior in the host before depending on it in automation.
 
@@ -128,7 +128,7 @@ git clone https://github.com/ThanhNguyxnOrg/Pixelcraft.git "$HOME/Pixelcraft"
 node "$HOME/Pixelcraft/bin/pixelcraft.mjs"
 ```
 
-The wizard asks for one or more agents, all skills or a numbered subset, and project or user-level scope. It uses Node's `readline` only; there are no package dependencies. Non-interactive flags remain available for automation:
+The wizard asks for one or more agents, all skills or a numbered subset, project or user-level scope, and whether to show optional Context7 setup guidance. It uses Node's `readline` only; there are no package dependencies. Prefer a supported Node.js LTS release; `>=18` is a compatibility floor, not a recommendation to run an end-of-life runtime. Non-interactive flags remain available for automation:
 
 ```bash
 # Everything for one agent in the current project
@@ -162,18 +162,20 @@ Installer agent names are `claude`, `codex`, `agents`, `devin`, `cursor`, `gemin
 
 `--agent all` installs every target and deduplicates shared `.agents/skills` destinations.
 
+For version-sensitive work, Pixelcraft asks the agent to check the resolved version against official docs and the relevant registry. [Context7](https://github.com/upstash/context7#readme) can help retrieve docs when a host supports it. Use `--docs-mcp` (Node or Bash) or `-DocsMcp` (PowerShell) to print setup guidance, including with dry-run. This does not install tools, edit MCP config, or request keys. Reuse an approved existing MCP connection; otherwise use official docs and registry lookup. Never send secrets or proprietary code in lookup queries.
+
 ### Vercel `skills` CLI
 
 The external `skills` CLI supports GitHub shorthand discovery and interactive agent selection. It requires Node.js 22.20 or newer:
 
 ```bash
-npx skills add ThanhNguyxn07/Pixelcraft
+npx skills add ThanhNguyxnOrg/Pixelcraft
 ```
 
 A non-interactive selection uses its documented flags, for example:
 
 ```bash
-npx skills add ThanhNguyxn07/Pixelcraft --skill pixelcraft-web -a claude-code
+npx skills add ThanhNguyxnOrg/Pixelcraft --skill pixelcraft-web -a claude-code
 ```
 
 Add `-g` for user-level installation. That CLI owns its own detection behavior and supports more agents than Pixelcraft's bundled installer.
@@ -183,16 +185,16 @@ Add `-g` for user-level installation. That CLI owns its own detection behavior a
 Inside Claude Code, add the repository as a marketplace and install the plugin. Both the marketplace and plugin are named `pixelcraft` in `.claude-plugin/marketplace.json`:
 
 ```text
-/plugin marketplace add ThanhNguyxn07/Pixelcraft
+/plugin marketplace add ThanhNguyxnOrg/Pixelcraft
 /plugin install pixelcraft@pixelcraft
 ```
 
-The equivalent shell commands are `claude plugin marketplace add ThanhNguyxn07/Pixelcraft` and `claude plugin install pixelcraft@pixelcraft`.
+The equivalent shell commands are `claude plugin marketplace add ThanhNguyxnOrg/Pixelcraft` and `claude plugin install pixelcraft@pixelcraft`.
 
 ### curl/bash installer without Node.js
 
 ```bash
-curl -fsSL https://raw.githubusercontent.com/ThanhNguyxn07/Pixelcraft/main/install.sh | bash -s -- --agent claude --skills all
+curl -fsSL https://raw.githubusercontent.com/ThanhNguyxnOrg/Pixelcraft/main/install.sh | bash -s -- --agent claude --skills all
 ```
 
 The script downloads the GitHub source tarball, extracts it temporarily, and copies self-contained skill folders. It supports:
@@ -214,23 +216,23 @@ It never uses sudo, requires only curl or wget plus tar, refuses symlinked targe
 Default installation into the universal project `.agents/skills` directory:
 
 ```powershell
-irm https://raw.githubusercontent.com/ThanhNguyxn07/Pixelcraft/main/install.ps1 | iex
+irm https://raw.githubusercontent.com/ThanhNguyxnOrg/Pixelcraft/main/install.ps1 | iex
 ```
 
 Pass parameters by invoking the downloaded script as a script block:
 
 ```powershell
-iex "& { $(irm https://raw.githubusercontent.com/ThanhNguyxn07/Pixelcraft/main/install.ps1) } -Agent claude -Skill pixelcraft-web"
+iex "& { $(irm https://raw.githubusercontent.com/ThanhNguyxnOrg/Pixelcraft/main/install.ps1) } -Agent claude -Skill pixelcraft-web"
 ```
 
-Parameters mirror the shell script: `-Agent`, `-Skill`, `-Global`, `-Force`, `-DryRun`, `-Ref`, `-Repo`, and `-Archive` (`-Archive` expects a local `.zip`; the shell script's `--archive` expects `.tar.gz`). The script downloads the repository zip with `Invoke-WebRequest`, expands it with `Expand-Archive`, never uses sudo/elevation, refuses reparse-point targets, and preserves existing folders unless `-Force` is passed for explicitly selected skills.
+Parameters mirror the shell script: `-Agent`, `-Skill`, `-Global`, `-Force`, `-DryRun`, `-DocsMcp`, `-Ref`, `-Repo`, and `-Archive` (`-Archive` expects a local `.zip`; the shell script's `--archive` expects `.tar.gz`). The script downloads the repository zip with `Invoke-WebRequest`, expands it with `Expand-Archive`, never uses sudo/elevation, refuses reparse-point targets, and preserves existing folders unless `-Force` is passed for explicitly selected skills.
 
 ### GitHub Release download
 
 The release workflow runs when a `v*` tag is pushed. It validates the skills, builds the adapter fragments, packages `pixelcraft-skills.zip` and `pixelcraft-skills.tar.gz`, creates the GitHub Release for that tag, and attaches both archives. After a tagged release exists, download it manually from the repository's Releases page, or with GitHub CLI:
 
 ```bash
-gh release download <tag> --repo ThanhNguyxn07/Pixelcraft --pattern pixelcraft-skills.zip
+gh release download <tag> --repo ThanhNguyxnOrg/Pixelcraft --pattern pixelcraft-skills.zip
 ```
 
 Each archive contains canonical `skills/` plus generated `adapters/`. Either copy a canonical `skills/<name>` directory into a verified target or copy the matching generated project-root fragment from `adapters/<agent>/`.
@@ -240,7 +242,7 @@ Each archive contains canonical `skills/` plus generated `adapters/`. Either cop
 Clone once, choose a target directory, and copy either all skills or selected self-contained folders:
 
 ```bash
-git clone --depth 1 https://github.com/ThanhNguyxn07/Pixelcraft.git
+git clone --depth 1 https://github.com/ThanhNguyxnOrg/Pixelcraft.git
 mkdir -p .agents/skills
 cp -R Pixelcraft/skills/pixelcraft-web .agents/skills/
 ```
@@ -302,6 +304,14 @@ node skills/pixelcraft-visual-qa/scripts/shoot.mjs dist/index.html --out visual-
 ```
 
 For local files, `shoot.mjs` serves only the file's own directory by default. Use `--root` only when shared parent assets are required; it exposes every non-dotfile beneath that root to page scripts during capture (`.env`, `.git/` and other dot-segments are refused). HTTP error pages are captured with their `status` recorded; use `--allow-http-error` only when intentionally reviewing 404/500 designs.
+
+Measure typography, color, estimated geometry, motion signals and payload on a browser surface:
+
+```bash
+node skills/pixelcraft-visual-qa/scripts/style-inventory.mjs dist/index.html --breakpoints 390x844,768x1024,1440x900 --out inventory.json
+```
+
+Use identical settings and fixtures for before/after, keep the JSON beside screenshots and task evidence, and use native device/client evidence for non-browser surfaces. See the [measured craft guide](skills/pixelcraft-visual-qa/references/measured-craft.md) for limits and platform alternatives.
 
 Inspect installer behavior:
 

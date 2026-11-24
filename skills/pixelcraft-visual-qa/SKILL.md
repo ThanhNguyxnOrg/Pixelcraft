@@ -17,6 +17,7 @@ Render the actual surface, inspect representative captures, execute the primary 
 - Read [references/finish-gate.md](references/finish-gate.md) before verifying a new or materially changed UI flow; it defines required evidence and the repair limit.
 - Read [references/baseline-governance.md](references/baseline-governance.md) before updating, trusting, masking, or retaining screenshot baselines.
 - Read [references/performance-budgets.md](references/performance-budgets.md) when setting or evaluating web vitals, interaction latency, frame budgets, and asset budgets.
+- Read [references/measured-craft.md](references/measured-craft.md) when comparing an expressive treatment, measuring before/after, or choosing non-browser evidence.
 - Run `node scripts/style-inventory.mjs <url-or-html-file>` when a rendered style/payload inventory would make critique measurable; it emits JSON rather than proof of quality.
 - Read [references/capture-mobile.md](references/capture-mobile.md) for iOS simulator, Android emulator/device, responsive viewport, gesture, and safe-area capture.
 - Read [references/capture-terminal.md](references/capture-terminal.md) for tmux, VHS, asciinema, snapshot backends, color fallback, resize, and scrollback evidence.
@@ -27,7 +28,7 @@ Render the actual surface, inspect representative captures, execute the primary 
 ## Required loop
 
 1. **Render** — build/run the real product surface. A typecheck, bundle, DOM snapshot, or successful server start is not visual evidence. For behavior that matters, execute a defined user task rather than only loading a page.
-2. **Capture** — cover the smallest supported width, a middle width, and a wide/desktop width; include light and dark where supported; include reduced motion where animation exists; capture meaningful states, task feedback, failure traces, and end states, not only the happy path.
+2. **Capture** — for responsive web, cover the smallest supported width, a middle width, and a wide width. On other surfaces use supported devices, sizes, clients or output formats. Include applicable appearance and reduced-motion settings; capture meaningful states, task feedback, failures and end states.
 3. **Inspect** — evaluate the capture against the direction card, platform conventions, floor requirements, rubric, and task. Look at edges, clipping, overlap, empty space, contrast, hierarchy, alignment, text truncation, input modality, and state communication.
 4. **Fix and retest** — normally use one focused repair round. For reproducible, measurable defects, run at most three total rounds and rerun affected checks without discarding earlier evidence. Do not iterate by taste.
 5. **Gate and report** — run the finish gate for new or materially changed flows; report its status and remaining defects or missing evidence. List captures inspected and use `rendered` only for actual runtime or capture evidence.

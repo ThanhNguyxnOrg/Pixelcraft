@@ -73,6 +73,8 @@ The following mechanisms recur across strongly art-directed interfaces. Corpus n
 
 ## Measured prototype critique
 
+Transfer the mechanism to the native surface, not the page structure. Quiet navigation may be a desktop menu, command palette, controller focus chain or chat action. Editorial indexing may be aligned terminal rows, document headings or a game inventory. Where time, input or display area is scarce, spend the signature on one useful event or distinction rather than on an opening spectacle.
+
 Before defending asymmetry, overlap, or a wide/narrow composition as intentional, record the rendered geometry: maximum text-content measure independent of viewport width, estimated centroid deviation, overlap count, visible grid count, and behavior at desktop plus narrow widths. Full-bleed media must be named as an exception; body text, forms, controls, and dense data still need deliberate measure constraints. Treat the numbers as evidence to inspect, not scores to maximize.
 
 ## Do not copy from award sites

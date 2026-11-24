@@ -10,6 +10,10 @@ metadata:
 
 Spatial UI is embodied interface design. Depth, scale, motion, head/body ergonomics, input privacy, frame stability, and real-world safety are product behavior—not decorative polish. Do not place a flat screen in space and call it XR.
 
+## Surface craft
+
+Attach depth to a meaningful relationship such as an object with nearby annotation, not decorative panels scattered around the room. Keep primary controls at a comfortable stable depth; offer seated and low-motion routes, with a non-immersive alternative where practical. Verify occlusion, relocalization and task completion with actual input when hardware is available.
+
 ## References
 
 - Read [references/platforms.md](references/platforms.md) for visionOS, WebXR, Three.js/React Three Fiber/A-Frame, Meta Quest Interaction SDK, and Unity XR Interaction Toolkit.

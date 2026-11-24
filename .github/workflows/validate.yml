@@ -15,6 +15,10 @@ jobs:
           package-manager-cache: false
       - run: node scripts/validate-skills.mjs
       - run: node bin/pixelcraft.mjs add all --agent all --dry-run
+      - name: Verify installer entry points
+        run: npm run test:installers -- --shell --powershell
+      - name: Verify adapters, tokens, and validator contracts
+        run: npm run test:adapters && npm run test:tokens && npm run test:validator
       - run: npm run test:finish-gate && npm run test:slop-scan
       - name: Verify browser diagnostic fixtures
         env:
@@ -22,4 +26,4 @@ jobs:
         run: |
           npm install --prefix "$PIXELCRAFT_TEST_PLAYWRIGHT_PROJECT" --no-package-lock --no-audit --no-fund playwright@1.65.1
           node "$PIXELCRAFT_TEST_PLAYWRIGHT_PROJECT/node_modules/playwright/cli.js" install --with-deps chromium
-          npm run test:shoot
+          npm run test:shoot && npm run test:style-inventory

@@ -10,6 +10,10 @@ metadata:
 
 Data visualization is evidence communication, not dashboard decoration. Start with the analytical question and the decision it informs; choose the simplest encoding that preserves magnitude, uncertainty, freshness, and missingness. A technically impressive chart that misreads the data is a failed chart.
 
+## Surface craft
+
+Start with the judgment the reader must make and expose its comparison baseline, units, uncertainty and missing values. Use annotations and ordered or small-multiple views when they remove comparison work. Verify the meaning survives monochrome, resizing and keyboard access; provide a data or text alternative for canvas or hover-only details.
+
 ## References
 
 - Read [references/chart-choice.md](references/chart-choice.md) when choosing among comparison, distribution, composition, relationship, time, flow, hierarchy, and geographic representations.

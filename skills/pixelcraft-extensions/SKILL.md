@@ -10,6 +10,10 @@ metadata:
 
 Extension UI is embedded trust-sensitive UI. Respect the host's security model, theme, chrome, input conventions, and limited space. Do not import a full product shell or branding takeover into a popup, panel, webview, or plugin iframe.
 
+## Surface craft
+
+Use the host's smallest appropriate surface: command for a quick action, panel for recurring context, webview for needs the host cannot express. Preserve host tokens, zoom and keyboard conventions, show the object's context, and verify open/action/dismiss with focus restored. Do not import a site's navigation or modal system into the host.
+
 ## References
 
 - Read [references/browser-extensions.md](references/browser-extensions.md) for MV3 popup/options/side panel/content-script UI, Shadow DOM, permissions, lifecycle, and browser constraints.

@@ -10,6 +10,10 @@ metadata:
 
 Media assets are constrained interfaces viewed outside your product. Platform cropping, compression, overlay UI, dark/light contexts, feed scale, caching, and screen density are part of the design. A beautiful full-size export that is illegible as a thumbnail is failed media.
 
+## Surface craft
+
+Design the focal subject and minimum readable message for the smallest real crop, then place secondary text inside a measured safe zone. Inspect platform recompression, dark/light surroundings and the static first frame/poster. Never promise thumbnail legibility from the full-size canvas.
+
 ## References
 
 - Read [references/social-cards.md](references/social-cards.md) for OG/platform dimensions, safe areas, crop behavior, thumbnail legibility, metadata, caching, and validation.

@@ -5,6 +5,7 @@
 
 ## Mode and scope
 - Planning mode: brownfield / greenfield / hybrid
+- Task route: new project / extend existing product / edit or fix / redesign or rebuild / behavior-preserving refactor
 - Task:
 - Date/agent:
 - Prior plan change/waiver:
@@ -29,8 +30,13 @@
 - Reversal conditions:
 - Confidence:
 - Runtime, package manager, and lockfile:
-- Version evidence (package/version, docs or registry source, check date, compatibility reason, verification command, or assumption / not-checked):
 - Update ownership and opt-in dependency automation:
+
+| Package/runtime + resolved version | Version-sensitive API or compatibility question | Version source and matching API docs (date) | Compatibility / verification command + outcome | Evidence (`static` / `not-checked`) |
+|---|---|---|---|---|
+|  |  |  |  |  |
+
+- Record an assumption and its impact when a source could not be verified. Add a row before introducing a new version-sensitive API later in the task.
 
 ## Design input intake
 - Artifact inventory/classification (specification vs inspiration):
@@ -71,6 +77,11 @@
 - Available here: rendered / static / device / browser / simulator / snapshot / CI
 - Commands/tools:
 - Cannot verify here (`not-checked`):
+
+## Existing behavior and replacement boundaries
+| Contract (entry point, flow, content, data, accessibility/localization, etc.) | Inspected source and current evidence | Preserve or authorized change | Baseline and regression check |
+|---|---|---|---|
+|  |  |  |  |
 
 ## Risks and open questions
 - Risks:

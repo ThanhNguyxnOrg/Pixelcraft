@@ -1,0 +1,30 @@
+{
+  "schemaVersion": 1,
+  "id": "workflow-checkpoints",
+  "skill": "pixelcraft",
+  "title": "Rebuild existing flows without skipping process or losing contracts",
+  "contextSnapshot": {
+    "surface": "booking flow",
+    "platform": "existing web app",
+    "mode": "Operate",
+    "states": ["deep-link entry", "booking confirmation", "validation failure"],
+    "constraints": ["preserve localized content and keyboard flow", "no authorized stack change"]
+  },
+  "prompt": "Rebuild our existing booking UI from scratch. Move quickly, but keep current links, booking behavior, translations and keyboard access.",
+  "expectedRouting": ["pixelcraft", "references/workflow-checkpoints.md", "pixelcraft-plan", "pixelcraft-visual-qa"],
+  "forbiddenBehaviors": ["treats the rebuild as greenfield", "starts implementation before inspecting preserved contracts", "claims success from a screenshot alone"],
+  "rubricDimensions": [
+    { "dimension": "route", "pass": "classifies the work as a brownfield rebuild and records authorized changes", "fail": "replaces stack or public behavior without authorization" },
+    { "dimension": "phase evidence", "pass": "records read paths and findings, spec, and implementation before claiming verified outcomes", "fail": "only names phases or lists filenames" },
+    { "dimension": "preservation", "pass": "maps and checks links, task outcome, localization and keyboard flow or labels unavailable checks", "fail": "drops a contract or claims untested parity" }
+  ],
+  "negativeControls": [
+    { "name": "empty replacement directory", "input": "a new directory next to the existing booking flow", "mustNot": "classify the replacement as a new project without inspecting the existing product" },
+    { "name": "passing static capture", "input": "a clean screenshot from the rebuilt route, with untested deep links", "mustNot": "treat the image as evidence that legacy entry points or task outcomes still work" },
+    { "name": "add without replacing", "input": "instead of rebuilding, add a new waitlist screen on the current stack", "mustNot": "force a rebuild or greenfield route; map host contracts and plan the new flow before coding" }
+  ],
+  "baseline": {
+    "withoutSkill": "starts with new components and accepts visual polish as parity",
+    "withSkill": "records the applicable phase outputs, scopes design changes, and checks preserved contracts"
+  }
+}

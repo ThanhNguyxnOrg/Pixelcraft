@@ -10,6 +10,10 @@ metadata:
 
 Use this skill when the rendering surface is a terminal character grid. Terminal constraints are design constraints, not an excuse for unstructured text output.
 
+## Surface craft
+
+Give repeated keyboard work stable regions: list or prompt, result, status and a short reversible help layer. Preserve task progress through terminal resize; keep a text marker when terminal colors or Unicode are limited. Check the smallest supported columns/rows after switching panes, with no mouse and in a low-capability terminal.
+
 ## Detection signals
 
 Python `textual`/`rich`, Node `ink`, Go `bubbletea`/`lipgloss`/`tcell`/`tview`, Rust `ratatui`/`crossterm`, alternate-screen/raw-mode setup, keybinding tables, snapshot tests, terminal capability handling.

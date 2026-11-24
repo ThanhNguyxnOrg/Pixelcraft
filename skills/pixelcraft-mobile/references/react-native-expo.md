@@ -63,8 +63,9 @@ Bridge/JS-thread jank, Hermes/runtime differences, Expo/native module mismatch, 
 npm run lint
 npm run test -- --watch=false
 npx expo start
-npx expo run:ios 2>/dev/null || true
-npx expo run:android 2>/dev/null || true
+CI=1 npx expo install --check
 ```
 
-Use actual device/emulator inspection, React Navigation state, Flipper/dev tools where relevant, VoiceOver/TalkBack, font scaling, dark mode, offline/throttled network, and platform back/gesture tests.
+For Expo projects, use the locally installed Expo CLI and compare the installed Expo SDK/React Native pairing with the matching SDK docs. Run the dependency check in CI mode to report mismatches without prompting to install replacements. If the local CLI is unavailable, mark the command `not-checked` rather than letting `npx` fetch a different version. Run `expo install --fix` only when dependency changes are authorized.
+
+Use the project's native build command for the affected device. Use device/emulator inspection, React Navigation state, React Native DevTools where supported, VoiceOver/TalkBack, font scaling, dark mode, offline/throttled network, and platform back/gesture tests.

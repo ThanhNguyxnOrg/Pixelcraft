@@ -10,6 +10,10 @@ metadata:
 
 Messaging interfaces are constrained embedded surfaces. The host controls typography, spacing, theme, chrome, input modality, accessibility tree, scrolling, notifications, and often whether content is persistent or ephemeral. Do not paste a web dashboard into chat: reduce the decision to the smallest actionable conversational unit.
 
+## Surface craft
+
+Let the message carry the essential meaning as text, then give the next relevant native action. Test an action acknowledgement, expired or duplicate tap, and fallback on clients that strip rich cards. Do not mistake decorative typing, extra blocks or a branding card for a usable interaction.
+
 ## References
 
 - Read [references/slack-discord.md](references/slack-discord.md) for Slack Block Kit surfaces/limits/mrkdwn and Discord embeds, Components V2, buttons/selects/modals.
