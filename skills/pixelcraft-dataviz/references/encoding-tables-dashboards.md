@@ -50,6 +50,8 @@ Legends force eye travel and color-memory lookup. When one is unavoidable, make 
 
 Annotation should answer “what should I notice?” Use sparse domain-specific callouts: threshold crossed, abnormal event, missing feed, target/benchmark, confidence boundary. Remove annotations that merely restate axis values.
 
+When two percentage series answer related but different questions, repeat their denominators in local labels rather than writing only “share” or distinguishing them by hue. If a comparison becomes a stack on phones, keep the order, date range, denominator and common domain close to each value. Verify that a reader can explain which group each percentage describes without hover or looking back to the desktop legend.
+
 ## Formatting and units
 
 - Put the unit in the axis title or first tick label (`ms`, `%`, `€`, `requests/s`), not only in a hidden tooltip.

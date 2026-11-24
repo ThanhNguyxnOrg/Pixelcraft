@@ -1,5 +1,9 @@
 # pixelcraft-dataviz evaluation cases
 
+## Case — similar percentages on a narrow screen
+
+Compare a group's share of donors and share of money over the same period. Pass if a reader can identify both denominators, the period and the domain after mobile stacking, without hover. Fail if the reader must remember category colors or infer what a standalone percentage divides by.
+
 ## Case 1 — metric choice
 
 **Prompt**

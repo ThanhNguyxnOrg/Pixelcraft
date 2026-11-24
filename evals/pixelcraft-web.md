@@ -1,5 +1,21 @@
 # pixelcraft-web evaluation cases
 
+## Case — compact campaign shell with a costly hero
+
+**Prompt**
+
+> Keep our cinematic showcase on wide pages. On a phone the compact navigation should not hide booking; on shallow windows or with reduced motion a static hero is enough.
+
+**Expected behaviors**
+
+- Keeps the real booking destination reachable with the menu closed; checks menu dismissal and focus at portrait and short height.
+- Keeps semantic content independent of the hero, and uses a fresh load in reduced motion and a trace to test that the unneeded scene does not initialize.
+- Distinguishes a DOM geometry estimate from visual negative space inside the hero asset.
+
+**Failure signals**
+
+- Shrinks wide navigation without testing a touch action; classifies a hidden but eagerly loaded scene as a lightweight fallback; reports reduced-motion support from a media query alone.
+
 ## Case 1 — react app
 
 **Prompt**

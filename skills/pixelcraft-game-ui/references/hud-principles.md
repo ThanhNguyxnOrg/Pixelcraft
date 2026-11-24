@@ -31,6 +31,8 @@ Reserve safe areas for TV/handheld/notched/system overlay contexts. Test 16:9/ul
 
 Separate persistent HUD state, transient feedback, modal interruption, tutorial/coach marks, cinematic subtitles, network/system notifications, and debug overlays. Define priority/interruption rules; otherwise everything competes at once.
 
+Give an acquisition or milestone two levels when the moment needs both: brief confirmation that does not interrupt active play, and a stable place in the inventory, objective log or pause screen to inspect the details later. Do not make the transient presentation the only record. Trigger it during a high-attention sequence and verify that the player can continue, look up the exact result after it disappears, and distinguish it without color or sound alone.
+
 ## Verification matrix
 
 Record engine/version/platform/device, resolution/aspect/scale, input device, brightness/contrast/HDR setting, locale/script/text size, motion/flash/accessibility settings, network state, gameplay chaos level, and exact task. Editor screenshot alone is weak evidence; runtime chaos/distance/controller evidence is stronger.
