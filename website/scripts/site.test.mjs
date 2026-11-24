@@ -86,6 +86,24 @@ test("production server serves routes and seekable media without exposing other 
   assert.equal(compressed.headers.get("content-encoding"), "gzip");
   assert.equal(compressed.headers.get("vary"), "Accept-Encoding");
   assert.match(await compressed.text(), /Pixelcraft/);
+  for (const [encoding, expected] of [
+    ["gzip;q=0", null],
+    ["br, gzip;q=0, *;q=1", null],
+    ["GZip;q=0", null],
+    ["identity", null],
+    ["gzip;q=0.25", "gzip"],
+    ["*;q=0.5", "gzip"],
+  ]) {
+    const negotiated = await fetch(base + "/", {
+      headers: { "Accept-Encoding": encoding },
+    });
+    assert.equal(
+      negotiated.headers.get("content-encoding"),
+      expected,
+      encoding,
+    );
+    assert.match(await negotiated.text(), /Pixelcraft/);
+  }
   assert.equal(missing.status, 404);
   assert.match(await missing.text(), /This pixel is missing/);
   const media = await fetch(base + "/video/pixelcraft-promo.mp4", {

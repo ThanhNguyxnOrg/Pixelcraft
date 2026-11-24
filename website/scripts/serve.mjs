@@ -110,10 +110,22 @@ const server = http.createServer(async (req, res) => {
     status = 206;
     res.setHeader("Content-Range", `bytes ${start}-${end}/${info.size}`);
   }
+  const encodings = (req.headers["accept-encoding"] ?? "")
+    .toLowerCase()
+    .split(",")
+    .map((entry) => entry.split(";").map((part) => part.trim()));
+  const quality = (coding) => {
+    const entry = encodings.find(([name]) => name === coding);
+    if (!entry) return undefined;
+    const q = entry.slice(1).find((part) => /^q\s*=/.test(part));
+    return q ? Number(q.split("=")[1]) : 1;
+  };
+  const gzipQuality = quality("gzip") ?? quality("*") ?? 0;
   const gzip =
     status !== 206 &&
     info.size > 0 &&
-    /\b(?:gzip)\b/.test(req.headers["accept-encoding"] ?? "") &&
+    gzipQuality > 0 &&
+    gzipQuality <= 1 &&
     /\.(?:html|css|js|json|webmanifest|svg|vtt)$/.test(path);
   res.setHeader("Vary", "Accept-Encoding");
   if (gzip) res.setHeader("Content-Encoding", "gzip");
