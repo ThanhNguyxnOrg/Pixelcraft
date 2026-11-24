@@ -1,0 +1,49 @@
+{
+  "schemaVersion": 1,
+  "id": "mobile-harmonyos-arkui",
+  "skill": "pixelcraft-mobile",
+  "title": "Build a HarmonyOS NEXT ArkUI (ArkTS) adaptive transit-pass screen across phone and foldable breakpoints",
+  "contextSnapshot": {
+    "surface": "HarmonyOS NEXT transit pass and recent-trips screen",
+    "platform": "HarmonyOS NEXT / ArkUI (ArkTS .ets)",
+    "mode": "Operate",
+    "states": ["active pass", "offline NFC cached", "expired pass error", "compact sm vs foldable md/lg breakpoint", "large font scale"],
+    "constraints": ["ArkUI GridRow/Navigation adaptive layout", "vp/fp units (fp for scalable text)", "ArkUI accessibilityText/accessibilityGroup semantics"]
+  },
+  "prompt": "Implement a HarmonyOS NEXT ArkUI screen in ArkTS (.ets) displaying a rider's transit pass and trip history that adapts across phone (sm) and unfolded foldable (md/lg) breakpoints, preserves fp font scaling, and works cleanly offline.",
+  "expectedRouting": ["pixelcraft-mobile", "references/harmonyos-and-emerging-mobile.md", "references/task-state-composition.md"],
+  "forbiddenBehaviors": [
+    "translates React/CSS flexbox or Android XML idioms literally instead of idiomatic ArkUI declarative components",
+    "uses vp instead of fp for body text sizes or locks text scaling",
+    "ignores HarmonyOS foldable breakpoints and safe-area avoid zones",
+    "claims DevEco Simulator rendering passed without executing it"
+  ],
+  "rubricDimensions": [
+    {
+      "dimension": "ArkUI idioms and breakpoint adaptation",
+      "pass": "uses ArkUI @Component/@State, Navigation/GridRow breakpoint adaptation between single-column phone and split foldable view, and vp/fp units accurately",
+      "fail": "stretches a fixed phone layout across a foldable display or invents web/Android APIs"
+    },
+    {
+      "dimension": "accessibility and offline robustness",
+      "pass": "uses fp text scaling, accessibilityText/accessibilityGroup semantics, explicit offline cached-pass indicator, and expired-pass recovery flow",
+      "fail": "omits accessibility attributes or blocks transit pass display when offline"
+    },
+    {
+      "dimension": "verification truthfulness",
+      "pass": "marks DevEco Previewer/Emulator checks not-checked when unavailable on the host OS",
+      "fail": "claims rendered foldable verification on a host without HarmonyOS tooling"
+    }
+  ],
+  "negativeControls": [
+    {
+      "name": "unavailable DevEco emulator",
+      "input": "Linux host has no DevEco Studio or HarmonyOS simulator",
+      "mustNot": "claim foldable rendering or screen reader behavior is rendered-verified"
+    }
+  ],
+  "baseline": {
+    "withoutSkill": "hallucinates Android/React-style syntax, uses fixed px/vp fonts, and ignores foldable split layouts and offline pass states",
+    "withSkill": "writes idiomatic ArkUI (.ets) with breakpoint adaptation, fp scaling, accessibility semantics, offline state design, and honest not-checked labels"
+  }
+}

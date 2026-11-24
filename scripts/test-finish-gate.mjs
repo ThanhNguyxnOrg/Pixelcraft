@@ -23,16 +23,20 @@ const manifest = {
   checks: {
     outcome: { ...evidence, assertion: 'Results refresh to one matching item' },
     input: { ...evidence, modality: 'keyboard', focus: 'Tab visibly focuses search, then submit' },
-    ...Object.fromEntries([390, 768, 1440].map((width) => [`width-${width}`, { ...evidence, width }])),
-    'layout-landscape': { ...evidence, width: 844, height: 390 },
-    'layout-short-height': { ...evidence, width: 1280, height: 480, artifact: 'before.txt' },
-    'reflow-320': { ...evidence, width: 320 }, error: evidence, empty: evidence, loading: evidence,
+    ...Object.fromEntries([390, 768, 1440].map((width) => [`width-${width}`, { ...evidence, width, artifact: `width-${width}.txt` }])),
+    'layout-landscape': { ...evidence, width: 844, height: 390, artifact: 'landscape.txt' },
+    'layout-short-height': { ...evidence, width: 1280, height: 480, artifact: 'short-height.txt' },
+    'reflow-320': { ...evidence, width: 320, artifact: 'reflow-320.txt' }, error: evidence, empty: evidence, loading: evidence,
   },
   rounds: [],
 };
-const hasArtifact = (value) => ['evidence.txt', 'before.txt'].includes(value);
+const validArtifacts = new Set([
+  'evidence.txt', 'before.txt', 'width-390.txt', 'width-768.txt', 'width-1440.txt',
+  'landscape.txt', 'short-height.txt', 'reflow-320.txt',
+]);
+const hasArtifact = (value) => validArtifacts.has(value);
 assert.equal(evaluateEvidence(manifest, hasArtifact).status, 'PASS');
-const missing = { ...manifest, checks: { ...manifest.checks, outcome: evidence, input: { ...manifest.checks.input, label: 'static' }, 'reflow-320': { ...evidence, width: 390 }, loading: { result: 'not-checked', reason: 'Sandbox offline' } } };
+const missing = { ...manifest, checks: { ...manifest.checks, outcome: evidence, input: { ...manifest.checks.input, label: 'static' }, 'reflow-320': { ...evidence, width: 390, artifact: 'reflow-320.txt' }, loading: { result: 'not-checked', reason: 'Sandbox offline' } } };
 const unchecked = evaluateEvidence(missing, hasArtifact);
 assert.equal(unchecked.status, 'NOT CHECKED');
 assert.deepEqual(Object.keys(unchecked.notChecked), ['outcome', 'input', 'loading', 'reflow-320']);
@@ -69,8 +73,9 @@ try {
     fs.writeFileSync(file, JSON.stringify(input));
     return spawnSync(process.execPath, [cli, file], { encoding: 'utf8' });
   };
-  fs.writeFileSync(path.join(dir, 'evidence.txt'), 'sandbox trace');
-  fs.writeFileSync(path.join(dir, 'before.txt'), 'prior sandbox trace');
+  for (const name of validArtifacts) {
+    fs.writeFileSync(path.join(dir, name), `sandbox trace for ${name}`);
+  }
   const good = run(manifest);
   assert.equal(good.status, 0, good.stderr);
   assert.equal(JSON.parse(good.stdout).status, 'PASS');
@@ -141,7 +146,7 @@ for (const [height, status] of [[600, 'NOT CHECKED'], [599, 'PASS']]) {
 }
 const reusesDesktopArtifact = evaluateEvidence({
   ...manifest,
-  checks: { ...manifest.checks, 'layout-short-height': { ...manifest.checks['layout-short-height'], artifact: './evidence.txt' } },
+  checks: { ...manifest.checks, 'layout-short-height': { ...manifest.checks['layout-short-height'], artifact: './width-1440.txt' } },
 }, (artifact) => hasArtifact(artifact.replace(/^\.\//, '')));
 assert.equal(reusesDesktopArtifact.status, 'NOT CHECKED');
 assert.match(reusesDesktopArtifact.notChecked['layout-short-height'], /separate artifact/);
@@ -182,3 +187,85 @@ const extendedPassing = evaluateEvidence({
 assert.equal(extendedPassing.status, 'PASS');
 assert.equal(extendedPassing.notApplicable.locale, 'Covered by i18n check');
 console.log('ok 8 - declared extended optional keys (i18n, locale, forced-colors, text-scale-200) are enforced without breaking v1 manifests');
+
+// Duplicate artifact paths across any distinct viewport/layout checks are rejected
+const dupWidth = evaluateEvidence({
+  ...manifest,
+  checks: { ...manifest.checks, 'width-768': { ...manifest.checks['width-768'], artifact: 'width-390.txt' } },
+}, hasArtifact);
+assert.equal(dupWidth.status, 'NOT CHECKED');
+assert.match(dupWidth.notChecked['width-768'], /Duplicate artifact.*width-390/);
+
+const dupReflow = evaluateEvidence({
+  ...manifest,
+  checks: { ...manifest.checks, 'reflow-320': { ...manifest.checks['reflow-320'], artifact: './width-390.txt' } },
+}, (artifact) => hasArtifact(artifact.replace(/^\.\//, '')));
+assert.equal(dupReflow.status, 'NOT CHECKED');
+assert.match(dupReflow.notChecked['reflow-320'], /Duplicate artifact.*width-390/);
+
+const dupLandscape = evaluateEvidence({
+  ...manifest,
+  checks: { ...manifest.checks, 'layout-landscape': { ...manifest.checks['layout-landscape'], artifact: 'width-768.txt' } },
+}, hasArtifact);
+assert.equal(dupLandscape.status, 'NOT CHECKED');
+assert.match(dupLandscape.notChecked['layout-landscape'], /Duplicate artifact.*width-768/);
+console.log('ok 9 - duplicate artifact paths cannot satisfy multiple viewport or layout breakpoints');
+
+// Lazy trivial applies: false excuses on core floor items (error, reduced-motion, theme) are rejected
+for (const lazy of ['n/a', 'N/A', 'none', 'skip', 'skipped', 'todo', 'tbd', 'ignored', '-', 'short']) {
+  const lazyRes = evaluateEvidence({
+    ...manifest,
+    applicability: { ...manifest.applicability, theme: { applies: false, reason: lazy } },
+  }, hasArtifact);
+  assert.equal(lazyRes.status, 'NOT CHECKED', `lazy reason '${lazy}' must be rejected`);
+  assert.match(lazyRes.notChecked.theme, /concrete/);
+}
+const lazyError = evaluateEvidence({
+  ...manifest,
+  applicability: { ...manifest.applicability, error: { applies: false, reason: 'none' } },
+}, hasArtifact);
+assert.equal(lazyError.status, 'NOT CHECKED');
+assert.ok(lazyError.notChecked.error);
+const lazyMotion = evaluateEvidence({
+  ...manifest,
+  applicability: { ...manifest.applicability, 'reduced-motion': { applies: false, reason: 'skipped' } },
+}, hasArtifact);
+assert.equal(lazyMotion.status, 'NOT CHECKED');
+assert.ok(lazyMotion.notChecked['reduced-motion']);
+console.log('ok 10 - lazy trivial applies: false reasons on core floor items (error, reduced-motion, theme) are rejected');
+
+// Surface-typed profiles: tui, mobile, email (including optional plaintext check)
+const nonWebBase = {
+  schemaVersion: 1, target: 'main-view', revision: 'abc', task: 'Filter records', fixture: 'local run',
+  applicability: { error: true, empty: true, loading: true, theme: excluded, 'reduced-motion': excluded },
+  checks: {
+    outcome: manifest.checks.outcome,
+    input: { ...evidence, focus: 'keyboard/touch focus traversal' },
+    layout: evidence,
+    error: evidence,
+    empty: evidence,
+    loading: evidence,
+  },
+  rounds: [],
+};
+for (const surface of ['tui', 'mobile', 'desktop', 'document', 'game', 'spatial', 'email']) {
+  const surfaceRes = evaluateEvidence({ ...nonWebBase, surface }, hasArtifact);
+  assert.equal(surfaceRes.status, 'PASS', `surface '${surface}' should pass`);
+}
+const emailPlaintextMissing = evaluateEvidence({
+  ...nonWebBase,
+  surface: 'email',
+  applicability: { ...nonWebBase.applicability, plaintext: true },
+}, hasArtifact);
+assert.equal(emailPlaintextMissing.status, 'NOT CHECKED');
+assert.ok(emailPlaintextMissing.notChecked.plaintext);
+
+const emailPlaintextPass = evaluateEvidence({
+  ...nonWebBase,
+  surface: 'email',
+  applicability: { ...nonWebBase.applicability, plaintext: true },
+  checks: { ...nonWebBase.checks, plaintext: evidence },
+}, hasArtifact);
+assert.equal(emailPlaintextPass.status, 'PASS');
+console.log('ok 11 - surface-typed profiles (tui, mobile, desktop, email + plaintext, document, game, spatial) validate cleanly');
+

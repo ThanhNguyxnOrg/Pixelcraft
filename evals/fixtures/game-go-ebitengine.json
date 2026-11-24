@@ -1,0 +1,49 @@
+{
+  "schemaVersion": 1,
+  "id": "game-go-ebitengine",
+  "skill": "pixelcraft-game-ui",
+  "title": "Build a Go Ebitengine tactical HUD and pause menu with HiDPI scaling, gamepad navigation, and safe-area margins",
+  "contextSnapshot": {
+    "surface": "2D tactical game HUD and pause/settings overlay",
+    "platform": "Go / Ebitengine (ebiten/v2 + ebitenui)",
+    "mode": "Play",
+    "states": ["active combat HUD", "pause overlay", "gamepad focus ring", "16:9 vs 21:9 ultrawide aspect ratio", "reduced screen shake"],
+    "constraints": ["keyboard + gamepad + pointer parity", "HiDPI DeviceScaleFactor crisp typography", "non-blocking low-health and pickup signals"]
+  },
+  "prompt": "Design and implement a Go Ebitengine HUD and pause/settings overlay using ebiten/v2 (with ebitenui or custom retained UI layout) supporting crisp HiDPI text, full D-pad/gamepad focus traversal, safe-area margins, and a reduced-motion toggle.",
+  "expectedRouting": ["pixelcraft-game-ui", "references/hud-principles.md", "references/web-and-middleware-game-ui.md"],
+  "forbiddenBehaviors": [
+    "hardcodes 1280x720 pixel coordinates that clip on ultrawide or Steam Deck 1280x800 displays",
+    "requires a mouse cursor to navigate the pause or key-rebind menu",
+    "loads fonts or allocates large images inside Draw() every frame instead of pre-caching",
+    "claims 60fps HUD legibility from go test without rendering frames"
+  ],
+  "rubricDimensions": [
+    {
+      "dimension": "HUD clarity and aspect-ratio adaptation",
+      "pass": "anchors HUD clusters inside safe-area bounds, scales cleanly with DeviceScaleFactor, and uses silhouette/numeric cues alongside color for health/ammo",
+      "fail": "hardcodes pixel offsets or communicates critical danger with red tint alone"
+    },
+    {
+      "dimension": "input modality parity and frame budget",
+      "pass": "provides deterministic keyboard/gamepad focus graph with visible focus highlight, Esc/Start cancel flow, and zero per-frame font/texture allocations in Draw()",
+      "fail": "relies on hover-only tooltips or stalls frame time allocating assets in Draw()"
+    },
+    {
+      "dimension": "verification honesty",
+      "pass": "distinguishes static Go unit tests for focus/layout math from rendered runtime/gamepad testing",
+      "fail": "claims visual HUD readability and gamepad feel are rendered-verified from go build"
+    }
+  ],
+  "negativeControls": [
+    {
+      "name": "headless compile only",
+      "input": "go build succeeds on a headless CI runner",
+      "mustNot": "claim HiDPI text crispness, frame pacing, or gamepad focus traversal is rendered-verified"
+    }
+  ],
+  "baseline": {
+    "withoutSkill": "hardcodes pixel positions for 1280x720, supports mouse-only pause buttons, and allocates text/shapes each Draw() tick",
+    "withSkill": "implements aspect-safe Ebitengine HUD clusters, HiDPI text rendering, full gamepad/keyboard focus traversal, reduced-motion controls, and honest evidence labels"
+  }
+}

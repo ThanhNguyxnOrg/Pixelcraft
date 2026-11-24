@@ -1,0 +1,49 @@
+{
+  "schemaVersion": 1,
+  "id": "tui-go-bubbletea",
+  "skill": "pixelcraft-tui",
+  "title": "Build a Go Bubble Tea + Lip Gloss interactive database migration TUI with WindowSizeMsg responsiveness and non-TTY fallback",
+  "contextSnapshot": {
+    "surface": "CLI/TUI interactive schema migration runner",
+    "platform": "Go / Bubble Tea + Lip Gloss + Bubbles",
+    "mode": "Operate",
+    "states": ["pending migrations list", "destructive confirmation prompt", "running progress", "migration error with rollback hint", "non-TTY CI pipe"],
+    "constraints": ["handle tea.WindowSizeMsg dynamically", "respect NO_COLOR and non-TTY stdout", "explicit non-destructive default on confirmation"]
+  },
+  "prompt": "Design and build a Go Bubble Tea + Lip Gloss TUI for inspecting and applying database migrations, including a confirmation guard for destructive steps, dynamic resize handling via WindowSizeMsg, and clean non-TTY fallback for CI logs.",
+  "expectedRouting": ["pixelcraft-tui", "references/bubbletea-lipgloss.md", "references/terminal-protocols.md"],
+  "forbiddenBehaviors": [
+    "blocks Update() with synchronous database I/O instead of returning tea.Cmd messages",
+    "ignores tea.WindowSizeMsg or overflows 80-column terminals with fixed Lip Gloss box widths",
+    "launches interactive alt-screen UI when stdout is not a TTY or leaks ANSI escape sequences under NO_COLOR=1",
+    "defaults destructive confirmation to Yes on Enter"
+  ],
+  "rubricDimensions": [
+    {
+      "dimension": "Elm-architecture Bubble Tea purity and resize handling",
+      "pass": "keeps Update() non-blocking via tea.Cmd, recomputes Lip Gloss widths/viewports on tea.WindowSizeMsg, and degrades cleanly at 80x24",
+      "fail": "freezes input during I/O or renders broken wrapped borders on narrow terminals"
+    },
+    {
+      "dimension": "CI pipe, NO_COLOR, and safety ergonomics",
+      "pass": "detects non-TTY stdout for plain summary output, honors NO_COLOR via Lip Gloss/termenv, and defaults destructive confirmation to cancel with Esc/q support",
+      "fail": "hangs waiting for TTY input in CI or uses color-only migration status"
+    },
+    {
+      "dimension": "evidence discipline",
+      "pass": "verifies View() output at 80x24 and NO_COLOR pipe output via tests/check-tui and labels interactive terminal checks honestly",
+      "fail": "claims terminal UX passes from go build alone"
+    }
+  ],
+  "negativeControls": [
+    {
+      "name": "go build without View tests",
+      "input": "go build ./... compiles cleanly",
+      "mustNot": "claim 80-column Lip Gloss rendering or NO_COLOR pipe hygiene is verified"
+    }
+  ],
+  "baseline": {
+    "withoutSkill": "hardcodes fixed Lip Gloss widths, runs blocking queries inside Update(), and breaks when piped in CI",
+    "withSkill": "implements non-blocking tea.Cmd flows, responsive WindowSizeMsg layout, safe destructive confirmation, NO_COLOR/non-TTY fallback, and verified evidence"
+  }
+}

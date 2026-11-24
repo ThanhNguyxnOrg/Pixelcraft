@@ -1,0 +1,49 @@
+{
+  "schemaVersion": 1,
+  "id": "document-rust-typst-invoice",
+  "skill": "pixelcraft-document",
+  "title": "Build a multi-page Typst (.typ) commercial invoice PDF with repeating table headers, tabular figures, and PDF/UA metadata",
+  "contextSnapshot": {
+    "surface": "Paginated multi-page B2B commercial invoice PDF",
+    "platform": "Typst (Rust typesetting engine, .typ -> PDF)",
+    "mode": "Communicate",
+    "states": ["single-page invoice", "3-page 45-line-item overflow", "long translated German/Japanese descriptions", "grayscale print check", "PDF/UA metadata check"],
+    "constraints": ["repeating table.header across page breaks", "breakable: false totals block so subtotal/total never splits across pages", "document title, lang, embedded fonts, and tabular numerals"]
+  },
+  "prompt": "Create a Typst (.typ) multi-page commercial invoice template supporting A4 and US Letter page sizes, repeating table headers across page breaks, unsplit totals blocks, tabular-aligned currency figures, and valid PDF document metadata (title, lang, embedded fonts).",
+  "expectedRouting": ["pixelcraft-document", "references/pdf-tools.md", "references/archetypes.md"],
+  "forbiddenBehaviors": [
+    "invents fake invoice totals, customer names, tax IDs, or company logos instead of parameterized inputs/visible placeholders",
+    "lets the subtotal/tax/grand-total summary split awkwardly across a page break or omits table.header(repeat: true)",
+    "uses proportional figures for right-aligned currency columns or omits #set document(title: ...) and #set text(lang: ...)",
+    "claims visual pagination quality from typst compile exit 0 without inspecting rasterized pages"
+  ],
+  "rubricDimensions": [
+    {
+      "dimension": "Typst pagination and typographic discipline",
+      "pass": "uses #set page(...) margins/running footers ('Page X of Y'), table.header(repeat: true), block(breakable: false) on totals, and tabular numerals (number-width: \"tabular\")",
+      "fail": "lets totals split across pages, repeats no headers on page 2, or uses browser CSS idioms in Typst"
+    },
+    {
+      "dimension": "accessibility, print safety, and truthfulness",
+      "pass": "sets #set document(title: ...) and #set text(lang: ...), preserves contrast in grayscale print, and keeps all invoice facts parameterized with zero invented data",
+      "fail": "hardcodes fabricated customer/tax records or drops language/title metadata"
+    },
+    {
+      "dimension": "static vs rendered PDF verification",
+      "pass": "runs check-pdf.mjs (static) AND rasterizes pages (e.g. pdftoppm) to visually inspect breaks/clipping, or marks visual page inspection not-checked if unavailable",
+      "fail": "equates typst compile exit 0 with rendered pagination verification"
+    }
+  ],
+  "negativeControls": [
+    {
+      "name": "typst compile only",
+      "input": "typst compile invoice.typ exits 0 and writes invoice.pdf",
+      "mustNot": "claim visual page breaks, margins, or overflow wrapping are rendered-verified without rasterized page inspection"
+    }
+  ],
+  "baseline": {
+    "withoutSkill": "hardcodes invented company data, splits totals across page breaks, forgets repeating headers and tabular numerals, and omits PDF metadata",
+    "withSkill": "produces a parameterized Typst template with clean pagination, repeating headers, unsplit totals, tabular currency alignment, PDF/UA metadata, and honest static+rendered checks"
+  }
+}

@@ -459,7 +459,7 @@ write_shell_adapters() {
     copilot)
       base="${root%/skills}"
       write_managed_adapter_file "$base/copilot-instructions.md" '# Pixelcraft router' '' "Use Pixelcraft for interface design, implementation, review, and visual QA. Start with pixelcraft-plan and read the matching self-contained skill under $display_root; do not inline large generated content."
-      write_adapter_file "$base/instructions/pixelcraft.instructions.md" '---' 'applyTo: "**/*.{html,css,scss,js,jsx,ts,tsx,vue,svelte,astro,mdx,razor,heex,erb,templ,mjml,typ,tex,py,rb,php,cs,java,kt,swift,dart,rs,go,lua,ex,exs,clj,cljs,elm,fs,scala,cpp,h,glsl,wgsl,qml,xaml,uxml,uss,gd,tscn,tcss,qss,r,jl}"' '---' '' 'When editing interface or user-facing behavior, follow copilot-instructions.md and read the matching Pixelcraft skill before implementation or review.'
+      write_adapter_file "$base/instructions/pixelcraft.instructions.md" '---' 'applyTo: "**/*.{html,css,scss,less,pcss,js,jsx,ts,tsx,vue,svelte,astro,mdx,razor,heex,erb,templ,twig,mjml,typ,tex,qmd,py,rb,php,cs,java,kt,swift,dart,rs,go,zig,lua,ex,exs,clj,cljs,elm,fs,scala,cpp,h,glsl,wgsl,qml,xaml,axaml,fxml,blp,slint,ets,uxml,uss,gd,tscn,tcss,qss,r,jl}"' '---' '' 'When editing interface or user-facing behavior, follow copilot-instructions.md and read the matching Pixelcraft skill before implementation or review.'
       for action in pixelcraft-plan pixelcraft-review pixelcraft-visual-qa pixelcraft-direction; do
         task="$(workflow_task "$action")"
         write_adapter_file "$base/prompts/$action.prompt.md" '---' "description: $task" '---' '' "$task. Read and follow the self-contained \`$action\` skill. Preserve user requirements, project conventions, accessibility, and evidence labels."

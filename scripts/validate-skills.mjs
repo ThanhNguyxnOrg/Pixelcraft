@@ -515,6 +515,7 @@ for (const entry of skillDirs) {
   if (!data.description || !data.description.trim()) fail(file, 'description is missing or empty');
   else if (data.description.length > 1024) fail(file, `description is ${data.description.length} characters; limit is 1024`);
   if (bodyLines.length > 500) fail(file, `body has ${bodyLines.length} lines; limit is 500`);
+  checkSkillHeadings(file, bodyLines);
   checkLinks(file, skillDir, skillName, text);
   checkSuppressedShellCommands(file, text);
 
@@ -553,7 +554,9 @@ for (const entry of skillDirs) {
   }
 }
 
-checkEvalFixtures(new Set(skillDirs.map((entry) => entry.name)));
+const skillNameSet = new Set(skillDirs.map((entry) => entry.name));
+checkPlatformRoutingSync(skillNameSet);
+checkEvalFixtures(skillNameSet);
 
 if (fs.existsSync(rootScriptsDir)) {
   for (const script of fs.readdirSync(rootScriptsDir).filter((name) => name.endsWith('.mjs')).sort()) {
@@ -567,3 +570,89 @@ if (errors.length) {
   process.exit(1);
 }
 console.log(`Skill validation passed: ${skillDirs.length} skill${skillDirs.length === 1 ? '' : 's'} checked.`);
+
+function checkSkillHeadings(file, bodyLines) {
+  let inCodeFence = false;
+  let prevHeading = null;
+  const seenRouting = new Set();
+  for (const line of bodyLines) {
+    if (/^```/.test(line.trimStart())) {
+      inCodeFence = !inCodeFence;
+      continue;
+    }
+    if (inCodeFence) continue;
+    const match = /^(#{1,6})\s+(.+?)\s*$/.exec(line);
+    if (!match) continue;
+    const level = match[1];
+    const title = match[2].trim().toLowerCase();
+    const normalized = `${level} ${title}`;
+    if (prevHeading !== null && normalized === prevHeading) {
+      fail(file, `duplicate consecutive heading: ${line.trim()}`);
+    }
+    prevHeading = normalized;
+    if (level === '##' && (title === 'domain routing' || title === 'platform routing')) {
+      if (seenRouting.has(normalized)) {
+        fail(file, `duplicate '${line.trim()}' heading`);
+      }
+      seenRouting.add(normalized);
+    }
+  }
+}
+
+function checkPlatformRoutingSync(skillNames) {
+  const orchestratorFile = path.join(skillsRoot, 'pixelcraft', 'SKILL.md');
+  if (!fs.existsSync(orchestratorFile)) return;
+  const text = fs.readFileSync(orchestratorFile, 'utf8').replace(/^```[\s\S]*?^```/gm, '');
+  const headerMatch = /^##\s+Platform routing\s*$/mi.exec(text);
+  if (!headerMatch) {
+    fail(orchestratorFile, "missing '## Platform routing' section");
+    return;
+  }
+  const rest = text.slice(headerMatch.index + headerMatch[0].length);
+  const nextSection = rest.search(/^##\s+/m);
+  const section = nextSection >= 0 ? rest.slice(0, nextSection) : rest;
+
+  const seenPlatformRows = new Set();
+  for (const rawLine of section.split(/\r?\n/)) {
+    const m = /^\|\s*`(pixelcraft-[a-z0-9-]+)`\s*\|\s*(.+?)\s*\|$/.exec(rawLine.trim());
+    if (!m) continue;
+    const platformSkill = m[1];
+    const cell = m[2];
+    if (seenPlatformRows.has(platformSkill)) {
+      fail(orchestratorFile, `duplicate Platform routing row for ${platformSkill}`);
+      continue;
+    }
+    seenPlatformRows.add(platformSkill);
+    if (!skillNames.has(platformSkill)) {
+      fail(orchestratorFile, `Platform routing table references unknown skill: ${platformSkill}`);
+      continue;
+    }
+    const listed = new Set();
+    for (const refMatch of cell.matchAll(/`([a-z0-9][a-z0-9-]*)`/g)) {
+      const refName = refMatch[1];
+      if (listed.has(refName)) {
+        fail(orchestratorFile, `Platform routing table for ${platformSkill} lists duplicate reference '${refName}'`);
+      }
+      listed.add(refName);
+    }
+    const refsDir = path.join(skillsRoot, platformSkill, 'references');
+    const actual = new Set();
+    if (fs.existsSync(refsDir)) {
+      for (const entry of fs.readdirSync(refsDir, { withFileTypes: true })) {
+        if (entry.isFile() && entry.name.endsWith('.md')) {
+          actual.add(entry.name.slice(0, -3));
+        }
+      }
+    }
+    for (const stem of [...actual].sort()) {
+      if (!listed.has(stem)) {
+        fail(orchestratorFile, `Platform routing table for ${platformSkill} is missing reference '${stem}'`);
+      }
+    }
+    for (const stem of [...listed].sort()) {
+      if (!actual.has(stem)) {
+        fail(orchestratorFile, `Platform routing table for ${platformSkill} lists nonexistent reference '${stem}'`);
+      }
+    }
+  }
+}

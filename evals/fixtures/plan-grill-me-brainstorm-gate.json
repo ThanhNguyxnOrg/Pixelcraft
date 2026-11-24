@@ -1,0 +1,49 @@
+{
+  "schemaVersion": 1,
+  "id": "plan-grill-me-brainstorm-gate",
+  "skill": "pixelcraft-plan",
+  "title": "Run an adaptive grill-me decision tree and divergent creative brainstorming gate for an ambiguous greenfield product before coding",
+  "contextSnapshot": {
+    "surface": "Ambiguous greenfield cross-platform product concept with undecided visual direction",
+    "platform": "not yet chosen (candidate mobile/desktop/web evaluated from constraints)",
+    "mode": "Experience",
+    "states": ["rough product vision", "unresolved architecture branches", "divergent visual directions", "explicit user approval gate"],
+    "constraints": ["resolve highest-leverage branch one question at a time via grill-me protocol", "never code before design-direction approval", "generate genuinely far-apart visual concepts with scored trade-offs"]
+  },
+  "prompt": "I want to build a calm personal field-journal app for botanists and hikers, maybe mobile or desktop, and I want it to feel unforgettable — not like another generic SaaS notes app. Grill me on the key product and design decisions before we write any code.",
+  "expectedRouting": ["pixelcraft-plan", "references/grill-me-protocol.md", "pixelcraft-direction", "references/creative-brainstorming.md"],
+  "forbiddenBehaviors": [
+    "dumps a 20-question intake form all at once instead of traversing the decision tree iteratively with recommendations",
+    "skips directly to scaffolding React/Tailwind components before resolving product boundaries and obtaining approval on a selected visual direction",
+    "generates three near-identical minimalism/card-grid variations disguised as divergent creative directions",
+    "treats an unapproved recommendation as final user sign-off"
+  ],
+  "rubricDimensions": [
+    {
+      "dimension": "grill-me decision-tree discipline",
+      "pass": "summarizes what is already known, asks one high-leverage branch at a time with concrete options + a recommended default + trade-offs, and resolves platform/offline/data constraints before implementation",
+      "fail": "front-loads a generic questionnaire or asks framework trivia before product outcomes"
+    },
+    {
+      "dimension": "creative brainstorming divergence",
+      "pass": "produces 3-5 genuinely distinct visual/interaction worlds grounded in botanical field notebooks, herbarium specimens, and outdoor usability, scoring each and recording why alternatives lost",
+      "fail": "offers superficial color swaps on the same SaaS card layout"
+    },
+    {
+      "dimension": "approval gate integrity",
+      "pass": "records user decisions vs assumptions in plan/brief artifacts and waits for explicit direction sign-off before emitting implementation code",
+      "fail": "starts generating application code mid-interview without user approval"
+    }
+  ],
+  "negativeControls": [
+    {
+      "name": "narrow brownfield bugfix with complete spec",
+      "input": "Fix the clipped Save button on /settings in this existing SwiftUI app without changing the visual design",
+      "mustNot": "trigger a multi-round grill-me interview or creative brainstorming divergence"
+    }
+  ],
+  "baseline": {
+    "withoutSkill": "jumps straight into a generic React/Tailwind SaaS notes template or dumps a long unstructured list of questions",
+    "withSkill": "executes a focused grill-me decision tree, explores far-apart domain-grounded visual worlds via creative brainstorming, and gates coding on explicit user approval"
+  }
+}

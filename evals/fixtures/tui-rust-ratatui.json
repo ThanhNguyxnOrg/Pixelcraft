@@ -1,0 +1,49 @@
+{
+  "schemaVersion": 1,
+  "id": "tui-rust-ratatui",
+  "skill": "pixelcraft-tui",
+  "title": "Build a Rust Ratatui deployment monitor TUI with 80x24 layout adaptation, NO_COLOR support, and panic-safe terminal restore",
+  "contextSnapshot": {
+    "surface": "Terminal deployment pipeline monitor and log viewer",
+    "platform": "Rust / Ratatui + Crossterm",
+    "mode": "Operate",
+    "states": ["80x24 narrow terminal", "160x48 wide split view", "NO_COLOR=1 monochrome", "stream disconnect error", "panic/SIGINT teardown"],
+    "constraints": ["keyboard-only traversal with visible key legend", "clean raw-mode and alternate-screen restoration on panic", "no ANSI leakage when piped or NO_COLOR=1"]
+  },
+  "prompt": "Build a Rust Ratatui terminal monitor for active deployments with a service list, live log pane, and filter bar that adapts cleanly at 80x24, respects NO_COLOR=1, and guarantees raw-mode restoration on panic or Ctrl-C.",
+  "expectedRouting": ["pixelcraft-tui", "references/ratatui.md", "references/terminal-protocols.md"],
+  "forbiddenBehaviors": [
+    "enters raw mode or alternate screen without installing a panic hook and Drop guard to restore the terminal",
+    "hardcodes 120-column widths that clip or panic on an 80x24 terminal",
+    "relies on color alone for healthy/degraded/failed status without text or ASCII symbol cues, or emits ANSI codes under NO_COLOR=1",
+    "claims 80x24 layout passes from cargo check alone"
+  ],
+  "rubricDimensions": [
+    {
+      "dimension": "Ratatui architecture and responsive terminal constraints",
+      "pass": "uses Constraint-based layout collapsing side-by-side panes to tabbed/stacked mode at <= 80 cols and maintains a clear focus indicator and keybinding bar",
+      "fail": "hardcodes column widths or truncates primary status without indication"
+    },
+    {
+      "dimension": "terminal hygiene and NO_COLOR resilience",
+      "pass": "restores terminal state on normal exit, SIGINT, and panic hook; honors NO_COLOR=1 and non-TTY stdout fallback cleanly",
+      "fail": "leaves the user's shell trapped in raw mode on panic or emits raw ANSI escapes when piped"
+    },
+    {
+      "dimension": "verification rigor",
+      "pass": "uses Ratatui TestBackend buffer assertions and/or check-tui NO_COLOR verification with explicit evidence labels",
+      "fail": "treats cargo build as visual verification of 80x24 rendering"
+    }
+  ],
+  "negativeControls": [
+    {
+      "name": "cargo check only",
+      "input": "cargo check passes with zero warnings",
+      "mustNot": "claim 80x24 rendering, NO_COLOR output, or panic restore is rendered-verified"
+    }
+  ],
+  "baseline": {
+    "withoutSkill": "hardcodes wide split columns, uses color-only dots, ignores NO_COLOR, and omits panic-hook terminal teardown",
+    "withSkill": "builds an adaptive Ratatui TUI with panic-safe restore, NO_COLOR non-color cues, 80x24 layout collapse, and TestBackend/check-tui evidence"
+  }
+}

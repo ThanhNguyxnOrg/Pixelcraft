@@ -1,10 +1,10 @@
 # pixelcraft-dataviz evaluation cases
 
-## Case — similar percentages on a narrow screen
+## Case 1 — similar percentages on a narrow screen
 
 Compare a group's share of donors and share of money over the same period. Pass if a reader can identify both denominators, the period and the domain after mobile stacking, without hover. Fail if the reader must remember category colors or infer what a standalone percentage divides by.
 
-## Case 1 — metric choice
+## Case 2 — metric choice
 
 **Prompt**
 
@@ -31,7 +31,7 @@ Compare a group's share of donors and share of money over the same period. Pass 
 | Constraint fidelity | Relies on common defaults or stale APIs | Uses the exact surface constraints, state model, and platform idioms in the expected behaviors |
 | Verification | Reports code/text output only | Provides appropriate rendered/static/model evidence and labels unavailable checks |
 
-## Case 2 — map dashboard
+## Case 3 — map dashboard
 
 **Prompt**
 

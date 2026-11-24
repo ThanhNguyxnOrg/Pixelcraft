@@ -1,10 +1,10 @@
 # pixelcraft-mobile evaluation cases
 
-## Case — a distinct identity across an interrupted focus session
+## Case 1 — a distinct identity across an interrupted focus session
 
 Design setup, a running timer and its result. The session object should remain recognizable, but controls and progress must make each state distinct. Pass if the timer and stop/resume controls work without art or animation, and the result is verified after a one-handed interruption. Fail if identical promotional cards replace state feedback or a celebration blocks the completed session.
 
-## Case 1 — ios android flow
+## Case 2 — ios android flow
 
 **Prompt**
 
@@ -31,7 +31,7 @@ Design setup, a running timer and its result. The session object should remain r
 | Constraint fidelity | Relies on common defaults or stale APIs | Uses the exact surface constraints, state model, and platform idioms in the expected behaviors |
 | Verification | Reports code/text output only | Provides appropriate rendered/static/model evidence and labels unavailable checks |
 
-## Case 2 — offline app
+## Case 3 — offline app
 
 **Prompt**
 

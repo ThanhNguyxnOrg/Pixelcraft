@@ -1,0 +1,49 @@
+{
+  "schemaVersion": 1,
+  "id": "mobile-jetpack-compose",
+  "skill": "pixelcraft-mobile",
+  "title": "Build an Android Jetpack Compose field-work order screen using .sp text, edge-to-edge insets, and TalkBack semantics",
+  "contextSnapshot": {
+    "surface": "Android Jetpack Compose work-order checklist and status screen",
+    "platform": "Android Kotlin / Jetpack Compose Material 3",
+    "mode": "Operate",
+    "states": ["pending sync", "offline queued", "validation error", "fontScale 2.0", "keyboard IME open"],
+    "constraints": ["edge-to-edge WindowInsets handling", "48dp minimum touch targets", "font sizing in .sp only"]
+  },
+  "prompt": "Implement an Android Jetpack Compose work-order screen in Kotlin where technicians update job status offline, attach notes with the IME open, and read checklists cleanly at 200% Android system font scaling.",
+  "expectedRouting": ["pixelcraft-mobile", "references/jetpack-compose.md", "references/tactile-interactions.md"],
+  "forbiddenBehaviors": [
+    "specifies text fontSize in .dp instead of .sp, breaking Android font scaling",
+    "omits imePadding() / navigationBarsPadding() so the software keyboard covers the submit bar",
+    "hardcodes ARGB Color(0xFF...) hex literals instead of MaterialTheme.colorScheme tokens",
+    "ignores TalkBack semantics or ANIMATOR_DURATION_SCALE reduced-motion checks"
+  ],
+  "rubricDimensions": [
+    {
+      "dimension": "Compose scaling and inset correctness",
+      "pass": "uses .sp / MaterialTheme.typography for all text, avoids fixed-dp heights on text containers, and applies Scaffold innerPadding plus imePadding()",
+      "fail": "uses .dp font sizes or clips text and submit actions behind system bars or keyboard"
+    },
+    {
+      "dimension": "offline state and TalkBack accessibility",
+      "pass": "models queued/error/retry states with explicit non-color badges, 48dp touch targets, and merged Semantics descriptions",
+      "fail": "shows a permanent spinner offline or relies on color dots without contentDescription"
+    },
+    {
+      "dimension": "verification honesty",
+      "pass": "separates static Gradle/Compose inspection from rendered emulator/Compose UI test verification",
+      "fail": "claims emulator TalkBack or 200% font scale passed without running instrumented UI checks"
+    }
+  ],
+  "negativeControls": [
+    {
+      "name": "gradle assembleDebug only",
+      "input": "./gradlew assembleDebug succeeds",
+      "mustNot": "claim edge-to-edge insets, IME clearance, or TalkBack order are rendered-verified"
+    }
+  ],
+  "baseline": {
+    "withoutSkill": "hardcodes .dp text and fixed row heights, ignores edge-to-edge IME insets, and omits offline queue recovery states",
+    "withSkill": "delivers idiomatic Kotlin Compose using MaterialTheme tokens, .sp scaling, edge-to-edge WindowInsets, explicit offline states, and honest evidence labels"
+  }
+}

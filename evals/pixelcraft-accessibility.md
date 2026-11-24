@@ -56,7 +56,7 @@
 | Constraint fidelity | Relies on common defaults or stale APIs | Uses the exact surface constraints, state model, and platform idioms in the expected behaviors |
 | Verification | Reports code/text output only | Provides appropriate rendered/static/model evidence and labels unavailable checks |
 
-## Case — canvas, cursor, and motion alternatives
+## Case 3 — canvas, cursor, and motion alternatives
 
 **Prompt**
 
