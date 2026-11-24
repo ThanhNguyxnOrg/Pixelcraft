@@ -28,7 +28,7 @@ In `checks`, include `outcome`, `input`, and `width-390`, `width-768`, `width-14
 }
 ```
 
-- `outcome` also requires `assertion`; `input` requires `focus` (what visibly focused; order/restoration) and web `modality: "keyboard"`. Width checks, including `reflow-320`, require numeric `width` matching the ID. For a state or theme, record the states/modes actually exercised in `method` and expected/observed results.
+- `outcome` also requires `assertion`; `input` requires `focus` (what visibly focused; order/restoration) and web `modality: "keyboard"`. Width checks require numeric `width` matching `reflow-320`, `width-<px>`, or a width-scoped defect ID such as `width-390-submit`. For a state or theme, record the states/modes actually exercised in `method` and expected/observed results.
 - Use `result: "fail"` for confirmed failures. For a blocked or unrun check use `result: "not-checked"` and a `reason`; never label static evidence rendered.
 - `artifact` is a nonempty local file path relative to the manifest directory (screenshot, trace or result log as appropriate). Do not paste secrets or rely on externally mutable debug output.
 - `rounds` starts as `[]`. Append one object per actual repair-and-retest cycle with `failure`, `reproduction`, `change`, `rerun`, and distinct `before`/`after` evidence paths. Every `failure` names a current check ID whose rendered result is required even after the defect passes. Keep the prior failure evidence.

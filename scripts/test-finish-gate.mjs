@@ -78,3 +78,16 @@ try {
   fs.rmSync(dir, { recursive: true, force: true });
 }
 console.log('ok 3 - gate exits nonzero for open or unchecked scope and rejects external artifacts');
+
+const widthDefect = { ...evidence, result: 'fail', width: 390 };
+const scopedRound = { ...round, failure: 'width-390-submit' };
+const scopedDefect = { ...manifest, rounds: [scopedRound, scopedRound, scopedRound],
+  checks: { ...manifest.checks, 'width-390-submit': widthDefect } };
+const scopedOpen = evaluateEvidence(scopedDefect, hasArtifact);
+assert.equal(scopedOpen.status, 'OPEN');
+assert.equal(scopedOpen.failures['width-390-submit'].artifact, 'evidence.txt');
+const wrongWidth = evaluateEvidence({ ...scopedDefect,
+  checks: { ...scopedDefect.checks, 'width-390-submit': { ...widthDefect, width: 768 } } }, hasArtifact);
+assert.equal(wrongWidth.status, 'NOT CHECKED');
+assert.ok(wrongWidth.notChecked['width-390-submit']);
+console.log('ok 4 - width-scoped defect IDs require the viewport encoded in their prefix');

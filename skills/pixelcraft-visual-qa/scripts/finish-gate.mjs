@@ -43,12 +43,13 @@ export function evaluateEvidence(manifest, hasArtifact) {
   for (const id of new Set([...required, ...repaired, ...Object.keys(manifest.checks)])) {
     const entry = Object.hasOwn(manifest.checks, id) ? manifest.checks[id] : undefined;
     if (skipped.has(id) && entry?.result !== 'fail') continue;
+    const width = id === 'reflow-320' ? '320' : /^width-(\d+)(?:-|$)/.exec(id)?.[1];
     if (!record(entry) || !['pass', 'fail'].includes(entry.result) || entry.label !== 'rendered'
         || ![entry.method, entry.expected, entry.observed].every(present) || !hasArtifact(entry.artifact)
         || (id === 'outcome' && !present(entry.assertion))
         || (id === 'input' && !present(entry.focus))
         || (web && id === 'input' && entry.modality !== 'keyboard')
-        || (/^width-|^reflow-320$/.test(id) && entry.width !== Number(id.split('-').at(-1)))) {
+        || (width !== undefined && entry.width !== Number(width))) {
       notChecked.set(id, present(entry?.reason) ? entry.reason : 'Missing required rendered evidence or assertion.');
     } else if (entry.result === 'fail') {
       skipped.delete(id);
