@@ -33,6 +33,14 @@ export function usePromoMotion(
         };
         const observer = new IntersectionObserver(
           ([entry]) => {
+            // A fully clipped comparison image may never qualify for native
+            // lazy loading. Warm both layers on frame entry before waiting on
+            // image readiness, otherwise that wait and the reveal deadlock.
+            if (entry.isIntersecting) {
+              images.forEach((img) => {
+                img.loading = "eager";
+              });
+            }
             visible = entry.isIntersecting && entry.intersectionRatio >= 0.25;
             sync();
           },
