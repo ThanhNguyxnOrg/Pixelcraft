@@ -160,9 +160,7 @@ function Builder() {
                             }`}
                           >
                             {on ? <PixelIcon name="check" size={10} /> : null}
-                            {s.name
-                              .replace("pixelcraft-", "")
-                              .replace(/^pixelcraft$/, "pixelcraft")}
+                            {s.name.replace("pixelcraft-", "")}
                           </button>
                         );
                       })}
