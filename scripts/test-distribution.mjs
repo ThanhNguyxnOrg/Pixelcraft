@@ -1,8 +1,10 @@
 import assert from 'node:assert/strict';
 import { execFileSync } from 'node:child_process';
 import fs from 'node:fs';
+import os from 'node:os';
 import path from 'node:path';
 import { fileURLToPath } from 'node:url';
+import { inflateRawSync } from 'node:zlib';
 
 if (process.argv.includes('--help')) {
   console.log('Usage: npm run test:distribution -- [--release]');
@@ -34,6 +36,7 @@ assert.ok(!fs.existsSync(path.join(root, '.claude-plugin/plugin.json')), 'the in
 assert.equal(codexCatalog.plugins[0].name, portable.name);
 assert.equal(codexCatalog.plugins[0].source.source, 'local');
 assert.equal(path.resolve(root, codexCatalog.plugins[0].source.path), path.resolve(root));
+assert.equal(portable.extensions['com.openai'].interface.displayName, codexCatalog.interface.displayName);
 assert.deepEqual(pkg.pi.skills, ['./skills']);
 console.log('ok - native manifests share the canonical skill root and package version');
 
@@ -49,7 +52,7 @@ const [pack] = JSON.parse(execFileSync(npmCli ? process.execPath : 'npm', npmCli
 }));
 assert.equal(pack.name, 'pixelcraft');
 const files = new Set(pack.files.map((entry) => entry.path));
-for (const expected of ['package.json', pkg.bin.pixelcraft, 'plugin.json', 'gemini-extension.json',
+for (const expected of ['package.json', pkg.bin.pixelcraft, 'plugin.json', 'gemini-extension.json', 'scripts/build-skill-zips.mjs',
   '.claude-plugin/marketplace.json', '.agents/plugins/marketplace.json', 'assets/pixelcraft-logo-512.png']) {
   assert.ok(files.has(expected), `missing from npm package: ${expected}`);
 }
@@ -58,3 +61,39 @@ for (const directory of skillDirectories) {
   assert.ok(files.has(skill), `missing from npm package: ${skill}`);
 }
 console.log(`ok - npm pack --dry-run includes the CLI, host manifests, and canonical skills for ${pack.name}@${pack.version}`);
+
+function countFiles(folder) {
+  return fs.readdirSync(folder, { withFileTypes: true }).reduce((count, entry) =>
+    count + (entry.isDirectory() ? countFiles(path.join(folder, entry.name)) : Number(entry.isFile())), 0);
+}
+
+const output = fs.mkdtempSync(path.join(os.tmpdir(), 'pixelcraft-skill-zips-'));
+try {
+  execFileSync(process.execPath, [path.join(root, 'scripts/build-skill-zips.mjs'), '--out', output]);
+  assert.deepEqual(fs.readdirSync(output).sort(), skillDirectories.map((directory) => `${path.basename(directory)}.zip`).sort());
+  for (const directory of skillDirectories) {
+    const folder = path.basename(directory);
+    const zip = fs.readFileSync(path.join(output, `${folder}.zip`));
+    const end = zip.length - 22;
+    assert.equal(zip.readUInt32LE(end), 0x06054b50);
+    let cursor = zip.readUInt32LE(end + 16);
+    const entries = new Set();
+    for (let n = 0; n < zip.readUInt16LE(end + 10); n++) {
+      assert.equal(zip.readUInt32LE(cursor), 0x02014b50);
+      const nameLength = zip.readUInt16LE(cursor + 28);
+      const name = zip.toString('utf8', cursor + 46, cursor + 46 + nameLength);
+      assert.ok(name.startsWith(`${folder}/`) && !name.split('/').includes('..') && !entries.has(name), name);
+      entries.add(name);
+      const local = zip.readUInt32LE(cursor + 42);
+      const start = local + 30 + zip.readUInt16LE(local + 26);
+      assert.deepEqual(inflateRawSync(zip.subarray(start, start + zip.readUInt32LE(cursor + 20))),
+        fs.readFileSync(path.join(root, 'skills', name)), name);
+      cursor += 46 + nameLength;
+    }
+    assert.equal(entries.size, countFiles(path.join(root, directory)));
+    assert.ok(entries.has(`${folder}/SKILL.md`));
+  }
+  console.log(`ok - all ${skillDirectories.length} upload ZIPs contain one canonical skill and all its bundled files`);
+} finally {
+  fs.rmSync(output, { recursive: true, force: true });
+}

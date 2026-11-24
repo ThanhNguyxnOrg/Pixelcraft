@@ -118,9 +118,9 @@ function kiroSteering(skills) {
 
 ${routingText}
 
-Treat this file as a router only. Read the matching self-contained \`SKILL.md\` under \`.kiro/pixelcraft/skills/\` before detailed implementation:
+Treat this file as a router only. Read the matching self-contained \`SKILL.md\` under \`.kiro/skills/\` before detailed implementation:
 
-${skillList(skills, '.kiro/pixelcraft/skills')}
+${skillList(skills, '.kiro/skills')}
 `;
 }
 
@@ -234,10 +234,14 @@ function build() {
     copilot: '.github/skills',
     opencode: '.opencode/skills',
     devin: '.agents/skills',
+    cline: '.cline/skills',
+    roo: '.roo/skills',
+    droid: '.factory/skills',
+    antigravity: '.agents/skills',
   };
   for (const [agent, relative] of Object.entries(fragments)) copyAllSkills(skills, path.join(dist, agent), relative);
   copyAllSkills(skills, path.join(dist, 'windsurf'), '.windsurf/skills');
-  copyAllSkills(skills, path.join(dist, 'kiro'), '.kiro/pixelcraft/skills');
+  copyAllSkills(skills, path.join(dist, 'kiro'), '.kiro/skills');
 
   for (const [command, skill, task] of actions.slice(0, 4)) {
     write(path.join(dist, 'claude/.claude/commands', `${command}.md`), claudeCommand(skill, task));

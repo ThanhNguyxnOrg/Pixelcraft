@@ -7,13 +7,18 @@ import { fileURLToPath } from 'node:url';
 
 const repoRoot = path.resolve(path.dirname(fileURLToPath(import.meta.url)), '..');
 const skillsRoot = path.join(repoRoot, 'skills');
-const canonicalAgents = ['claude', 'codex', 'agents', 'devin', 'cursor', 'gemini', 'copilot', 'windsurf', 'opencode', 'kiro'];
+const canonicalAgents = ['claude', 'codex', 'agents', 'devin', 'cursor', 'gemini', 'copilot', 'windsurf', 'opencode', 'kiro', 'cline', 'roo', 'droid', 'antigravity'];
 const validAgents = [...canonicalAgents, 'all'];
 const agentAliases = {
   'claude-code': 'claude',
   'gemini-cli': 'gemini',
   'github-copilot': 'copilot',
   'open-code': 'opencode',
+  'roo-code': 'roo',
+  factory: 'droid',
+  amp: 'agents',
+  zed: 'agents',
+  goose: 'agents',
 };
 
 function skillNames() {
@@ -53,6 +58,10 @@ function targetsFor(agentInput, globalInstall) {
     windsurf: { root: '.windsurf', type: 'windsurf' },
     opencode: { root: '.opencode/skills', type: 'skills' },
     kiro: { root: '.kiro', type: 'kiro' },
+    cline: { root: '.cline/skills', type: 'skills' },
+    roo: { root: '.roo/skills', type: 'skills' },
+    droid: { root: '.factory/skills', type: 'skills' },
+    antigravity: { root: '.agents/skills', type: 'skills' },
   };
   const globalMap = {
     claude: { root: path.join(home, '.claude/skills'), type: 'skills' },
@@ -65,6 +74,10 @@ function targetsFor(agentInput, globalInstall) {
     windsurf: { root: path.join(home, '.codeium/windsurf'), type: 'windsurf' },
     opencode: { root: path.join(home, '.config/opencode/skills'), type: 'skills' },
     kiro: { root: path.join(home, '.kiro'), type: 'kiro' },
+    cline: { root: path.join(home, '.cline/skills'), type: 'skills' },
+    roo: { root: path.join(home, '.roo/skills'), type: 'skills' },
+    droid: { root: path.join(home, '.factory/skills'), type: 'skills' },
+    antigravity: { root: path.join(home, '.gemini/config/skills'), type: 'skills' },
   };
   const map = globalInstall ? globalMap : project;
   const seen = new Set();
@@ -93,8 +106,8 @@ Commands:
   help, --help
       Show this help.
 
-Agents: claude, codex, agents, devin, cursor, gemini, copilot, windsurf, opencode, kiro, all.
-Aliases: claude-code, gemini-cli, github-copilot, open-code.
+Agents: ${validAgents.join(', ')}.
+Aliases: ${Object.keys(agentAliases).join(', ')}.
 
 Options:
   --agent NAME   Target host. Required for non-interactive add.
@@ -108,14 +121,16 @@ directory instead of replacing files outside the project.
 
 Project locations: claude=.claude/skills; codex/agents/devin=.agents/skills;
 cursor=.cursor/skills; gemini=.gemini/skills; copilot=.github/skills;
-opencode=.opencode/skills. Windsurf receives .windsurf rules/workflows and Kiro
-receives .kiro steering because those hosts use router formats rather than native
-SKILL.md installation. Claude/Cursor/Copilot adapter commands and rules are written
+opencode=.opencode/skills; kiro=.kiro/skills; cline=.cline/skills;
+roo=.roo/skills; droid=.factory/skills. Windsurf and Kiro get native skills and
+router files. Claude/Cursor/Copilot adapter commands and rules are written
 alongside their skills. Universal .agents/skills remains available through the
 agents target and as a compatibility path in several hosts.
 Global locations: claude=~/.claude/skills; codex/agents/devin=~/.agents/skills;
 cursor=~/.cursor/skills; gemini=~/.gemini/skills; copilot=~/.copilot/skills;
-windsurf=~/.codeium/windsurf/skills plus memories/global_rules.md; opencode=~/.config/opencode/skills; kiro=~/.kiro.
+windsurf=~/.codeium/windsurf/skills plus memories/global_rules.md;
+opencode=~/.config/opencode/skills; kiro=~/.kiro/skills; cline=~/.cline/skills;
+roo=~/.roo/skills; droid=~/.factory/skills; antigravity=~/.gemini/config/skills.
 
 Host behavior and global paths follow current public documentation where available.
 They change quickly; verify current host documentation before depending on them in automation.`;
@@ -284,7 +299,7 @@ function writeAgentAdapters(target, dryRun, force, selected) {
     write('instructions/pixelcraft.instructions.md', `---\napplyTo: "**/*.{html,css,scss,js,jsx,ts,tsx,vue,svelte,astro,py,rb,php,cs,java,kt,swift,dart,rs,go,lua,ex,exs,clj,cljs,elm,fs,scala}"\n---\n\nWhen editing interface or user-facing behavior, follow \`copilot-instructions.md\` and read the matching Pixelcraft skill before implementation or review.\n`);
     for (const [command, skill, task] of adapterActions.slice(1)) write(`prompts/${command}.prompt.md`, commandText(skill, task));
   } else if (target.type === 'windsurf' || target.type === 'kiro') {
-    const supportRoot = target.type === 'windsurf' ? path.join(base, 'skills') : path.join(base, 'pixelcraft', 'skills');
+    const supportRoot = path.join(base, 'skills');
     assertAdapterPathSafe(path.join(supportRoot, 'probe'), boundary);
     for (const entry of selected) copySkill(entry.name, supportRoot, dryRun, { force: force && !entry.auto, auto: entry.auto, boundary });
     const displaySupport = target.global ? supportRoot.replace(os.homedir(), '~') : path.relative(process.cwd(), supportRoot);

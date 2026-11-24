@@ -25,6 +25,7 @@
   "scripts": {
     "validate": "node scripts/validate-skills.mjs",
     "build:adapters": "node scripts/build-adapters.mjs",
+    "build:skill-zips": "node scripts/build-skill-zips.mjs",
     "test:adapters": "node scripts/test-build-adapters.mjs",
     "test:installers": "node scripts/test-installers.mjs",
     "test:distribution": "node scripts/test-distribution.mjs",
