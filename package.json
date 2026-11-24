@@ -1,5 +1,5 @@
 {
-  "name": "pixelcraft",
+  "name": "@thanhnguyxn/pixelcraft",
   "version": "0.1.0",
   "description": "Portable Agent Skills pack for distinctive UI and rigorous UX across frontend stacks",
   "license": "MIT",
@@ -12,9 +12,17 @@
     "access": "public"
   },
   "type": "module",
-  "keywords": ["agent-skills", "pi-package", "frontend", "ui", "ux"],
+  "keywords": [
+    "agent-skills",
+    "pi-package",
+    "frontend",
+    "ui",
+    "ux"
+  ],
   "pi": {
-    "skills": ["./skills"]
+    "skills": [
+      "./skills"
+    ]
   },
   "bin": {
     "pixelcraft": "bin/pixelcraft.mjs"

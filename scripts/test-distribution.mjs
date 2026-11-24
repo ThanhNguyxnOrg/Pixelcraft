@@ -53,7 +53,9 @@ const rawPack = JSON.parse(execFileSync(npmCli ? process.execPath : 'npm', npmCl
   encoding: 'utf8',
 }));
 const pack = Array.isArray(rawPack) ? rawPack[0] : (rawPack.files ? rawPack : rawPack[pkg.name] || Object.values(rawPack)[0]);
-assert.equal(pack.name, 'pixelcraft');
+assert.equal(pack.name, '@thanhnguyxn/pixelcraft');
+assert.equal(pkg.publishConfig.access, 'public');
+assert.deepEqual(pkg.bin, { pixelcraft: 'bin/pixelcraft.mjs' });
 const files = new Set(pack.files.map((entry) => entry.path));
 for (const expected of ['package.json', pkg.bin.pixelcraft, 'plugin.json', 'gemini-extension.json', 'scripts/build-skill-zips.mjs',
   '.claude-plugin/marketplace.json', '.claude-plugin/plugin.json', '.agents/plugins/marketplace.json', 'assets/pixelcraft-logo-512.png']) {

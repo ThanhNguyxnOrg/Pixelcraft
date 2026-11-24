@@ -278,16 +278,16 @@ Each archive contains canonical `skills/` plus generated `adapters/`. Either cop
 
 ### npm package (pending the first approved release)
 
-After `pixelcraft` is publicly available on npm, install the CLI without `npx`:
+After `@thanhnguyxn/pixelcraft` is publicly available on npm, install the CLI without `npx`:
 
 ```bash
-npm i -g pixelcraft
+npm i -g @thanhnguyxn/pixelcraft
 pixelcraft add all --agent cursor
 ```
 
-Pi can then also install it with `pi install npm:pixelcraft`. Until release, use the Git-based or local installers above.
+Pi can then also install it with `pi install npm:@thanhnguyxn/pixelcraft`. Until release, use the Git-based or local installers above.
 
-Maintainers: use `npm run test:distribution` to inspect the package without publishing. The [organization Release Controller](https://github.com/ThanhNguyxnOrg/.github/blob/main/docs/agent-automation.md#release-safety) opens a release PR with the version changes and changelog. Merge it to approve the release (keep the release PR title if squashing). The controller creates the tag, and this repository's adapter checks that it matches the package version, builds the archives, and calls the shared GitHub Release publisher. Only after that succeeds does the shared npm publisher upload the package with provenance. The repository still needs an `NPM_TOKEN` authorized to publish the unscoped `pixelcraft` package. No per-release variable or manual tag is required.
+Maintainers: use `npm run test:distribution` to inspect the package without publishing. The [organization Release Controller](https://github.com/ThanhNguyxnOrg/.github/blob/main/docs/agent-automation.md#release-safety) opens a release PR with the version changes and changelog. Merge it to approve the release (keep the release PR title if squashing). The controller creates the tag, and this repository's adapter checks that it matches the package version, builds the archives, and calls the shared GitHub Release publisher. Only after that succeeds does the shared npm publisher upload the package with provenance. The repository still needs an `NPM_TOKEN` authorized to publish `@thanhnguyxn/pixelcraft` publicly. No per-release variable or manual tag is required.
 
 ### Manual git clone/copy
 
