@@ -42,7 +42,7 @@
     },
     {
       "dimension": "fallback",
-      "pass": "maintains a silent/static or ordinary-video path",
+      "pass": "maintains silent/static or ordinary-video path",
       "fail": "meaning requires audio or WebGL"
     },
     {

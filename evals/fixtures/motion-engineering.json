@@ -36,7 +36,7 @@
   "rubricDimensions": [
     {
       "dimension": "runtime choice",
-      "pass": "selects CSS/Motion/GSAP by task and avoids overlapping ownership",
+      "pass": "selects CSS/Motion/GSAP by task and avoids overlapping property ownership",
       "fail": "installs all animation libraries without rationale"
     },
     {

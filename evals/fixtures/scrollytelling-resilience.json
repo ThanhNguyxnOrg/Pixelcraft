@@ -60,7 +60,7 @@
     {
       "name": "short viewport",
       "input": "Viewport height is 500px",
-      "mustNot": "allow pinned content to cover narrative or focus"
+      "mustNot": "allow pinned scene to cover narrative or focus"
     }
   ],
   "baseline": {
