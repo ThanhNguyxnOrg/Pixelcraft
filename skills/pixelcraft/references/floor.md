@@ -35,6 +35,7 @@ The floor is non-negotiable unless the user explicitly waives a scoped item. It 
 ## 4. Adaptation and responsiveness
 
 - Restructure rather than stretch. Reflow across narrow/wide, portrait/landscape, window resizing, split screen, text scaling, and input modality.
+- Plan and verify the primary task for each supported layout/input class; preserve task access, content meaning, input and focus as the presentation changes. A different mobile and desktop composition is allowed; a mobile task cut just to fit is not.
 - No unintentional clipping, overlap, horizontal scrolling, unreachable controls, or hidden primary actions.
 - Respect safe areas, system bars, on-screen keyboards, display cutouts, browser chrome, and minimum practical viewport/window sizes.
 - Use platform navigation idioms instead of transplanting UI patterns across operating systems.

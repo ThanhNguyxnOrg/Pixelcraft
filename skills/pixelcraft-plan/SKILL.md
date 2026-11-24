@@ -46,6 +46,8 @@ Before modifying an existing surface, read the affected entry point, implementat
 
 The plan must state: chosen stack; platform skill and framework reference by name; surfaces/screens; mode per surface; UX flows/state matrices to design; existing design-system authority; design-input classification/provenance/completeness and the handoff decision; i18n/accessibility/legal constraints; risks/unknowns; verification capabilities available in the current environment; evidence classification for material facts; and open questions. Link or embed the design brief when one exists. Later skills consume this plan instead of rediscovering the repository or silently changing stack.
 
+For adaptable surfaces, fill out the device class matrix in the plan before building. Name supported sizes and inputs, what changes in navigation, density and task controls, what stays equivalent, and how each applicable class or transition will be checked. Include height and aspect ratio, not just width.
+
 ## Hard rules
 
 - Do not select a stack before inventorying hard constraints.

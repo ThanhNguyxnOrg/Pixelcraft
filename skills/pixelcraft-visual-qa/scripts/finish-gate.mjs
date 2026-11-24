@@ -5,8 +5,10 @@ import { fileURLToPath } from 'node:url';
 
 const optional = ['error', 'empty', 'loading', 'theme', 'reduced-motion', 'reflow-320'];
 const interfaces = ['responsive-web', 'other'];
+const webLayoutClasses = ['layout-landscape', 'layout-short-height'];
 const present = (value) => typeof value === 'string' && Boolean(value.trim());
 const record = (value) => value && typeof value === 'object' && !Array.isArray(value);
+const dimension = (value) => Number.isSafeInteger(value) && value > 0;
 
 export function evaluateEvidence(manifest, hasArtifact) {
   if (!record(manifest) || manifest.schemaVersion !== 1 || !interfaces.includes(manifest.surface)
@@ -28,6 +30,24 @@ export function evaluateEvidence(manifest, hasArtifact) {
     } else notChecked.set(id, 'Applicability must be decided before verification.');
   }
 
+  const layouts = record(manifest.layoutMatrix) ? manifest.layoutMatrix : {};
+  const expectedLayouts = new Map();
+  for (const id of new Set([...(web ? webLayoutClasses : []), ...Object.keys(layouts)])) {
+    const layout = layouts[id];
+    if (!/^layout-[a-z0-9]+(?:-[a-z0-9]+)*$/.test(id)) {
+      notChecked.set(id, 'Use layout-<class> for layout matrix IDs.');
+    } else if (record(layout) && layout.applies === false && present(layout.reason)) {
+      skipped.set(id, layout.reason);
+    } else if (record(layout) && layout.applies !== false
+        && dimension(layout.width) && dimension(layout.height)
+        && (id !== 'layout-landscape' || layout.width > layout.height)) {
+      required.push(id);
+      expectedLayouts.set(id, layout);
+    } else {
+      notChecked.set(id, 'Declare positive layout width and height (landscape must be wider than tall), or a reason it does not apply.');
+    }
+  }
+
   if (manifest.rounds.length > 3) throw new Error('at most three repair rounds are allowed');
   const repaired = new Set();
   for (const round of manifest.rounds) {
@@ -44,6 +64,7 @@ export function evaluateEvidence(manifest, hasArtifact) {
     const entry = Object.hasOwn(manifest.checks, id) ? manifest.checks[id] : undefined;
     if (skipped.has(id) && entry?.result !== 'fail') continue;
     const width = id === 'reflow-320' ? 320 : Number(/^width-([1-9]\d*)(?:-.+)?$/.exec(id)?.[1]);
+    const layout = expectedLayouts.get(id);
     if (id.startsWith('width-') && !Number.isSafeInteger(width)) {
       notChecked.set(id, 'Invalid width check ID; use width-<px> or width-<px>-<defect>.');
       continue;
@@ -53,7 +74,8 @@ export function evaluateEvidence(manifest, hasArtifact) {
         || (id === 'outcome' && !present(entry.assertion))
         || (id === 'input' && !present(entry.focus))
         || (web && id === 'input' && entry.modality !== 'keyboard')
-        || (Number.isSafeInteger(width) && entry.width !== width)) {
+        || (Number.isSafeInteger(width) && entry.width !== width)
+        || (layout && (entry.width !== layout.width || entry.height !== layout.height))) {
       notChecked.set(id, present(entry?.reason) ? entry.reason : 'Missing required rendered evidence or assertion.');
     } else if (entry.result === 'fail') {
       skipped.delete(id);

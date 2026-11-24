@@ -31,6 +31,7 @@
 
 - Restructure at breakpoints/size classes; do not simply scale desktop down.
 - Decide what becomes navigation, disclosure, secondary pane, or sequence at narrow widths.
+- Compare the same task across size and input classes: a wide comparison table may become aligned summaries with detail on touch, and a persistent sidebar may become reachable disclosure or navigation. Keep comparable facts and destinations reachable; prefer the same semantic structure when it already works.
 - Preserve primary action visibility without covering content with sticky chrome.
 - Test landscape/portrait, split window, dynamic text, RTL mirroring, safe area, virtual keyboard, controller focus order, and minimum terminal size as applicable.
 - Horizontal scrolling can be correct for data tables/timelines, but never accidental page overflow.
