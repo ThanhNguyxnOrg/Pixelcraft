@@ -40,13 +40,50 @@ If a static poster replaces a decorative scene, make that decision before starti
 
 ## Modern browser-native craft idioms
 
-Use progressive, zero-dependency CSS capabilities before importing JS animation or layout libraries:
+Use progressive, zero-dependency CSS and HTML capabilities before importing JS animation or positioning libraries:
 
-- **Discrete entry/exit transitions**: combine `@starting-style` and `transition-behavior: allow-discrete` for native `<dialog>`, `[popover]`, and disclosure reveals so overlays animate smoothly without JS choreography and degrade cleanly when unsupported.
+- **Top-layer overlays (`[popover]` + `<dialog>`) with CSS Anchor Positioning**: let the browser manage top-layer stacking, light-dismiss, and flip fallbacks instead of manual `z-index` ladders or JS positioning engines.
+- **Discrete entry/exit transitions**: combine `@starting-style` and `transition-behavior: allow-discrete` for native `<dialog>`, `[popover]`, and disclosure reveals so overlays animate smoothly from `display: none` and degrade cleanly when unsupported.
 - **Scroll-driven progress**: gate `animation-timeline: view()` / `scroll()` behind both `@supports (animation-timeline: view())` and `@media (prefers-reduced-motion: no-preference)`; keep the final layout readable without animation.
-- **Typographic rag polish**: apply `text-wrap: balance` on short headings/callouts and `text-wrap: pretty` on body paragraphs to prevent awkward single-word orphans.
-- **Viewport & scrollbar stability**: prefer `svh`/`dvh` over `100vh` on mobile and `scrollbar-gutter: stable` on scrolling regions to prevent horizontal jump when content toggles overflow.
-- **Self-adapting components**: use `container-type: inline-size` with `@container` queries for cards, sidebars, and dense toolbars so components respond to their actual slot width rather than assuming global viewport breakpoints.
+- **Self-adapting components & relational states**: use `container-type: inline-size` with `@container` queries so cards/sidebars/toolbars respond to their slot width, `:has()` for pure-CSS parent state styling, and `field-sizing: content` for auto-growing textareas/inputs.
+- **Perceptual color derivation**: use `oklch()` and `color-mix(in oklch, ...)` for hover/active/tint states with predictable lightness and contrast.
+- **Typographic rag & viewport stability**: apply `text-wrap: balance` on short headings, `text-wrap: pretty` on body copy, `svh`/`dvh` instead of `100vh` on mobile, and `scrollbar-gutter: stable` on scrolling regions.
+
+```css
+/* Native anchored popover with discrete entry/exit transition */
+.menu-trigger { anchor-name: --menu-btn; }
+
+.menu-panel[popover] {
+  position-anchor: --menu-btn;
+  position-area: block-end span-inline-end;
+  position-try-fallbacks: flip-block, flip-inline;
+  opacity: 0;
+  transform: translateY(-4px) scale(0.98);
+  transition:
+    opacity 150ms ease-out,
+    transform 150ms ease-out,
+    display 150ms ease-out allow-discrete,
+    overlay 150ms ease-out allow-discrete;
+}
+
+.menu-panel[popover]:popover-open {
+  opacity: 1;
+  transform: translateY(0) scale(1);
+}
+
+@starting-style {
+  .menu-panel[popover]:popover-open {
+    opacity: 0;
+    transform: translateY(-4px) scale(0.98);
+  }
+}
+
+/* Container-driven card adaptation */
+.card-slot { container-type: inline-size; }
+@container (inline-size >= 28rem) {
+  .card { display: grid; grid-template-columns: 10rem minmax(0, 1fr); gap: 1rem; }
+}
+```
 
 ## Accessibility specifics
 

@@ -1,0 +1,69 @@
+{
+  "schemaVersion": 1,
+  "id": "creative-code-rendering",
+  "skill": "pixelcraft-web",
+  "title": "Choose bounded renderer for effects",
+  "contextSnapshot": {
+    "surface": "marketing hero",
+    "platform": "responsive web",
+    "mode": "Persuade",
+    "states": [
+      "initial",
+      "animated",
+      "hover",
+      "offscreen",
+      "hidden tab",
+      "context failure"
+    ],
+    "constraints": [
+      "existing design system",
+      "mid-tier mobile",
+      "static fallback"
+    ]
+  },
+  "prompt": "Create an interactive particle field with a custom image displacement effect behind semantic hero content.",
+  "expectedRouting": [
+    "pixelcraft-web",
+    "pixelcraft-accessibility",
+    "pixelcraft-visual-qa"
+  ],
+  "forbiddenBehaviors": [
+    "canvas-only text",
+    "unbounded particle loop",
+    "no context loss handling",
+    "assuming GPU acceleration always helps"
+  ],
+  "rubricDimensions": [
+    {
+      "dimension": "renderer selection",
+      "pass": "chooses SVG/Canvas/Pixi/WebGL/WebGPU by effect complexity and support",
+      "fail": "uses GPU renderer for simple decoration"
+    },
+    {
+      "dimension": "bounded runtime",
+      "pass": "caps DPR, objects, delta time and pauses when hidden",
+      "fail": "unbounded per-frame allocation or updates"
+    },
+    {
+      "dimension": "fallback",
+      "pass": "provides deterministic static and semantic paths",
+      "fail": "page becomes unusable without GPU"
+    }
+  ],
+  "negativeControls": [
+    {
+      "name": "desktop capture",
+      "input": "Effect appears smooth on developer desktop",
+      "mustNot": "claim mobile frame budget passed"
+    },
+    {
+      "name": "shader similarity",
+      "input": "Reference contains liquid distortion",
+      "mustNot": "copy unique artwork or assert the same shader implementation"
+    }
+  ],
+  "baseline": {
+    "withoutSkill": "adds a heavy canvas with no measurement",
+    "withSkill": "documents renderer, deterministic test, fallback and device budget"
+  }
+}

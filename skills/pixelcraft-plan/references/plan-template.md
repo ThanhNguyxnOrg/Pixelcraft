@@ -20,6 +20,14 @@
 |---|---|---|---|
 |  |  |  |  |
 
+## Discovery status
+- Planning path: direct / discovery interview / brownfield discovery / hybrid
+- Interview trigger or reason it was unnecessary:
+- Material decisions resolved (user-selected / recommendation accepted / repository-constrained):
+- Assumptions and their consequences:
+- Unresolved decisions, owner, and next check:
+- Approval boundary/status:
+
 ## Stack decision
 - Chosen stack:
 - Platform skill: `pixelcraft-…`

@@ -15,6 +15,7 @@ Accessibility is a floor built during design, not a final repair pass. Meet the 
 - Read [references/wcag22-checks.md](references/wcag22-checks.md) for the concrete WCAG 2.2 AA floor and pass/fail checks.
 - Read [references/apg-patterns.md](references/apg-patterns.md) before implementing or reviewing custom dialogs, menus, tabs, comboboxes, disclosures, grids, tooltips, carousels, live regions, trees, or drag/drop.
 - Read [references/platforms.md](references/platforms.md) when translating the floor to web, iOS, Android, Flutter/React Native, data apps, desktop, TUI, email, or game UI.
+- Read [references/motion-canvas.md](references/motion-canvas.md) when reviewing animation, reduced motion, custom cursor, canvas, WebGL, audio/video, or interactive graphics alternatives.
 - Read [references/verification.md](references/verification.md) before claiming compliance; separate automated evidence from manual judgment.
 
 ## Core rules

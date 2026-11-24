@@ -6,6 +6,8 @@ Evidence: validation and checkout research, WCAG redundant-entry/accessible-auth
 
 - One persistent visible label per field. Placeholder is never a label because it disappears, harms recall, and is often low contrast.
 - Ask only for information needed now. Mark optional fields rather than plastering required markers everywhere when most fields are required.
+- When requesting sensitive or unexpected data (phone number, date of birth, government ID), add a one-line inline reason explaining *why* it is needed (e.g., “Used only for courier delivery updates”).
+- On mobile, avoid detouring users onto separate subpages mid-form (e.g., separate address/coupon pages that risk losing scroll or input state); use inline disclosure or a single-step bottom sheet that preserves all entered fields.
 - Group related choices; order by user mental model, not database schema. Use one column in most task flows.
 - Use correct control type: text input vs select vs radio/checkbox/stepper/date picker. Do not force tiny dropdowns for few choices or free text for constrained values.
 - Accept forgiving formats; parse and normalize rather than forcing users to match backend storage.

@@ -37,6 +37,11 @@ Use hard gates before weights: unsupported target platform, missing legal/access
 | Email | HTML tables, MJML, React Email | Client fragmentation dominates framework preference; plaintext parity mandatory |
 | Embedded/kiosk | Qt/QML, Slint, LVGL/custom native, webview/Tauri/Electron only when resources permit, Flutter embedded where supported | Hardware/input/power/update/security constraints are hard gates |
 
+## Creative rendering
+
+For expressive browser work, compare the lightest sufficient option before introducing a renderer: DOM/CSS/SVG, native scroll, Canvas 2D, Motion for React, GSAP, PixiJS/WebGL, Three.js/R3F/Spline, and WebGPU as an optional capability path. Use the dedicated web references for compatibility, asset, lifecycle, accessibility, and performance gates.
+
+
 ## Decision quality bar
 
 A valid recommendation explains why this stack fits the user and team, not why it is popular. It names tradeoffs, verification plan, migration/reversal cost, and what would make the runner-up win.

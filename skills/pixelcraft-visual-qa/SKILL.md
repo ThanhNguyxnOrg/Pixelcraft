@@ -16,6 +16,8 @@ Render the actual surface, inspect representative captures, execute the primary 
 - Read [references/task-verification.md](references/task-verification.md) when behavior or task completion matters more than static appearance.
 - Read [references/finish-gate.md](references/finish-gate.md) before verifying a new or materially changed UI flow; it defines required evidence and the repair limit.
 - Read [references/baseline-governance.md](references/baseline-governance.md) before updating, trusting, masking, or retaining screenshot baselines.
+- Read [references/motion-capture.md](references/motion-capture.md) when timing, scrub, drag, route transitions, or animated states need video/trace evidence.
+- Read [references/realtime-graphics.md](references/realtime-graphics.md) for canvas/WebGL/WebGPU runtime states, context loss, GPU/asset budgets, and actual-device evidence.
 - Read [references/performance-budgets.md](references/performance-budgets.md) when setting or evaluating web vitals, interaction latency, frame budgets, and asset budgets.
 - Read [references/measured-craft.md](references/measured-craft.md) when comparing an expressive treatment, measuring before/after, or choosing non-browser evidence.
 - Run `node scripts/style-inventory.mjs <url-or-html-file>` when a rendered style/payload inventory would make critique measurable; it emits JSON rather than proof of quality.

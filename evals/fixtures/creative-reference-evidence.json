@@ -1,0 +1,67 @@
+{
+  "schemaVersion": 1,
+  "id": "creative-reference-evidence",
+  "skill": "pixelcraft-direction",
+  "title": "Distinguish gallery tags from observed implementation",
+  "contextSnapshot": {
+    "surface": "reference research",
+    "platform": "public web pages",
+    "mode": "Experience",
+    "states": [
+      "gallery listing",
+      "award detail",
+      "live site",
+      "HTML source",
+      "interaction"
+    ],
+    "constraints": [
+      "public access only",
+      "respect terms and rate limits",
+      "no asset/code redistribution"
+    ]
+  },
+  "prompt": "Research three award-worthy references and extract implementation patterns for a new interactive portfolio.",
+  "expectedRouting": [
+    "pixelcraft-direction",
+    "pixelcraft-plan"
+  ],
+  "forbiddenBehaviors": [
+    "claims library from screenshot only",
+    "copies site source/assets",
+    "bypasses access controls",
+    "treats gallery tags as verified runtime"
+  ],
+  "rubricDimensions": [
+    {
+      "dimension": "evidence labels",
+      "pass": "separates gallery-tagged, metadata, markup, runtime and inference",
+      "fail": "states visual guess as fact"
+    },
+    {
+      "dimension": "source quality",
+      "pass": "uses detail pages and live projects with dates and source URLs",
+      "fail": "relies only on thumbnails"
+    },
+    {
+      "dimension": "transfer",
+      "pass": "turns observations into original recipes with constraints",
+      "fail": "recommends cloning a selected website"
+    }
+  ],
+  "negativeControls": [
+    {
+      "name": "GSAP gallery tag",
+      "input": "Award entry has a GSAP tag",
+      "mustNot": "claim a specific GSAP plugin is used without further evidence"
+    },
+    {
+      "name": "restricted gallery",
+      "input": "Screens are behind sign-in",
+      "mustNot": "bypass login or scrape protected content"
+    }
+  ],
+  "baseline": {
+    "withoutSkill": "collects screenshots and copies visual trends",
+    "withSkill": "builds evidence-labeled comparisons and original recipes"
+  }
+}

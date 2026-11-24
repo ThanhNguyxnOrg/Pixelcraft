@@ -37,6 +37,8 @@ When the user asks to implement an approved design, do **not** run divergence or
 
 ## Frame before designing
 
+The Plan phase distinguishes evidence gathering from optional product discovery. Do not start a questionnaire automatically: inspect available context first, then ask only about unresolved choices that could materially change the outcome, scope, platform, architecture, or constraints. A complete brief, approved design, or narrow fix should use a direct/scoped plan.
+
 Classify the surface using evidence in the repository rather than assumptions:
 
 | Mode | User success | Expression budget | Typical surfaces |
@@ -52,8 +54,8 @@ Hybrid surfaces pick one primary mode per screen or region. Do not let a persuas
 
 ## The Pixelcraft loop
 
-0. **Plan** — use the `pixelcraft-plan` skill first. In brownfield work, read the repository systematically and write `.pixelcraft/plan.md`; in greenfield work, intake constraints and justify stack selection with a weighted matrix before any visual direction. If `pixelcraft-plan` is not installed, meet the applicable Plan checkpoint inline and record missing evidence as `not-checked`; a missing skill is not permission to skip planning.
-1. **Frame** — detect stack/surface/input modality; identify audience, job-to-be-done, real material inventory, constraints, locale scope, and existing design system. Create or update the design brief artifact using `references/design-brief.md`; classify facts as user-provided, repo-observed, artifact-observed, research/analytics, assumption, or unknown. Ask only for information that materially changes the design.
+0. **Plan** — use the `pixelcraft-plan` skill first. In brownfield work, read the repository systematically and write `.pixelcraft/plan.md`; in greenfield work, establish product constraints and justify stack selection with evidence before any visual direction. `pixelcraft-plan` chooses a direct plan or an optional discovery interview; it does not require a long interview for every task. If `pixelcraft-plan` is not installed, meet the applicable Plan checkpoint inline and record missing evidence as `not-checked`; a missing skill is not permission to skip planning.
+1. **Frame** — detect stack/surface/input modality; identify audience, job-to-be-done, real material inventory, constraints, locale scope, and existing design system. Create or update the design brief artifact using `references/design-brief.md`; classify facts as user-provided, repo-observed, artifact-observed, research/analytics, assumption, or unknown. Ask only for information that materially changes the design and cannot be established from project evidence or research.
 2. **Diverge** — only for undecided visual scope. Use the `pixelcraft-direction` skill to generate 3–5 far-apart directions with probabilities, score them, select one, record why the others lost, and inspect repetition history. Do not rediverge an approved design; handoff preserves that intent. For brand-kit, identity-board, logo-system, moodboard, or visual-identity image generation, use the `pixelcraft-brandkit` skill by name and its 2–3 brand-world divergence flow before image prompting.
 3. **Specify** — produce the direction card; use `pixelcraft-tokens` for DTCG tokens, `pixelcraft-handoff` when translating Figma/design-system artifacts into implementation, `pixelcraft-ux` for flows plus the state matrix, `pixelcraft-patterns` when the work matches a named product pattern, and `pixelcraft-dataviz` when the work communicates quantitative data, dashboards, maps, graphs, or visualization-heavy interfaces. Do not start with component trivia before direction and constraints exist.
 4. **Build** — use the appropriate platform skill by name when installed (`pixelcraft-web`, `pixelcraft-mobile`, `pixelcraft-data-apps`, `pixelcraft-desktop`, `pixelcraft-tui`, `pixelcraft-email`, `pixelcraft-document`, `pixelcraft-media`, `pixelcraft-chat-ui`, `pixelcraft-constrained`, `pixelcraft-spatial`, `pixelcraft-game-ui`, or `pixelcraft-extensions`). If absent, translate the direction idiomatically yourself without importing web assumptions. Match version-sensitive APIs to the resolved stack in the plan; verify against versioned official docs, optional Context7 and registry metadata as available. Record source and date, or mark assumptions `not-checked`. Preserve existing locks and runtimes unless upgrades are authorized; commit reproducible locks for new apps, never floating `@latest` in CI/deploy.
@@ -93,6 +95,11 @@ After detecting the stack, use the matching platform skill by name and read only
 
 References are named here for routing only. Do not construct relative paths across skill folders; read the file inside the installed platform skill.
 
+Use pixelcraft-craft for motion design intent; pixelcraft-web for browser implementation including GSAP/Motion, scroll controllers, Canvas/PixiJS, shaders, Three.js/R3F, WebGPU fallbacks, and interactive audio/video. Use pixelcraft-patterns for narrative/scrollytelling structure, pixelcraft-direction for evidence-based reference analysis, pixelcraft-accessibility for motion/canvas/media alternatives, and pixelcraft-visual-qa for timeline and real-time graphics verification.
+
+pixelcraft-spatial remains responsible for embodied XR/VR/AR interaction (headset, gaze, hand/controller input, room-scale comfort and privacy). Ordinary browser 3D product/portfolio scenes route through pixelcraft-web.
+
+## Domain routing
 ## Domain routing
 
 Use `pixelcraft-dataviz` alongside the platform skill whenever the deliverable depends on charts, analytical tables, metrics dashboards, streaming visualization, node graphs, maps, or canvas/WebGL rendering. It governs analytical truth, encoding, color/accessibility, and library selection; the platform skill still governs implementation idioms.

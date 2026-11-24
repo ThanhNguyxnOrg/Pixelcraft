@@ -51,6 +51,19 @@ Use one memorable device when the brief warrants it: a real product as the spati
 
 Be explicit: browser rendering and interaction can be inspected here when a browser/toolchain is available; screenshots, DOM/accessibility tree, axe scans, Playwright/Cypress/component tests, Lighthouse, responsive/device emulation, and network throttling are possible. Their absence is `not-checked`, not failure-proof. Static inspection cannot prove visual quality.
 
+- Read [references/gsap.md](references/gsap.md) for GSAP timelines, ScrollTrigger, plugins, React lifecycle, and cleanup.
+- Read [references/motion-react.md](references/motion-react.md) for component/layout/gesture animation with Motion for React.
+- Read [references/smooth-scroll.md](references/smooth-scroll.md) before adding Lenis or coordinating scroll controllers.
+- Read [references/motion-recipes.md](references/motion-recipes.md) for loader, kinetic type, SVG, magnetic, FLIP, marquee, and page-transition recipes.
+- Read [references/rive-lottie.md](references/rive-lottie.md) when choosing interactive state machines or vector playback.
+- Read [references/scene-architecture.md](references/scene-architecture.md) for Three.js/R3F/Spline renderer and scene selection.
+- Read [references/r3f-integration.md](references/r3f-integration.md) for React/Next.js 3D boundaries and lifecycle.
+- Read [references/assets-pipeline.md](references/assets-pipeline.md) for GLTF/GLB, Draco, Meshopt, KTX2, LOD, and asset loading.
+- Read [references/rendering-performance.md](references/rendering-performance.md) for GPU/frame/memory budgets and device evidence.
+- Read [references/rendering-choice.md](references/rendering-choice.md) for SVG/Canvas/PixiJS/WebGL/WebGPU selection.
+- Read [references/shader-workflow.md](references/shader-workflow.md) for GLSL/WGSL implementation and debugging.
+- Read [references/creative-effects.md](references/creative-effects.md) and [references/creative-runtime.md](references/creative-runtime.md) for particles, displacement, procedural graphics, deterministic effects, and canvas/WebGL runtime lifecycle.
+- Read [references/audio-reactive.md](references/audio-reactive.md), [references/video-media.md](references/video-media.md), and [references/accessibility-performance.md](references/accessibility-performance.md) for interactive media runtime, controls, captions, and media budgets.
 ## Framework routing
 
 - Read [references/adaptive-layout.md](references/adaptive-layout.md) when a web surface must work across phone, tablet, desktop, split window or different input modes.

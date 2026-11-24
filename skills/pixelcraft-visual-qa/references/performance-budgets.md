@@ -37,7 +37,19 @@ Fonts: subset and limit families/weights; use `font-display` appropriate to cont
 
 ## Measurement commands and signals
 
-- Browser: Performance panel, Lighthouse/WebPageTest, `performance.measure`, long-task/INP observers, coverage and bundle analyzer.
+- Browser: Performance panel, Lighthouse/WebPageTest, `performance.measure`, **INP** 3-phase breakdown (input delay + processing + presentation delay), **Long Animation Frames (`long-animation-frame` / LoAF)** for script-level jank attribution beyond legacy Long Tasks, coverage, and bundle analyzer.
+- Responsiveness engineering: break up long main-thread work with `scheduler.yield()` (fallback `setTimeout(..., 0)`) so user input paints within `≤ 200 ms`; on multi-page sites, evaluate the **Speculation Rules API** (`prefetch`/`prerender` with `eagerness: "moderate"`) for near-instant navigation while respecting data-saver and auth/logout exclusions.
+
+```js
+// Yield to the main thread during heavy client work so INP stays <= 200ms
+async function yieldToMain() {
+  if ('scheduler' in globalThis && typeof scheduler.yield === 'function') {
+    await scheduler.yield();
+  } else {
+    await new Promise((r) => setTimeout(r, 0));
+  }
+}
+```
 - Native/mobile: platform profiler, frame-time instrumentation, startup tracing, memory/energy impact.
 - Game: engine profiler, CPU/GPU frame breakdown, texture/font atlas cost, worst-scene capture—not menu-only measurement.
 - Terminal: startup latency, resize redraw cost, input echo latency; snapshot tests do not measure runtime performance.

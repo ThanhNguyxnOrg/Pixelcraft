@@ -58,3 +58,20 @@
 | Trigger/routing | Implements directly with generic assumptions | Recognizes the domain and applies the matching skill/reference |
 | Constraint fidelity | Relies on common defaults or stale APIs | Uses the exact surface constraints, state model, and platform idioms in the expected behaviors |
 | Verification | Reports code/text output only | Provides appropriate rendered/static/model evidence and labels unavailable checks |
+
+## Case 3 — transfer an observed pattern without copying
+
+**Prompt**
+
+> Compare several public visual examples for a new product portfolio and explain which mechanisms should transfer.
+
+**Expected behaviors**
+
+- Separates visual observation, public metadata, markup/resource evidence, runtime observation, and inference.
+- Records provenance/date/scope where available and identifies what was not inspected.
+- Converts observations into original implementation recipes without copying distinctive assets, code, composition, or copy.
+- Rejects a reference pattern when it conflicts with project constraints, accessibility, or performance.
+
+**Failure signals**
+
+- Claims a library based only on appearance, treats an award/score as proof of usability, or recommends cloning a specific page.

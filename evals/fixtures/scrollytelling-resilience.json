@@ -1,0 +1,70 @@
+{
+  "schemaVersion": 1,
+  "id": "scrollytelling-resilience",
+  "skill": "pixelcraft-patterns",
+  "title": "Narrative survives skipped and reversed scroll",
+  "contextSnapshot": {
+    "surface": "long-form interactive story",
+    "platform": "responsive browser",
+    "mode": "Experience",
+    "states": [
+      "direct chapter link",
+      "reverse scroll",
+      "fast scroll",
+      "keyboard",
+      "touch",
+      "reduced motion"
+    ],
+    "constraints": [
+      "normal browser history",
+      "short viewport",
+      "mobile alternative"
+    ]
+  },
+  "prompt": "Build a four-chapter story with a pinned scene on wide desktop and static sequential reading elsewhere.",
+  "expectedRouting": [
+    "pixelcraft-patterns",
+    "pixelcraft-craft",
+    "pixelcraft-web",
+    "pixelcraft-accessibility"
+  ],
+  "forbiddenBehaviors": [
+    "wheel hijacking",
+    "hidden content tied to exact pixels",
+    "broken direct links",
+    "forced auto-advance"
+  ],
+  "rubricDimensions": [
+    {
+      "dimension": "story structure",
+      "pass": "writes a linear content outline and chapter model before animation",
+      "fail": "motion defines the only content order"
+    },
+    {
+      "dimension": "navigation",
+      "pass": "supports anchors, history, reverse/fast scroll and scrollbar drag",
+      "fail": "requires exact scroll positions"
+    },
+    {
+      "dimension": "adaptation",
+      "pass": "uses readable mobile and reduced-motion equivalent",
+      "fail": "shrinks pinned scene until controls are obscured"
+    }
+  ],
+  "negativeControls": [
+    {
+      "name": "missed chapter",
+      "input": "User jumps past two chapters",
+      "mustNot": "leave essential content permanently hidden"
+    },
+    {
+      "name": "short viewport",
+      "input": "Viewport height is 500px",
+      "mustNot": "allow pinned scene to cover narrative or focus"
+    }
+  ],
+  "baseline": {
+    "withoutSkill": "builds a scroll-jacked demo",
+    "withSkill": "provides navigable chapters, static story and tested scroll behavior"
+  }
+}

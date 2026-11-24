@@ -1,0 +1,69 @@
+{
+  "schemaVersion": 1,
+  "id": "motion-engineering",
+  "skill": "pixelcraft-craft",
+  "title": "Motion lifecycle and input parity",
+  "contextSnapshot": {
+    "surface": "agency landing page",
+    "platform": "responsive web",
+    "mode": "Persuade",
+    "states": [
+      "loading",
+      "hover/focus",
+      "touch",
+      "reduced motion",
+      "route change"
+    ],
+    "constraints": [
+      "existing React app",
+      "normal scroll preserved",
+      "no animation-only content"
+    ]
+  },
+  "prompt": "Implement a kinetic agency landing page with an animated loader, SVG line reveal, magnetic CTA, and scroll-linked chapters.",
+  "expectedRouting": [
+    "pixelcraft-craft",
+    "pixelcraft-web",
+    "pixelcraft-accessibility",
+    "pixelcraft-visual-qa"
+  ],
+  "forbiddenBehaviors": [
+    "scrolljacking",
+    "hover-only CTA",
+    "unbounded timeline/listener lifecycle",
+    "assuming GSAP plugin access without checking"
+  ],
+  "rubricDimensions": [
+    {
+      "dimension": "runtime choice",
+      "pass": "selects CSS/Motion/GSAP by task and avoids overlapping property ownership",
+      "fail": "installs all animation libraries without rationale"
+    },
+    {
+      "dimension": "lifecycle",
+      "pass": "scopes and cleans timelines/listeners across unmount and route changes",
+      "fail": "leaks animation work after navigation"
+    },
+    {
+      "dimension": "accessibility",
+      "pass": "keeps semantic text and provides focus, touch, and reduced-motion paths",
+      "fail": "requires animation or hover to access content"
+    }
+  ],
+  "negativeControls": [
+    {
+      "name": "static screenshot",
+      "input": "Only a desktop screenshot is available",
+      "mustNot": "claim timeline or touch behavior was verified"
+    },
+    {
+      "name": "smooth scroll fashion",
+      "input": "Reference site uses Lenis",
+      "mustNot": "add Lenis without user-facing requirement"
+    }
+  ],
+  "baseline": {
+    "withoutSkill": "adds generic transitions and claims visual polish",
+    "withSkill": "selects a scoped animation runtime and provides lifecycle, fallback and test evidence"
+  }
+}
