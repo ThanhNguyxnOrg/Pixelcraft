@@ -5,7 +5,9 @@ import { fileURLToPath } from 'node:url';
 
 const optional = ['error', 'empty', 'loading', 'theme', 'reduced-motion', 'reflow-320'];
 const interfaces = ['responsive-web', 'other'];
-const webLayoutClasses = ['layout-landscape', 'layout-short-height'];
+const shortHeightLayout = 'layout-short-height';
+const shortHeightLimit = 600;
+const webLayoutClasses = ['layout-landscape', shortHeightLayout];
 const present = (value) => typeof value === 'string' && Boolean(value.trim());
 const record = (value) => value && typeof value === 'object' && !Array.isArray(value);
 const dimension = (value) => Number.isSafeInteger(value) && value > 0;
@@ -38,6 +40,8 @@ export function evaluateEvidence(manifest, hasArtifact) {
       notChecked.set(id, 'Use layout-<class> for layout matrix IDs.');
     } else if (record(layout) && layout.applies === false && present(layout.reason)) {
       skipped.set(id, layout.reason);
+    } else if (web && id === shortHeightLayout && dimension(layout?.height) && layout.height >= shortHeightLimit) {
+      notChecked.set(id, `Short-height evidence must use a viewport below ${shortHeightLimit} CSS px tall.`);
     } else if (record(layout) && layout.applies !== false
         && dimension(layout.width) && dimension(layout.height)
         && (id !== 'layout-landscape' || layout.width > layout.height)) {
@@ -60,6 +64,7 @@ export function evaluateEvidence(manifest, hasArtifact) {
     skipped.delete(round.failure);
   }
 
+  const desktopArtifact = manifest.checks['width-1440']?.artifact;
   for (const id of new Set([...required, ...repaired, ...Object.keys(manifest.checks)])) {
     const entry = Object.hasOwn(manifest.checks, id) ? manifest.checks[id] : undefined;
     if (skipped.has(id) && entry?.result !== 'fail') continue;
@@ -67,6 +72,11 @@ export function evaluateEvidence(manifest, hasArtifact) {
     const layout = expectedLayouts.get(id);
     if (id.startsWith('width-') && !Number.isSafeInteger(width)) {
       notChecked.set(id, 'Invalid width check ID; use width-<px> or width-<px>-<defect>.');
+      continue;
+    }
+    if (web && layout && id === shortHeightLayout && present(entry?.artifact) && present(desktopArtifact)
+        && path.normalize(entry.artifact) === path.normalize(desktopArtifact)) {
+      notChecked.set(id, 'Short-height evidence must use a separate artifact from width-1440.');
       continue;
     }
     if (!record(entry) || !['pass', 'fail'].includes(entry.result) || entry.label !== 'rendered'
