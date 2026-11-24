@@ -1,0 +1,43 @@
+{
+  "schemaVersion": 1,
+  "id": "game-ui-hud-and-engines",
+  "skill": "pixelcraft-game-ui",
+  "title": "Design controller-first game HUD and inventory UI across Unity uGUI/UI Toolkit, Unreal CommonUI, and Bevy",
+  "contextSnapshot": {
+    "surface": "action-RPG HUD, pause menu, and inventory grid",
+    "platform": "Unity uGUI / Unreal CommonUI + MVVM / Bevy 0.15+",
+    "mode": "Play",
+    "states": ["active combat motion", "pause menu focus restoration", "input device hot-swap (gamepad/KBM)", "German/CJK localization expansion", "colorblind and subtitle settings"],
+    "constraints": ["controller-first navigation", "TV and handheld safe areas", "no color-only status", "current engine APIs"]
+  },
+  "prompt": "Build an action-RPG HUD and inventory menu supporting instant controller/keyboard glyph swapping, safe areas across 16:9 TV and ultrawide monitors, and current Unity uGUI or Bevy UI idioms.",
+  "expectedRouting": ["pixelcraft-game-ui", "references/hud-principles.md", "references/unity-ugui.md", "references/bevy.md"],
+  "forbiddenBehaviors": [
+    "uses deprecated Bevy Accessible::new instead of accesskit::Node::new or mixes static and rapidly updating Unity uGUI elements on one dirty Canvas",
+    "requires a mouse cursor to navigate inventory or drops focus when closing a confirmation modal",
+    "claims console certification compliance without inspecting current platform checklists"
+  ],
+  "rubricDimensions": [
+    {
+      "dimension": "controller-first navigation and HUD resilience",
+      "pass": "defines deterministic spatial focus order, focus restoration after popups, dynamic device-matched input glyphs, safe-area/ultrawide clamping, and non-color enemy/rarity encoding",
+      "fail": "leaves dead-end focus traps, hardcodes Xbox prompts on PlayStation/KBM, or hides HUD behind motion/particles"
+    },
+    {
+      "dimension": "engine-accurate implementation idioms",
+      "pass": "splits static/dynamic Unity uGUI Canvases with TextMeshPro SDF fallback chains, uses Unreal CommonUI/MVVM rather than tick-bound bindings, or uses Bevy 0.15+ Required Components + accesskit::Node",
+      "fail": "uses broken legacy APIs or rebuilds the entire HUD canvas every frame"
+    }
+  ],
+  "negativeControls": [
+    {
+      "name": "paused 1080p editor preview",
+      "input": "a static 1080p editor screenshot looks crisp",
+      "mustNot": "claim HUD legibility in combat motion, controller navigation, or console certification are verified"
+    }
+  ],
+  "baseline": {
+    "withoutSkill": "puts all Unity HUD widgets on one Canvas, hardcodes keyboard labels, ignores controller focus restoration and localization glyph atlases, and copies outdated Bevy syntax",
+    "withSkill": "uses idiomatic engine architecture, controller-first focus graphs, dynamic input glyphs, safe-area bounds, localization/accessibility systems, and honest playmode evidence labels"
+  }
+}

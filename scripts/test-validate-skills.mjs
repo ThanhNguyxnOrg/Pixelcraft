@@ -6,6 +6,11 @@ import os from 'node:os';
 import path from 'node:path';
 import { fileURLToPath } from 'node:url';
 
+if (process.argv.includes('--help') || process.argv.includes('-h')) {
+  console.log('Usage: node scripts/test-validate-skills.mjs\n\nRuns contract tests for scripts/validate-skills.mjs.');
+  process.exit(0);
+}
+
 const root = path.resolve(path.dirname(fileURLToPath(import.meta.url)), '..');
 const validatorSource = path.join(root, 'scripts/validate-skills.mjs');
 const tmp = fs.mkdtempSync(path.join(os.tmpdir(), 'pixelcraft-validator-test-'));
@@ -44,13 +49,13 @@ const validFixture = JSON.stringify({
 }, null, 2);
 fs.writeFileSync(path.join(tmp, 'evals/fixtures/case-valid.json'), `${validFixture}\n`);
 
-function runValidator(frontmatter) {
-  fs.writeFileSync(skillFile, `---\n${frontmatter}\n---\n\n# Case\n`);
+function runValidator(frontmatter, body = '# Case\n') {
+  fs.writeFileSync(skillFile, `---\n${frontmatter}\n---\n\n${body}`);
   return spawnSync(process.execPath, [validator], { encoding: 'utf8' });
 }
 
-function expectFailure(frontmatter, pattern, label) {
-  const result = runValidator(frontmatter);
+function expectFailure(frontmatter, pattern, label, body = '# Case\n') {
+  const result = runValidator(frontmatter, body);
   assert.notEqual(result.status, 0, `${label} unexpectedly passed`);
   assert.match(result.stderr, pattern, `${label} failed with unexpected message: ${result.stderr}`);
 }
@@ -110,6 +115,31 @@ try {
   expectFailure('name: case\ndescription: Handles YAML\nlicense: MIT', /negativeControls must be a nonempty array/, 'missing negative controls');
   fs.rmSync(path.join(tmp, 'evals/fixtures/case-broken.json'));
   console.log('ok 9 - evaluation fixture negative controls are required');
+
+  expectFailure('name: case\ndescription: Handles YAML\nalwaysApply: true\nlicense: MIT', /unsupported non-portable frontmatter key: alwaysApply/, 'disallowed host-specific frontmatter key');
+  console.log('ok 10 - non-portable frontmatter keys are rejected');
+
+  const refsDir = path.join(skillDir, 'references');
+  fs.mkdirSync(refsDir, { recursive: true });
+  fs.writeFileSync(path.join(refsDir, 'orphan.md'), '# Orphan\n');
+  expectFailure('name: case\ndescription: Handles YAML\nlicense: MIT', /orphan reference not linked from SKILL\.md/, 'orphan reference');
+  fs.writeFileSync(path.join(refsDir, 'orphan.md'), '# Linked\n\nSee [broken](missing.md).\n');
+  expectFailure('name: case\ndescription: Handles YAML\nlicense: MIT', /broken relative link: missing\.md/, 'broken link in reference', '# Case\n\n- Read [references/orphan.md](references/orphan.md) when testing.\n');
+  fs.writeFileSync(path.join(refsDir, 'orphan.md'), '# Linked\n\n```sh\nnpm run build || true\n```\n');
+  expectFailure('name: case\ndescription: Handles YAML\nlicense: MIT', /suppresses command failures/, 'suppressed shell failure in reference', '# Case\n\n- Read [references/orphan.md](references/orphan.md) when testing.\n');
+  fs.writeFileSync(path.join(refsDir, 'orphan.md'), '# Linked\n');
+  fs.mkdirSync(path.join(refsDir, 'nested'), { recursive: true });
+  expectFailure('name: case\ndescription: Handles YAML\nlicense: MIT', /must stay one level deep/, 'nested references subdirectory', '# Case\n\n- Read [references/orphan.md](references/orphan.md) when testing.\n');
+  fs.rmSync(refsDir, { recursive: true, force: true });
+  console.log('ok 11 - orphan refs, nested ref dirs, ref links, and shell suppressions are enforced');
+
+  const badRouteFixture = JSON.parse(validFixture);
+  badRouteFixture.id = 'case-bad-route';
+  badRouteFixture.expectedRouting = ['case', 'references/does-not-exist.md'];
+  fs.writeFileSync(path.join(tmp, 'evals/fixtures/case-bad-route.json'), `${JSON.stringify(badRouteFixture, null, 2)}\n`);
+  expectFailure('name: case\ndescription: Handles YAML\nlicense: MIT', /expectedRouting references missing file/, 'missing expectedRouting reference');
+  fs.rmSync(path.join(tmp, 'evals/fixtures/case-bad-route.json'));
+  console.log('ok 12 - expectedRouting file targets are verified');
 
   console.log('validator YAML tests passed');
 } finally {

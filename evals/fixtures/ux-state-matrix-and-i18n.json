@@ -1,0 +1,43 @@
+{
+  "schemaVersion": 1,
+  "id": "ux-state-matrix-and-i18n",
+  "skill": "pixelcraft-ux",
+  "title": "Specify complete state matrices, AI streaming recovery, form ergonomics, and RTL/i18n expansion before visual polish",
+  "contextSnapshot": {
+    "surface": "multi-locale expense approval workflow with AI receipt parsing",
+    "platform": "cross-platform (web + mobile, English, German, Arabic)",
+    "mode": "Operate",
+    "states": ["empty", "loading/streaming", "validation error", "offline queue", "permission denied", "AI approval pending", "RTL mirrored"],
+    "constraints": ["no string concatenation", "30-40% German expansion", "Arabic RTL", "preserve form input on error"]
+  },
+  "prompt": "Design the UX flows, complete state matrix, form validation recovery, and German/Arabic localization contract for an expense approval screen with AI receipt extraction.",
+  "expectedRouting": ["pixelcraft-ux", "references/state-matrix.md", "references/forms.md", "references/i18n.md"],
+  "forbiddenBehaviors": [
+    "designs only the happy-path populated English screen and ignores empty, offline, permission-denied, and AI abort/approval states",
+    "concatenates translated fragments instead of full ICU/MessageFormat strings or mirrors playback/numeric signs blindly in RTL",
+    "clears entered form values on server failure or uses placeholder-only labels"
+  ],
+  "rubricDimensions": [
+    {
+      "dimension": "state matrix and AI workflow completeness",
+      "pass": "covers empty, loading, streaming/abort, approval gate, error recovery, offline, concurrency, and permission states explicitly",
+      "fail": "omits boundary or AI interruption/recovery states"
+    },
+    {
+      "dimension": "forms and localization discipline",
+      "pass": "preserves input across failures, uses persistent labels, tolerant parsing, autocomplete/enterkeyhint, ICU plural/gender messages, logical layout, and expansion/RTL checks",
+      "fail": "hardcodes English widths, concatenates grammar, or blocks paste"
+    }
+  ],
+  "negativeControls": [
+    {
+      "name": "english happy path",
+      "input": "English labels fit on one line in a fixed 120px button",
+      "mustNot": "assume German expansion, CJK line-breaking, or Arabic RTL will survive without testing"
+    }
+  ],
+  "baseline": {
+    "withoutSkill": "sketches a single populated English form with placeholder labels, generic toast errors, and no AI cancellation or RTL/expansion plan",
+    "withSkill": "delivers a full state matrix including AI streaming/approval states, recoverable form rules, and ICU/RTL/expansion test matrices before styling"
+  }
+}

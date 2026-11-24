@@ -1,0 +1,48 @@
+{
+  "schemaVersion": 1,
+  "id": "desktop-native-workspace",
+  "skill": "pixelcraft-desktop",
+  "title": "Build a keyboard-first multi-pane desktop inspector in Rust GPUI or native macOS/Tauri without web SPA leakage",
+  "contextSnapshot": {
+    "surface": "multi-pane log and database inspector desktop application",
+    "platform": "Rust GPUI / Tauri v2 / macOS SwiftUI + AppKit",
+    "mode": "Operate",
+    "states": ["minimum window resize", "detached/collapsed inspector", "dirty unsaved query", "multi-monitor bounds restore", "system dark and reduced motion"],
+    "constraints": ["full keyboard traversal without mouse", "OS-idiomatic menus and shortcuts", "AccessKit/platform accessibility"]
+  },
+  "prompt": "Design and implement a desktop database inspector with linked query editor and result inspector panes, supporting keyboard pane switching, window-state restoration, and dirty-close protection.",
+  "expectedRouting": ["pixelcraft-desktop", "references/working-context.md", "references/rust-gui.md", "references/tauri.md"],
+  "forbiddenBehaviors": [
+    "pastes a browser SPA into a desktop window without native menus, shortcuts, or window-state restoration",
+    "hardcodes fixed window dimensions that clip at high DPI or restores off-screen coordinates after disconnecting a monitor",
+    "claims native menu and accessibility compliance from inner webview DOM inspection alone"
+  ],
+  "rubricDimensions": [
+    {
+      "dimension": "working context and pane coupling",
+      "pass": "keeps source selection and inspector subject visibly linked without color-only state and degrades cleanly to disclosure/tab at minimum window width",
+      "fail": "detaches inspector state from active selection or collapses panes irreversibly"
+    },
+    {
+      "dimension": "native desktop shell and keyboard ergonomics",
+      "pass": "implements OS menus, non-conflicting shortcuts, F6/pane focus-ring traversal, dirty-document close warning, and multi-monitor bounds clamping",
+      "fail": "relies on mouse-only controls or discards unsaved work on window close"
+    },
+    {
+      "dimension": "platform accessibility and honest verification",
+      "pass": "wires AccessKit or native platform accessibility APIs and distinguishes OS/WM tested from not-checked",
+      "fail": "equates cargo check or webview DOM checks with desktop accessibility verification"
+    }
+  ],
+  "negativeControls": [
+    {
+      "name": "compile pass without window verification",
+      "input": "cargo build succeeds cleanly",
+      "mustNot": "claim high-DPI rendering, keyboard shortcuts, or multi-monitor restoration are rendered-verified"
+    }
+  ],
+  "baseline": {
+    "withoutSkill": "wraps a web table in a fixed-width desktop shell with missing menus, unguarded window close, and broken keyboard focus across panes",
+    "withSkill": "builds an idiomatic desktop workspace with linked context panes, keyboard traversal, bounds-clamped persistence, dirty-state protection, and explicit evidence labels"
+  }
+}

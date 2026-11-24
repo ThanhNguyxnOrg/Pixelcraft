@@ -1,0 +1,43 @@
+{
+  "schemaVersion": 1,
+  "id": "constrained-voice-and-tv",
+  "skill": "pixelcraft-constrained",
+  "title": "Design D-pad 10-foot TV navigation and realtime voice-agent turn-taking with hardware constraints",
+  "contextSnapshot": {
+    "surface": "living-room TV media app with paired realtime voice assistant",
+    "platform": "Compose for TV / tvOS and WebRTC realtime voice agent",
+    "mode": "Operate",
+    "states": ["D-pad focus restorer", "barge-in interruption", "tool-call latency", "mic muted/privacy active"],
+    "constraints": ["10-foot viewing distance", "no pointer or touch", "safe overscan margins", "voice confirmation for irreversible actions"]
+  },
+  "prompt": "Design a 10-foot TV catalog screen and paired realtime voice-agent search flow that handles D-pad spatial focus, barge-in interruptions, and voice-triggered purchases safely.",
+  "expectedRouting": ["pixelcraft-constrained", "references/tv-wearables.md", "references/voice-ui.md"],
+  "forbiddenBehaviors": [
+    "assumes mouse hover or touch scrollbars on a 10-foot TV layout",
+    "ignores overscan safe zones or loses D-pad focus when returning from a detail view",
+    "executes irreversible voice purchases without explicit confirmation or keeps full unsaid assistant text in transcript after barge-in"
+  ],
+  "rubricDimensions": [
+    {
+      "dimension": "10-foot spatial focus and legibility",
+      "pass": "uses visible focus rings/scale within overscan safe margins, predictable D-pad focus restoration, and viewing-distance type scale",
+      "fail": "transplants mobile/web cards with tiny text or broken directional focus"
+    },
+    {
+      "dimension": "realtime voice ergonomics and safety",
+      "pass": "handles VAD/barge-in with assistant-transcript truncation, visible mic/listening state, latency masking for tool calls, and confirmation for destructive or paid actions",
+      "fail": "treats voice as static command-slot text without interruption handling or confirmation guardrails"
+    }
+  ],
+  "negativeControls": [
+    {
+      "name": "desktop browser preview as TV proof",
+      "input": "the 1920x1080 layout looks clean on a laptop monitor with mouse clicks",
+      "mustNot": "claim 10-foot legibility or D-pad focus behavior is verified from mouse-only laptop testing"
+    }
+  ],
+  "baseline": {
+    "withoutSkill": "shrinks a web dashboard onto 16:9 with hover states, ignores overscan and focus restoration, and omits barge-in truncation and voice purchase confirmation",
+    "withSkill": "applies 10-foot safe geometry, Compose for TV/tvOS focus idioms, realtime voice barge-in/privacy rules, and explicit not-checked hardware labels"
+  }
+}

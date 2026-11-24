@@ -7,9 +7,16 @@ import { fileURLToPath } from 'node:url';
 const root = path.resolve(path.dirname(fileURLToPath(import.meta.url)), '..');
 const skillsRoot = path.join(root, 'skills');
 const evalsRoot = path.join(root, 'evals');
+const rootScriptsDir = path.join(root, 'scripts');
 const errors = [];
 const namePattern = /^[a-z0-9]+(?:-[a-z0-9]+)*$/;
 const yamlPlainStartPattern = /^[-?:,\[\]{}#&*!|>'"%@`]/;
+const allowedFrontmatterKeys = new Set(['name', 'description', 'license', 'metadata']);
+
+if (process.argv.includes('--help') || process.argv.includes('-h')) {
+  console.log('Usage: node scripts/validate-skills.mjs\n\nValidates all skills/*/SKILL.md frontmatter, body limits, local/reference links, orphan references, eval guides/fixtures, and script --help contracts.');
+  process.exit(0);
+}
 
 function fail(file, message) {
   errors.push(`${path.relative(root, file)}: ${message}`);
@@ -277,6 +284,7 @@ function parseFrontmatter(file, text) {
     const match = /^([A-Za-z0-9_-]+):(?:[ \t]*(.*))?$/.exec(line);
     if (!match) return { error: `unparseable frontmatter line: ${line}` };
     const [, key, raw = ''] = match;
+    if (!allowedFrontmatterKeys.has(key)) return { error: `unsupported non-portable frontmatter key: ${key}` };
     if (seen.has(key)) return { error: `duplicate frontmatter key: ${key}` };
     seen.add(key);
     const requiresScalar = key === 'name' || key === 'description';
@@ -325,7 +333,7 @@ function stripCode(text) {
   return text.replace(/^```[\s\S]*?^```/gm, '').replace(/`[^`\n]*`/g, '');
 }
 
-function checkLinks(file, skillDir, skillName, text) {
+function checkLinks(file, baseDir, skillName, text) {
   const visible = stripCode(text);
   const linkPattern = /\[[^\]\n]+\]\(([^)\s]+)(?:\s+["'][^"']*["'])?\)/g;
   for (const match of visible.matchAll(linkPattern)) {
@@ -333,13 +341,24 @@ function checkLinks(file, skillDir, skillName, text) {
     if (!target || target.startsWith('#') || /^[a-z][a-z0-9+.-]*:/i.test(target)) continue;
     target = decodeURIComponent(target.split('#')[0].split('?')[0]);
     if (!target) continue;
-    const resolved = path.resolve(skillDir, target);
+    const resolved = path.resolve(baseDir, target);
     const relToSkills = path.relative(skillsRoot, resolved);
     if (!relToSkills.startsWith('..') && !path.isAbsolute(relToSkills)) {
       const owner = relToSkills.split(path.sep)[0];
       if (owner !== skillName) fail(file, `cross-skill relative link to ${target}`);
     }
     if (!fs.existsSync(resolved)) fail(file, `broken relative link: ${match[1]}`);
+  }
+}
+
+function checkSuppressedShellCommands(file, text) {
+  const fencePattern = /^```([a-zA-Z0-9_-]*)\r?\n([\s\S]*?)^```/gm;
+  for (const match of text.matchAll(fencePattern)) {
+    const lang = (match[1] || '').toLowerCase();
+    if (lang && !['sh', 'bash', 'shell', 'zsh'].includes(lang)) continue;
+    if (/\|\|\s*true\b/.test(match[2])) {
+      fail(file, 'shell snippet suppresses command failures with `|| true`');
+    }
   }
 }
 
@@ -403,6 +422,18 @@ function checkEvalFixture(file, skillNames, seenIds) {
   }
 
   checkStringArray(file, fixture.expectedRouting, 'expectedRouting');
+  if (Array.isArray(fixture.expectedRouting)) {
+    const routedSkills = [fixture.skill, ...fixture.expectedRouting.filter((item) => isNonEmptyString(item) && skillNames.has(item))];
+    for (const entry of fixture.expectedRouting) {
+      if (!isNonEmptyString(entry)) continue;
+      if (/^pixelcraft(?:-[a-z0-9]+)*$/.test(entry) && !skillNames.has(entry)) {
+        fail(file, `expectedRouting references unknown skill: ${entry}`);
+      } else if (entry.startsWith('references/')) {
+        const exists = routedSkills.some((owner) => owner && fs.existsSync(path.join(skillsRoot, owner, entry)));
+        if (!exists) fail(file, `expectedRouting references missing file: ${entry}`);
+      }
+    }
+  }
   checkStringArray(file, fixture.forbiddenBehaviors, 'forbiddenBehaviors');
 
   if (!Array.isArray(fixture.rubricDimensions) || fixture.rubricDimensions.length === 0) {
@@ -485,6 +516,26 @@ for (const entry of skillDirs) {
   else if (data.description.length > 1024) fail(file, `description is ${data.description.length} characters; limit is 1024`);
   if (bodyLines.length > 500) fail(file, `body has ${bodyLines.length} lines; limit is 500`);
   checkLinks(file, skillDir, skillName, text);
+  checkSuppressedShellCommands(file, text);
+
+  const refsDir = path.join(skillDir, 'references');
+  if (fs.existsSync(refsDir)) {
+    const visibleSkillText = stripCode(text);
+    for (const refEntry of fs.readdirSync(refsDir, { withFileTypes: true }).sort((a, b) => a.name.localeCompare(b.name))) {
+      const refPath = path.join(refsDir, refEntry.name);
+      if (refEntry.isDirectory()) {
+        fail(refPath, 'references/ must stay one level deep (no subdirectories)');
+        continue;
+      }
+      if (!refEntry.isFile() || !refEntry.name.endsWith('.md')) continue;
+      if (!visibleSkillText.includes(`references/${refEntry.name}`)) {
+        fail(refPath, `orphan reference not linked from SKILL.md`);
+      }
+      const refText = fs.readFileSync(refPath, 'utf8');
+      checkLinks(refPath, refsDir, skillName, refText);
+      checkSuppressedShellCommands(refPath, refText);
+    }
+  }
 
   const evalFile = path.join(evalsRoot, `${skillName}.md`);
   if (!fs.existsSync(evalFile)) {
@@ -503,6 +554,12 @@ for (const entry of skillDirs) {
 }
 
 checkEvalFixtures(new Set(skillDirs.map((entry) => entry.name)));
+
+if (fs.existsSync(rootScriptsDir)) {
+  for (const script of fs.readdirSync(rootScriptsDir).filter((name) => name.endsWith('.mjs')).sort()) {
+    checkScriptHelp(path.join(rootScriptsDir, script));
+  }
+}
 
 if (errors.length) {
   console.error(`Skill validation failed (${errors.length} problem${errors.length === 1 ? '' : 's'}):`);

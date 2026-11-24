@@ -52,73 +52,148 @@ const SKILL_ORDER = Object.keys(CATEGORY_MAP);
 // Maps real reference file basenames to concise stack/ecosystem labels for the hero ticker.
 const REF_TO_STACKS = {
   "react-next": ["React 19", "Next.js", "TanStack Start", "React Router v7"],
-  "vue-nuxt": ["Vue 3.5", "Nuxt 4"],
-  svelte: ["Svelte 5"],
-  solid: ["SolidJS"],
+  "vue-nuxt": ["Vue 3.5 / Vapor", "Nuxt 4", "Pinia"],
+  svelte: ["Svelte 5", "SvelteKit 2"],
+  solid: ["SolidJS", "SolidStart"],
   angular: ["Angular Signals"],
-  astro: ["Astro"],
+  astro: ["Astro 5"],
   qwik: ["Qwik"],
-  "htmx-alpine": ["htmx", "Alpine.js"],
+  "preact-fresh-hono": ["Preact", "Fresh", "Hono JSX"],
+  "htmx-alpine": ["htmx 2", "Alpine.js", "Datastar"],
   "lit-web-components": ["Lit", "Web Components"],
   tailwind: ["Tailwind v4"],
   "styling-ecosystem": ["Panda CSS", "vanilla-extract", "StyleX", "UnoCSS"],
   "component-systems": ["Base UI", "Radix UI", "React Aria", "shadcn/ui"],
   "state-architecture": ["TanStack Query", "Zustand", "XState"],
-  "forms-validation": ["TanStack Form", "React Hook Form", "Zod"],
-  "build-and-architecture": ["Vite 8 / Rolldown", "Rsbuild", "Serwist"],
+  "forms-validation": ["TanStack Form", "React Hook Form", "Zod v4"],
+  "build-and-architecture": ["Vite 8 / Rolldown", "Rsbuild", "Biome"],
   "component-testing": ["Storybook", "Vitest Browser", "Playwright"],
-  "rich-text-and-code-editors": ["Tiptap", "Lexical", "CodeMirror 6", "Monaco"],
+  "rich-text-and-code-editors": [
+    "Tiptap",
+    "Lexical",
+    "BlockNote",
+    "CodeMirror 6",
+    "Monaco",
+  ],
   "canvas-and-node-editors": ["React Flow", "tldraw", "Konva"],
   "enterprise-data-ui": ["TanStack Table", "AG Grid", "FullCalendar"],
-  "local-first-sync": ["Yjs", "Automerge", "Liveblocks"],
-  "i18n-engineering": ["i18next", "FormatJS", "Lingui", "Paraglide"],
+  "local-first-sync": ["Zero", "ElectricSQL", "Yjs", "PowerSync", "Convex"],
+  "auth-and-checkout-ui": ["Better Auth", "Clerk", "Passkeys", "Stripe"],
+  "i18n-engineering": [
+    "i18next",
+    "FormatJS",
+    "Lingui",
+    "Paraglide",
+    "next-intl",
+  ],
+  "web-3d-engines": [
+    "Three.js WebGPU/TSL",
+    "Babylon.js",
+    "Threlte",
+    "TresJS",
+    "PlayCanvas",
+  ],
+  "media-players": ["Vidstack", "hls.js", "Shaka Player", "Tone.js"],
   "server-rendered": [
-    "Rails / Hotwire",
+    "Rails 8 / Hotwire",
     "Laravel Livewire",
+    "Inertia.js v2",
     "Django",
     "Phoenix LiveView",
     "Blazor",
+    "Go templ",
   ],
-  swiftui: ["SwiftUI"],
-  "jetpack-compose": ["Jetpack Compose"],
-  flutter: ["Flutter"],
+  "leptos-yew": ["Rust Leptos / Yew / Dioxus"],
+  "kotlin-web": ["Kotlin/Wasm", "Kobweb"],
+  "java-web": ["Vaadin / Hilla", "Thymeleaf"],
+  swiftui: ["SwiftUI / Liquid Glass"],
+  "jetpack-compose": ["Jetpack Compose / M3E"],
+  flutter: ["Flutter / Impeller"],
   "react-native-expo": ["React Native / Expo"],
   lynxjs: ["LynxJS"],
   "kotlin-multiplatform": ["Kotlin Multiplatform"],
+  "nativescript-and-skip": ["NativeScript", "Skip"],
   "dotnet-maui": [".NET MAUI"],
-  "reactive-data-apps": ["marimo", "Solara", "Mesop"],
+  "reactive-data-apps": ["marimo", "Solara", "Mesop", "Taipy"],
+  "ai-and-internal-data-apps": ["Chainlit", "FastHTML", "Retool"],
   streamlit: ["Streamlit"],
-  gradio: ["Gradio"],
+  gradio: ["Gradio 5/6"],
+  "jupyter-widgets": ["AnyWidget", "Jupyter"],
   tauri: ["Tauri v2"],
-  electron: ["Electron"],
-  "qt-pyside-qml": ["Qt / QML"],
-  "winui-wpf": ["WinUI / WPF"],
-  gtk: ["GTK"],
-  "rust-gui": ["GPUI", "Slint", "egui"],
+  electron: ["Electron", "Electrobun"],
+  "qt-pyside-qml": ["Qt 6 / PySide6 / QML"],
+  "winui-wpf": ["WinUI 3 / WPF"],
+  appkit: ["AppKit / SwiftUI macOS"],
+  gtk: ["GTK4 / libadwaita"],
+  avalonia: ["Avalonia 11"],
+  "rust-gui": ["GPUI", "Slint", "Iced", "egui"],
+  "go-gui": ["Wails v3", "Fyne", "Gio"],
+  "cpp-gui": ["Dear ImGui", "FLTK", "Zig DVUI"],
   textual: ["Textual"],
   ink: ["Ink"],
   ratatui: ["Ratatui"],
-  "bubbletea-lipgloss": ["Bubble Tea"],
-  "extended-tui-toolkits": ["Spectre.Console", "Terminal.Gui"],
+  "bubbletea-lipgloss": ["Bubble Tea v2"],
+  "extended-tui-toolkits": [
+    "Terminal.Gui v2",
+    "Spectre.Console",
+    "OpenTUI",
+    "FTXUI",
+  ],
   mjml: ["MJML"],
   "react-email": ["React Email"],
   maizzle: ["Maizzle"],
-  "maps-geospatial": ["MapLibre", "deck.gl", "CesiumJS"],
-  "web-3d-engines": ["Babylon.js", "Threlte", "TresJS"],
-  "ai-ui-libraries": ["Vercel AI SDK", "assistant-ui", "CopilotKit"],
+  "pdf-tools": ["Typst", "WeasyPrint", "Playwright PDF", "Gotenberg", "Quarto"],
+  "pdfjs-and-pptx": ["PDF.js", "PptxGenJS"],
+  slides: ["Slidev", "reveal.js", "Marp"],
+  "og-generation": ["Satori", "Takumi", "Sharp"],
+  "banners-video": ["Remotion", "Motion Canvas", "FFmpeg"],
+  "maps-geospatial": ["MapLibre", "PMTiles", "deck.gl", "Turf.js"],
+  "ai-ui-libraries": [
+    "Vercel AI SDK",
+    "assistant-ui",
+    "CopilotKit",
+    "AG-UI",
+    "MCP Apps",
+  ],
+  "browser-extensions": ["WXT / MV3", "VS Code Webviews", "Raycast"],
+  "ide-and-saas-plugins": ["JetBrains Jewel", "Obsidian", "Shopify Polaris"],
+  platforms: ["visionOS", "Android XR", "Horizon OS", "WebXR"],
+  "tv-wearables": ["tvOS", "Compose for TV", "Wear OS", "Roku"],
+  "voice-ui": ["Realtime Voice AI", "Siri App Intents"],
   "unity-ui-toolkit": ["Unity UI Toolkit"],
-  godot: ["Godot"],
-  "unreal-umg": ["Unreal UMG"],
+  "unity-ugui": ["Unity uGUI"],
+  godot: ["Godot 4.5"],
+  "unreal-umg": ["Unreal CommonUI"],
   bevy: ["Bevy"],
-  "token-tooling": ["Style Dictionary", "Figma Code Connect"],
+  "web-and-middleware-game-ui": ["Phaser", "RmlUi", "SDL3", "Raylib"],
+  "token-tooling": [
+    "DTCG Resolver",
+    "Style Dictionary",
+    "Terrazzo",
+    "Figma MCP",
+  ],
 };
 
 function parseDescription(skillMd) {
   const fm = skillMd.match(/^---\r?\n([\s\S]*?)\r?\n---/);
   if (!fm) return "";
-  const match = fm[1].match(/^description:\s*(.+)$/m);
-  if (!match) return "";
-  let desc = match[1].trim().replace(/^["']|["']$/g, "");
+  const lines = fm[1].split(/\r?\n/);
+  const idx = lines.findIndex((line) => /^description:\s*/.test(line));
+  if (idx === -1) return "";
+  let raw = lines[idx].replace(/^description:\s*/, "").trim();
+  if (/^[|>][+-]?\d?$/.test(raw)) {
+    const collected = [];
+    for (let i = idx + 1; i < lines.length; i += 1) {
+      if (!lines[i].trim()) {
+        collected.push("");
+        continue;
+      }
+      if (!/^[ \t]+/.test(lines[i])) break;
+      collected.push(lines[i].trim());
+    }
+    raw = collected.filter(Boolean).join(" ");
+  }
+  let desc = raw.replace(/^["']|["']$/g, "");
   // Keep the first sentence for concise table display.
   const firstPeriod = desc.indexOf(". ");
   if (firstPeriod > 0) desc = desc.slice(0, firstPeriod + 1);
@@ -179,9 +254,9 @@ async function main() {
   for (const name of skillDirs) {
     const skillPath = resolve(skillsDir, name);
     const skillMd = await readFile(resolve(skillPath, "SKILL.md"), "utf8");
-    const refs = (
-      await listSorted(resolve(skillPath, "references"), ".md")
-    ).map((f) => f.replace(/\.md$/, ""));
+    const refs = (await listSorted(resolve(skillPath, "references"), ".md"))
+      .map((f) => f.replace(/\.md$/, ""))
+      .sort((a, b) => a.localeCompare(b));
     const scripts = await listSorted(resolve(skillPath, "scripts"), ".mjs");
     for (const r of refs) allRefSlugs.add(r);
 

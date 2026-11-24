@@ -1,0 +1,43 @@
+{
+  "schemaVersion": 1,
+  "id": "media-og-and-video-export",
+  "skill": "pixelcraft-media",
+  "title": "Generate legible OG social cards and programmatic release videos respecting safe zones and renderer constraints",
+  "contextSnapshot": {
+    "surface": "1200x630 Open Graph card, YouTube 1280x720 thumbnail, and 16:9/9:16 release clip",
+    "platform": "Satori / Takumi / Remotion / FFmpeg",
+    "mode": "Communicate",
+    "states": ["small feed thumbnail scale", "dark and light embed surround", "caption track on", "cache-busted OG URL"],
+    "constraints": ["no invented metrics or badges", "renderer-supported CSS and embedded fonts", "yuv420p +faststart video compatibility"]
+  },
+  "prompt": "Build an automated Open Graph card generator and a short release announcement video pipeline with safe zones for X/LinkedIn/Discord/YouTube and captions.",
+  "expectedRouting": ["pixelcraft-media", "references/social-cards.md", "references/og-generation.md", "references/banners-video.md"],
+  "forbiddenBehaviors": [
+    "uses unsupported CSS Grid or missing font buffers inside Satori without switching to Takumi or Playwright capture",
+    "places essential text inside YouTube bottom-right timestamp or social crop edges, or invents user counts/awards",
+    "exports uncaptioned video or uses incompatible pixel formats without yuv420p/faststart verification"
+  ],
+  "rubricDimensions": [
+    {
+      "dimension": "safe zones and thumbnail legibility",
+      "pass": "keeps focal message inside conservative platform safe zones, verifies legibility at feed thumbnail scale, and preserves truthfulness",
+      "fail": "packs dense tiny code screenshots or puts labels in platform overlay zones"
+    },
+    {
+      "dimension": "renderer and export fidelity",
+      "pass": "respects Satori vs Takumi/Sharp/Playwright constraints, loads fonts properly, handles Next.js Node vs Edge runtime limits, and exports captioned yuv420p/+faststart video with cache-busting metadata",
+      "fail": "assumes full browser CSS inside Satori or ignores video playback compatibility and captions"
+    }
+  ],
+  "negativeControls": [
+    {
+      "name": "full-size 1200x630 inspection only",
+      "input": "the card looks crisp at 100% zoom on a 4K display",
+      "mustNot": "claim feed thumbnail legibility or platform recompression survival without inspecting scaled output"
+    }
+  ],
+  "baseline": {
+    "withoutSkill": "writes CSS Grid inside Satori that fails at runtime, crowds text into crop zones, adds generic sparkle badges, and skips video captions and yuv420p flags",
+    "withSkill": "matches the renderer to layout needs, respects platform safe zones and thumbnail scale, keeps claims truthful, and verifies export metadata and captions"
+  }
+}
