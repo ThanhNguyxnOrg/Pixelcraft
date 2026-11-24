@@ -685,6 +685,7 @@ h2 {
 .surface-ribbon > div {
   gap: 32px;
   justify-content: center;
+  flex-wrap: wrap;
   font-size: clamp(20px, 3.3vw, 43px);
   font-weight: 500;
   white-space: nowrap;
