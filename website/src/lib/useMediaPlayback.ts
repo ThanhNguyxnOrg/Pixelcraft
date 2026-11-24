@@ -39,7 +39,7 @@ export function useMediaPlayback(
     el.muted = true;
     el.setAttribute("muted", "");
     const sync = () => {
-      if (paused || (staticView && !userPlay) || !visible || document.hidden)
+      if (((paused || staticView) && !userPlay) || !visible || document.hidden)
         el.pause();
       else el.play().catch(() => {}); // Autoplay rejection leaves the poster and play control.
     };

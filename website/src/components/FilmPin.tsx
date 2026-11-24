@@ -1,4 +1,4 @@
-import { useRef, useState } from "react";
+import { useEffect, useRef, useState } from "react";
 import { gsap, MOTION_OK, useGSAP } from "../lib/gsap";
 import { useMediaPlayback } from "../lib/useMediaPlayback";
 import { PixelIcon, PixelLabel, useMotionPause } from "./pixel";
@@ -23,10 +23,15 @@ const TRANSCRIPT: [string, string][] = [
 export function FilmPin() {
   const root = useRef<HTMLElement>(null);
   const video = useRef<HTMLVideoElement>(null);
-  const { paused, setPaused } = useMotionPause();
+  const { paused } = useMotionPause();
   const [playing, setPlaying] = useState(false);
-  const [userPlay, setUserPlay] = useState(false);
-  useMediaPlayback(video, paused, userPlay);
+  const [intent, setIntent] = useState<"auto" | "play" | "pause">("auto");
+  // A new page-wide pause stops even explicitly started media. A later film
+  // gesture may play just the film without resuming decorative page motion.
+  useEffect(() => {
+    if (paused) setIntent((value) => (value === "pause" ? value : "auto"));
+  }, [paused]);
+  useMediaPlayback(video, paused || intent === "pause", intent === "play");
 
   useGSAP(
     () => {
@@ -104,15 +109,7 @@ export function FilmPin() {
           <div className="flex flex-wrap items-center gap-4">
             <button
               type="button"
-              onClick={() => {
-                if (playing) {
-                  setPaused(true);
-                  setUserPlay(false);
-                } else {
-                  setPaused(false);
-                  setUserPlay(true);
-                }
-              }}
+              onClick={() => setIntent(playing ? "pause" : "play")}
               className="surface inline-flex min-h-11 items-center gap-2.5 rounded-full px-5 font-mono text-[0.8125rem] text-ink transition-colors hover:bg-white/10 motion-reduce:transition-none"
             >
               <PixelIcon name={playing ? "pause" : "play"} size={12} />
