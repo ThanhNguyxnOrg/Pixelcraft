@@ -89,8 +89,13 @@ export function useGlobalMotion(
       const ro = new ResizeObserver(() => {
         // Text wrapping and disclosures can resize on consecutive frames. Wait
         // for layout to settle instead of measuring every trigger on each frame.
+        // Safe refresh defers until scrollEnd, so measurements cannot interrupt
+        // a long native smooth-anchor jump while the intervening text reveals.
         window.clearTimeout(refreshTimer);
-        refreshTimer = window.setTimeout(() => ScrollTrigger.refresh(), 160);
+        refreshTimer = window.setTimeout(
+          () => ScrollTrigger.refresh(true),
+          160,
+        );
       });
       if (scope.current) ro.observe(scope.current);
       return () => {
