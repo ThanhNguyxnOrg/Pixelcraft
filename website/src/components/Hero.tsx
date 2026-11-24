@@ -336,7 +336,10 @@ export function Hero() {
               default, and reports only what was actually verified.
             </p>
             <div className="mt-9 max-w-[36rem]">
-              <CopyCommand variant="hero" lines={[`npx ${NPM_PKG}`]} />
+              <CopyCommand
+                variant="hero"
+                lines={[`npm i -g ${NPM_PKG}`, "pixelcraft"]}
+              />
             </div>
             <div className="mt-5 flex flex-wrap items-center gap-3">
               <a

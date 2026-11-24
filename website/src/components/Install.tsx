@@ -66,7 +66,7 @@ function Builder() {
     mode === "all"
       ? "all"
       : (picked.length ? picked : REQUIRED_SKILLS).join(" ");
-  const command = `npx ${NPM_PKG} add ${target} --agent ${agents.join(",")}${scope === "global" ? " --global" : ""}${dry ? " --dry-run" : ""}${force ? " --force" : ""}`;
+  const command = `pixelcraft add ${target} --agent ${agents.join(",")}${scope === "global" ? " --global" : ""}${dry ? " --dry-run" : ""}${force ? " --force" : ""}`;
 
   const targets = AGENT_TARGETS.filter((t) => agents.includes(t.id));
 
@@ -226,7 +226,11 @@ function Builder() {
           </p>
           {ready ? (
             <div className="mt-4">
-              <CopyCommand lines={[command]} variant="hero" wrap />
+              <CopyCommand
+                lines={[`npm i -g ${NPM_PKG}`, command]}
+                variant="hero"
+                wrap
+              />
             </div>
           ) : null}
           <p

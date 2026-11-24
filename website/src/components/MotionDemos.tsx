@@ -67,9 +67,10 @@ function PackPromo() {
           data-pack-command
           className="font-mono text-[clamp(.75rem,1.3vw,1rem)] leading-7"
         >
-          <span className="text-action">$</span> npx {NPM_PKG}
+          <span className="text-action">$</span> npm i -g {NPM_PKG}
           <br />
-          <span className="ps-4 text-ink-muted">add all --agent claude</span>
+          <span className="text-action">$</span> pixelcraft add all --agent
+          claude
         </div>
         <div className="my-7 grid grid-cols-13 gap-1.5 sm:gap-2">
           {SKILLS.map((skill) => (
