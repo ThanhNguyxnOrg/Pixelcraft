@@ -1,6 +1,6 @@
 ---
 name: pixelcraft-spatial
-description: Designs and verifies spatial, XR, VR, AR, and 3D interfaces across visionOS, WebXR, Three.js/React Three Fiber/A-Frame, Meta Quest Interaction SDK, and Unity XR Interaction Toolkit. Use for windows/volumes/immersive spaces, RealityKit, ornaments, glass materials, hover effects, gaze-and-pinch input, hand/controller interaction, locomotion comfort, depth/layering, XR ergonomics, spatial text legibility, privacy, frame-rate budgets, and XR accessibility.
+description: Designs and verifies embodied spatial, XR, VR, and AR interfaces across visionOS, WebXR, Meta Quest Interaction SDK, and Unity XR Interaction Toolkit. Use for headset, room-scale, gaze/hand/controller input, locomotion, comfort, privacy, and spatial accessibility; ordinary browser-based 3D product scenes use pixelcraft-web. Use for windows/volumes/immersive spaces, RealityKit, ornaments, glass materials, hover effects, gaze-and-pinch input, hand/controller interaction, locomotion comfort, depth/layering, XR ergonomics, spatial text legibility, privacy, frame-rate budgets, and XR accessibility.
 license: MIT
 metadata:
   version: 0.1.0

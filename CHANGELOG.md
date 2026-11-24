@@ -1,3 +1,16 @@
+## [Unreleased]
+
+### Added
+
+- Extend existing craft/web/pattern/direction/accessibility/QA/handoff skills with motion engineering, 3D web, creative graphics, interactive media, scrollytelling, and evidence-based reference analysis.
+- Add implementation references and evaluation coverage without increasing the 26-skill catalog or introducing mandatory runtime dependencies.
+
+### Changed
+
+- Route ordinary browser 3D through pixelcraft-web; reserve pixelcraft-spatial for embodied XR/VR/AR workflows.
+- Prefer extending existing skills over parallel specialists when the trigger and verification contract are shared.
+
+
 # Changelog
 
 ## [0.1.0] - 2026-11-24

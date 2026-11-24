@@ -93,6 +93,11 @@ After detecting the stack, use the matching platform skill by name and read only
 
 References are named here for routing only. Do not construct relative paths across skill folders; read the file inside the installed platform skill.
 
+Use pixelcraft-craft for motion design intent; pixelcraft-web for browser implementation including GSAP/Motion, scroll controllers, Canvas/PixiJS, shaders, Three.js/R3F, WebGPU fallbacks, and interactive audio/video. Use pixelcraft-patterns for narrative/scrollytelling structure, pixelcraft-direction for evidence-based reference analysis, pixelcraft-accessibility for motion/canvas/media alternatives, and pixelcraft-visual-qa for timeline and real-time graphics verification.
+
+pixelcraft-spatial remains responsible for embodied XR/VR/AR interaction (headset, gaze, hand/controller input, room-scale comfort and privacy). Ordinary browser 3D product/portfolio scenes route through pixelcraft-web.
+
+## Domain routing
 ## Domain routing
 
 Use `pixelcraft-dataviz` alongside the platform skill whenever the deliverable depends on charts, analytical tables, metrics dashboards, streaming visualization, node graphs, maps, or canvas/WebGL rendering. It governs analytical truth, encoding, color/accessibility, and library selection; the platform skill still governs implementation idioms.

@@ -21,6 +21,7 @@ Patterns are starting hypotheses, not layouts to copy. Choose one from the user'
 - Read [references/marketing.md](references/marketing.md) for landing pages and campaigns where distinctiveness/persuasion rules differ from app UI.
 - Read [references/settings.md](references/settings.md) for settings, preferences, configuration, destructive actions, and system integration.
 - Read [references/search-filtering.md](references/search-filtering.md) for query input, faceting, empty results, sorting, large result sets, and recovery.
+- Read [references/narrative-systems.md](references/narrative-systems.md), [references/scroll-implementation.md](references/scroll-implementation.md), and [references/accessibility-resilience.md](references/accessibility-resilience.md) for scrollytelling, chapter navigation, pinned artifacts, and resilient reading paths.
 - Read [references/tables-crud.md](references/tables-crud.md) for dense data tables, list/detail, creation/edit/delete, bulk actions, import/export, and validation.
 
 ## Selection protocol

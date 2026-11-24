@@ -15,6 +15,7 @@ Design handoff is translation under uncertainty, not screenshot copying. Visual 
 ## References
 
 - Read [references/design-translation.md](references/design-translation.md) for the translation contract, evidence hierarchy, component reuse, token mapping, stack-specific translation, missing states, accessibility preservation, and the visual-qa fidelity loop.
+- Read [references/motion-handoff.md](references/motion-handoff.md) when a design/prototype includes triggers, timing, easing, stagger, interruption, focus, or reduced-motion behavior.
 - Read [references/fidelity-tolerance.md](references/fidelity-tolerance.md) before declaring acceptance tolerance, freezing fixtures, or interpreting visual diffs.
 
 ## Required workflow

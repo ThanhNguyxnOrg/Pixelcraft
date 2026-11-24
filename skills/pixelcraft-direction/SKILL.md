@@ -18,6 +18,10 @@ Divergence is a procedure, not a mood. Never ask for “the best design” in on
 - Read [references/direction-card.md](references/direction-card.md) whenever writing the committed direction.
 - Read [references/direction-scoring.md](references/direction-scoring.md) before comparing or selecting directions.
 - Read [references/repetition-history.md](references/repetition-history.md) before generating candidates and when writing the final repetition check.
+- Read [references/motion-identity.md](references/motion-identity.md) when defining a consistent motion language.
+- Read [references/reference-analysis.md](references/reference-analysis.md) when researching visual examples and transferring patterns with provenance and evidence labels.
+- Read [references/motion-identity.md](references/motion-identity.md) when defining a consistent motion language.
+- Read [references/reference-analysis.md](references/reference-analysis.md) when researching visual examples and transferring patterns with provenance and evidence labels.
 - Read [references/wildcards.md](references/wildcards.md) when catalog directions feel repetitive, insufficiently subject-derived, or too safe.
 
 ## 1. Extract brief and material first

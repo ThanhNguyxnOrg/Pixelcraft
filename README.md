@@ -38,17 +38,17 @@ The full architecture is documented in [`docs/ARCHITECTURE.md`](docs/ARCHITECTUR
 |---|---|
 | `pixelcraft` | Orchestrator: stack/surface detection, mode classification, plan-first loop, mandatory floor, evidence-labeled reporting |
 | `pixelcraft-plan` | Step-zero planning: brownfield repo mapping, greenfield requirements intake, weighted stack selection, `.pixelcraft/plan.md` |
-| `pixelcraft-direction` | Divergent visual direction, scoring, direction cards, repetition history, anti-slop fingerprints, design movements |
-| `pixelcraft-craft` | Typography, color, layout, motion, imagery, and icon craft across platforms |
+| `pixelcraft-direction` | Divergent visual direction, scoring, motion identity, evidence-based reference analysis, repetition history, anti-slop fingerprints |
+| `pixelcraft-craft` | Typography, color, composition, motion language, animation principles, imagery, and icon craft |
 | `pixelcraft-tokens` | DTCG token structure and multi-platform token export |
 | `pixelcraft-ux` | JTBD, flows, information architecture, state matrices, forms, feedback, i18n UX, UX writing |
-| `pixelcraft-patterns` | Dashboard/admin, commerce, editors/canvas, communication, auth/onboarding, marketing, settings, search/filtering, tables/CRUD |
+| `pixelcraft-patterns` | Dashboard/admin, commerce, editors/canvas, communication, auth/onboarding, marketing composition, scrollytelling, settings, search/filtering, tables/CRUD |
 | `pixelcraft-dataviz` | Chart choice, encoding, truthful labeling, colorblind-safe palettes, tables/dashboards, streaming, node graphs, maps, scalable rendering, chart accessibility |
-| `pixelcraft-accessibility` | WCAG 2.2 AA floor translated into concrete platform checks and verification methods |
+| `pixelcraft-accessibility` | WCAG 2.2 AA floor, reduced motion, canvas/graphics alternatives, media controls, and platform verification |
 | `pixelcraft-review` | Audit/critique/polish modes, severity taxonomy, Nielsen checks, persona walkthroughs, slop scanning |
-| `pixelcraft-visual-qa` | Render/screenshot/self-critique/fix loop, capture matrices, contrast/overflow/clipping audits, performance budgets |
+| `pixelcraft-visual-qa` | Render/screenshot/video/trace QA, animation milestone capture, real-time graphics and GPU performance evidence |
 | `pixelcraft-extensions` | Browser MV3 extensions, content-script Shadow DOM UI, VS Code webviews, Raycast commands, Figma/Office plugins |
-| `pixelcraft-web` | HTML/CSS, React/Next, Vue/Nuxt, Svelte, Solid, Angular, Astro, Qwik, htmx/Alpine, Lit, Tailwind, server-rendered web, Rust/Kotlin/Elm/ClojureScript/F#/Scala/Java web |
+| `pixelcraft-web` | HTML/CSS and web frameworks; GSAP/Motion/Lenis, Three.js/R3F/Spline, PixiJS/Canvas/WebGL, shaders/WebGPU, and interactive audio/video |
 | `pixelcraft-mobile` | SwiftUI, UIKit, Jetpack Compose, Flutter, React Native/Expo, Kotlin Multiplatform, Ionic/Capacitor, .NET MAUI, Flet, Kivy |
 | `pixelcraft-data-apps` | Streamlit, Gradio, Reflex, NiceGUI, Dash, Panel, Shiny, Jupyter widgets, R Shiny, Julia Genie, Observable Framework, Evidence |
 | `pixelcraft-desktop` | Tauri, Electron, Qt/PySide/QML, WinUI/WPF, AppKit, GTK, Avalonia, Rust GUI, JavaFX/Swing, C++ GUI, Go GUI, Uno |
@@ -59,7 +59,7 @@ The full architecture is documented in [`docs/ARCHITECTURE.md`](docs/ARCHITECTUR
 | `pixelcraft-chat-ui` | Slack Block Kit, Discord components, Telegram/Mini Apps, Zalo, WhatsApp, Teams Adaptive Cards, conversation design |
 | `pixelcraft-constrained` | TV/10-foot, wearables, e-ink, kiosk, embedded/LVGL, automotive templates, voice UI |
 | `pixelcraft-handoff` | Approved-design translation, variables-to-token mapping, component reuse, missing states and visual fidelity loops |
-| `pixelcraft-spatial` | visionOS, WebXR/Three.js/R3F/A-Frame, Quest Interaction SDK, Unity XRI, XR comfort/ergonomics/accessibility |
+| `pixelcraft-spatial` | visionOS, WebXR, Quest Interaction SDK, Unity XRI, embodied input, XR comfort/ergonomics/privacy/accessibility |
 | `pixelcraft-game-ui` | Unity UI Toolkit, Godot, Unreal UMG, LÖVE2D, Bevy, MonoGame, HUD principles |
 | `pixelcraft-brandkit` | Brand kits, identity boards, logo systems, moodboards, visual-world presentations, brand-specific prompting and QA |
 
