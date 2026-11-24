@@ -43,9 +43,11 @@
     "node": ">=18"
   },
   "scripts": {
-    "test": "npm run validate && npm run test:distribution && npm run test:installers && npm run test:adapters && npm run test:tokens && npm run test:validator && npm run test:finish-gate && npm run test:slop-scan && npm run test:cross-platform-qa && npm run eval:offline",
+    "test": "npm run validate && npm run sync:docs:check && npm run test:sync-docs && npm run test:distribution && npm run test:installers && npm run test:adapters && npm run test:tokens && npm run test:validator && npm run test:finish-gate && npm run test:slop-scan && npm run test:cross-platform-qa && npm run eval:offline",
     "test:browser": "npm run test:shoot && npm run test:style-inventory",
     "validate": "node scripts/validate-skills.mjs",
+    "sync:docs": "node scripts/sync-docs.mjs --write",
+    "sync:docs:check": "node scripts/sync-docs.mjs --check",
     "eval:offline": "node scripts/run-evals.mjs",
     "build:adapters": "node scripts/build-adapters.mjs",
     "build:skill-zips": "node scripts/build-skill-zips.mjs",
@@ -54,6 +56,7 @@
     "test:distribution": "node scripts/test-distribution.mjs",
     "test:tokens": "node scripts/test-export-tokens.mjs",
     "test:validator": "node scripts/test-validate-skills.mjs",
+    "test:sync-docs": "node scripts/test-sync-docs.mjs",
     "test:style-inventory": "node scripts/test-style-inventory.mjs",
     "test:finish-gate": "node scripts/test-finish-gate.mjs",
     "test:slop-scan": "node scripts/test-slop-scan.mjs",
