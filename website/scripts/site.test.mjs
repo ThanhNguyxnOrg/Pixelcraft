@@ -21,6 +21,21 @@ test("source Markdown preserves documentation but removes executable markup and 
   assert.doesNotMatch(html, /<script|onerror|javascript:|<iframe/);
 });
 
+test("source checklists retain read-only checked and unchecked states", async () => {
+  const { renderSkillMarkdown } = await import("../src/data/markdown.mjs");
+  const html = renderSkillMarkdown(
+    '- [ ] Check contrast\n- [x] Check focus\n\n<input type="text" name="password"><input type="checkbox" onclick="alert(1)">',
+  );
+  const inputs = [...html.matchAll(/<input\b[^>]*>/g)].map(([input]) => input);
+  assert.equal(inputs.length, 2);
+  assert.ok(
+    inputs.every(
+      (input) => /type="checkbox"/.test(input) && /\bdisabled\b/.test(input),
+    ),
+  );
+  assert.equal(inputs.filter((input) => /\bchecked\b/.test(input)).length, 1);
+  assert.doesNotMatch(html, /onclick|password|type="text"/);
+});
 test("every repository skill has a source-backed static page", async () => {
   const names = (await readdir(resolve(website, "../skills"))).filter((name) =>
     name.startsWith("pixelcraft"),
