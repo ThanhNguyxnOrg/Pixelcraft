@@ -345,14 +345,14 @@ export function CopyCommand({
 
   return (
     <div
-      className={`gborder flex items-stretch gap-2 rounded-tile p-1.5 ${hero ? "surface-lit" : "surface"}`}
+      className={`gborder flex flex-wrap items-stretch gap-2 rounded-tile p-1.5 ${hero ? "surface-lit" : "surface"}`}
     >
-      <pre className="min-w-0 flex-1 overflow-x-auto px-4 py-3 text-[0.875rem] leading-relaxed">
+      <pre className="min-w-0 flex-[1_1_18rem] overflow-x-auto px-4 py-3 text-[0.875rem] leading-relaxed">
         <code ref={codeRef}>
           {lines.map((l) => (
             <span
               key={l}
-              className={`block ${wrap ? "break-all whitespace-pre-wrap" : "whitespace-pre"}`}
+              className={`block ${wrap ? "whitespace-pre-wrap [overflow-wrap:anywhere]" : "whitespace-pre"}`}
             >
               <span
                 aria-hidden="true"
@@ -369,7 +369,7 @@ export function CopyCommand({
         type="button"
         onClick={copy}
         data-magnetic
-        className={`flex min-w-[6.75rem] shrink-0 items-center justify-center gap-2 self-center rounded-full px-5 py-3 font-mono text-[0.8125rem] font-medium transition-[background-color,transform,box-shadow] duration-150 active:scale-[0.97] motion-reduce:transition-none ${
+        className={`ms-auto flex min-w-[6.75rem] shrink-0 items-center justify-center gap-2 self-center rounded-full px-5 py-3 font-mono text-[0.8125rem] font-medium transition-[background-color,transform,box-shadow] duration-150 active:scale-[0.97] motion-reduce:transition-none ${
           hero
             ? "bg-action text-on-action shadow-glow-action hover:bg-ink"
             : "bg-white/10 text-ink hover:bg-white/16"
