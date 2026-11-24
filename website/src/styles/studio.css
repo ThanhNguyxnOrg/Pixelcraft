@@ -1900,9 +1900,11 @@ h2 {
     border: 1px solid CanvasText;
   }
   .surface-active {
-    background: Highlight;
+    display: none;
   }
   .surface-switch button[aria-pressed="true"] {
+    /* Put the system color behind the text, not on a separate motion layer. */
+    background: Highlight;
     color: HighlightText;
   }
   .proof-photo {
