@@ -1,5 +1,6 @@
 node_modules/
 dist/
+/skill-zips/
 build/
 coverage/
 .DS_Store

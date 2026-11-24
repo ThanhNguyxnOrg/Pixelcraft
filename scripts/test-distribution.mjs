@@ -97,3 +97,23 @@ try {
 } finally {
   fs.rmSync(output, { recursive: true, force: true });
 }
+
+const checkout = fs.mkdtempSync(path.join(os.tmpdir(), 'pixelcraft-default-builds-'));
+try {
+  fs.cpSync(path.join(root, 'skills'), path.join(checkout, 'skills'), { recursive: true });
+  fs.cpSync(path.join(root, 'scripts'), path.join(checkout, 'scripts'), { recursive: true });
+  const run = (script) => execFileSync(process.execPath, [path.join(checkout, 'scripts', script)]);
+  run('build-skill-zips.mjs');
+  const archive = path.join(checkout, 'skill-zips', 'pixelcraft.zip');
+  const original = fs.readFileSync(archive);
+  run('build-adapters.mjs');
+  run('build-adapters.mjs');
+  assert.deepEqual(fs.readFileSync(archive), original);
+  fs.rmSync(path.dirname(archive), { recursive: true });
+  run('build-skill-zips.mjs');
+  assert.deepEqual(fs.readFileSync(archive), original);
+  assert.ok(fs.existsSync(path.join(checkout, 'dist', 'manifest.json')));
+  console.log('ok - default skill ZIPs and adapters can build in either order and survive adapter rebuilds');
+} finally {
+  fs.rmSync(checkout, { recursive: true, force: true });
+}
