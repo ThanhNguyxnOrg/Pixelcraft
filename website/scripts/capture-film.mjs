@@ -36,6 +36,7 @@ try {
   await page.locator(".preview-web").screenshot({ path: `${out}web.png` });
   await page.getByRole("button", { name: "Before", exact: true }).click();
   await page.locator(".demo-before").screenshot({ path: `${out}before.png` });
+  await page.getByRole("button", { name: /With Pixelcraft/ }).click();
   for (const [surface, selector] of [
     ["mobile", ".preview-mobile"],
     ["desktop", ".desktop-window"],
