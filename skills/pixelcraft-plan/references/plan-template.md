@@ -28,6 +28,9 @@
 - Hard constraints/gates:
 - Reversal conditions:
 - Confidence:
+- Runtime, package manager, and lockfile:
+- Version evidence (package/version, docs or registry source, check date, compatibility reason, verification command, or assumption / not-checked):
+- Update ownership and opt-in dependency automation:
 
 ## Design input intake
 - Artifact inventory/classification (specification vs inspiration):

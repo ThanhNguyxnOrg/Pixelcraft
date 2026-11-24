@@ -1,0 +1,18 @@
+.heading {
+  background: linear-gradient(red, blue);
+  background-clip: text;
+  color: transparent;
+}
+.card {
+  border-radius: 12px;
+  border-inline-start: 6px solid teal;
+}
+.plain-heading {
+  background: linear-gradient(red, blue);
+  background-clip: padding-box;
+  color: black;
+}
+.plain-card {
+  border-radius: 12px;
+  border-inline-start: 1px solid teal;
+}

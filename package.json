@@ -16,7 +16,10 @@
     "test:adapters": "node scripts/test-build-adapters.mjs",
     "test:tokens": "node scripts/test-export-tokens.mjs",
     "test:validator": "node scripts/test-validate-skills.mjs",
-    "test:style-inventory": "node scripts/test-style-inventory.mjs"
+    "test:style-inventory": "node scripts/test-style-inventory.mjs",
+    "test:finish-gate": "node scripts/test-finish-gate.mjs",
+    "test:slop-scan": "node scripts/test-slop-scan.mjs",
+    "test:shoot": "node scripts/test-shoot.mjs"
   },
   "files": [
     "bin/",

@@ -108,8 +108,8 @@ The full architecture is documented in [`docs/ARCHITECTURE.md`](docs/ARCHITECTUR
 
 | Method | Command | Best for |
 |---|---|---|
-| Guided installer | `npx pixelcraft` | First-time setup; choose agents, skills, and scope interactively |
-| Direct CLI | `npx pixelcraft add all --agent claude` | Reproducible Node-based setup and automation |
+| Guided installer | `node <checkout>/bin/pixelcraft.mjs` | First-time setup; choose agents, skills, and scope interactively |
+| Direct CLI | `node <checkout>/bin/pixelcraft.mjs add all --agent claude` | Reproducible Node-based setup and automation |
 | Vercel `skills` CLI | `npx skills add ThanhNguyxn07/Pixelcraft` | The cross-agent skills ecosystem and agent auto-detection |
 | Claude Code plugin | `/plugin marketplace add ThanhNguyxn07/Pixelcraft` then `/plugin install pixelcraft@pixelcraft` | Claude Code users who want plugin-managed updates |
 | curl/bash installer | `curl -fsSL https://raw.githubusercontent.com/ThanhNguyxn07/Pixelcraft/main/install.sh \| bash -s -- --agent claude --skills all` | Linux/macOS without Node.js |
@@ -121,27 +121,28 @@ Details and target-specific paths follow. The matrix below records the targets i
 
 ### Guided and direct Pixelcraft installer
 
-Run with no arguments for the zero-dependency interactive wizard:
+Clone the repository once, then run the bundled installer from the project that should receive the skills. Replace the example checkout path if you use a different location:
 
 ```bash
-npx pixelcraft
+git clone https://github.com/ThanhNguyxnOrg/Pixelcraft.git "$HOME/Pixelcraft"
+node "$HOME/Pixelcraft/bin/pixelcraft.mjs"
 ```
 
 The wizard asks for one or more agents, all skills or a numbered subset, and project or user-level scope. It uses Node's `readline` only; there are no package dependencies. Non-interactive flags remain available for automation:
 
 ```bash
 # Everything for one agent in the current project
-npx pixelcraft add all --agent claude
+node "$HOME/Pixelcraft/bin/pixelcraft.mjs" add all --agent claude
 
 # A subset for multiple agents; repeat --agent instead of using commas if preferred
-npx pixelcraft add pixelcraft-web pixelcraft-review --agent claude,cursor
+node "$HOME/Pixelcraft/bin/pixelcraft.mjs" add pixelcraft-web pixelcraft-review --agent claude,cursor
 
 # User-level installation
-npx pixelcraft add all --agent claude --global
+node "$HOME/Pixelcraft/bin/pixelcraft.mjs" add all --agent claude --global
 
 # Preview and controlled replacement
-npx pixelcraft add all --agent all --dry-run
-npx pixelcraft add all --agent claude --force
+node "$HOME/Pixelcraft/bin/pixelcraft.mjs" add all --agent all --dry-run
+node "$HOME/Pixelcraft/bin/pixelcraft.mjs" add all --agent claude --force
 ```
 
 When a subset is requested, the installer automatically includes the required `pixelcraft` orchestrator and `pixelcraft-plan` step-zero skill and prints a note. Auto-added core skills install only when missing; `--force` applies only to explicitly requested skills. Without `--force`, existing skill directories are skipped so local edits are not silently deleted. The installer refuses symlinked target skill directories rather than following them outside the project.

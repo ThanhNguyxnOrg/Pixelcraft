@@ -1,0 +1,33 @@
+<!doctype html>
+<html lang="en">
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Rendered diagnostics</title>
+<style>
+  body { margin: 12px; color: #171717; background: white; }
+  #wide { width: 450px; }
+  #hidden-essential { opacity: 0; }
+  .sample { position: relative; width: max-content; }
+  .cover { position: absolute; inset: 0; z-index: 1; }
+  #opaque { background: white; }
+  #low-contrast { color: #ddd; }
+  #focusless:focus { outline: none; }
+  #focus-ring:focus-visible { outline: 3px solid #1754ad; }
+</style>
+<main>
+  <h1>Settings</h1>
+  <button id="focusless">Focus lost</button>
+  <button id="focus-ring">Focus works</button>
+  <p id="wide">Wide element causes overflow at narrow sizes.</p>
+  <p id="hidden-essential" data-pixelcraft-essential>Required content cannot be seen.</p>
+  <details><summary>More details</summary><p id="closed" data-pixelcraft-essential>Intentionally closed.</p></details>
+  <dialog><h1 id="closed-dialog">Intentionally closed dialog</h1></dialog>
+  <div class="sample"><span id="occluded">Important content hidden under an opaque layer</span><div id="opaque" class="cover"></div></div>
+  <div class="sample"><span id="not-occluded">Important content visible under a transparent layer</span><div class="cover"></div></div>
+  <p id="low-contrast">Insufficient text contrast.</p>
+  <p id="readable">Sufficient text contrast.</p>
+  <img id="broken" src="missing.png" alt="Broken product image" width="30" height="30">
+  <img id="valid" src="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='30' height='30'%3E%3Crect width='30' height='30'/%3E%3C/svg%3E" alt="Valid product image" width="30" height="30">
+  <img id="hidden-image" hidden src="missing-hidden.png" alt="" width="30" height="30">
+</main>
+</html>

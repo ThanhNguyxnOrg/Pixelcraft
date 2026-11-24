@@ -11,6 +11,8 @@ This directory contains lightweight behavioral evaluations for every skill. Each
 5. Compare dimensions using the case table. Prefer concrete evidence: file diffs, command output, rendered screenshots, interaction recordings, validator results, and labeled uncertainty.
 6. Record model/version/date/fixture/result in the evaluation notes. These cases are behavioral prompts, not deterministic unit tests.
 
+For finish-gate and anti-slop changes, compare a landing page, a dashboard, and a brownfield design with justified brand choices. Keep task success, brief fidelity, missed confirmed failures and false positives separate; record repair rounds, elapsed time and tool cost. Spot-check rendered outcomes and include cases the reviewer has not optimized the rules against.
+
 ## Interpretation
 
 - The baseline can still pass; the goal is measuring whether the skill improves routing, specificity, verification, and constraint fidelity.

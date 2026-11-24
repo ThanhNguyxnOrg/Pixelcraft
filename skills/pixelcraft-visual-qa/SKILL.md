@@ -8,12 +8,13 @@ metadata:
 
 # Pixelcraft visual QA
 
-Visual QA is evidence production, not screenshot collection. Render the actual surface, capture representative states, inspect the pixels deliberately, fix deterministic failures once, and report what remains unverified.
+Render the actual surface, inspect representative captures, execute the primary task, and gate completion on the evidence. A missing check is not a pass.
 
 ## References
 
 - Read [references/critique-rubric.md](references/critique-rubric.md) before judging captures; it prevents generic taste commentary.
 - Read [references/task-verification.md](references/task-verification.md) when behavior or task completion matters more than static appearance.
+- Read [references/finish-gate.md](references/finish-gate.md) before verifying a new or materially changed UI flow; it defines required evidence and the repair limit.
 - Read [references/baseline-governance.md](references/baseline-governance.md) before updating, trusting, masking, or retaining screenshot baselines.
 - Read [references/performance-budgets.md](references/performance-budgets.md) when setting or evaluating web vitals, interaction latency, frame budgets, and asset budgets.
 - Run `node scripts/style-inventory.mjs <url-or-html-file>` when a rendered style/payload inventory would make critique measurable; it emits JSON rather than proof of quality.
@@ -28,8 +29,8 @@ Visual QA is evidence production, not screenshot collection. Render the actual s
 1. **Render** — build/run the real product surface. A typecheck, bundle, DOM snapshot, or successful server start is not visual evidence. For behavior that matters, execute a defined user task rather than only loading a page.
 2. **Capture** — cover the smallest supported width, a middle width, and a wide/desktop width; include light and dark where supported; include reduced motion where animation exists; capture meaningful states, task feedback, failure traces, and end states, not only the happy path.
 3. **Inspect** — evaluate the capture against the direction card, platform conventions, floor requirements, rubric, and task. Look at edges, clipping, overlap, empty space, contrast, hierarchy, alignment, text truncation, input modality, and state communication.
-4. **Fix once** — repair deterministic defects and recapture only affected surfaces. Do not iterate indefinitely by taste.
-5. **Report** — list captures or artifacts inspected, evidence label (`rendered` only for actual pixels/device/simulator/snapshot backends), defects fixed, and material `not-checked` scope.
+4. **Fix and retest** — normally use one focused repair round. For reproducible, measurable defects, run at most three total rounds and rerun affected checks without discarding earlier evidence. Do not iterate by taste.
+5. **Gate and report** — run the finish gate for new or materially changed flows; report its status and remaining defects or missing evidence. List captures inspected and use `rendered` only for actual runtime or capture evidence.
 
 ## Capture matrix
 
@@ -51,7 +52,7 @@ node scripts/shoot.mjs http://localhost:3000 --out visual-qa
 node scripts/shoot.mjs dist/index.html --breakpoints 390x844,768x1024,1440x900
 ```
 
-The script writes PNGs plus `report.json`, flags horizontal overflow, elements outside the viewport, clipped text, and low-contrast text heuristically. Treat findings as leads: inspect the PNG before changing design. Absence of findings is not proof of quality.
+The script writes PNGs plus `report.json`; highlights overflow, clipping, contrast, broken images, essential content hidden after settling, and visible text possibly covered by opaque elements. Use `data-pixelcraft-essential` on task-critical content outside the built-in main/heading targets. Opt in with `--keyboard` on a safe fixture to probe up to eight Tab stops and likely missing visual indicators. Treat findings as leads: inspect the relevant state manually. A probe or clean report is not proof of task completion, contrast compliance, or correct focus order.
 
 For local files, the built-in server defaults to the file's own directory. Pass `--root` only when shared parent assets are required: it exposes every non-dotfile beneath that root to page scripts for the duration of the capture. Dot-segments such as `.env` and `.git/` are refused. HTTP error pages are still captured and recorded; runs exit non-zero for 4xx/5xx unless `--allow-http-error` is intentionally used for error-page design review.
 
@@ -76,5 +77,5 @@ For local files, the built-in server defaults to the file's own directory. Pass 
 - [ ] no unintended horizontal overflow, clipped essential text, overlap, or off-viewport controls;
 - [ ] contrast/legibility checked in context, including disabled and focus states;
 - [ ] performance budget measured or explicitly marked `not-checked`;
-- [ ] defects fixed once and recaptured;
+- [ ] reproducible failures were repaired and rerun, or explicitly remain open;
 - [ ] report distinguishes `rendered`, `static`, `model-judgment`, `not-checked`, and `waived`.

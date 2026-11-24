@@ -10,6 +10,10 @@ metadata:
 
 Review is evidence work, not taste commentary. Never say “looks good” or “accessible” without naming scope and method.
 
+Treat detector hits as leads. Confirm task, content, contrast, clipping and focus defects in the actual state. Decorative gradient text, repeated accent rails, familiar fonts/palettes, card stacks, emoji and eyebrow labels require brief or design-system context, not blanket bans. Compare failing and passing examples before adding a rule. For an approved brand exception use the scanner's `--waivers FILE` with a JSON array of `{rule,file,line,reason}` entries (paths relative to the scan root). Keep unused waivers visible and remove stale ones; the scanner only accepts selected aesthetic IDs, not accessibility/task failures.
+
+For a substantial review, first critique the brief and captures without detector scores, then audit rendered evidence and scanner hits; combine them by user impact. Limit regression claims to the changed scope or verify against the prior baseline; don't hide pre-existing failures or reset baselines to get a pass.
+
 ## References
 
 - Read [references/heuristics.md](references/heuristics.md) when translating Nielsen's 10 heuristics into concrete checks.

@@ -1,0 +1,14 @@
+[
+  {
+    "rule": "gradient-text-treatment",
+    "file": "brand-critique.css",
+    "line": 3,
+    "reason": "Approved wordmark uses this treatment; checked legibility in both themes."
+  },
+  {
+    "rule": "rounded-accent-rail",
+    "file": "brand-critique.css",
+    "line": 17,
+    "reason": "Old callout from the previous brand guidelines."
+  }
+]
