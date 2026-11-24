@@ -19,6 +19,7 @@ Let the message carry the essential meaning as text, then give the next relevant
 - Read [references/slack-discord.md](references/slack-discord.md) for Slack Block Kit surfaces/limits/mrkdwn and Discord embeds, Components V2, buttons/selects/modals.
 - Read [references/mobile-business-platforms.md](references/mobile-business-platforms.md) for Telegram bots/Mini Apps, Zalo Mini Apps/ZaUI, WhatsApp interactive messages, and Teams Adaptive Cards.
 - Read [references/conversation-design.md](references/conversation-design.md) for progressive disclosure, fallback text, ephemeral state, confirmations, accessibility, localization, privacy, and anti-slop conversation patterns.
+- Read [references/agentic-workspace.md](references/agentic-workspace.md) for AI-native streaming workspaces, scroll-yield behavior, collapsible tool/reasoning traces, split artifact panes, grounded citations, and approval gates.
 
 ## Required workflow
 

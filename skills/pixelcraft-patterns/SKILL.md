@@ -23,6 +23,7 @@ Patterns are starting hypotheses, not layouts to copy. Choose one from the user'
 - Read [references/search-filtering.md](references/search-filtering.md) for query input, faceting, empty results, sorting, large result sets, and recovery.
 - Read [references/narrative-systems.md](references/narrative-systems.md), [references/scroll-implementation.md](references/scroll-implementation.md), and [references/accessibility-resilience.md](references/accessibility-resilience.md) for scrollytelling, chapter navigation, pinned artifacts, and resilient reading paths.
 - Read [references/tables-crud.md](references/tables-crud.md) for dense data tables, list/detail, creation/edit/delete, bulk actions, import/export, and validation.
+- Read [references/command-workspace.md](references/command-workspace.md) for command palettes (`Cmd+K`/`Ctrl+K`), keyboard-first workflows, optimistic UI with rollback/undo, master-detail split panes, and density modes.
 
 ## Selection protocol
 
