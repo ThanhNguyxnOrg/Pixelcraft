@@ -17,7 +17,6 @@
 ### Other changes
 
 - Mirror the Claude skills catalog and use matching tags for npm releases ([89a3c31](https://github.com/ThanhNguyxnOrg/Pixelcraft/commit/89a3c31ada009b66834fd81130ea7a9b58af871e))
-- Publish Pixelcraft as an unscoped npm package ([3009075](https://github.com/ThanhNguyxnOrg/Pixelcraft/commit/3009075aab5cc255c5b38190063f2c7d085fe6f7))
+- Publish Pixelcraft on npm as `@thanhnguyxn/pixelcraft`; the CLI command remains `pixelcraft`.
 - fix(release): build reproducible release archives ([fb28d1a](https://github.com/ThanhNguyxnOrg/Pixelcraft/commit/fb28d1a32c49be98ea8068f988bee9f833a5baae))
 - Update marketplace.json ([e3b8a6c](https://github.com/ThanhNguyxnOrg/Pixelcraft/commit/e3b8a6cc500137c99a89bbdfc860cec08d16811b))
-

@@ -95,6 +95,7 @@ function targetsFor(agentInput, globalInstall) {
 function help() {
   return `Usage: pixelcraft [command] [options]
 
+Install from npm: npm i -g @thanhnguyxn/pixelcraft
 Run with no arguments to start the interactive install wizard.
 
 Commands:
