@@ -30,6 +30,6 @@ Avoid duplicate animation ownership on the same properties. Coordinate scroll en
 - Handle unsupported APIs, missing assets, network failure, context loss, and media playback rejection.
 - Keep ordinary navigation and content functional if the effect fails.
 
-## Route to specialized skills
+## Route to owner skills and references
 
-Use pixelcraft-motion for complex timelines and UI choreography, pixelcraft-3d-web for 3D scenes/assets, pixelcraft-creative-code for GPU 2D/shaders, pixelcraft-scrollytelling for chapter-based narratives, and pixelcraft-audio-visual for sound/video-led experiences.
+Use `pixelcraft-web` references (`gsap.md`, `motion-react.md`, `smooth-scroll.md`, `scene-architecture.md`, `r3f-integration.md`, `shader-workflow.md`, `audio-reactive.md`, `video-media.md`) for web runtime implementation, `pixelcraft-craft` for motion/color/typography budgets, `pixelcraft-patterns` (`narrative-systems.md`, `scroll-implementation.md`) for chapter-based narratives, `pixelcraft-accessibility` (`motion-canvas.md`) for reduced-motion and non-visual parity, and `pixelcraft-visual-qa` (`motion-capture.md`, `realtime-graphics.md`) for rendered verification.
