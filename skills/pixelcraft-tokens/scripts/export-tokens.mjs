@@ -53,6 +53,27 @@ function rgbHex(rgb, alpha = 1) {
 function alphaByte(alpha) {
   return Math.round(Math.max(0, Math.min(1, alpha)) * 255).toString(16).padStart(2, '0');
 }
+function parseHexString(str) {
+  const m = /^#([0-9a-f]{3}|[0-9a-f]{4}|[0-9a-f]{6}|[0-9a-f]{8})$/i.exec(str.trim());
+  if (!m) return null;
+  let hex = m[1].toLowerCase();
+  if (hex.length === 3 || hex.length === 4) {
+    hex = hex.split('').map((ch) => ch + ch).join('');
+  }
+  const r = parseInt(hex.slice(0, 2), 16) / 255;
+  const g = parseInt(hex.slice(2, 4), 16) / 255;
+  const b = parseInt(hex.slice(4, 6), 16) / 255;
+  const alpha = hex.length === 8 ? parseInt(hex.slice(6, 8), 16) / 255 : 1;
+  return { rgb: [r, g, b], alpha, hex: `#${hex.slice(0, 6)}${hex.length === 8 ? hex.slice(6, 8) : ''}`, css: str.trim() };
+}
+function requireTypedColor(token, format) {
+  if (!token.value.rgb) {
+    throw new Error(
+      `color token '${token.path.join('.')}' uses non-hex string '${token.value.css}' which cannot be exported to ${format}; use #rrggbb/#rrggbbaa hex or a DTCG srgb/oklch color object`
+    );
+  }
+  return token.value;
+}
 function argbHex(color) {
   return `${alphaByte(color.alpha ?? 1)}${color.hex.slice(1, 7)}`;
 }
@@ -67,7 +88,11 @@ function durationMs(value) {
 }
 
 function colorParts(value) {
-  if (typeof value === 'string') return { hex: value, css: value, rgb: null, alpha: 1 };
+  if (typeof value === 'string') {
+    const parsed = parseHexString(value);
+    if (parsed) return parsed;
+    return { hex: value, css: value, rgb: null, alpha: 1 };
+  }
   const space = value.colorSpace;
   const alpha = value.alpha ?? 1;
   if (space === 'srgb') {
@@ -160,8 +185,9 @@ function render(format, list) {
   if (format === 'swift') {
     const lines = list.map((t) => {
       if (t.type === 'color') {
-        const [r, g, b] = t.value.rgb || [0, 0, 0];
-        return `  public static let ${t.name} = Color(red: ${r.toFixed(4)}, green: ${g.toFixed(4)}, blue: ${b.toFixed(4)}, opacity: ${t.value.alpha ?? 1})`;
+        const col = requireTypedColor(t, 'swift');
+        const [r, g, b] = col.rgb;
+        return `  public static let ${t.name} = Color(red: ${r.toFixed(4)}, green: ${g.toFixed(4)}, blue: ${b.toFixed(4)}, opacity: ${fmtNumber(col.alpha ?? 1)})`;
       }
       if (t.type === 'duration' && typeof t.token.$value === 'object') {
         const ms = durationMs(t.token.$value);
@@ -175,7 +201,7 @@ function render(format, list) {
   if (format === 'kotlin') {
     const hasDuration = list.some((t) => t.type === 'duration');
     const lines = list.map((t) => {
-      if (t.type === 'color') return `val ${t.name} = Color(0x${argbHex(t.value)})`;
+      if (t.type === 'color') return `val ${t.name} = Color(0x${argbHex(requireTypedColor(t, 'kotlin'))})`;
       if (t.type === 'duration' && typeof t.token.$value === 'object') {
         return `val ${t.name} = ${fmtNumber(durationMs(t.token.$value))}.milliseconds`;
       }
@@ -190,7 +216,7 @@ function render(format, list) {
   }
   if (format === 'dart') {
     const lines = list.map((t) => {
-      if (t.type === 'color') return `static const Color ${t.name} = Color(0x${argbHex(t.value)});`;
+      if (t.type === 'color') return `static const Color ${t.name} = Color(0x${argbHex(requireTypedColor(t, 'dart'))});`;
       if (t.type === 'duration' && typeof t.token.$value === 'object') {
         const ms = durationMs(t.token.$value);
         const constructor = Number.isInteger(ms) ? `Duration(milliseconds: ${fmtNumber(ms)})` : `Duration(microseconds: ${Math.round(ms * 1000)})`;

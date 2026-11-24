@@ -76,7 +76,7 @@ After detecting the stack, use the matching platform skill by name and read only
 
 | Platform skill | Framework references |
 |---|---|
-| `pixelcraft-web` | `html-css`, `react-next`, `vue-nuxt`, `svelte`, `solid`, `angular`, `astro`, `qwik`, `htmx-alpine`, `lit-web-components`, `tailwind`, `server-rendered`, `leptos-yew`, `kotlin-web`, `elm`, `clojurescript`, `fsharp-fable`, `scala-laminar`, `java-web`, `pwa` |
+| `pixelcraft-web` | `html-css`, `react-next`, `vue-nuxt`, `svelte`, `solid`, `angular`, `astro`, `qwik`, `htmx-alpine`, `lit-web-components`, `tailwind`, `server-rendered`, `leptos-yew`, `kotlin-web`, `elm`, `clojurescript`, `fsharp-fable`, `scala-laminar`, `java-web`, `pwa`, `adaptive-layout` |
 | `pixelcraft-mobile` | `swiftui`, `uikit`, `jetpack-compose`, `flutter`, `react-native-expo`, `kotlin-multiplatform`, `ionic-capacitor`, `dotnet-maui`, `flet`, `kivy` |
 | `pixelcraft-data-apps` | `streamlit`, `gradio`, `reflex`, `nicegui`, `dash`, `panel`, `shiny`, `jupyter-widgets`, `r-shiny`, `julia-genie`, `observable-framework`, `evidence` |
 | `pixelcraft-desktop` | `tauri`, `electron`, `qt-pyside-qml`, `winui-wpf`, `appkit`, `gtk`, `avalonia`, `rust-gui`, `javafx-swing`, `cpp-gui`, `go-gui`, `uno-platform` |
@@ -86,7 +86,7 @@ After detecting the stack, use the matching platform skill by name and read only
 | `pixelcraft-media` | `social-cards`, `og-generation`, `banners-video` |
 | `pixelcraft-chat-ui` | `slack-discord`, `mobile-business-platforms`, `conversation-design` |
 | `pixelcraft-constrained` | `tv-wearables`, `specialized-hardware`, `voice-ui` |
-| `pixelcraft-handoff` | `design-translation` |
+| `pixelcraft-handoff` | `design-translation`, `fidelity-tolerance` |
 | `pixelcraft-spatial` | `platforms`, `comfort-accessibility` |
 | `pixelcraft-game-ui` | `unity-ui-toolkit`, `godot`, `unreal-umg`, `hud-principles`, `love2d`, `bevy`, `monogame` |
 | `pixelcraft-extensions` | `browser-extensions`, `vscode-webviews`, `raycast`, `figma-office` |

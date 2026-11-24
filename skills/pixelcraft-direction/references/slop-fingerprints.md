@@ -44,3 +44,15 @@ Evidence base: recurring generated-UI patterns and output-homogenization evidenc
 ## Evaluation rule
 
 A page can have zero fingerprints and still be bad; absence of slop is not presence of design. Judge subject fit, hierarchy, craft, usability, and evidence separately.
+
+## Scanner traceability (`slop-scan.mjs` vs judgment)
+
+`pixelcraft-review` runs `slop-scan.mjs` to catch the mechanically detectable subset statically (`static`); visual/taste fingerprints remain human/rendered review (`rendered` / `model-judgment`):
+
+| Fingerprint family | Automated `slop-scan.mjs` rule ID(s) | Check mode |
+|---|---|---|
+| Focus removal, zoom lock, paste blocking | `outline-removed`, `zoom-disabled`, `paste-blocked` | `static` (P0) |
+| Placeholder-as-label, missing reduced-motion | `placeholder-as-label`, `missing-reduced-motion` | `static` (P1) |
+| Default fonts, `transition: all`, emoji icons, cliché copy, purple-blue gradients, hardcoded hexes | `default-font-only`, `transition-all`, `emoji-as-icon`, `generic-copy`, `purple-blue-gradient`, `hardcoded-color-literals` | `static` (P2) |
+| Repeated `rounded-2xl`, uniform shadows, centered hero + 2 CTAs, gradient text, rounded accent rails | `rounded-2xl-repetition`, `uniform-shadow`, `centered-hero-two-ctas`, `gradient-text-treatment`, `rounded-accent-rail` | `static` (P3, waivable for approved brand) |
+| Cream+serif+terracotta defaults, glassmorphism without depth, decorative Bento/sparklines, invented testimonials, shallow UX states | — | `rendered` / `model-judgment` |

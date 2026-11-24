@@ -23,6 +23,8 @@
     "node": ">=18"
   },
   "scripts": {
+    "test": "npm run validate && npm run test:distribution && npm run test:installers && npm run test:adapters && npm run test:tokens && npm run test:validator && npm run test:finish-gate && npm run test:slop-scan",
+    "test:browser": "npm run test:shoot && npm run test:style-inventory",
     "validate": "node scripts/validate-skills.mjs",
     "build:adapters": "node scripts/build-adapters.mjs",
     "build:skill-zips": "node scripts/build-skill-zips.mjs",

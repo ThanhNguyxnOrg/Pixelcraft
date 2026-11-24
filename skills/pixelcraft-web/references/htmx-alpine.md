@@ -44,10 +44,10 @@ Invalid nested/interleaved HTML after swaps, focus disappearing with replaced tr
 
 ## Verification commands
 
+Run the owning server framework's test suite and browser E2E suite without suppressing failures:
+
 ```sh
-# use the owning server framework's test command
-npm run test -- --run 2>/dev/null || true
-npx playwright test
+npm test && npx playwright test
 ```
 
 Test both no-JS/full-page behavior and enhanced fragment behavior; they are separate evidence.

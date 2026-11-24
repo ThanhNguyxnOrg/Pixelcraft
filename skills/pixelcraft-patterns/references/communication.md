@@ -1,6 +1,6 @@
 # Chat, comments, and collaboration
 
-Communication UI depends on sequence, authorship, timing, and trust. Visual flair must never obscure who said what or whether it was sent.
+Communication UI depends on sequence, authorship, timing, and trust. Visual flair must never obscure who said what or whether it was sent. This reference covers **in-app** chat/collaboration surfaces; for hosted messaging-platform payloads (Slack Block Kit, Discord, Telegram, WhatsApp, Teams), use `pixelcraft-chat-ui`.
 
 ## Core rules
 

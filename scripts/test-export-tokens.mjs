@@ -63,6 +63,42 @@ try {
   assert.match(dashOutDir.stdout, /wrote -generated[\\/]tokens\.dark\.css/);
   console.log('ok 3 - dash-prefixed option values are accepted');
 
+  const stringColors = path.join(tmp, 'string-colors.json');
+  fs.writeFileSync(stringColors, JSON.stringify({
+    color: {
+      $type: 'color',
+      whiteShort: { $value: '#fff' },
+      accentAlpha: { $value: '#ff000080' }
+    }
+  }, null, 2));
+
+  const swiftHex = run([stringColors, '--format', 'swift']);
+  assert.equal(swiftHex.status, 0, swiftHex.stderr);
+  assert.match(swiftHex.stdout, /colorWhiteShort = Color\(red: 1\.0000, green: 1\.0000, blue: 1\.0000, opacity: 1\)/);
+  assert.match(swiftHex.stdout, /colorAccentAlpha = Color\(red: 1\.0000, green: 0\.0000, blue: 0\.0000, opacity: 0\.501961\)/);
+
+  const kotlinHex = run([stringColors, '--format', 'kotlin']);
+  assert.equal(kotlinHex.status, 0, kotlinHex.stderr);
+  assert.match(kotlinHex.stdout, /val colorWhiteShort = Color\(0xffffffff\)/);
+  assert.match(kotlinHex.stdout, /val colorAccentAlpha = Color\(0x80ff0000\)/);
+
+  const dartHex = run([stringColors, '--format', 'dart']);
+  assert.equal(dartHex.status, 0, dartHex.stderr);
+  assert.match(dartHex.stdout, /static const Color colorWhiteShort = Color\(0xffffffff\);/);
+  assert.match(dartHex.stdout, /static const Color colorAccentAlpha = Color\(0x80ff0000\);/);
+  console.log('ok 4 - string hex colors (#rgb/#rrggbbaa) export accurately to Swift, Kotlin, and Dart');
+
+  const namedColor = path.join(tmp, 'named-color.json');
+  fs.writeFileSync(namedColor, JSON.stringify({ color: { $type: 'color', bad: { $value: 'red' } } }));
+  const cssNamed = run([namedColor, '--format', 'css']);
+  assert.equal(cssNamed.status, 0, cssNamed.stderr);
+  for (const nativeFmt of ['swift', 'kotlin', 'dart']) {
+    const failed = run([namedColor, '--format', nativeFmt]);
+    assert.notEqual(failed.status, 0, `${nativeFmt} should reject non-hex string color`);
+    assert.match(failed.stderr, /non-hex string 'red'/);
+  }
+  console.log('ok 5 - non-hex string colors fail loudly on Swift, Kotlin, and Dart instead of emitting corrupt colors');
+
   console.log('token exporter tests passed');
 } finally {
   fs.rmSync(tmp, { recursive: true, force: true });

@@ -90,9 +90,13 @@ many stacks via progressive disclosure.
 
 ```
 skills/<skill>/SKILL.md, references/, scripts/, assets/
-bin/pixelcraft.mjs          # installer CLI: node <checkout>/bin/pixelcraft.mjs add [skills…] --agent <host>
-scripts/validate-skills.mjs # CI lint for skills
-.claude-plugin/marketplace.json
+bin/pixelcraft.mjs             # zero-dependency installer CLI and wizard
+install.sh, install.ps1        # Node-free shell and PowerShell installers
+scripts/                       # validator, adapter builder, and contract tests
+evals/                         # 26 behavioural eval guides + JSON fixtures
+assets/                        # brand artwork and icons
 docs/ARCHITECTURE.md, docs/DESIGN-RATIONALE.md
-examples/                   # golden fixtures (later)
+plugin.json, gemini-extension.json
+.claude-plugin/, .agents/plugins/
+.github/workflows/             # CI validation and tag-release workflows
 ```

@@ -503,8 +503,8 @@ function scanFile(file, root) {
     if (/(user-scalable\s*=\s*["']?no|maximum-scale\s*=\s*["']?1(?:\.0)?\b)/i.test(line)) add('zoom-disabled','P0',5,n,line,'Do not disable pinch zoom or text scaling.');
     if (/\p{Extended_Pictographic}/u.test(line) && /icon|button|nav|<span/i.test(line)) add('emoji-as-icon','P2',2,n,line,'Use a coherent icon system or text instead of structural emoji.');
     if (/\b(get started|seamless|unlock|revolutionize|elevate)\b/i.test(line) || /lorem ipsum/i.test(line)) add('generic-copy','P2',2,n,line,'Replace template copy with concrete user/domain language.');
-    if (/rounded-2xl/.test(line)) add('rounded-2xl-repetition','P3',1,n,line,'Use semantic radius variation rather than uniform rounded-2xl.', true);
-    if (/shadow-(lg|xl|2xl)/.test(line)) add('uniform-shadow','P3',1,n,line,'Use elevation/shadow only where material semantics require it.', true);
+    if (/rounded-2xl/.test(line)) add('rounded-2xl-repetition','P3',1,n,line,'Use semantic radius variation rather than uniform rounded-2xl.');
+    if (/shadow-(lg|xl|2xl)/.test(line)) add('uniform-shadow','P3',1,n,line,'Use elevation/shadow only where material semantics require it.');
   });
 
   const rounded = (text.match(/rounded-2xl/g) || []).length;

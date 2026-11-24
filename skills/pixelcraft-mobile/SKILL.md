@@ -65,3 +65,5 @@ Rendered verification is possible only through simulator/emulator/device tooling
 - Read [references/dotnet-maui.md](references/dotnet-maui.md) for .NET MAUI.
 - Read [references/flet.md](references/flet.md) for Flet cross-platform app surfaces.
 - Read [references/kivy.md](references/kivy.md) for Kivy cross-platform app surfaces.
+
+For watchOS/Wear OS wearables and tvOS/10-foot living-room surfaces, use `pixelcraft-constrained` as the primary surface skill alongside framework idioms here; for visionOS/XR spatial surfaces, use `pixelcraft-spatial`.
