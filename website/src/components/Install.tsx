@@ -1,4 +1,4 @@
-import { useMemo, useState } from "react";
+import { useState } from "react";
 import {
   AGENTS,
   AGENT_TARGETS,
@@ -59,18 +59,9 @@ function Builder() {
     mode === "all"
       ? names
       : names.filter((n) => picked.includes(n) || REQUIRED_SKILLS.includes(n));
-  const ready = agents.length > 0 && (mode === "all" || picked.length > 0);
-
-  const command = useMemo(() => {
-    const target =
-      mode === "all"
-        ? "all"
-        : picked.length
-          ? picked.join(" ")
-          : "<pick a skill>";
-    const a = agents.length ? agents.join(",") : "<pick an agent>";
-    return `npx ${NPM_PKG} add ${target} --agent ${a}${scope === "global" ? " --global" : ""}${dry ? " --dry-run" : ""}${force ? " --force" : ""}`;
-  }, [agents, scope, mode, picked, dry, force]);
+  const ready = agents.length > 0;
+  const target = mode === "all" ? "all" : effective.join(" ");
+  const command = `npx ${NPM_PKG} add ${target} --agent ${agents.join(",")}${scope === "global" ? " --global" : ""}${dry ? " --dry-run" : ""}${force ? " --force" : ""}`;
 
   const targets = AGENT_TARGETS.filter((t) => agents.includes(t.id));
 
@@ -230,20 +221,18 @@ function Builder() {
           <p className="font-pixel text-[0.75rem] tracking-[0.06em] text-action uppercase">
             Your command
           </p>
-          <div className="mt-4">
-            <CopyCommand
-              lines={[command]}
-              variant={ready ? "hero" : "default"}
-              wrap
-            />
-          </div>
+          {ready ? (
+            <div className="mt-4">
+              <CopyCommand lines={[command]} variant="hero" wrap />
+            </div>
+          ) : null}
           <p
             role="status"
             className="mt-4 font-mono text-[0.8125rem] text-ink-muted"
           >
             {ready
               ? `${effective.length} skills into ${agents.length} ${agents.length === 1 ? "agent" : "agents"}${dry ? ", dry run" : ""}.`
-              : "Choose at least one agent and one skill."}
+              : "Choose at least one agent to generate a command."}
           </p>
 
           <p className="mt-8 font-mono text-[0.75rem] text-ink-faint">
