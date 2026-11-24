@@ -1903,9 +1903,11 @@ h2 {
     display: none;
   }
   .surface-switch button[aria-pressed="true"] {
-    /* Put the system color behind the text, not on a separate motion layer. */
+    /* Keep the user's system palette without an opaque inline text backplate. */
+    forced-color-adjust: none;
     background: Highlight;
     color: HighlightText;
+    outline-color: Highlight;
   }
   .proof-photo {
     outline: 1px solid CanvasText;
