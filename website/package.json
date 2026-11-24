@@ -1,0 +1,42 @@
+{
+  "name": "pixelcraft-showcase",
+  "version": "0.1.0",
+  "private": true,
+  "type": "module",
+  "scripts": {
+    "dev": "next dev --hostname 0.0.0.0",
+    "build": "next build",
+    "preview": "node scripts/serve.mjs",
+    "start": "node scripts/serve.mjs",
+    "check": "tsc --noEmit",
+    "test": "node --test scripts/*.test.mjs",
+    "film:assets": "node scripts/capture-film.mjs",
+    "film:audio": "node scripts/soundtrack.mjs",
+    "film:render": "remotion render video/index.tsx PixelcraftPromo video/.render.mp4 --codec=h264 --crf=19 --pixel-format=yuv420p --concurrency=4 && node scripts/finalize-film.mjs",
+    "format": "prettier --write src video scripts next.config.mjs README.md",
+    "format:check": "prettier --check src video scripts next.config.mjs README.md"
+  },
+  "dependencies": {
+    "@fontsource-variable/manrope": "5.2.8",
+    "@fontsource/ibm-plex-mono": "5.2.7",
+    "marked": "15.0.12",
+    "motion": "12.23.24",
+    "next": "16.4.6",
+    "react": "19.2.9",
+    "react-dom": "19.2.9"
+  },
+  "devDependencies": {
+    "@babel/parser": "7.28.5",
+    "@remotion/cli": "4.0.418",
+    "@types/node": "22.13.10",
+    "@types/react": "19.1.0",
+    "@types/react-dom": "19.1.0",
+    "playwright": "1.65.1",
+    "prettier": "3.6.2",
+    "remotion": "4.0.418",
+    "typescript": "5.9.3"
+  },
+  "engines": {
+    "node": ">=22.12.0"
+  }
+}
