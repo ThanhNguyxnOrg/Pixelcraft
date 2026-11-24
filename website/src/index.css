@@ -1,0 +1,351 @@
+@import "tailwindcss";
+
+/*
+ * Refinement of the supplied Pixelcraft palette: petrol ink, pale mint,
+ * violet light and a soft paper gallery. Components use semantic roles.
+ */
+@theme {
+  --font-display:
+    "Archivo Variable", system-ui, "Segoe UI", "Noto Sans", sans-serif;
+  --font-sans:
+    "Archivo Variable", system-ui, "Segoe UI", "Noto Sans", sans-serif;
+  --font-pixel: "Silkscreen", "IBM Plex Mono", ui-monospace, monospace;
+  --font-mono:
+    "IBM Plex Mono", ui-monospace, "SFMono-Regular", Menlo, monospace;
+
+  --color-void: #080f17;
+  --color-deep: #0d1923;
+  --color-panel: #142631;
+  --color-raised: #203944;
+  --color-line: #2a404b;
+  --color-line-strong: #4f6b76;
+  --color-ink: #edf4ef;
+  --color-ink-muted: #b0c1c6;
+  --color-ink-faint: #91a9b1;
+  --color-ink-ghost: #536d78;
+
+  --color-action: #b9efd2;
+  --color-on-action: #101e21;
+
+  /* The gallery's light table: exhibits sit on cool paper so dark and light work both read. */
+  --color-paper: #ecefe7;
+  --color-paper-2: #dce4db;
+  --color-paper-ink: #15292d;
+  --color-paper-ink-2: #445c60;
+  --color-paper-line: #b9c9bf;
+  --color-paper-action: #15292d;
+  --color-paper-p0: #b4233f;
+  --color-paper-p1: #a8560a;
+  --color-paper-p2: #7a5d00;
+
+  /* Light sources, not competing text accents. */
+  --color-glow-cyan: #8adacb;
+  --color-glow-blue: #79a9cc;
+  --color-glow-violet: #9183ca;
+  --color-glow-magenta: #b8a1d4;
+  --color-glow-orange: #edb66d;
+
+  /* Evidence labels — always paired with a distinct pixel glyph. */
+  --color-rendered: #03f0ed;
+  --color-static: #3aa0ff;
+  --color-judgment: #a98bff;
+  --color-unchecked: #fc9126;
+  --color-waived: #f908f5;
+
+  --color-p0: #ff5c7a;
+  --color-p1: #fc9126;
+  --color-p2: #ffd24a;
+  --color-p3: #a9b0da;
+
+  /* Radius is semantic, not uniform: controls < tiles < cards < sheets, and pills for anything you press or filter by. */
+  --radius-ctl: 0.875rem;
+  --radius-tile: 1.25rem;
+  --radius-card: 1.75rem;
+  --radius-sheet: 2.75rem;
+
+  --shadow-glow-action: 0 6px 22px -12px
+    color-mix(in oklab, var(--color-action) 35%, transparent);
+  --shadow-lift:
+    0 30px 80px -30px rgb(0 0 0 / 0.7), 0 2px 0 0 rgb(255 255 255 / 0.04) inset;
+  --shadow-pixel: 4px 4px 0 0 var(--color-line-strong);
+  --shadow-pixel-action: 4px 4px 0 0 var(--color-line-strong);
+
+  --ease-snap: cubic-bezier(0.2, 0, 0, 1);
+}
+
+@layer base {
+  html {
+    background: var(--color-void);
+    color: var(--color-ink);
+    font-family: var(--font-sans);
+    font-stretch: 100%;
+    scroll-behavior: smooth;
+    scroll-padding-top: 5rem;
+    -webkit-font-smoothing: antialiased;
+  }
+
+  body {
+    overflow-x: clip;
+  }
+
+  /* Film grain over everything: a fixed, static texture (no animation). */
+  body::after {
+    content: "";
+    position: fixed;
+    inset: 0;
+    z-index: 60;
+    pointer-events: none;
+    opacity: 0.025;
+    mix-blend-mode: overlay;
+    background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='160' height='160'%3E%3Cfilter id='n'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='.9' numOctaves='2' stitchTiles='stitch'/%3E%3C/filter%3E%3Crect width='100%25' height='100%25' filter='url(%23n)'/%3E%3C/svg%3E");
+  }
+
+  ::selection {
+    background: var(--color-action);
+    color: var(--color-on-action);
+  }
+
+  :focus-visible {
+    outline: 2px solid var(--color-action);
+    outline-offset: 3px;
+  }
+
+  #gallery :focus-visible {
+    outline-color: var(--color-paper-ink);
+  }
+
+  summary {
+    list-style: none;
+  }
+  summary::-webkit-details-marker {
+    display: none;
+  }
+
+  code,
+  kbd,
+  pre {
+    font-family: var(--font-mono);
+  }
+}
+
+.comparison-stage:has(input:focus-visible) {
+  outline: 3px solid var(--color-paper-ink);
+  outline-offset: 4px;
+}
+
+.gallery-notes[open] > summary svg {
+  transform: rotate(45deg);
+}
+
+.pixel-logo-fallback {
+  width: min(70vw, 32svh);
+  left: 50%;
+  top: 22svh;
+  transform: translate(-50%, -50%);
+}
+
+@media (min-width: 1024px) {
+  .pixel-logo-fallback {
+    width: min(40vw, 74svh);
+    left: 73.5%;
+    top: 52svh;
+  }
+}
+
+@media (forced-colors: active) {
+  :root {
+    --color-void: Canvas;
+    --color-deep: Canvas;
+    --color-panel: Canvas;
+    --color-raised: Canvas;
+    --color-paper: Canvas;
+    --color-paper-2: Canvas;
+    --color-ink: CanvasText;
+    --color-ink-muted: CanvasText;
+    --color-ink-faint: CanvasText;
+    --color-paper-ink: CanvasText;
+    --color-paper-ink-2: CanvasText;
+    --color-action: LinkText;
+    --color-on-action: Canvas;
+    --color-line: CanvasText;
+    --color-line-strong: CanvasText;
+    --color-paper-line: CanvasText;
+  }
+  html {
+    scroll-behavior: auto;
+  }
+  body::after,
+  .gborder::before,
+  canvas:first-of-type,
+  [data-hero="trace"] {
+    display: none;
+  }
+  .surface,
+  .surface-lit,
+  .surface-paper,
+  .gborder {
+    border: 1px solid CanvasText;
+    box-shadow: none;
+  }
+  button,
+  input,
+  summary,
+  [role="tab"] {
+    outline-color: Highlight;
+  }
+  input[type="range"] {
+    accent-color: Highlight;
+  }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  html {
+    scroll-behavior: auto;
+  }
+  .ticker-track {
+    animation: none;
+  }
+}
+
+/* One pause control in the hero stops every autonomous loop on the page (WCAG 2.2.2). */
+[data-motion="paused"] .ticker-track {
+  animation-play-state: paused;
+}
+
+@utility tabular {
+  font-variant-numeric: tabular-nums;
+}
+
+/* Expanded display cut of Archivo. Width contrast carries hierarchy inside one family. */
+@utility display-wide {
+  font-family: var(--font-display);
+  font-stretch: 125%;
+  font-weight: 800;
+  letter-spacing: -0.035em;
+}
+
+@utility display-condensed {
+  font-family: var(--font-display);
+  font-stretch: 62%;
+  font-weight: 800;
+}
+
+/* Stair-stepped corners: the corner of a lit pixel block, not a border radius. */
+@utility pixel-corners {
+  clip-path: polygon(
+    0 8px,
+    4px 8px,
+    4px 4px,
+    8px 4px,
+    8px 0,
+    calc(100% - 8px) 0,
+    calc(100% - 8px) 4px,
+    calc(100% - 4px) 4px,
+    calc(100% - 4px) 8px,
+    100% 8px,
+    100% calc(100% - 8px),
+    calc(100% - 4px) calc(100% - 8px),
+    calc(100% - 4px) calc(100% - 4px),
+    calc(100% - 8px) calc(100% - 4px),
+    calc(100% - 8px) 100%,
+    8px 100%,
+    8px calc(100% - 4px),
+    4px calc(100% - 4px),
+    4px calc(100% - 8px),
+    0 calc(100% - 8px)
+  );
+}
+
+@keyframes ticker {
+  to {
+    transform: translateX(-50%);
+  }
+}
+
+@utility ticker-track {
+  animation: ticker 60s linear infinite;
+}
+
+/* The faint pixel field behind sections: a static measurement grid, not ambient motion. */
+@utility pixel-field {
+  background-image:
+    linear-gradient(
+      to right,
+      color-mix(in oklab, var(--color-line) 55%, transparent) 1px,
+      transparent 1px
+    ),
+    linear-gradient(
+      to bottom,
+      color-mix(in oklab, var(--color-line) 55%, transparent) 1px,
+      transparent 1px
+    );
+  background-size: 32px 32px;
+}
+
+/* ---------- surfaces ---------- */
+
+/* Soft tile on the dark canvas: faint top light, hairline edge, depth below. */
+@utility surface {
+  background: linear-gradient(
+    180deg,
+    rgb(255 255 255 / 0.065),
+    rgb(255 255 255 / 0.02)
+  );
+  box-shadow:
+    inset 0 1px 0 0 rgb(255 255 255 / 0.09),
+    inset 0 0 0 1px rgb(255 255 255 / 0.07),
+    0 24px 60px -34px rgb(0 0 0 / 0.75);
+}
+
+@utility surface-lit {
+  background: linear-gradient(
+    180deg,
+    color-mix(in oklab, var(--color-action) 16%, transparent),
+    rgb(255 255 255 / 0.03) 55%
+  );
+  box-shadow:
+    inset 0 1px 0 0 color-mix(in oklab, var(--color-action) 55%, transparent),
+    inset 0 0 0 1px color-mix(in oklab, var(--color-action) 32%, transparent),
+    0 30px 80px -34px color-mix(in oklab, var(--color-action) 45%, transparent);
+}
+
+/* Paper tile on the light table. */
+@utility surface-paper {
+  background: rgb(255 255 255 / 0.62);
+  box-shadow:
+    inset 0 1px 0 0 rgb(255 255 255 / 0.9),
+    inset 0 0 0 1px var(--color-paper-line),
+    0 26px 60px -40px rgb(11 18 64 / 0.45);
+}
+
+/* Gradient hairline border that follows the element's radius. */
+@utility gborder {
+  position: relative;
+  &::before {
+    content: "";
+    position: absolute;
+    inset: 0;
+    border-radius: inherit;
+    padding: 1px;
+    background: linear-gradient(
+      160deg,
+      color-mix(in oklab, var(--color-action) 70%, transparent),
+      rgb(255 255 255 / 0.1) 38%,
+      rgb(255 255 255 / 0.04) 62%,
+      color-mix(in oklab, var(--color-glow-magenta) 55%, transparent)
+    );
+    -webkit-mask:
+      linear-gradient(#000 0 0) content-box,
+      linear-gradient(#000 0 0);
+    -webkit-mask-composite: xor;
+    mask-composite: exclude;
+    pointer-events: none;
+  }
+}
+
+@utility display-light {
+  font-family: var(--font-display);
+  font-stretch: 125%;
+  font-weight: 300;
+  letter-spacing: -0.03em;
+}

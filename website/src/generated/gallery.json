@@ -1,0 +1,299 @@
+{
+  "viewport": {
+    "w": 1440,
+    "h": 900
+  },
+  "scanner": "skills/pixelcraft-review/scripts/slop-scan.mjs",
+  "items": {
+    "coffee": {
+      "before": {
+        "score": 26,
+        "findings": [
+          {
+            "rule": "outline-removed",
+            "severity": "P0",
+            "line": 17,
+            "snippet": ".btn:focus { outline: none; }",
+            "fix": "Restore a visible keyboard focus indicator.",
+            "pin": {
+              "x": 44.4,
+              "y": 71.4
+            }
+          },
+          {
+            "rule": "default-font-only",
+            "severity": "P2",
+            "line": 9,
+            "snippet": "body { margin: 0; font-family: Inter, sans-serif; color: #1e293b; background: #f8fafc; }",
+            "fix": "Choose type by voice/platform and provide deliberate fallbacks."
+          },
+          {
+            "rule": "transition-all",
+            "severity": "P2",
+            "line": 20,
+            "snippet": ".card { background: #fff; border-radius: 24px; padding: 28px; box-shadow: 0 10px 25px rgba(0,0,0",
+            "fix": "Animate only intentional properties with semantic durations/easing."
+          },
+          {
+            "rule": "generic-copy",
+            "severity": "P2",
+            "line": 28,
+            "snippet": "<h1 data-slop=\"generic-copy\">Elevate your coffee experience seamlessly</h1>",
+            "fix": "Replace template copy with concrete user/domain language.",
+            "pin": {
+              "x": 38.3,
+              "y": 26.2
+            }
+          },
+          {
+            "rule": "generic-copy",
+            "severity": "P2",
+            "line": 29,
+            "snippet": "<p class=\"sub\">Unlock revolutionary flavor with our cutting-edge roasting platform.</p>",
+            "fix": "Replace template copy with concrete user/domain language."
+          },
+          {
+            "rule": "generic-copy",
+            "severity": "P2",
+            "line": 31,
+            "snippet": "<button class=\"btn primary\" data-slop=\"outline-removed\">Get started</button>",
+            "fix": "Replace template copy with concrete user/domain language."
+          },
+          {
+            "rule": "emoji-as-icon",
+            "severity": "P2",
+            "line": 36,
+            "snippet": "<div class=\"card\"><h3 data-slop=\"emoji-as-icon\">☕ Fresh</h3><p>Roasted with care for the perfect",
+            "fix": "Use a coherent icon system or text instead of structural emoji.",
+            "pin": {
+              "x": 19.3,
+              "y": 101.4
+            }
+          },
+          {
+            "rule": "purple-blue-gradient",
+            "severity": "P2",
+            "line": 10,
+            "snippet": ".hero { min-height: 640px; display: flex; flex-direction: column; align-items: center; justify-c",
+            "fix": "Use a color posture derived from subject/material rather than the default AI gradient.",
+            "pin": {
+              "x": 49.4,
+              "y": 17.9
+            }
+          },
+          {
+            "rule": "missing-reduced-motion",
+            "severity": "P1",
+            "line": 20,
+            "snippet": ".card { background: #fff; border-radius: 24px; padding: 28px; box-shadow: 0 10px 25px rgba(0,0,0",
+            "fix": "Provide a reduced-motion path when animation or transitions exist."
+          },
+          {
+            "rule": "hardcoded-color-literals",
+            "severity": "P2",
+            "line": 8,
+            "snippet": ":root { --violet: #7c3aed; --blue: #3b82f6; }",
+            "fix": "Move recurring colors into semantic tokens and verify contrast roles."
+          },
+          {
+            "rule": "centered-hero-two-ctas",
+            "severity": "P3",
+            "line": 10,
+            "snippet": ".hero { min-height: 640px; display: flex; flex-direction: column; align-items: center; justify-c",
+            "fix": "Question the centered hero/two-CTA template; choose composition from the user decision.",
+            "pin": {
+              "x": 45.1,
+              "y": 71.4
+            }
+          }
+        ]
+      },
+      "after": {
+        "score": 0,
+        "findings": []
+      }
+    },
+    "clinic": {
+      "before": {
+        "score": 58,
+        "findings": [
+          {
+            "rule": "outline-removed",
+            "severity": "P0",
+            "line": 14,
+            "snippet": "input:focus, select:focus, button:focus { outline: none; }",
+            "fix": "Restore a visible keyboard focus indicator.",
+            "pin": {
+              "x": 37.5,
+              "y": 83.9
+            }
+          },
+          {
+            "rule": "default-font-only",
+            "severity": "P2",
+            "line": 9,
+            "snippet": "body { margin: 0; font-family: Inter, sans-serif; background: #eef2ff; color: #1e293b; }",
+            "fix": "Choose type by voice/platform and provide deliberate fallbacks."
+          },
+          {
+            "rule": "transition-all",
+            "severity": "P2",
+            "line": 13,
+            "snippet": "input, select { width: 100%; box-sizing: border-box; padding: 14px 16px; margin-bottom: 14px; bo",
+            "fix": "Animate only intentional properties with semantic durations/easing."
+          },
+          {
+            "rule": "generic-copy",
+            "severity": "P2",
+            "line": 22,
+            "snippet": "<h1 data-slop=\"generic-copy\">Unlock your health journey today!</h1>",
+            "fix": "Replace template copy with concrete user/domain language.",
+            "pin": {
+              "x": 37.5,
+              "y": 12.1
+            }
+          },
+          {
+            "rule": "generic-copy",
+            "severity": "P2",
+            "line": 23,
+            "snippet": "<p>Book your appointment in seconds with our seamless platform.</p>",
+            "fix": "Replace template copy with concrete user/domain language."
+          },
+          {
+            "rule": "placeholder-as-label",
+            "severity": "P1",
+            "line": 26,
+            "snippet": "<input placeholder=\"First name\" data-slop=\"placeholder-as-label\">",
+            "fix": "Use a persistent programmatic label; placeholder is only a hint.",
+            "pin": {
+              "x": 37.5,
+              "y": 23.4
+            }
+          },
+          {
+            "rule": "placeholder-as-label",
+            "severity": "P1",
+            "line": 27,
+            "snippet": "<input placeholder=\"Last name\">",
+            "fix": "Use a persistent programmatic label; placeholder is only a hint."
+          },
+          {
+            "rule": "placeholder-as-label",
+            "severity": "P1",
+            "line": 29,
+            "snippet": "<input placeholder=\"Email\">",
+            "fix": "Use a persistent programmatic label; placeholder is only a hint."
+          },
+          {
+            "rule": "placeholder-as-label",
+            "severity": "P1",
+            "line": 30,
+            "snippet": "<input class=\"bad\" placeholder=\"Confirm email\" data-slop=\"paste-blocked\">",
+            "fix": "Use a persistent programmatic label; placeholder is only a hint."
+          },
+          {
+            "rule": "placeholder-as-label",
+            "severity": "P1",
+            "line": 31,
+            "snippet": "<input placeholder=\"Phone\">",
+            "fix": "Use a persistent programmatic label; placeholder is only a hint."
+          },
+          {
+            "rule": "placeholder-as-label",
+            "severity": "P1",
+            "line": 32,
+            "snippet": "<input placeholder=\"Date of birth\">",
+            "fix": "Use a persistent programmatic label; placeholder is only a hint."
+          },
+          {
+            "rule": "placeholder-as-label",
+            "severity": "P1",
+            "line": 34,
+            "snippet": "<input placeholder=\"Preferred date and time\">",
+            "fix": "Use a persistent programmatic label; placeholder is only a hint."
+          },
+          {
+            "rule": "placeholder-as-label",
+            "severity": "P1",
+            "line": 35,
+            "snippet": "<input placeholder=\"Insurance member ID\">",
+            "fix": "Use a persistent programmatic label; placeholder is only a hint."
+          },
+          {
+            "rule": "purple-blue-gradient",
+            "severity": "P2",
+            "line": 17,
+            "snippet": "button { width: 100%; padding: 16px; border: 0; border-radius: 16px; background: linear-gradient",
+            "fix": "Use a color posture derived from subject/material rather than the default AI gradient."
+          },
+          {
+            "rule": "paste-blocked",
+            "severity": "P0",
+            "line": 40,
+            "snippet": "document.querySelector('.bad').addEventListener('paste', (e) => e.preventDefault());",
+            "fix": "Never block paste; it harms password managers, accessibility, and recovery.",
+            "pin": {
+              "x": 37.5,
+              "y": 38.4
+            }
+          },
+          {
+            "rule": "missing-reduced-motion",
+            "severity": "P1",
+            "line": 13,
+            "snippet": "input, select { width: 100%; box-sizing: border-box; padding: 14px 16px; margin-bottom: 14px; bo",
+            "fix": "Provide a reduced-motion path when animation or transitions exist."
+          },
+          {
+            "rule": "hardcoded-color-literals",
+            "severity": "P2",
+            "line": 8,
+            "snippet": ":root { --violet: #7c3aed; --blue: #3b82f6; }",
+            "fix": "Move recurring colors into semantic tokens and verify contrast roles."
+          }
+        ]
+      },
+      "after": {
+        "score": 0,
+        "findings": []
+      }
+    },
+    "grid": {
+      "before": {
+        "score": 6,
+        "findings": [
+          {
+            "rule": "default-font-only",
+            "severity": "P2",
+            "line": 9,
+            "snippet": "body { margin: 0; font-family: Inter, sans-serif; background: #f1f5f9; color: #0f172a; }",
+            "fix": "Choose type by voice/platform and provide deliberate fallbacks."
+          },
+          {
+            "rule": "purple-blue-gradient",
+            "severity": "P2",
+            "line": 10,
+            "snippet": "header { padding: 24px 40px; background: linear-gradient(135deg, var(--violet), var(--blue)); co",
+            "fix": "Use a color posture derived from subject/material rather than the default AI gradient.",
+            "pin": {
+              "x": 8.3,
+              "y": 4.9
+            }
+          },
+          {
+            "rule": "hardcoded-color-literals",
+            "severity": "P2",
+            "line": 8,
+            "snippet": ":root { --violet: #7c3aed; --blue: #3b82f6; }",
+            "fix": "Move recurring colors into semantic tokens and verify contrast roles."
+          }
+        ]
+      },
+      "after": {
+        "score": 0,
+        "findings": []
+      }
+    }
+  }
+}

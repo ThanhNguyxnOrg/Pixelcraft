@@ -4,39 +4,39 @@
   "private": true,
   "type": "module",
   "scripts": {
-    "dev": "next dev --hostname 0.0.0.0",
-    "build": "next build",
+    "dev": "vite --host 0.0.0.0",
+    "build": "vite build",
     "preview": "node scripts/serve.mjs",
     "start": "node scripts/serve.mjs",
     "check": "tsc --noEmit",
     "test": "node --test scripts/*.test.mjs",
-    "film:assets": "node scripts/capture-film.mjs",
-    "film:audio": "node scripts/soundtrack.mjs",
-    "film:render": "remotion render video/index.tsx PixelcraftPromo video/.render.mp4 --codec=h264 --crf=19 --pixel-format=yuv420p --concurrency=4 && node scripts/finalize-film.mjs",
-    "format": "prettier --write src video scripts next.config.mjs README.md",
-    "format:check": "prettier --check src video scripts next.config.mjs README.md"
+    "format": "prettier --write src scripts index.html vite.config.ts tsconfig.json README.md",
+    "format:check": "prettier --check src scripts index.html vite.config.ts tsconfig.json README.md"
   },
   "dependencies": {
-    "@fontsource-variable/manrope": "5.2.8",
+    "@fontsource-variable/archivo": "5.2.8",
     "@fontsource/ibm-plex-mono": "5.2.7",
-    "@fontsource/instrument-serif": "5.3.0",
-    "marked": "15.0.12",
+    "@fontsource/silkscreen": "5.2.7",
+    "@gsap/react": "2.1.2",
+    "gsap": "3.13.0",
     "motion": "12.23.24",
-    "next": "16.4.6",
     "react": "19.2.9",
-    "react-dom": "19.2.9",
-    "sanitize-html": "2.18.2"
+    "react-dom": "19.2.9"
   },
   "devDependencies": {
-    "@babel/parser": "7.28.5",
-    "@remotion/cli": "4.0.546",
+    "@fontsource-variable/public-sans": "5.2.7",
+    "@fontsource-variable/work-sans": "5.2.8",
+    "@fontsource/barlow-condensed": "5.2.7",
+    "@tailwindcss/vite": "4.1.18",
     "@types/node": "22.13.10",
     "@types/react": "19.1.0",
     "@types/react-dom": "19.1.0",
+    "@vitejs/plugin-react": "5.1.4",
     "playwright": "1.65.1",
     "prettier": "3.6.2",
-    "remotion": "4.0.546",
-    "typescript": "5.9.3"
+    "tailwindcss": "4.1.18",
+    "typescript": "5.9.3",
+    "vite": "7.3.8"
   },
   "engines": {
     "node": ">=22.12.0"

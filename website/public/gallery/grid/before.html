@@ -1,0 +1,38 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Energy analytics (default agent output)</title>
+<style>
+    :root { --violet: #7c3aed; --blue: #3b82f6; }
+  body { margin: 0; font-family: Inter, sans-serif; background: #f1f5f9; color: #0f172a; }
+  header { padding: 24px 40px; background: linear-gradient(135deg, var(--violet), var(--blue)); color: #fff; }
+  h1 { margin: 0; font-size: 28px; }
+  .kpis { display: grid; grid-template-columns: repeat(4, 1fr); gap: 20px; padding: 28px 40px 8px; }
+  .kpi { background: #fff; border-radius: 24px; padding: 22px; box-shadow: 0 10px 25px rgba(0,0,0,.12); }
+  .kpi small { color: #64748b; }
+  .kpi b { display: block; font-size: 34px; margin: 6px 0; }
+  .chip { font-size: 12px; padding: 3px 10px; border-radius: 999px; font-weight: 600; }
+  .g { background: #dcfce7; color: #166534; } .r { background: #fee2e2; color: #991b1b; } .y { background: #fef9c3; color: #854d0e; } .b { background: #dbeafe; color: #1e40af; }
+  .charts { display: grid; grid-template-columns: 1fr 1fr; gap: 20px; padding: 20px 40px; }
+  .chart { background: #fff; border-radius: 24px; padding: 22px; box-shadow: 0 10px 25px rgba(0,0,0,.12); height: 320px; }
+  .pie { width: 220px; height: 220px; border-radius: 50%; margin: 10px auto; background: conic-gradient(#ef4444 0 22%, #f59e0b 0 41%, #10b981 0 63%, #3b82f6 0 82%, #8b5cf6 0 100%); }
+  .bars { display: flex; align-items: flex-end; gap: 12px; height: 220px; padding-top: 20px; }
+  .bars i { flex: 1; border-radius: 12px 12px 0 0; background: linear-gradient(180deg, #8b5cf6, #3b82f6); box-shadow: 0 10px 25px rgba(0,0,0,.12); }
+</style>
+</head>
+<body>
+  <header><h1 data-slop="purple-blue-gradient">Analytics Overview</h1></header>
+  <div class="kpis">
+    <div class="kpi"><small>Total demand</small><b>38.4 GW</b><span class="chip g">+4.2%</span></div>
+    <div class="kpi"><small>Generation</small><b>39.1 GW</b><span class="chip b">Live</span></div>
+    <div class="kpi" data-slop="status-chip-soup"><small>Outages</small><b>3</b><span class="chip r">Critical</span></div>
+    <div class="kpi"><small>Renewables</small><b>41%</b><span class="chip y">Warning</span></div>
+  </div>
+  <div class="charts">
+    <div class="chart"><h3>Source mix</h3><div class="pie"></div></div>
+    <div class="chart"><h3>Weekly performance</h3><div class="bars"><i style="height:55%"></i><i style="height:70%"></i><i style="height:48%"></i><i style="height:82%"></i><i style="height:66%"></i><i style="height:90%"></i><i style="height:60%"></i></div></div>
+  </div>
+</body>
+</html>

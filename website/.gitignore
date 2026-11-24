@@ -1,6 +1,7 @@
-.next/
+node_modules/
+dist/
 out/
-.astro/
+.next/
+.releases/
+.ssr/
 *.tsbuildinfo
-next-env.d.ts
-video/.render.mp4

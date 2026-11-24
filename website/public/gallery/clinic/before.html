@@ -1,0 +1,43 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Book an appointment (default agent output)</title>
+<style>
+    :root { --violet: #7c3aed; --blue: #3b82f6; }
+  body { margin: 0; font-family: Inter, sans-serif; background: #eef2ff; color: #1e293b; }
+  .wrap { max-width: 520px; margin: 40px auto; background: #fff; border-radius: 24px; padding: 40px; box-shadow: 0 10px 25px rgba(0,0,0,.12); }
+  h1 { margin: 0 0 8px; font-size: 32px; }
+  p { color: #64748b; margin: 0 0 24px; }
+  input, select { width: 100%; box-sizing: border-box; padding: 14px 16px; margin-bottom: 14px; border: 1px solid #cbd5e1; border-radius: 12px; font-size: 15px; transition: all .3s; }
+  input:focus, select:focus, button:focus { outline: none; }
+  input.bad { border-color: #ef4444; }
+  .grid { display: grid; grid-template-columns: 1fr 1fr; gap: 12px; }
+  button { width: 100%; padding: 16px; border: 0; border-radius: 16px; background: linear-gradient(135deg, var(--violet), var(--blue)); color: #fff; font-size: 16px; font-weight: 600; cursor: pointer; outline: none; }
+</style>
+</head>
+<body>
+  <div class="wrap">
+    <h1 data-slop="generic-copy">Unlock your health journey today!</h1>
+    <p>Book your appointment in seconds with our seamless platform.</p>
+    <form>
+      <div class="grid">
+        <input placeholder="First name" data-slop="placeholder-as-label">
+        <input placeholder="Last name">
+      </div>
+      <input placeholder="Email">
+      <input class="bad" placeholder="Confirm email" data-slop="paste-blocked">
+      <input placeholder="Phone">
+      <input placeholder="Date of birth">
+      <select><option>Select service</option></select>
+      <input placeholder="Preferred date and time">
+      <input placeholder="Insurance member ID">
+      <button type="submit" data-slop="outline-removed">Submit</button>
+    </form>
+  </div>
+  <script>
+    document.querySelector('.bad').addEventListener('paste', (e) => e.preventDefault());
+  </script>
+</body>
+</html>

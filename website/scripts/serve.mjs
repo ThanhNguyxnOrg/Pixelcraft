@@ -9,11 +9,12 @@ import { pipeline } from "node:stream";
 
 if (process.argv.includes("--help")) {
   console.log(
-    "Usage: node scripts/serve.mjs\nServe the Next.js production out folder. PORT defaults to 4321. Supports HEAD and media byte ranges.",
+    "Usage: node scripts/serve.mjs\nServe the Vite production dist folder (or an immutable export via SITE_ROOT). PORT defaults to 4321. Supports HEAD and media byte ranges.",
   );
   process.exit(0);
 }
-const root = fileURLToPath(new URL("../out/", import.meta.url));
+const root =
+  process.env.SITE_ROOT || fileURLToPath(new URL("../dist/", import.meta.url));
 const mime = {
   ".html": "text/html; charset=utf-8",
   ".css": "text/css; charset=utf-8",
@@ -28,6 +29,7 @@ const mime = {
   ".ico": "image/x-icon",
   ".woff2": "font/woff2",
   ".mp4": "video/mp4",
+  ".webm": "video/webm",
   ".vtt": "text/vtt; charset=utf-8",
 };
 const base = resolve(root);
@@ -79,7 +81,7 @@ const server = http.createServer(async (req, res) => {
   res.setHeader("Accept-Ranges", "bytes");
   res.setHeader(
     "Cache-Control",
-    pathname.startsWith("/_next/static/")
+    pathname.startsWith("/assets/")
       ? "public, max-age=31536000, immutable"
       : "no-cache",
   );
