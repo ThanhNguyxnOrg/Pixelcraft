@@ -11,10 +11,10 @@
       "name": "pixelcraft",
       "description": "Portable Agent Skills for distinctive UI and rigorous UX across frontend stacks",
       "version": "0.1.0",
-      "source": {
-        "source": "github",
-        "repo": "ThanhNguyxnOrg/Pixelcraft"
-      }
+      "author": {
+        "name": "Pixelcraft contributors"
+      },
+      "source": "./"
     }
   ]
 }

@@ -1,3 +1,12 @@
 {
-  "name": "pixelcraft"
+  "name": "pixelcraft",
+  "version": "0.1.0",
+  "description": "Portable Agent Skills for distinctive UI and rigorous UX across frontend stacks",
+  "author": {
+    "name": "Pixelcraft contributors"
+  },
+  "homepage": "https://github.com/ThanhNguyxnOrg/Pixelcraft",
+  "repository": "https://github.com/ThanhNguyxnOrg/Pixelcraft",
+  "license": "MIT",
+  "icon": "./assets/pixelcraft-logo-512.png"
 }

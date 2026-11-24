@@ -30,9 +30,9 @@ for (const manifest of [portable, claude, gemini]) {
   assert.equal(manifest.name, 'pixelcraft');
   assert.equal(manifest.version, pkg.version);
 }
-assert.deepEqual(claude.source, { source: 'github', repo: 'ThanhNguyxnOrg/Pixelcraft' });
+assert.equal(claude.source, './');
 assert.equal(claudePlugin.name, claude.name);
-assert.equal(claudePlugin.version, undefined, 'Claude must use the release-managed marketplace version');
+assert.equal(claudePlugin.version, pkg.version);
 assert.equal(claude.strict, undefined);
 assert.equal(claude.skills, undefined, 'Claude discovers the canonical skills/ directory from the plugin root');
 assert.equal(codexCatalog.plugins[0].name, portable.name);
@@ -48,10 +48,11 @@ if (process.argv.includes('--release')) {
 
 const packArgs = ['pack', '--dry-run', '--json'];
 const npmCli = process.env.npm_execpath;
-const [pack] = JSON.parse(execFileSync(npmCli ? process.execPath : 'npm', npmCli ? [npmCli, ...packArgs] : packArgs, {
+const rawPack = JSON.parse(execFileSync(npmCli ? process.execPath : 'npm', npmCli ? [npmCli, ...packArgs] : packArgs, {
   cwd: root,
   encoding: 'utf8',
 }));
+const pack = Array.isArray(rawPack) ? rawPack[0] : (rawPack.files ? rawPack : rawPack[pkg.name] || Object.values(rawPack)[0]);
 assert.equal(pack.name, 'pixelcraft');
 const files = new Set(pack.files.map((entry) => entry.path));
 for (const expected of ['package.json', pkg.bin.pixelcraft, 'plugin.json', 'gemini-extension.json', 'scripts/build-skill-zips.mjs',
