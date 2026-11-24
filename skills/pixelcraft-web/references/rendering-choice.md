@@ -9,7 +9,7 @@
 | Canvas 2D | Procedural drawing, simple particles, paint tools | App must provide semantics, focus, text/data alternative |
 | PixiJS | Sprite/texture-heavy 2D scenes, particles, filters, batching | Adds a runtime and GPU memory; use only for measured workloads |
 | OGL/direct WebGL | A compact shader or custom GPU surface | Lower-level lifecycle/compatibility work |
-| Three.js/R3F | 3D scene graphs, camera, lighting, loaders | Route to pixelcraft-3d-web for scene/asset architecture |
+| Three.js/R3F | 3D scene graphs, camera, lighting, loaders | Read [references/scene-architecture.md](scene-architecture.md) for scene and asset architecture |
 | WebGPU | Features or compute paths unavailable/inefficient in chosen WebGL approach | Optional feature path; verify target coverage and fallbacks |
 
 ## PixiJS selection notes
