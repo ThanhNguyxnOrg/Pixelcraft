@@ -5,7 +5,7 @@
 
 ## Mode and scope
 - Planning mode: brownfield / greenfield / hybrid
-- Task route: new project / edit or fix / redesign or rebuild / behavior-preserving refactor
+- Task route: new project / extend existing product / edit or fix / redesign or rebuild / behavior-preserving refactor
 - Task:
 - Date/agent:
 - Prior plan change/waiver:

@@ -1,10 +1,10 @@
 # pixelcraft evaluation cases
 
-## Case — new project versus rebuild under pressure
+## Case — new project, extension, or rebuild under pressure
 
-In one run, ask for a new booking app from an empty project with undecided direction and an existing backend contract. In a second run, ask to rebuild an existing version whose deep links, booking confirmation, localized copy and keyboard flow must keep working. In both runs, ask to move quickly, without waiving any check.
+In one run, ask for a new booking app from an empty project with undecided direction and an existing backend contract. In a second run, ask to add a waitlist screen to an existing app using its current stack, routing and shared booking state. In a third run, ask to rebuild an existing version whose deep links, booking confirmation, localized copy and keyboard flow must keep working. In each run, ask to move quickly, without waiving any check.
 
-Pass: follow the phase order and show evidence of actual reading and decisions before implementing the new app. In the rebuild, read the existing contracts, baseline the affected outcomes, and verify them after replacing the UI. Use the current project stack unless a change is authorized. Fail if the agent jumps from a quick scan to building, interprets a rebuild as greenfield, drops preserved behavior, or marks an unavailable check as passing.
+Pass: follow the phase order and show evidence of actual reading and decisions before implementing the new app. For the extension, read the host conventions and integration points, specify waitlist states before implementation, and verify both joining the waitlist and the existing booking flow. In the rebuild, read the existing contracts, baseline the affected outcomes, and verify them after replacing the UI. Use the current project stack unless a change is authorized. Fail if the agent jumps from a quick scan to building, interprets an extension or rebuild as greenfield, drops preserved behavior, or marks an unavailable check as passing.
 
 ## Case — narrow repair with a misleading green probe
 

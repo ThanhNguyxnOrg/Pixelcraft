@@ -16,11 +16,11 @@ Classify the task before acting:
 
 - **Brownfield:** a repository, application, package, prototype, or existing design system exists—even if the requested surface is new.
 - **Greenfield:** no meaningful implementation exists, or the user explicitly asks for stack selection from scratch.
-- **Hybrid:** existing product but new surface/platform. Inventory the existing system first, then run constrained greenfield selection.
+- **Hybrid:** a new surface in an existing product needs a separate stack/runtime decision. Inventory the existing system first, then run constrained greenfield selection. A new surface on the current stack follows brownfield planning.
 
 Do not infer greenfield merely because the current folder is empty; inspect parent context, user brief, linked assets, and whether an existing product/database/API constrains the choice.
 
-Record the task route separately: new project, edit/fix, redesign/rebuild, or behavior-preserving refactor. For a hybrid, map existing contracts first and constrain the new surface to those contracts.
+Record the task route separately: new project, extend existing product, edit/fix, redesign/rebuild, or behavior-preserving refactor. To extend an existing product, map the affected integration points and conventions first, then plan the new surface's requirements, flows, states and acceptance checks. Keep the existing stack unless a separate decision is needed and in scope.
 
 ## Brownfield workflow
 

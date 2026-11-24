@@ -20,7 +20,8 @@
   ],
   "negativeControls": [
     { "name": "empty replacement directory", "input": "a new directory next to the existing booking flow", "mustNot": "classify the replacement as a new project without inspecting the existing product" },
-    { "name": "passing static capture", "input": "a clean screenshot from the rebuilt route, with untested deep links", "mustNot": "treat the image as evidence that legacy entry points or task outcomes still work" }
+    { "name": "passing static capture", "input": "a clean screenshot from the rebuilt route, with untested deep links", "mustNot": "treat the image as evidence that legacy entry points or task outcomes still work" },
+    { "name": "add without replacing", "input": "instead of rebuilding, add a new waitlist screen on the current stack", "mustNot": "force a rebuild or greenfield route; map host contracts and plan the new flow before coding" }
   ],
   "baseline": {
     "withoutSkill": "starts with new components and accepts visual polish as parity",
