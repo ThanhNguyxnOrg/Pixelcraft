@@ -62,7 +62,7 @@ Be explicit: browser rendering and interaction can be inspected here when a brow
 - Read [references/rendering-performance.md](references/rendering-performance.md) for GPU/frame/memory budgets and device evidence.
 - Read [references/rendering-choice.md](references/rendering-choice.md) for SVG/Canvas/PixiJS/WebGL/WebGPU selection.
 - Read [references/shader-workflow.md](references/shader-workflow.md) for GLSL/WGSL implementation and debugging.
-- Read [references/creative-effects.md](references/creative-effects.md) for particles, displacement, procedural graphics, and deterministic effects.
+- Read [references/creative-effects.md](references/creative-effects.md) and [references/creative-runtime.md](references/creative-runtime.md) for particles, displacement, procedural graphics, deterministic effects, and canvas/WebGL runtime lifecycle.
 - Read [references/audio-reactive.md](references/audio-reactive.md), [references/video-media.md](references/video-media.md), and [references/accessibility-performance.md](references/accessibility-performance.md) for interactive media runtime, controls, captions, and media budgets.
 ## Framework routing
 
