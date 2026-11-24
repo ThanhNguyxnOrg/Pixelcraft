@@ -9,6 +9,7 @@
   "plugins": [
     {
       "name": "pixelcraft",
+      "description": "Portable Agent Skills for distinctive UI and rigorous UX across frontend stacks",
       "source": "./"
     }
   ]

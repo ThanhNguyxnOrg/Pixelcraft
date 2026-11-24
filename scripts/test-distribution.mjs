@@ -22,7 +22,10 @@ for (const manifest of [portable, claude, gemini]) {
   assert.equal(manifest.name, 'pixelcraft');
   assert.equal(manifest.version, pkg.version);
 }
-assert.deepEqual(claudeCatalog.plugins, [{ name: claude.name, source: './' }]);
+assert.deepEqual(claudeCatalog.plugins, [{
+  name: claude.name, description: claude.description, source: './',
+}]);
+assert.equal(claude.skills, './skills');
 assert.equal(codexCatalog.plugins[0].name, portable.name);
 assert.equal(codexCatalog.plugins[0].source.source, 'local');
 assert.equal(path.resolve(root, codexCatalog.plugins[0].source.path), path.resolve(root));
