@@ -1,62 +1,74 @@
-# Rich
+# Rich (Python)
 
-Rich is primarily a rendering/output library, not a complete interactive application framework. Use it for structured terminal output, logs, tables, panels, progress, syntax, markdown, prompts-adjacent display, and live dashboards when scope is limited.
+Rich is a structured terminal rendering library—not a full-screen multi-pane application framework. Use it for CLI output, tables, panels, trees, syntax highlighting, Markdown, progress bars, and bounded live status displays. When an interface needs persistent panes, focus rings, or complex keyboard navigation, move to **Textual** (`references/textual.md`).
 
-## Token mapping
+## Token mapping (`rich.theme.Theme`) & stdout/stderr separation
 
-Define semantic style constants centrally:
+Define semantic style roles once with **`rich.theme.Theme`** and pass it to **`Console(theme=...)`**. Separate diagnostic/interactive UI (`Console(stderr=True)`) from machine-readable payload output on `stdout` so piping (`mycli list | jq`) never breaks on ANSI escape codes or spinner frames:
 
 ```python
-PC_STYLES = {"action": "bold #0074ca", "error": "bold red"}
+from rich.console import Console
+from rich.markup import escape
+from rich.theme import Theme
+
+PC_THEME = Theme({
+    "action": "bold #0074ca",
+    "success": "bold green",
+    "warning": "bold yellow",
+    "error": "bold red",
+    "muted": "dim",
+})
+
+out = Console(theme=PC_THEME)                 # primary output (auto-strips ANSI when piped)
+err = Console(stderr=True, theme=PC_THEME)    # progress, spinners, warnings, errors
+
+filename = "report[2026].csv"
+err.print(f"[action]Importing[/action] {escape(filename)}")
 ```
 
-Use named styles/themes rather than repeating raw color strings. Rich markup style names should express meaning (`error`, `muted`, `action`), not appearance-only chaos.
+## Markup safety (`rich.markup.escape`)
 
-## Layout and responsive idioms
+Rich interprets `[...]` brackets in strings as style tags. Always wrap untrusted or dynamic strings (filenames, JSON snippets, array indices like `items[0]`, log lines) with **`rich.markup.escape(text)`**—or pass `markup=False` to `console.print(...)`—so brackets never swallow text or raise `MarkupError`.
 
-Use console width detection, tables/columns/panels/padding deliberately, soft wrapping/overflow settings, and avoid fixed-width ASCII diagrams. Rich output must degrade when piped, narrow, redirected, or logged. Interactive full-screen behavior belongs more naturally in Textual.
+## Layout, typography, & responsive idioms
 
-## Typography/custom fonts
+- Let Rich adapt tables and panels to `console.width` (`expand=False` or responsive `ratio`/`overflow="fold"`/`"ellipsis"`) rather than building fixed 120-column ASCII boxes that wrap catastrophically at 80 columns.
+- Terminals control fonts: establish hierarchy with bold, dim, underline, indentation, and clean rules (`Rule`), pairing semantic color with plain-text markers (`[OK]`, `[WARN]`, `[ERR]`) so `NO_COLOR=1` and screen-reader linear reads remain clear.
+- Provide a `--json` or `--plain` mode when automation consumes command output, and check `out.is_terminal` before emitting decorative boxes or interactive prompts.
 
-Terminals control fonts. Use bold/dim/underline/reverse/color as hierarchy. Never rely on exact font or glyph width. Use text alternatives for box glyphs/emoji/sparklines.
+## Motion, progress, & states idioms
 
-## Motion/reduced motion
+- Use `Progress` and `Live` on `Console(stderr=True)` with bounded refresh rates (`refresh_per_second=4`–`10`) and truthful counts/bytes—never run an infinite spinner that conceals hung network calls or hides errors.
+- Disable animated spinners and live redraws automatically when `not err.is_terminal` or `CI` / `--quiet` is set, logging discrete line-by-line milestones instead.
+- Catch `KeyboardInterrupt` cleanly: stop active `Progress`/`Live` contexts, print an explicit cancelled state (`[WARN] Cancelled by user; 0 files modified.`), and exit with standard code `130`.
 
-Use progress/live display truthfully and sparingly. Avoid rapid refresh/flash. Honor noninteractive environments and consider `NO_COLOR`; motion reduction in terminals is environment-limited, so provide quiet/no-animation flags.
+## Forms & linear CLI prompts
 
-## Accessibility specifics
-
-Do not encode meaning only through color/style. stdout/stderr separation, plaintext fallback, screen-reader legibility of linear output, no cursor-address tricks in logs, and machine-readable mode where automation matters. Verify terminal capture behavior.
-
-## States idiom
-
-Progress bars/spinners/status must reflect real work. Error panels should explain recovery, not just decorate tracebacks. Empty/no-results/offline/cancelled/interrupted states should be explicit text. Keyboard interrupt handling is UX-critical.
-
-## Forms idiom
-
-Rich prompts/confirmations are linear CLI interaction, not full forms. Validate input with recovery copy, preserve prior value where possible, allow paste naturally, and provide noninteractive flags/environment variables for automation.
+Rich's `Prompt.ask` / `Confirm.ask` / `IntPrompt.ask` fit short linear confirmations only. Always provide non-interactive CLI flags (`--yes`, `--name`, env vars) for CI/scripts, validate input with plain recovery copy, and preserve defaults cleanly. For rich multi-step interactive forms or fuzzy autocomplete in Python, prefer **`prompt_toolkit`** or **`questionary`** (`references/extended-tui-toolkits.md`).
 
 ## Do/don't pairs
 
 | Do | Don't |
 |---|---|
-| named semantic style `style="error"` | raw color repeated everywhere |
-| width-aware table/panel layout | fixed 120-column ASCII layout |
-| explicit interrupted/cancelled message | silent partial output on Ctrl+C |
-| stdout/stderr separation and plain mode | ANSI decoration in piped machine output |
-| truthful progress percentage | decorative spinner hiding unknown/failed state |
+| Define semantic `Theme({...})` + `Console(theme=...)` | Repeat inline `[bold #0074ca]` style strings across every print call |
+| Escape dynamic strings with `rich.markup.escape(val)` or `markup=False` | Interpolate raw file paths or errors like `items[0]` into Rich markup |
+| Put `Progress`, `Live`, and warnings on `Console(stderr=True)` | Pollute piped `stdout` JSON/CSV data with spinner ANSI sequences |
+| Emit plain line-based progress and `--json` mode when not a TTY | Render cursor-rewriting live tables into CI log files |
+| Handle `KeyboardInterrupt` cleanly and print what completed vs aborted | Leave partial ANSI state or silent tracebacks on `Ctrl+C` |
 
 ## Known traps
 
-Markup escaping user content, width/Unicode mismatch, piped ANSI output, logs polluted by control sequences, live display flicker, nested live displays, color-only severity, huge tables overwhelming terminal scrollback.
+Unescaped `[...]` brackets throwing `MarkupError` or silently disappearing, progress bars written to `stdout` breaking pipes, nested `Live` / `Progress` contexts corrupting cursor rows, fixed-width tables unreadable at `80` columns, `NO_COLOR=1` rendering status invisible when color was the only signal, giant tables blowing past scrollback without `--limit`/pagination.
 
 ## Verification commands
 
 ```sh
-python -m pytest
 python -m compileall .
+python -m pytest
 python cli.py --help
-NO_COLOR=1 python cli.py 2>/dev/null || true
+# Verify NO_COLOR, narrow width, and piped non-TTY output cleanly:
+NO_COLOR=1 COLUMNS=80 python cli.py --help
+python cli.py --help | cat
 ```
 
-Inspect actual terminal output, piped output, width matrices, screen-reader/plaintext readability where relevant, interrupt behavior, and snapshot/golden text fixtures.
+Unit tests and `Console(record=True, width=80, no_color=True)` string-capture fixtures provide repeatable `static`/snapshot evidence. Inspect actual terminal runs across `80`-column width, `NO_COLOR=1`, piped stdout, and `Ctrl+C` interruption for `rendered` evidence; label untested emulators `not-checked`.

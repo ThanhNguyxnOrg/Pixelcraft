@@ -1,6 +1,6 @@
 ---
 name: pixelcraft-media
-description: Designs and verifies social cards, Open Graph/Twitter images, repository banners, SVG posters, video frames, and motion graphics for external platforms. Use for OG/social preview generation, 1200×630 cards, GitHub 1280×640 social previews, 16:9/9:16/1:1 media, platform safe zones, thumbnail legibility, Satori/@vercel/og/ImageResponse constraints, SVG banners, Remotion or Motion Canvas video, caching/export behavior, and media-specific accessibility/truthfulness review.
+description: Designs and verifies social cards, Open Graph/Twitter images, YouTube thumbnails, repository banners, SVG posters, video frames, and motion graphics for external platforms. Use for OG/social preview generation, 1200×630 cards, GitHub 1280×640 previews, Bluesky/Discord/WhatsApp/Slack/Telegram embeds, 16:9/9:16/1:1 media, platform safe zones, thumbnail legibility, Satori/@vercel/og/ImageResponse, Takumi, Resvg, Sharp, SVG banners, Remotion, Motion Canvas, Revideo, FFmpeg, dotLottie/Rive export, caching, and truthfulness review.
 license: MIT
 metadata:
   version: 0.1.0
@@ -16,10 +16,11 @@ Design the focal subject and minimum readable message for the smallest real crop
 
 ## References
 
-- Read [references/social-cards.md](references/social-cards.md) for OG/platform dimensions, safe areas, crop behavior, thumbnail legibility, metadata, caching, and validation.
-- Read [references/og-generation.md](references/og-generation.md) for Satori, `@vercel/og`, and Next.js `ImageResponse` constraints, font loading, supported CSS, bundle limits, and implementation patterns.
-- Read [references/banners-video.md](references/banners-video.md) for SVG banners/posters, Remotion, Motion Canvas, aspect-ratio variants, captions, motion, and export verification.
-- Read [references/media-players.md](references/media-players.md) when implementing browser audio/video players and DSP libraries (hls.js, Shaka Player, dash.js, Video.js, Plyr, wavesurfer.js, Howler.js, Tone.js).
+- Read [references/social-cards.md](references/social-cards.md) for OG/platform dimensions (YouTube thumbnails, GitHub, Bluesky, Mastodon, Discord, Slack, WhatsApp, Telegram, iMessage, X/LinkedIn), safe areas, crop behavior, thumbnail legibility, metadata, caching, and validation.
+- Read [references/og-generation.md](references/og-generation.md) for Satori, `@vercel/og`, Next.js `ImageResponse`, Takumi, `@resvg/resvg-js`, Sharp, `@napi-rs/canvas`/`skia-canvas`, and Playwright HTML-to-screenshot OG pipelines.
+- Read [references/banners-video.md](references/banners-video.md) for SVG banners/posters, Remotion v4+, Motion Canvas, Revideo, FFmpeg export pipelines, `dotLottie`/Rive vector exports, aspect-ratio variants, captions, and export verification.
+
+For browser audio/video players and Web Audio DSP (`hls.js`, Shaka, Vidstack, Media Chrome, Video.js, Tone.js), use the `pixelcraft-web` skill.
 
 ## Required workflow
 

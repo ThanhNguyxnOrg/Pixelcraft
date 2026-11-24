@@ -1,69 +1,109 @@
 # Flutter
 
-Evidence: current Flutter docs confirm `MediaQuery.disableAnimationsOf(context)` corresponds to Android Remove animations; iOS reduce motion is exposed separately through accessibility features/reduceMotion in newer APIs.
-
 ## Token mapping
 
-Map generated Dart constants into `ColorScheme`, `ThemeData`, text theme, extensions, and component themes:
+Map DTCG tokens into `ColorScheme`, `ThemeData`, `TextTheme`, component themes, and typed `ThemeExtension` subclasses for semantic roles outside Material defaults (spacing, semantic status surfaces, radii):
 
 ```dart
-final theme = ThemeData(
-  colorScheme: ColorScheme.fromSeed(seedColor: PixelcraftTokens.colorBrand),
+@immutable
+class PcSpacing extends ThemeExtension<PcSpacing> {
+  const PcSpacing({required this.controlInline, required this.sectionGap});
+  final double controlInline;
+  final double sectionGap;
+
+  @override
+  PcSpacing copyWith({double? controlInline, double? sectionGap}) => PcSpacing(
+    controlInline: controlInline ?? this.controlInline,
+    sectionGap: sectionGap ?? this.sectionGap,
+  );
+
+  @override
+  PcSpacing lerp(PcSpacing? other, double t) => other == null
+      ? this
+      : PcSpacing(
+          controlInline: lerpDouble(controlInline, other.controlInline, t)!,
+          sectionGap: lerpDouble(sectionGap, other.sectionGap, t)!,
+        );
+}
+
+final lightTheme = ThemeData(
+  colorScheme: ColorScheme.fromSeed(seedColor: PcTokens.brandSeed),
+  extensions: const [PcSpacing(controlInline: 12, sectionGap: 20)],
 );
 ```
 
-Prefer explicit semantic `ThemeExtension` when roles exceed Material defaults. Do not copy raw hex/dimensions into widgets.
+Never scatter raw `Color(0xff…)` or hard-coded padding numbers across widgets.
 
-## Layout and responsive idioms
+## Rendering engine (Impeller) & platform adaptation
 
-Use constraints, `LayoutBuilder`, flexible/expanded, safe area, media query size/orientation/text scaler, slivers only when needed, and adaptive navigation scaffolds. Flutter renders consistently across platforms, but platform conventions still differ—do not force identical navigation/back idioms everywhere.
+- **Impeller** is Flutter's default renderer on iOS and Android (API 29+ via Vulkan with OpenGLES fallback on older/unsupported GPUs), eliminating Skia shader-compilation jank. Still profile custom fragment shaders, backdrop blurs, and heavy `saveLayer` clipping on mid-tier Android hardware rather than assuming desktop/simulator frame pacing.
+- Respect host platform conventions rather than forcing identical chrome on iOS and Android: use adaptive widgets (`Switch.adaptive`, `Slider.adaptive`, `CircularProgressIndicator.adaptive`, `AlertDialog.adaptive`), iOS-idiomatic **`CupertinoSheetRoute` / `showCupertinoSheet`** for stacked modal sheets on Apple devices, and Material navigation/predictive back on Android.
 
-## Typography/custom fonts
+## Navigation (`GoRouter`) & state (`Riverpod 3`)
 
-Declare fonts/assets/pubspec correctly and map text theme roles. Respect `TextScaler`/system scaling; do not fixed-height clip essential text. Include glyph coverage for localization or configure fallback fonts deliberately.
+- Use **`GoRouter`** with **`StatefulShellRoute.indexedStack`** for persistent multi-tab state, typed deep-link routes, redirect guards, and Android predictive back integration:
 
-## Motion/reduced motion
+```dart
+StatefulShellRoute.indexedStack(
+  builder: (context, state, navShell) => AppShell(navigationShell: navShell),
+  branches: [
+    StatefulShellBranch(routes: [GoRoute(path: '/invoices', builder: (_, __) => const InvoicesScreen())]),
+    StatefulShellBranch(routes: [GoRoute(path: '/settings', builder: (_, __) => const SettingsScreen())]),
+  ],
+);
+```
 
-Use implicit/explicit animations purposefully. Check `MediaQuery.disableAnimationsOf(context)` for explicit/custom animations and respect reduce-motion platform signals where exposed in current Flutter version. Keep animation controllers disposed/cancelled and never block interaction unnecessarily.
+- Model async state explicitly (`AsyncValue` / sealed state) with **`Riverpod 3`** (`@riverpod` codegen, built-in retry/offline persistence primitives, automatic `Ref` disposal) or your project's established `Bloc`/`ValueNotifier` architecture. Never rely on uncoordinated boolean flags (`isLoading && !hasError`).
 
-## Accessibility specifics
+## Typography, accessibility, & reduced motion
 
-Use `Semantics`, labels/hints/values, live region flags where appropriate, focus/traversal order, correct button/text-field semantics, and exclude decorative nodes. Test TalkBack/VoiceOver because material-looking widgets can still produce incorrect semantic trees. Target baseline follows platform: 48dp Android/44pt iOS expectations where applicable.
+Declare font families in `pubspec.yaml` with localization fallbacks. Read platform scaling, contrast, and motion preferences explicitly through `MediaQuery` and `AccessibilityFeatures`:
 
-## States idiom
+```dart
+final textScaler = MediaQuery.textScalerOf(context);
+final highContrast = MediaQuery.highContrastOf(context);
+final reduceMotion =
+    MediaQuery.disableAnimationsOf(context) ||
+    View.of(context).platformDispatcher.accessibilityFeatures.reduceMotion;
+final largeText = textScaler.scale(16) >= 24;
+```
 
-Use explicit state management ownership (`ValueNotifier`, Riverpod/Bloc/etc. per project) and immutable async state: loading/refreshing/data-empty/data-partial/error/offline/optimistic. Preserve scroll/input state through keys/restoration. Golden tests can validate states, but only if fixtures represent real data lengths/errors.
+- Reflow horizontal label/value rows into `Column` layouts when `largeText` is true rather than clipping in fixed-height `SizedBox` containers.
+- Dispose every `AnimationController` and skip non-essential spatial transitions when `reduceMotion` is true.
+- Wrap custom visuals with `Semantics(label:, button:, liveRegion:)` and exclude decorative icons with `ExcludeSemantics`. Maintain ≥ `48×48 dp` (Android) / `44×44 pt` (iOS) targets (`kMinInteractiveDimension`). Verify semantic trees in TalkBack and VoiceOver.
 
 ## Forms idiom
 
-Use `Form`/`TextFormField`, correct keyboard type/text input action/autofill hints/input formatters, focus nodes, validation timing, and input preservation. Do not validate aggressively on every keystroke or clear controllers during rebuild/navigation.
+Use `Form` + `TextFormField` with explicit `keyboardType`, `textInputAction`, `autofillHints` (`AutofillHints.email`, etc.), `FocusNode` traversal, and `AutovalidateMode.onUnfocus` (or on-submit) so errors do not scold mid-keystroke. Preserve controller text across rebuilds and navigation.
+
+## Flutter web (WasmGC / Skwasm) note
+
+Flutter 3.29 removed the legacy HTML renderer; Flutter Web now compiles to **WasmGC (`Skwasm`)** (`flutter build web --wasm`) or CanvasKit (`JS`). Canvas-rendered web apps require explicit `SemanticsBinding.instance.ensureSemantics()` / accessibility verification and still trade off native browser text selection, bundle startup size, and SEO. For browser-dominant or content/SEO products, apply `pixelcraft-web` verification and compare a DOM-rendered alternative in `pixelcraft-plan` before committing.
 
 ## Do/don't pairs
 
 | Do | Don't |
 |---|---|
-| `FilledButton(onPressed: save, child: Text('Save invoice'))` | `GestureDetector` around styled text as primary control |
-| check `MediaQuery.disableAnimationsOf(context)` for custom motion | assuming the compiler removes motion automatically |
-| semantic `ThemeExtension` roles | raw `Color(0xff...)` scattered through widgets |
-| stable keys/scroll controllers for stateful lists | rebuild-dependent scroll/focus loss |
-| `TextFormField(autofillHints: [AutofillHints.email])` | custom keyboard/paste-blocking behavior |
-
-## Flutter web note
-
-Flutter can target web, but choose rendering mode deliberately. Canvas-heavy Flutter web does not automatically provide normal browser semantics, text selection, SEO, deep-link behavior, or accessibility parity. For browser-dominant products, apply `pixelcraft-web` verification and compare a DOM/server-rendered alternative in `pixelcraft-plan` before committing.
+| `FilledButton(onPressed: save, child: const Text('Save invoice'))` | `GestureDetector` wrapping styled `Text` as a primary control |
+| Check both `MediaQuery.disableAnimationsOf(context)` and `accessibilityFeatures.reduceMotion` | Assume Flutter disables custom `AnimationController` loops automatically |
+| Semantic `ThemeExtension` + `ColorScheme` roles | Raw `Color(0xff...)` literals scattered across widgets |
+| `StatefulShellRoute.indexedStack` for persistent tab state | Rebuilding tab root screens from scratch on every tab tap |
+| `Switch.adaptive` / `CupertinoSheetRoute` where platform idioms differ | Forcing identical Android dialogs and Material back bars onto iOS |
 
 ## Known traps
 
-Build context after async gaps, controller lifecycle leaks, fixed pixel design across densities/text scaling, platform back/navigation mismatch, nested scrollables, semantic tree mismatch, golden-test brittleness, font licensing/glyph coverage, treating identical cross-platform rendering as identical platform UX.
+Using `BuildContext` across `async` gaps without `context.mounted` checks, `AnimationController`/`TextEditingController` disposal leaks, fixed-height `Container` clipping `TextScaler` at `200%`, Impeller fallback differences on older Android GPUs, missing `Semantics` labels on custom `CustomPainter` views, brittle golden tests using fake single-word fixtures.
 
 ## Verification commands
 
 ```sh
 flutter analyze
 flutter test
-flutter test --update-goldens  # only intentionally
-flutter run -d <device>
-flutter build apk 2>/dev/null || true
+# Intentionally refresh goldens only after visual review:
+# flutter test --update-goldens
+# Run target build/device verification when SDK & device are available:
+flutter build apk --debug
+flutter run -d <device-id>
 ```
 
-Use widget/golden tests, device/emulator screenshots, accessibility scanner/TalkBack/VoiceOver, text scaling, dark mode, orientation, offline/slow network, and platform back/gesture inspection as evidence.
+`flutter analyze` and unit/widget tests are `static` evidence (golden images validate layout only against real localized/long-string fixtures). Inspect real iOS/Android devices or emulators across TalkBack/VoiceOver, `TextScaler` `200%`, Dark Mode, High Contrast, Reduce Motion, and predictive/swipe back for `rendered` evidence; label untested targets `not-checked`.

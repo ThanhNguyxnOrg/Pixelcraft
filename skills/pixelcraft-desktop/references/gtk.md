@@ -1,54 +1,97 @@
-# GTK / libadwaita
+# GTK 4 & libadwaita
 
-## Token mapping
+## Token mapping & `AdwStyleManager` / `AdwAccentColor`
 
-Use GTK CSS/custom properties where supported plus named colors/styles in resource/theme files. libadwaita semantic colors/style classes should be preferred over hard-coded colors because they integrate with dark/high-contrast/platform behavior. Map generated values once into theme constants/CSS.
+Prefer libadwaita 1.4–1.8 semantic CSS variables (`--window-bg-color`, `--view-bg-color`, `--accent-bg-color`, `--accent-color`, `--destructive-bg-color`) and built-in style classes (`suggested-action`, `destructive-action`, `boxed-list`, `card`, `dimmed`) over hard-coded hex values so dark mode, high contrast, and system accent colors work automatically.
 
-## Layout and responsive idioms
+- Inspect **`AdwStyleManager`** (`style_manager.get_dark()`, `get_high_contrast()`, `set_color_scheme(ADW_COLOR_SCHEME_DEFAULT)`) and **`AdwAccentColor`** (libadwaita 1.6+, reflecting desktop accent preferences via `AdwStyleManager:accent-color`).
+- Scope custom application tokens in one CSS resource loaded at `GTK_STYLE_PROVIDER_PRIORITY_APPLICATION` so user accessibility themes still override when needed.
 
-Use GTK boxes/grid/panes/adaptive layout widgets and libadwaita breakpoint/adaptive containers where applicable. Handle resizing/minimum width, tiling/window manager behavior, header bar/content hierarchy, menus/shortcuts, high-DPI scaling, and desktop environment differences without assuming one chrome shape.
+## Modern GTK4 / libadwaita 1.4–1.8 widgets & Blueprint (`.blp`)
 
-## Typography/custom fonts
+Replace deprecated GTK3 and early libadwaita widgets (`AdwLeaflet`, `AdwFlap`, `AdwSqueezer`, `GtkMessageDialog`, `AdwMessageDialog`) with modern adaptive primitives:
 
-Use system font settings/Pango text layout and semantic style classes. Custom fonts require correct resource registration/fallback. Pango markup must escape user content. Verify text scaling, line breaking, ellipsization, CJK/RTL shaping, and localization expansion.
+- **`AdwNavigationSplitView`** + **`AdwBreakpoint`**: automatically collapses sidebar + content into a stacked navigation view below your chosen width threshold (`max-width: 600sp`).
+- **`AdwDialog` / `AdwAlertDialog`**: adaptive dialogs that present as centered overlays on desktop and bottom sheets on narrow/mobile Linux form factors.
+- **`AdwStatusPage`**: structured empty, loading, error, and onboarding states with icon, title, description, and action button.
+- **Blueprint (`.blp`)**: prefer Blueprint compiler syntax over verbose hand-written GtkBuilder XML for readable, type-checked declarative UI:
 
-## Motion/reduced motion
+```blp
+using Gtk 4.0;
+using Adw 1;
 
-Use GTK/libadwaita animations sparingly and honor system reduced-animation settings where exposed by toolkit/platform. Never make progress/state depend solely on animation. Keep window resizing/interaction responsive.
+template $InvoiceWindow : Adw.ApplicationWindow {
+  default-width: 960;
+  default-height: 640;
+  width-request: 360;
 
-## Accessibility specifics
+  Adw.Breakpoint {
+    condition ("max-width: 600sp")
+    setters { split_view.collapsed: true; }
+  }
 
-Use accessible names/descriptions/roles where exposed, mnemonic/keyboard shortcuts, focus chain, standard controls, high-contrast theme behavior, screen reader (orca) verification, keyboard-only navigation, and AT-SPI-compatible custom widget behavior. Do not strip focus styling.
+  content: Adw.NavigationSplitView split_view {
+    sidebar: Adw.NavigationPage { title: _("Folders"); child: Gtk.ListBox {}; };
+    content: Adw.NavigationPage {
+      title: _("Invoices");
+      child: Adw.StatusPage {
+        icon-name: "document-open-symbolic";
+        title: _("No Invoices Yet");
+        description: _("Create an invoice or import a CSV.");
+      };
+    };
+  };
+}
+```
 
-## States idiom
+## Wayland, XDG Desktop Portals, & Flatpak
 
-Model loading/error/empty/offline/permission/dirty file state explicitly. Long operations need cancellable async/task behavior that does not block the main loop. Window close/delete-event semantics, lock screen/suspend, file monitor/external modification, and multi-window state are desktop UX.
+- **Wayland has no global window positioning**: Wayland intentionally prevents apps from querying or setting absolute `(x, y)` desktop coordinates. Persist `default-width`, `default-height`, and `maximized` state only; use `AdwDialog`, `GtkPopover`, and `transient-for` relationships rather than manual screen coordinate math.
+- **XDG Desktop Portals & Flatpak**: use portal-backed GTK4 APIs (`GtkFileDialog`, `GtkUriLauncher`, `GtkFileLauncher`, `GNotification`) or `libportal` / Rust `ashpd` so file open/save, print, notifications, and dark-mode settings work cleanly inside Flatpak sandboxes without granting broad `--filesystem=home` permissions.
 
-## Forms idiom
+## States, `close-request`, & async main-loop discipline
 
-Use labeled entries/combos/checks/switches, validation timing and visible recovery copy, focus/mnemonic order, paste/IME behavior, and input preservation. Placeholder text is not a persistent label substitute in dense forms.
+GTK4 replaced GTK3's removed `delete-event` with the **`close-request`** signal on `GtkWindow`. Return `true` (`GDK_EVENT_STOP`) to defer closing while presenting an `AdwAlertDialog` for unsaved documents:
+
+```c
+static gboolean on_close_request(GtkWindow *win, gpointer user_data) {
+  if (!app_has_unsaved_changes(user_data)) return FALSE; // allow close
+  show_unsaved_changes_dialog(win, user_data);
+  return TRUE; // hold window open until user decides
+}
+```
+
+Never block the GLib main loop (`GMainContext`) with synchronous disk or network I/O; run work via `GTask` / `GIO` async APIs (or Rust `gio::spawn_blocking` / Python `GLib.idle_add` handoff) with `GCancellable` cancellation and visible progress.
+
+## Typography, motion, accessibility, & forms idioms
+
+Use Pango text layout with semantic style classes (`title-1`, `heading`, `body`, `caption`); always escape dynamic user strings with `g_markup_escape_text` before passing into Pango markup. Honor `gtk-enable-animations` (`GtkSettings`) for custom motion—libadwaita animations honor it automatically.
+
+Use `GtkAccessible` properties (`GTK_ACCESSIBLE_PROPERTY_LABEL`, `DESCRIPTION`), keyboard shortcuts (`GtkShortcutController` + `AdwShortcutsDialog`), mnemonics (`_Save`), and `AdwEntryRow` / `AdwComboRow` / `AdwSwitchRow` inside `AdwPreferencesGroup` for clean, accessible forms. Verify with **Orca** screen reader, keyboard-only traversal, and High Contrast mode.
 
 ## Do/don't pairs
 
 | Do | Don't |
 |---|---|
-| semantic style classes/named colors | hard-coded colors that break dark/high contrast |
-| adaptive containers/breakpoints where appropriate | fixed desktop-width window pasted into tiling/mobile-like contexts |
-| cancellable async operation with visible progress | blocking GTK main loop during long work |
-| standard accessible controls/labels | custom-drawn controls with no AT-SPI exposure |
-| explicit close/dirty document behavior | treating window close as harmless navigation |
+| Connect `GtkWindow::close-request` to prompt on dirty documents | Reference removed GTK3 `delete-event` or lose edits on window close |
+| Use `AdwNavigationSplitView` + `AdwBreakpoint` + `AdwDialog` | Use deprecated `AdwLeaflet`, `GtkMessageDialog`, or fixed desktop widths |
+| Use `GtkFileDialog` / XDG Portals inside Flatpak | Request unrestricted `--filesystem=host` just to pick a file |
+| Persist `width`/`height`/`maximized` on Wayland | Attempt to save/restore global `(x, y)` screen coordinates on Wayland |
+| Escape dynamic strings with `g_markup_escape_text` before Pango markup | Interpolate raw filenames into `<b>%s</b>` markup strings |
 
 ## Known traps
 
-Blocking main loop, theme/CSS specificity surprises, focus/mnemonic conflicts, adaptive layout assumptions, distro/desktop variation, dark/high-contrast breakage, window manager differences, custom widgets missing AT-SPI behavior, text shaping/ellipsis localization errors.
+Blocking `GMainContext` during I/O, using deprecated GTK3/libadwaita 1.0 APIs, breaking Flatpak sandboxes instead of using portals, assuming X11 global window positioning under Wayland, hard-coding light colors that fail `AdwStyleManager` High Contrast, custom `GtkDrawingArea` widgets missing `GtkAccessible` roles/labels.
 
 ## Verification commands
 
 ```sh
-meson test 2>/dev/null || true
-cargo test 2>/dev/null || true
-python -m pytest 2>/dev/null || true
-./your-app 2>/dev/null || true
+# Run the test suite matching your language binding:
+meson test -C build          # C / Vala / Blueprint projects
+cargo test                   # gtk4-rs / Relm4 Rust projects
+python -m pytest             # PyGObject projects
+# Inspect live GTK4 widget tree, CSS, and accessibility:
+GTK_DEBUG=interactive ./build/your-app
 ```
 
-Use actual GNOME/Linux environment inspection where relevant, orca/keyboard-only tests, resize/tiling/high-DPI checks, dark/high contrast themes, and window close/async cancellation evidence.
+Build and unit tests are `static` evidence. Inspect live GTK Inspector (`GTK_DEBUG=interactive`), Wayland/tiling resize across breakpoints, Dark & High Contrast themes, Orca screen reader, keyboard-only navigation, and Flatpak sandbox portal behavior for `rendered` evidence; label untested desktop environments `not-checked`.

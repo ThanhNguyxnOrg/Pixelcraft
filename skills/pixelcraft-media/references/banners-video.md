@@ -1,6 +1,6 @@
-# SVG banners and motion media
+# SVG banners, programmatic video, and vector motion export
 
-Vector banners and video frames share one problem: they are consumed through crops, scaling, compression, and platform UI outside the author's control. Build from real content and validate the exported artifact.
+Vector banners, video loops, and motion graphics are consumed through crops, scaling, platform recompression, and host UI overlays outside the author's control. Build deterministically from real content and inspect the exported artifact.
 
 ## SVG banners and posters
 
@@ -8,105 +8,114 @@ SVG is ideal for deterministic banners because it is scalable, inspectable, and 
 
 Rules:
 
-- use a correct `viewBox` and explicit width/height/export mapping;
+- set an explicit `viewBox` plus width/height and export mapping;
 - include `<title>` and `<desc>` when SVG is inline in HTML; raster exports need platform alt text instead;
-- do not assume viewer fonts. Embed/convert text deliberately or ship/export with licensed font assets;
-- verify text wrapping yourself—ordinary SVG text does not flow like HTML;
-- avoid external images/fonts/scripts in untrusted or crawler-facing SVG; SVG can carry active content depending on serving context;
-- sanitize user-controlled SVG before serving it;
-- simplify paths enough for file size but preserve sharp edges at target scale;
-- test light/dark embedding contexts; transparent art can disappear or halo.
+- do not assume viewer fonts—embed/convert text deliberately or export with bundled licensed fonts;
+- verify text wrapping manually because ordinary SVG `<text>` does not reflow like HTML;
+- strip scripts, foreignObject, and untrusted external URLs from crawler-facing or user-supplied SVG;
+- test light and dark embedding contexts (`prefers-color-scheme` or solid backing) so transparent art never disappears or halos.
 
-For repository banners/docs, export PNG/WebP fallbacks where inline SVG is not supported. Preserve the source SVG and exact export preset.
+For repository banners/docs, export PNG/WebP fallbacks where inline SVG is blocked, preserving the source SVG and exact export command.
 
 ## Aspect-ratio variants
 
-Design a system, not one cropped master:
+Design a system rather than center-cropping one master:
 
 | Ratio | Typical frame | Role |
 |---|---:|---|
-| 16:9 | 1920×1080 or 1280×720 | presentation, landscape video, docs |
+| 16:9 | 1920×1080 or 1280×720 | presentation, YouTube, landscape video, docs |
 | 1:1 | 1080×1080 | square feed/embed |
-| 9:16 | 1080×1920 | story/short vertical video |
+| 9:16 | 1080×1920 | Reels/Shorts/TikTok vertical video |
 | 2:1 | 1280×640 | GitHub social-preview baseline |
 
-Recompose hierarchy for each ratio: square favors centered single-anchor compositions; vertical needs stacked hierarchy and platform-overlay awareness; landscape supports lateral sequencing. Do not blindly center-crop every frame.
+Recompose hierarchy per ratio: square favors a single centered anchor, vertical stacks vertically around platform UI overlays, and landscape supports lateral sequencing.
 
-## Remotion
+## Remotion (v4+)
 
-Remotion renders videos from React components using frames and composition metadata. Core shape:
+Remotion renders deterministic video from React components using frame-driven state (`useCurrentFrame()`, `useVideoConfig()`, `spring()`, `interpolate()`).
 
-```jsx
-import { Composition } from 'remotion';
+```tsx
+import { Composition, OffthreadVideo, staticFile } from 'remotion';
+import { TransitionSeries, linearTiming } from '@remotion/transitions';
+import { fade } from '@remotion/transitions/fade';
+import { loadFont } from '@remotion/google-fonts/Inter';
+
+const { fontFamily } = loadFont('normal', { weights: ['600', '700'], subsets: ['latin'] });
 
 export const Root = () => (
   <Composition
-    id="LaunchCard"
-    component={LaunchCard}
-    durationInFrames={150}
+    id="ReleaseHighlight"
+    component={ReleaseHighlight}
+    durationInFrames={180}
     fps={30}
     width={1920}
     height={1080}
-    defaultProps={{ title: 'Pixelcraft' }}
+    defaultProps={{ title: 'Pixelcraft v2', clip: staticFile('demo.mp4') }}
   />
 );
 ```
 
-Inside a component use hooks/utilities such as `useCurrentFrame()`, `useVideoConfig()`, `spring()`, `interpolate()`, `Sequence`, `Img`, `Audio`, `Video`/`OffthreadVideo`, and `staticFile()` according to the installed version. Render locally/CI through the documented CLI or `renderMedia()` programmatic API.
+Remotion v4+ production rules:
 
-Rules:
+- **`<OffthreadVideo>` vs `<Video>`**: prefer `<OffthreadVideo>` during headless/server renders—it decodes exact frames via native FFmpeg outside Chromium's `<video>` element, preventing dropped frames, seek drift, and browser codec mismatches; use `<Video>` primarily inside interactive browser `<Player>` previews.
+- **Interactive preview (`@remotion/player`)**: embed `<Player>` in web apps for real-time parameter previewing and scrubbing without invoking server rendering on every edit.
+- **Cloud rendering**: scale batch/user-generated exports with **Remotion Lambda** (AWS Lambda distributed chunk rendering) or **Remotion Cloud Run** rather than blocking web request threads.
+- **Official v4 packages**: use `@remotion/transitions` (`<TransitionSeries>`), `@remotion/captions` (SRT/WebVTT parsing + timed captions), and `@remotion/google-fonts` (deterministic font loading before frame 0).
+- Derive every pixel strictly from `frame` and props; never use `Date.now()`, `Math.random()` without `random(seed)`, or unawaited CSS transitions (`transition: all`) which desync during frame-by-frame capture.
 
-- derive every visual state deterministically from frame/config/props;
-- pin `fps`, duration, dimensions, and output codec/container;
-- use `calculateMetadata` when dimensions/duration depend on props/data;
-- avoid browser-only APIs/random time/network state unless explicitly controlled;
-- preload or bundle fonts/assets; do not depend on unstable remote media;
-- test audio sync, dropped frames, alpha/transparent output, color space, and render concurrency;
-- keep captions as timed data rather than burned-in decoration only; supply caption files where platform supports them.
+## Motion Canvas and Revideo
 
-## Motion Canvas
-
-Motion Canvas uses generator-based TypeScript scenes and a visual editor/player model. Typical scene style:
+**Motion Canvas** uses generator-based TypeScript scenes with a visual timeline editor; **Revideo** is the maintained headless-first fork of Motion Canvas built for CLI/server-side programmatic rendering, parameterized scenes, audio tracks, and cloud video pipelines.
 
 ```tsx
-import { makeScene2D, Rect, Txt } from '@motion-canvas/2d';
-import { all, createRef, waitFor } from '@motion-canvas/core';
+import { makeScene2D, Txt } from '@motion-canvas/2d';
+import { createRef, waitFor } from '@motion-canvas/core';
 
 export default makeScene2D(function* (view) {
   const title = createRef<Txt>();
-  view.add(<Txt ref={title} fill="white" fontSize={96}>Pixelcraft</Txt>);
-  yield* title().opacity(1, 0.5);
-  yield* waitFor(1);
+  view.add(<Txt ref={title} fill="#f8fafc" fontSize={84} opacity={0}>Pixelcraft</Txt>);
+  yield* title().opacity(1, 0.45);
+  yield* waitFor(1.2);
 });
 ```
 
-Exact imports/animation helpers depend on version. Rules:
+- Pick **Motion Canvas** for author-driven visual editing and technical explainer animations; pick **Revideo** (`@revideo/2d`, `@revideo/core`, `@revideo/renderer`) when you need headless CI/server video generation from the same generator paradigm;
+- use signals/layout references rather than visual guesses, pin project resolution/fps, and verify fonts in both editor and headless render.
 
-- use signals/layout references rather than visual guesses for alignment;
-- treat project settings (resolution/framerate/duration) as the artifact contract;
-- verify fonts in both editor preview and final render;
-- test deterministic output by rerendering the same revision;
-- use motion to establish object constancy or sequence—not constant floating decoration.
+## FFmpeg export pipeline
 
-## Captions, sound, and accessibility
+Standardize web and social video exports with explicit pixel format, container atom ordering, codec budget, loudness normalization, and caption tracks:
 
-- never rely on sound for essential meaning;
-- provide captions/subtitles where the platform supports them; burned-in text must remain inside safe zones;
-- avoid flashing/strobing content and rapid full-screen luminance changes;
-- preserve color-independent meaning and sufficient contrast;
-- provide meaningful title/alt/context where the host platform supports it;
-- respect reduced-motion expectations in embeds and avoid autoplay sound.
+```sh
+# 1. Universal H.264 MP4 (Safari/QuickTime/iOS safe + fast web start + EBU R128 loudness)
+ffmpeg -i input.mov -i captions.vtt \
+  -c:v libx264 -crf 20 -preset slow -pix_fmt yuv420p \
+  -c:a aac -b:a 160k -af "loudnorm=I=-16:TP=-1.5:LRA=11" \
+  -c:s mov_text -metadata:s:s:0 language=eng \
+  -movflags +faststart output.mp4
 
-## Export verification
+# 2. Compact web loop replacing heavy animated GIFs (VP9 WebM + H.264 MP4 fallback)
+ffmpeg -i source.mov -an -c:v libvpx-vp9 -crf 32 -b:v 0 -pix_fmt yuv420p loop.webm
+ffmpeg -i source.mov -an -c:v libx264 -crf 22 -pix_fmt yuv420p -movflags +faststart loop.mp4
+```
 
-- inspect exact dimensions/frame rate/duration/codec/container/file size/audio sample rate;
-- inspect first/middle/last frames and motion-critical transitions;
-- test on device/feed scale and in light/dark contexts;
-- validate transparency/background behavior;
-- compare audio loudness/sync when audio exists;
-- test compression artifacts in the target platform or label platform verification `not-checked`;
-- keep deterministic seeds/settings and source assets under version control where licensing permits.
+Critical FFmpeg rules:
 
-## Anti-slop warnings
+- **`-pix_fmt yuv420p` is mandatory for H.264 compatibility**: default `yuv444p` / 10-bit output renders black or fails to open in Safari, QuickTime, and iOS;
+- **`-movflags +faststart`**: relocates the MP4 `moov` atom to the start of the file so browsers begin playback immediately instead of downloading the entire file first;
+- **Codec ladder**: use H.264 (`libx264`, `-crf 18–23`) as the universal baseline; add VP9 (`libvpx-vp9`) or AV1 (`libsvtav1`) `<source>` variants for bandwidth-heavy loops where target decoders support them;
+- **Audio loudness (`loudnorm`)**: normalize to EBU R128 (`I=-16` LUFS for web/podcasts, `I=-14` LUFS for YouTube/streaming, true peak `TP=-1.5 dBTP`);
+- **Captions**: mux WebVTT/SRT soft tracks (`-c:s mov_text` for MP4) or ship sidecar `.vtt` `<track>` files rather than only burning text into pixels;
+- **MP4/WebM loops over heavy GIFs**: replace multi-megabyte GIFs with muted looping `<video autoplay loop muted playsinline poster="first-frame.webp">` (typically 5–10× smaller with full 24-bit color and 60 fps); use GIF only on surfaces that disallow video embeds.
 
-Reject endless floating gradients, fake product UI flying in depth without purpose, particles/sparkles replacing content, unreadable kinetic typography, cinematic trailers for mundane documentation updates, and logo animations with no information value. Motion should answer: what changed, where did it come from, what should the viewer understand next?
+## Lottie (`dotLottie`) and Rive vector export pipelines
+
+- **Lottie (`dotLottie`, `.lottie`)**: package JSON animations + bitmap assets/themes into a compressed `.lottie` archive rather than shipping bloated raw `.json`. Strip unsupported After Effects expressions, merge/track-matte glitches, and verify playback in the exact target player (`@lottiefiles/dotlottie-web`, iOS/Android native).
+- **Rive (`.riv`)**: export compact binary `.riv` files with explicit artboard bounds, state-machine inputs, embedded fonts (or vector outlines), and a static reduced-motion state/poster image. Never hide critical UI copy exclusively inside opaque vector animation files without accessible text equivalents.
+
+## Captions, sound, and export verification
+
+- Never rely on sound for essential meaning; avoid flashing/strobing luminance changes (>3 flashes/sec);
+- keep burned-in captions inside platform safe zones and supply sidecar WebVTT/SRT where supported;
+- inspect exported `ffprobe` metadata (dimensions, `pix_fmt`, fps, duration, codecs, bitrate, audio sample rate, byte size) (`static`) and inspect first/middle/last frames plus key transitions on light/dark backgrounds and mobile feed scale (`rendered`);
+- reject endless floating gradients, fake tilted UI fly-throughs, sparkles replacing substance, and unreadable kinetic typography.

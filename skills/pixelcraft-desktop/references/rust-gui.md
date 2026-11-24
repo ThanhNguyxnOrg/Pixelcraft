@@ -1,67 +1,79 @@
-# Rust GUI: egui, Slint, Dioxus, iced, GPUI
+# Rust GUI: GPUI, Dioxus, Iced, Slint, egui, & emerging toolkits
 
-These frameworks have different rendering/state models. Do not treat “Rust GUI” as one platform.
+Rust GUI frameworks have fundamentally different rendering, layout, and accessibility models—never treat “Rust GUI” as one uniform platform.
 
-## Token mapping
+## Framework decision matrix
 
-- egui: use semantic Rust constants/context style (`egui::Style`, `Visuals`) deliberately; immediate-mode styling can be set globally but inspect scope.
-- Slint: use `.slint` global singletons/exported structs/palette-like properties for semantic values.
-- Dioxus desktop: use generated CSS variables/web idioms plus desktop shell integration.
-- iced: use theme/palette structs and semantic application constants.
-- GPUI (Zed's GPU-accelerated hybrid immediate/retained Rust UI): define a global `Theme` struct read from `App` context (`cx.theme()`) and style elements via fluent Tailwind-like builders (`.bg(...)`, `.text_color(...)`) without hardcoding raw hex literals across views.
+| Framework | Rendering & UI model | Key 2025–2026 idioms | Best fit |
+|---|---|---|---|
+| **GPUI** | Hybrid immediate/retained GPU (Metal/Vulkan/DX12, Taffy Flexbox, up to 120 FPS) | `gpui-component` widget kit, `Entity<T>`, `Render`, `FocusHandle`, `actions!` keymaps | Ultra-fast developer tools, editors, data workspaces (Zed ecosystem) |
+| **Dioxus 0.6/0.7** | RSX reactive components over OS WebView **or** **Blitz** (pure-Rust native HTML/CSS renderer) | `dx` CLI, **Subsecond** live Rust hot-patching, fullstack/desktop/mobile sharing | Web-fluent Rust teams wanting fast iteration and optional zero-WebView Blitz |
+| **Iced 0.13/0.14** | Elm-inspired functional reactive (`wgpu` / tiny-skia) | `iced::application(title, update, view)` and `iced::daemon` multi-window API | Cross-platform desktop apps (COSMIC desktop), predictable state machines |
+| **Slint** | Declarative `.slint` DSL compiled to native Rust/C++ | IDE / `slint-viewer` live preview, shared desktop + `#![no_std]` MCU codebases | Embedded HMIs and crisp lightweight native desktop utilities |
+| **egui** | Pure immediate-mode (`eframe`, glow/wgpu) | Frame-local `egui::Ui`, `egui_plot`, retained app state outside UI closure | Engineering tools, debuggers, audio/CAD inspectors, internal utilities |
+| **Relm4** | Idiomatic Rust Elm-style wrapper over **GTK4 / libadwaita** | Native Linux Wayland, AT-SPI accessibility, Blueprint/GTK widgets | Linux-first native desktop apps prioritizing full OS accessibility (see `gtk.md`) |
+| **Floem** | Fine-grained reactive signals + Taffy Flexbox (Vger/tiny-skia) | Leptos-like signals without VDOM diffing (Lapce ecosystem) | Responsive native editors and reactive Rust desktop apps |
+| **Xilem** | Linebender reactive stack: **Vello** (GPU 2D) + **Masonry** (widget tree) + **Parley** (text) | Modern GPU compute rendering + AccessKit-first architecture | Next-gen high-craft vector/text-heavy Rust apps (track API stability) |
+| **Makepad** | GPU shader-first live-design DSL with instant hot reload | Custom SDF shaders, cross-platform desktop/mobile/WASM | Visually bespoke audio/creative/shader-driven tools |
+| **Freya** | Dioxus RSX reactive components rendered directly via **Skia** | No WebView, CSS-like layout over Skia | Dioxus developers wanting native Skia rendering |
 
-Never smuggle raw repeated hex values into widgets because no dominant CSS layer exists.
+## Token mapping & idiomatic snippets
 
-## Layout and responsive idioms
+Centralize semantic theme values once—never scatter raw hex literals across render closures:
 
-- egui: immediate-mode layout is frame-local; explicit sizing/panels/columns/scroll areas matter.
-- Slint: declarative layouts/constraint-like behavior and component reuse; verify resizing/high-DPI.
-- Dioxus: web layout plus desktop window behavior.
-- iced: Elm-like layout/widgets; pane/scroll/fill/shrink semantics must be explicit.
-- GPUI: Flexbox-based layout (Taffy) rendered directly via Metal/Vulkan/DirectX at up to 120 FPS; use `Entity<T>` + `Render` views, virtualized `uniform_list` / `list` for large logs/files, and explicit focus handles (`FocusHandle`) + action keymaps (`actions!`) for keyboard-first desktop tools.
+```rust
+// Iced 0.13/0.14 functional application entry point:
+pub fn main() -> iced::Result {
+    iced::application("Invoices", App::update, App::view)
+        .theme(App::theme)
+        .run()
+}
+```
 
-Handle resize/minimum size/high-DPI/window state/platform chrome separately from widget styling.
+- **GPUI**: read a global `Theme` struct from `App` context (`cx.theme()`) and pair `gpui-component` primitives with semantic tokens rather than repeating `rgb(0x...)`.
+- **Slint**: declare `export global Palette { in-out property <color> action; }` in `.slint` files for light/dark switching.
+- **Dioxus**: map DTCG CSS custom properties directly in stylesheets (works across both WebView and Blitz).
+- **egui**: configure `ctx.style_mut(...)` / `egui::Visuals` centrally; never mutate global style mid-frame unpredictably.
 
-## Typography/custom fonts
+## Layout, typography, & power-aware motion
 
-Register/load fonts per framework/target and verify glyph fallback, scaling, localization, bitmap/vector rendering, and DPI behavior. Dense custom GUI often underinvests in font fallback—treat it as a floor issue.
+- Use virtualized lists (`uniform_list` in GPUI, `ScrollArea::show_rows` in egui, virtualized views in Slint/Iced) for logs and large tables.
+- Verify font registration, fallback chains (CJK/RTL/emoji via `cosmic-text` or `Parley`), and fractional HiDPI scaling per OS—custom GPU renderers often ship with missing glyph fallback ("tofu") unless bundled explicitly.
+- Guard animations against wasted power: in immediate-mode (`egui`), drive repaints on events or `ctx.request_repaint_after(...)` rather than spinning 120 FPS idle loops. Provide an app-level reduced-motion toggle when OS integration is incomplete.
 
-## Motion/reduced motion
+## Accessibility & AccessKit
 
-Implement motion intentionally per framework. Reduced-motion support is inconsistent; expose app-level reduced-motion setting when platform integration is uncertain. Never use continuous repaints/animation loops without lifecycle/power consideration.
+**AccessKit** is the shared Rust accessibility bridge translating widget trees to **Windows UI Automation**, **macOS NSAccessibility**, and **Linux AT-SPI** (integrated in `egui`, `Slint`, `Masonry`/`Xilem`, `Floem`, and `Iced`).
 
-## Accessibility specifics
+- AccessKit enables native screen-reader support, but **only** for widgets that actually populate roles, names, bounds, states, and focus actions—its presence in `Cargo.toml` is **not** proof of accessibility.
+- For accessibility-mandated productivity apps on Linux/cross-platform where native screen-reader parity is non-negotiable, prefer **Relm4 (GTK4)**, **Slint**, or **Dioxus** and verify live with VoiceOver, Narrator, and Orca; treat custom GPU/immediate-mode accessibility as `not-checked` until actually tested with assistive tech.
 
-Accessibility maturity varies sharply by framework/version/platform. Use semantic labels/roles where exposed, keyboard/focus navigation, platform integration, high-contrast/system theme awareness, and verify screen reader behavior honestly. Custom GPU/immediate-mode UI must not claim accessibility it has not implemented/tested.
+## States & forms idioms
 
-## States idiom
-
-Make application state explicit. Long-running work belongs in async/thread/task ownership with cancellation/progress/error propagation. Handle file permission/dirty state/offline/window close/update/crash recovery. Immediate-mode repaint state is not automatically durable application state.
-
-## Forms idiom
-
-Use real text input/control widgets where available; validate focus order, clipboard/paste/IME behavior, validation timing, input preservation, and error recovery. Custom text input is expensive to make correct—avoid unless essential.
+Own async I/O on Tokio/async executors with explicit cancellation handles and bounded channels—never block the UI/render thread. Handle dirty-document close interception, crash recovery, and multi-window focus cleanly. Prefer framework text-editing widgets (`gpui-component` input, Slint `TextInput`, `iced::widget::text_editor`) over hand-rolled keystroke buffers so IME composition, dead keys, selection, and clipboard paste work reliably.
 
 ## Do/don't pairs
 
 | Do | Don't |
 |---|---|
-| use the framework's real button/text input primitives | hand-drawn clickable/text widgets without semantics |
-| explicit async/cancel/error state | blocking or silently failing background work |
-| semantic theme singleton/palette | raw color literals scattered through widgets |
-| power-aware repaint/animation policy | continuous repaint loop for decorative motion |
-| verify keyboard/screen reader per framework | claiming accessibility because Rust code compiles |
+| Use `iced::application`/`daemon`, `dx` Subsecond, or `gpui-component` idioms | Copy obsolete pre-0.13 `Application` traits or hand-roll custom text editors |
+| Verify AccessKit output with VoiceOver, Narrator, and Orca | Claim screen-reader compliance merely because AccessKit is a dependency |
+| Request repaints on dirty state/events in `egui` / GPU renderers | Spin a continuous 120 FPS render loop while the window is idle |
+| Centralize semantic `Theme` / `.slint` `global` palettes | Scatter `Color32::from_rgb(...)` or `rgb(0x...)` literals across views |
+| Bundle fallback fonts and verify CJK/RTL shaping & fractional DPI | Ship ASCII-only embedded fonts that turn localized text into tofu boxes |
 
 ## Known traps
 
-Accessibility gaps, IME/clipboard complexity, continuous repaint/power usage, async lifetime/cancellation bugs, font fallback/GPU rendering differences, high-DPI scaling, platform packaging/window chrome mismatch, immediate-mode state persistence confusion.
+Incomplete AccessKit widget semantics (missing names/focus/actions), IME & dead-key breakage in custom GPU text inputs, idle CPU/GPU battery drain from continuous repaints, fractional Wayland/Windows HiDPI blur, missing font fallbacks, blocking the render thread with synchronous disk/network calls, failing to restore or clamp multi-monitor window state.
 
 ## Verification commands
 
 ```sh
 cargo test
-cargo clippy -- -D warnings 2>/dev/null || true
+cargo clippy --all-targets -- -D warnings
 cargo run
+# Dioxus live desktop iteration:
+dx serve --platform desktop
 ```
 
-Use actual OS/device runs, keyboard/focus/screen-reader inspection where supported, resize/DPI/power behavior, close/crash/update flows, and framework-specific screenshots/golden tests where present.
+`cargo test` and `cargo clippy` are `static` evidence. Run native binaries on each target OS across keyboard-only traversal, VoiceOver/Narrator/Orca (or label screen-reader testing `not-checked`), fractional HiDPI resize, dark/high-contrast themes, idle CPU/GPU usage, and dirty-close recovery for `rendered` evidence.

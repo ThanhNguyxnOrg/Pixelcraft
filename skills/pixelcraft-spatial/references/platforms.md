@@ -1,77 +1,147 @@
-# XR platform notes
+# XR platform idioms
 
-## visionOS
+## visionOS (visionOS 2 & visionOS 26)
 
 Core surface model:
 
 | Surface | Use |
 |---|---|
-| window | ordinary 2D UI floating in Shared Space; resize/adaptation are standard expectations |
-| volume | bounded 3D content people can view from multiple angles without taking over the whole space |
-| immersive space | content controls the scene; use when presence/world interaction is the point, not for ordinary forms |
+| `WindowGroup` | 2D / shallow-depth UI in Shared Space; resizing and multitasking adaptation are mandatory |
+| `WindowGroup` (volumetric / `Volume`) | bounded 3D content viewed from multiple angles without taking over the user's room |
+| `ImmersiveSpace` | Full Space world or mixed-reality scene when spatial presence or room-scale interaction is the task |
 
-Apple guidance warns that supplemental content generally belongs in an adjacent window rather than ornaments. Use ornaments for controls/tooling closely tied to a window, keep them reachable at resize extremes, and avoid duplicate navigation chrome. Use system glass/material behavior for the control layer; do not apply translucent material indiscriminately to content where it harms legibility. Inset meaningful inline 3D objects so they do not collide with edges/controls.
+Key visionOS 2 & visionOS 26 capabilities:
 
-Input/privacy facts from Apple's guidance:
+- **visionOS 2**: react to viewing angle around volumes via `VolumeViewpoint` (`onVolumeViewpointChange`), build shared tabletop experiences with **`TabletopKit`** (table surface, seats, pawns, physics), and handle unified indirect/direct 3D input via `SpatialTapGesture` and `SpatialEventCollection`.
+- **visionOS 26**: author 3D SwiftUI hierarchies directly with **`SpatialLayout`**, **`depthAlignment`**, and **`ViewAttachmentComponent`** (attaching SwiftUI views straight onto RealityKit entities without boilerplate `attachments:` closures); anchor persistent **wall and table spatial widgets** (`WidgetKit` spatial mounting styles); coordinate shared spatial seating and **Spatial Personas / SharePlay** via `SystemCoordinator`; apply **Liquid Glass** spatial material updates thoughtfully (preserve text contrast over bright/cluttered passthrough); and embed stereo 3D on the spatial web via Safari's **`<model>`** element.
+- **Privacy & ornaments**: gaze-and-pinch is private by design—rely on system `.hoverEffect()` rather than logging gaze; place supplemental content in adjacent windows rather than bloated ornaments; request ARKit world/hand/scene permissions only inside a Full Space with clear user explanation.
 
-- gaze-and-pinch input is private by design: hover feedback lets people know what is targeted without exposing gaze before selection;
-- use system/SwiftUI/RealityKit hover effects rather than logging gaze merely to recreate feedback;
-- ARKit world/hand/scene data may require a Full Space and explicit permission depending on feature;
-- do not infer emotion/identity/attention beyond the user's explicit input;
-- support indirect input, direct touch equivalents, keyboard/gamepad/accessibility paths where relevant.
+```swift
+import SwiftUI
+import RealityKit
 
-RealityKit/SwiftUI rules:
-
-- choose `WindowGroup`, `Volume`, or `ImmersiveSpace` deliberately rather than mixing all three by default;
-- keep entity hierarchy/scale in meters and account for resize/reposition;
-- use attachments/ornaments for UI connected to 3D entities only when alignment and collision behavior are tested;
-- test Shared Space behavior with other apps/windows and Full Space permission boundaries separately.
-
-## WebXR, Three.js, React Three Fiber, and A-Frame
-
-The WebXR Device API is a W3C browser standard surface. Core concepts:
-
-- feature-detect `navigator.xr` and `isSessionSupported(mode)`;
-- common modes are `inline`, `immersive-vr`, and `immersive-ar`;
-- request sessions with required/optional features explicitly (`local-floor`, `bounded-floor`, `hand-tracking`, `layers`, plane/mesh features where supported);
-- input sources expose handedness/target ray/grip semantics depending on device;
-- browser/session support is fragmented; provide non-XR fallback and do not use user-agent detection.
-
-Three.js baseline:
-
-```js
-renderer.xr.enabled = true;
-renderer.setAnimationLoop(render);
+struct InspectionVolume: View {
+    var body: some View {
+        RealityView { content in
+            let root = Entity()
+            // visionOS 26: attach SwiftUI directly as an entity component
+            let label = Entity()
+            label.components.set(ViewAttachmentComponent(rootView: Text("Turbine Core").padding(8).glassBackgroundEffect()))
+            label.position = [0, 0.25, 0]
+            root.addChild(label)
+            content.add(root)
+        }
+        .gesture(SpatialTapGesture().targetedToAnyEntity().onEnded { value in
+            // Unified gaze+pinch or direct touch hit handling
+            handleInspect(entity: value.entity)
+        })
+    }
+}
 ```
 
-Use `setAnimationLoop`, not a normal animation-frame loop, for XR presentation. Manage reference-space scale, camera rig movement rather than camera-only hacks, controller events, resize/session end, color space, tone mapping, and frame budget. Do not import desktop postprocessing chains without measuring stereo cost.
+## Android XR (Jetpack XR SDK / Jetpack Compose for XR / SceneCore)
 
-React Three Fiber/XR packages wrap Three.js rather than removing XR constraints. Keep immutable scene state outside per-frame render paths, dispose GPU resources, memoize geometry/materials, and profile both eyes. Use the current `@react-three/xr` API/version rather than copying older examples.
+Android XR distinguishes **Home Space** (multitasking shared space where existing 2D Android/Compose apps spatialize automatically alongside other apps) from **Full Space** (single focused app with unbounded 3D environment, passthrough control, spatial panels, and 3D glTF entities via **SceneCore**).
 
-A-Frame is entity-component HTML-like composition over Three.js. It is appropriate for declarative prototypes/scenes, but component lifecycle, asset loading, occlusion, input abstraction, and version compatibility still require real-device verification.
+Use **Jetpack Compose for XR** (`androidx.xr.compose.spatial`) and **Material Design for XR** idioms:
 
-## Meta Quest / Interaction SDK
+- `Subspace`: hosts spatial composables inside a 3D coordinate container when in Full Space;
+- `SpatialPanel`: positions interactive Compose UI panels in 3D space with resize/move policies;
+- `Orbiter`: attaches floating contextual navigation rails, toolbars, or controls offset from a panel edge (Android XR equivalent of visionOS ornaments);
+- `SpatialRow` / `SpatialColumn` and `SpatialElevation` (`SpatialElevationLevel`): arrange multi-panel workspaces and depth hierarchy without manual matrix math;
+- **SceneCore (`Session`, `GltfModelEntity`)**: load 3D glTF/GLB assets, spatial audio, and environment skyboxes alongside Compose panels.
 
-Use native interaction primitives instead of custom rays/colliders where possible:
+```kotlin
+import androidx.compose.runtime.Composable
+import androidx.compose.ui.unit.dp
+import androidx.xr.compose.spatial.ContentEdge
+import androidx.xr.compose.spatial.Orbiter
+import androidx.xr.compose.spatial.Subspace
+import androidx.xr.compose.subspace.SpatialPanel
+import androidx.xr.compose.subspace.SpatialRow
+import androidx.xr.compose.subspace.layout.SubspaceModifier
+import androidx.xr.compose.subspace.layout.height
+import androidx.xr.compose.subspace.layout.width
 
-- ray/distance interaction for sparse distant targets;
-- poke/direct touch for near panels;
-- grab/hand interaction for physical manipulation;
-- controller and hand-tracking parity or explicit alternatives;
-- visual/audio/haptic feedback for hover/select/grab/release;
-- hand tracking loss/false-positive recovery.
+@Composable
+fun SpatialWorkspace() {
+    Subspace {
+        SpatialRow {
+            SpatialPanel(SubspaceModifier.width(900.dp).height(640.dp)) {
+                MainDocumentView()
+                Orbiter(position = ContentEdge.Start, offset = 24.dp) {
+                    WorkspaceNavRail()
+                }
+            }
+        }
+    }
+}
+```
 
-Meta's locomotion tunneling implementation defines the vignette angularly rather than assuming a fixed device FOV. That principle matters generally: express comfort occlusion in visual-angle terms, not screen UV alone.
+Verify both Home Space fallback (2D window resizing without `Subspace`) and Full Space transition (`Session.scene.spatialEnvironment`) so apps degrade gracefully when users switch spaces.
 
-## Unity XR Interaction Toolkit
+## Meta Horizon OS and Meta Spatial SDK
 
-Useful architecture:
+Meta Quest runs **Meta Horizon OS** with two primary native paths:
 
-- XR Origin/XR rig as the movable player reference;
-- interactors/interactables rather than ad hoc raycast input;
-- locomotion mediator/providers for move/turn/teleport;
-- snap turn and continuous turn as distinct user options;
-- tunneling vignette as a configurable comfort mode;
-- input action abstraction across controller profiles.
+- **Meta Spatial SDK (native Android / Kotlin)**: build lightweight Quest spatial apps directly in Kotlin + Jetpack Compose panels + Spatial SDK ECS without a Unity/Unreal runtime—ideal for productivity, media, and mixed-reality utilities needing small APK size and crisp 2D/3D text.
+- **Meta XR Interaction SDK (Unity / Unreal)** + **Horizon OS UI Set**: use platform-idiomatic spatial UI controls, ray/distance interactors for far panels, poke/direct touch for near panels, grab interactors for physical objects, and controller + hand-tracking parity with hover/acquire/release visual, audio, and haptic feedback.
+- **Mixed Reality & Passthrough**: use **MRUK (Mixed Reality Utility Kit)** and OpenXR scene understanding for room mesh, walls, tables, raycast occlusion, and persistent spatial anchors; when using the **Passthrough Camera API** for computer vision, disclose camera usage explicitly and minimize retained frame data.
+- **Comfort**: follow Meta's angular locomotion tunneling vignette model—define comfort occlusion in visual degrees, never fixed screen UVs.
 
-Measure frame timing in Unity Profiler/device capture, not editor playback. Quest/Android XR builds have different thermal/GC/rendering constraints than desktop editor runs.
+## WebXR (2025–2026)
+
+Feature-detect `navigator.xr` and `await navigator.xr.isSessionSupported('immersive-vr' | 'immersive-ar')` with explicit session features (`local-floor`, `bounded-floor`, `hand-tracking`, `layers`) and always ship a non-XR desktop/mobile fallback.
+
+### `@react-three/xr` v6 + `@pmndrs/uikit`
+
+Use the v6 store API (`createXRStore()`, `<XR store={store}>`, `<XROrigin>`) rather than deprecated v5 `<VRButton>`/`<Controllers>`/`<Hands>` wrappers. Pair with **`@pmndrs/uikit`** for crisp MSDF/SDF Flexbox spatial UI inside Three.js/R3F instead of blurry HTML-to-canvas textures:
+
+```tsx
+import { Canvas } from '@react-three/fiber';
+import { createXRStore, XR, XROrigin } from '@react-three/xr';
+import { Root, Container, Text } from '@react-three/uikit';
+
+const store = createXRStore();
+
+export function SpatialApp() {
+  return (
+    <>
+      <button onClick={() => store.enterVR()}>Enter VR</button>
+      <Canvas>
+        <XR store={store}>
+          <XROrigin position={[0, 0, 1.5]} />
+          <group position={[0, 1.4, 0]}>
+            <Root sizeX={1.2} sizeY={0.7} flexDirection="column" padding={24} backgroundColor="#111827">
+              <Container>
+                <Text fontSize={32} color="#f8fafc">Spatial Control Panel</Text>
+              </Container>
+            </Root>
+          </group>
+        </XR>
+      </Canvas>
+    </>
+  );
+}
+```
+
+### Dedicated WebXR engines, layers, and WebGPU caveats
+
+- **Wonderland Engine**: WebAssembly + WebGL2 engine engineered specifically for standalone headset WebXR frame-rate budgets, tiny download payloads, and instanced rendering.
+- **Needle Engine**: exports Unity/Blender scenes to WebXR/Three.js + USDZ Quick Look (visionOS/iOS) from one authoring pipeline.
+- **Babylon.js & PlayCanvas WebXR**: use `scene.createDefaultXRExperienceAsync(...)` (Babylon) or `app.xr.start(camera, pc.XRTYPE_VR, pc.XRSPACE_LOCALFLOOR)` (PlayCanvas). **WebGPU + WebXR (`XRGPUBinding`) remains experimental/flag-gated across headset browsers—always provide a WebGL2 fallback path.**
+- **WebXR Layers (`XRProjectionLayer`, `XRQuadLayer`, `XRCylinderLayer`)**: submit spatial UI panels and video directly to the XR compositor via quad/cylinder layers so text renders at native headset resolution without double-sampling through the eye buffer.
+- **Three.js / A-Frame baseline**: always drive XR frames with `renderer.setAnimationLoop(render)` (never `requestAnimationFrame`), move an XR rig rather than fighting tracked camera transforms, and measure stereo frame time on standalone headsets rather than desktop GPUs.
+
+## Unity XR Interaction Toolkit (XRI)
+
+- Move the player via `XROrigin` + locomotion mediator/providers (teleport, snap turn, smooth turn, angular tunneling vignette).
+- Use `XRBaseInteractor` / `XRBaseInteractable` (Near-Far Interactor, Poke Interactor, Ray Interactor) with Input System Action Maps across OpenXR controller and hand profiles.
+- Profile on target standalone hardware (Quest / Android XR / visionOS via PolySpatial) using Unity Profiler + OVR Metrics Tool / RenderDoc—desktop editor frame rates hide mobile tile-GPU overdraw, thermal throttling, and GC spikes.
+
+## Unreal Engine OpenXR
+
+- Target the official **OpenXR** plugin (`OpenXR`, `OpenXRHandTracking`, `XRBase`) with **Enhanced Input** action mappings so motion controllers and hand-tracking profiles stay portable across Quest, PCVR, and Android XR.
+- Interact with 3D `UWidgetComponent` menus using **`UWidgetInteractionComponent`** attached to controller/hand aim poses (set explicit interaction distance, debug visualization off in shipping builds, and ensure hover/focus states respond cleanly).
+- Render critical HUD text, subtitles, and menus with **Stereo Layers (`UStereoLayerComponent`, Quad/Cylinder/Equirect)** so the XR compositor samples them directly at native sharpness instead of blurring text through temporal anti-aliasing / eye-buffer distortion.
+- Budget draw calls, instanced stereo rendering, forward shading vs mobile deferred, and Vulkan mobile MSAA explicitly in Unreal Insights on device (`rendered`).

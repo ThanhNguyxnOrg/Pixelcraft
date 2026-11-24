@@ -1,6 +1,6 @@
 ---
 name: pixelcraft-email
-description: Translates Pixelcraft direction, tokens, UX, and floor requirements into email that survives real clients. Use for HTML email, table-based email, MJML, React Email, transactional messages, newsletters, onboarding email, dark mode, image blocking, plaintext parity, accessibility, localization, responsive behavior, client quirks, and deliverability-conscious design.
+description: Translates Pixelcraft direction, tokens, UX, and floor requirements into email that survives real clients. Use for HTML email, table-based email, MJML, React Email, Maizzle, Vue Email, Resend, Loops, AMP for Email, BIMI, transactional messages, newsletters, onboarding email, Outlook, Gmail clipping, dark mode, image blocking, plaintext parity, accessibility, localization, responsive behavior, client quirks, and deliverability-conscious design.
 license: MIT
 metadata:
   version: 0.1.0
@@ -16,13 +16,13 @@ Make the subject and opening live text state who sent the message, why it matter
 
 ## Detection signals
 
-`.mjml`, React Email packages/templates, table-heavy HTML email, inline CSS tooling, ESP templates, plaintext templates, MIME generation, email screenshots/previews, localization catalogs.
+`.mjml`, React Email / Vue Email / Svelte Email packages, `maizzle.config.*`, table-heavy HTML email, inline CSS tooling, ESP templates (Resend, Loops, Postmark, Stripo), plaintext templates, MIME generation, email screenshots/previews, localization catalogs.
 
 ## Translate direction with constrained fidelity
 
 1. Preserve concept through hierarchy, typography fallback, spacing, real copy, restrained color, and signature structure—not fragile pixel precision.
 2. Map tokens manually into inline/table-compatible values or generator constants. CSS variables are unreliable across clients.
-3. Choose implementation: hand-written tables for maximum control, MJML for responsive abstraction, React Email for component workflow. Do not pretend they produce identical client support automatically.
+3. Choose implementation: hand-written tables for maximum control, MJML for responsive abstraction, React Email (or Vue/Svelte Email) for component workflow, or Maizzle for Tailwind CSS inlining and purging. Do not pretend they produce identical client support automatically.
 4. Design image-off and plaintext as first-class variants, not fallbacks written afterward.
 5. Use progressive enhancement: modern clients may receive polish; baseline must remain readable/actionable everywhere.
 

@@ -20,6 +20,14 @@ Design rules:
 
 Fragmentation checks: one-line invoice, many pages of line items, zero-rated/tax-exempt rows, discounts/credits, long addresses/legal notes, missing buyer fields, and last-page total placement.
 
+### EU hybrid e-invoicing (`ZUGFeRD` / `Factur-X`)
+
+When issuing B2B or B2G invoices subject to EU EN 16931 / German ZUGFeRD / French Factur-X mandates:
+
+- emit a **PDF/A-3** container (`PDF/A-3b` or `PDF/A-3u`) embedding the structured XML invoice (`factur-x.xml` / `zugferd-invoice.xml`) as an associated file (`/AFRelationship /Alternative` or `/Data`) with matching XMP metadata;
+- derive both the visual PDF and the XML payload from the **same canonical calculation model** so line totals, VAT rates, rounding, and payment terms never diverge between human-readable and machine-readable views;
+- validate both PDF/A-3 conformance and EN 16931 schema/Schematron rules (e.g., VeraPDF + Mustangproject / Factur-X validator) rather than assuming a valid-looking visual PDF is compliant.
+
 Anti-slop: decorative oversized logo consuming the first third, fake “thank you” copy replacing payment clarity, blue gradient headers, and totals hidden in a floating card detached from line items.
 
 ## Reports, whitepapers, and manuals
@@ -48,6 +56,21 @@ Long-table/long-code behavior is a first-order design decision. A code block or 
 
 Anti-slop: stock-photo cover pages before any content, decorative pull quotes repeated as filler, charts without source/axis context, fake executive summaries, and excessive brand color pages that waste ink.
 
+## PDF/UA accessibility tagging (invoices, reports, public deliverables)
+
+Public-sector, EU Accessibility Act (EAA), and ADA-covered documents require **PDF/UA-1 or PDF/UA-2** tagged structure—selectable text alone is not accessibility:
+
+| Requirement | Concrete check |
+|---|---|
+| document metadata | set `/Lang` (BCP-47 locale), descriptive `Title`, and `/DisplayDocTitle true` |
+| logical tag tree | real nested `H1`–`H6` headings (no skipped levels), `P`, `L`/`LI`, and `Link` annotations |
+| data tables | real `Table` / `TR` / `TH` (with `Scope` Column/Row) / `TD` tags; never simulate tables with absolute-positioned blocks |
+| artifacts | mark running headers, footers, page numbers, watermarks, and decorative borders as `Artifact` so screen readers do not repeat them mid-sentence |
+| figures & charts | attach `Alt` text (and companion data table for complex charts) on every non-decorative `Figure` |
+| reading & tab order | confirm logical reading order matches visual flow in multi-column layouts, callouts, and invoice totals |
+
+Verify tagged exports with VeraPDF (PDF/UA profile) or PAC (PDF Accessibility Checker) plus a real screen-reader pass (`static`/`rendered`); mark PDF/UA compliance `not-checked` if no tag inspection ran.
+
 ## CVs and résumés
 
 Norms vary by country, industry, seniority, and submission channel. Do not impose one-page/photo/personal-detail rules universally.
@@ -74,10 +97,10 @@ Anti-slop: black sidebar with portrait and dot ratings, generic adjectives (“d
 
 ## Shared document QA
 
-- inspect first/middle/last page and longest realistic content;
+- inspect first/middle/last page and longest realistic content (`rendered`);
 - print or preview at 100%;
-- validate totals/references/page numbers/cross-references;
-- search/copy extracted text;
+- validate totals/references/page numbers/cross-references (and embedded ZUGFeRD/Factur-X XML where required);
+- search/copy extracted text and inspect PDF/UA tag tree/reading order;
 - verify fonts/glyph fallback for actual names/locales;
 - test grayscale and backgrounds-disabled output;
-- mark missing legal/accessibility review explicitly rather than implying compliance.
+- mark missing legal/PDF/UA/e-invoice review explicitly as `not-checked` rather than implying compliance.

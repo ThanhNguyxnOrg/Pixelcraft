@@ -1,46 +1,73 @@
-# Unreal UMG
+# Unreal UMG, CommonUI, MVVM, and Slate
 
-## Token mapping
+## Production architecture: CommonUI + UMG ViewModel (MVVM)
 
-Use shared styles/brushes/materials/data assets/project style guides where available rather than copying colors/fonts per widget. Map semantic colors/type/spacing into centralized widget styles or design-system wrapper widgets. UMG inheritance/retainer/material behavior must be understood before creating parallel constants.
+For any shipping PC/console/cross-platform Unreal game, pair **UMG** with the official **CommonUI** and **UMG ViewModel (`MVVM`)** plugins rather than raw `AddToViewport()` and per-frame Blueprint property bindings:
 
-## Layout and responsive idioms
+### CommonUI idioms
 
-Use panels (`VerticalBox`, `HorizontalBox`, `GridPanel`, `CanvasPanel`, `SizeBox`, `ScaleBox`, `SafeZone`) intentionally. Separate HUD widget, menu screens, world-space widgets, overlays, scaling/resolution behavior, split screen, aspect ratios, safe zones, and platform-specific UI layers.
+- **`UCommonActivatableWidget`**: base class for every screen, HUD overlay, and modal dialog. Manages explicit `NativeOnActivated()` / `NativeOnDeactivated()` lifecycle, input config (`GetDesiredInputConfig()`), and back-action handling.
+- **`UCommonActivatableWidgetStack`**: manages layered UI stacks (HUD layer, Menu layer, Modal layer, System Prompt layer) with automatic focus handoff and back-button popping—never scatter `AddToViewport(ZOrder)` calls across Blueprints.
+- **`NativeGetDesiredFocusTarget()`**: override on every `UCommonActivatableWidget` so opening or returning to a screen places controller/keyboard focus on a guaranteed valid widget instead of dropping focus to the viewport.
+- **`UCommonInputSubsystem` & `UCommonActionWidget`**: automatically detects input method switches (`ECommonInputType::Gamepad`, `MouseAndKeyboard`, `Touch`) and swaps button prompt glyphs dynamically from `UCommonInputBaseControllerData` data tables (Xbox, PlayStation, Switch, Steam Deck, KBM) without hard-coded icon branches.
 
-## Typography/custom fonts
+```cpp
+// Header / implementation excerpt for a CommonUI menu screen
+UWidget* USettingsScreen::NativeGetDesiredFocusTarget() const
+{
+    if (PrimaryAudioSlider && PrimaryAudioSlider->IsVisible())
+    {
+        return PrimaryAudioSlider;
+    }
+    return Super::NativeGetDesiredFocusTarget();
+}
 
-Configure font assets/localization/font fallback carefully. Verify glyph coverage/memory, scaling/DPI, line breaking, expansion, and readability at distance. Bitmap/font atlas constraints matter for localized games; do not treat editor English as coverage.
+TOptional<FUIInputConfig> USettingsScreen::GetDesiredInputConfig() const
+{
+    return FUIInputConfig(ECommonInputMode::Menu, EMouseCaptureMode::NoCapture);
+}
+```
 
-## Motion/reduced motion
+### UMG ViewModel (`MVVM`) plugin
 
-Use UMG animations/sequencer/material motion intentionally. Provide reduced-motion/flash/camera-motion settings as game accessibility options; platform-level hooks may not cover all gameplay motion. Never hide critical HUD state behind cinematic animation timing.
+- Replace Blueprint **tick-bound property functions** (which execute every Slate frame regardless of whether data changed!) with push-based **`UMVVMViewModelBase`** subclasses using `UPROPERTY(FieldNotify)` and `UE_MVVM_SET_PROPERTY_VALUE(Health, NewHealth)`.
+- Keep gameplay actors decoupled from widgets: widgets subscribe to ViewModel field notifications, preventing circular hard references and per-frame UI CPU spikes.
 
-## Accessibility specifics
+### Enhanced Input UI routing
 
-Use navigation/focus behavior explicitly, controller/keyboard input routing, visible focus state, text scaling/HUD scaling/subtitles/captions/colorblind-safe coding/remapping. Unreal/platform screen-reader support varies; label uncertainty honestly. CommonUI/input routing plugins can help but introduce their own constraints.
+- Pair **Enhanced Input** (`UInputMappingContext` priority stacking) with CommonUI's `FUIInputConfig` (`ECommonInputMode::Game`, `Menu`, `All`) so opening a pause menu or radial wheel never leaks weapon firing/movement into gameplay or traps `Cancel`/`Back`.
 
-## States idiom
+## Slate (`SCompoundWidget` / `FSlateStyleSet`) vs UMG boundary
 
-Model game state and UI lifecycle together: loading/connecting/error/offline/permission/death/respawn/pause/cutscene/inventory-empty/matchmaking/cancelled/purchase-pending. Input mode (game-only/UI-only/game-and-UI) is UX state; mistakes trap input or leak gameplay actions.
+| Use **UMG + CommonUI + MVVM** | Drop to **C++ Slate (`SCompoundWidget`, `FSlateStyleSet`)** |
+|---|---|
+| Runtime game HUDs, menus, inventories, and artist-authored animations/layouts | Unreal Editor tools, custom debug inspectors, and viewport overlays |
+| CommonUI style assets (`UCommonTextStyle`, `UCommonButtonStyle`, `UCommonBorderStyle`) | Pre-world loading screens (`IGameMoviePlayer`), ultra-hot custom `OnPaint` batching, or custom widgets wrapped by a `UWidget` host |
 
-## Forms idiom
+## Batching and performance (`InvalidationBox`, `RetainerBox`)
 
-Editable text/widgets need labels/instructions, virtual keyboard/platform integration, validation timing, paste/input constraints, focus navigation, preservation after error/menu interruption, and recovery copy. Account linking/authentication must not force redundant manual entry when platform identity exists.
+- **`UInvalidationBox`** (or project-wide Global Invalidation): caches Slate layout/geometry for static or rarely mutated subtrees so unchanging HUD frames skip per-frame pre-pass and paint.
+- **`URetainerBox`**: renders a widget subtree into an offscreen render target for custom UI post-process materials (chromatic aberration, curved visor) or throttled refresh cadence (`Phase` / `PhaseCount`, e.g., updating a minimap every 2–4 frames). Profile VRAM and draw-call overhead—never wrap every panel in a `RetainerBox`.
+
+## Layout, typography, accessibility, and states
+
+- Use `SafeZone`, `Overlay`, `VerticalBox`, `HorizontalBox`, `GridPanel`, `SizeBox`, and `ScaleBox` deliberately; never anchor entire HUDs strictly inside `CanvasPanel` with fixed pixel offsets that break on 21:9/32:9 or handheld screens.
+- Configure Composite Font assets with explicit script sub-fonts for CJK, Arabic, Thai, and Cyrillic; test DPI curve scaling, subtitle size/backdrop options, colorblind shaders/palettes, reduced-motion/flash settings, and virtual keyboard / platform auth flows.
+- Model input-mode and interruption transitions (loading, disconnect, controller disconnect, death/respawn, cutscene, pending purchase) as explicit UI states.
 
 ## Do/don't pairs
 
 | Do | Don't |
 |---|---|
-| centralized semantic style assets/wrappers | copying colors/fonts per widget instance |
-| explicit input mode/focus ownership | modal that traps controller input or leaks firing/movement |
-| safe-zone/aspect matrix testing | validating only editor PIE 16:9 window |
-| HUD scaling/subtitle/colorblind options | fixed tiny monochrome HUD treated as hardcore aesthetic |
-| restore focus after popup/menu close | focus lost to hidden/removed widget |
+| Push screens onto `UCommonActivatableWidgetStack` and override `NativeGetDesiredFocusTarget()` | Scatter `AddToViewport()` calls and lose controller focus when closing modals |
+| Use `UMVVMViewModelBase` (`FieldNotify`) push bindings | Bind Blueprint functions directly to widget text/progress properties evaluated every tick |
+| Use `UCommonActionWidget` + `UCommonInputSubsystem` for live device glyph swapping | Hard-code `"Press [E]"` or Xbox-only textures across PC/PlayStation/Switch builds |
+| Centralize tokens in `UCommonTextStyle` / `UCommonButtonStyle` / `FSlateStyleSet` | Copy raw colors and font settings across every individual Widget Blueprint |
+| Wrap static subtrees in `InvalidationBox` and reserve `RetainerBox` for measured shader/throttle needs | Put every HUD widget inside a `RetainerBox`, blowing mobile/console VRAM |
 
 ## Known traps
 
-Blueprint visual-script sprawl hiding state ownership, input mode mistakes, focus/navigation inconsistency, hard references/memory cost, localized glyph coverage, editor/runtime scaling mismatch, safe-area/platform differences, retainer/material rendering artifacts, certification constraints discovered late.
+Tick-bound Blueprint property bindings burning frame budget, `AddToViewport` Z-order/focus leaks without CommonUI stacks, input-mode mismatches trapping controller input or leaking gameplay actions, hard asset references loaded synchronously by HUD widgets, missing localized Composite Font sub-fonts, and PIE 16:9 testing hiding SafeZone/ultrawide clipping.
 
 ## Verification commands
 
@@ -50,4 +77,4 @@ Run the project's Unreal Automation / UAT build command against the repo `.uproj
 RunUAT BuildCookRun -project="<PathToProject>.uproject" -build -unattended
 ```
 
-Use PIE/device/console-like target screenshots, controller-only navigation, resolution/aspect/safe-zone matrix, localization pseudo-text/glyph checks, accessibility option tests, input-mode/menu interruption flows, automation tests, and current platform certification checklists where applicable.
+Profile Slate/UMG with `stat Slate`, Widget Reflector, and Unreal Insights (`rendered`); test controller-only focus flows, device hot-swap glyphs, resolution/aspect/SafeZone matrix, pseudo-localized fonts, and interruption states on target platforms (`rendered`, labeling untested certification items `not-checked`).

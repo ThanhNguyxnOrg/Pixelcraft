@@ -1,16 +1,17 @@
 # Client-side PDF viewers (PDF.js) and programmatic PPTX decks (PptxGenJS)
 
-For print CSS, WeasyPrint, React-PDF, Typst, LaTeX, and web slide frameworks (Slidev/reveal.js/Marp), read `references/pdf-tools.md` and `references/slides.md`. Use this reference when **rendering PDFs inside a web app (`pdfjs-dist`)** or **generating editable PowerPoint `.pptx` files (`pptxgenjs`)**.
+For print CSS, Playwright/Gotenberg, WeasyPrint, React-PDF, Typst, LaTeX, Quarto, and web/Typst slide frameworks, read `references/pdf-tools.md` and `references/slides.md`. Use this reference when **rendering PDFs inside a web app (`pdfjs-dist`)** or **generating editable PowerPoint `.pptx` files (`pptxgenjs`)**.
 
-## PDF.js (`pdfjs-dist`) viewer idioms
+## PDF.js (`pdfjs-dist` v4.2+ / v5) viewer idioms
 
-- **Dedicated Web Worker**: always configure `GlobalWorkerOptions.workerSrc` (or `GlobalWorkerOptions.workerPort`) pointing to a bundled/same-origin `pdf.worker.mjs` matching the exact `pdfjs-dist` version—never run PDF parsing on the main thread.
-- **Cancellation & teardown**: cancel superseded `page.render(...)` tasks (`renderTask.cancel()`, catching `RenderingCancelledException`) on rapid zoom/page turns, and call `await loadingTask.destroy()` on unmount to abort pending range fetches and terminate the worker.
-- **Selectable & accessible text**: pair the `<canvas>` render with PDF.js's `TextLayer` (`TextLayerRenderTask`) so users can select/copy text, search (`Ctrl+F`), and read content with assistive technologies.
-- **HiDPI crispness**: scale the canvas backing store by `window.devicePixelRatio` while keeping CSS width/height at logical viewport pixels so text is sharp on Retina displays.
+- **Dedicated Web Worker**: configure `GlobalWorkerOptions.workerSrc` (or `GlobalWorkerOptions.workerPort`) pointing to a bundled/same-origin `pdf.worker.min.mjs` matching the exact `pdfjs-dist` version—never parse PDFs on the main thread.
+- **HiDPI crispness (`devicePixelRatio` + `transform`)**: scale the `<canvas>` backing store (`canvas.width` / `canvas.height`) by `window.devicePixelRatio`, keep CSS width/height at logical viewport pixels, and pass `transform: dpr !== 1 ? [dpr, 0, 0, dpr, 0, 0] : undefined` into `page.render(...)` so glyphs stay razor-sharp on Retina/4K screens.
+- **Selectable & accessible `TextLayer` (v4.2+ / v5)**: instantiate `new TextLayer({ textContentSource, container, viewport }).render()` and set `--scale-factor` and `--total-scale-factor` CSS custom properties on the page/text-layer container (imported with `pdfjs-dist/web/pdf_viewer.css`) so selectable spans align accurately with the rendered canvas.
+- **Cancellation & teardown**: cancel superseded `page.render(...)` and `TextLayer` tasks (`renderTask.cancel()`, `textLayer.cancel()`, ignoring `RenderingCancelledException`) on rapid zoom/page turns, and call `await loadingTask.destroy()` on unmount to abort pending range fetches and terminate the worker.
 
 ```ts
-import { getDocument, GlobalWorkerOptions } from 'pdfjs-dist';
+import { getDocument, GlobalWorkerOptions, TextLayer } from 'pdfjs-dist';
+import 'pdfjs-dist/web/pdf_viewer.css';
 
 GlobalWorkerOptions.workerSrc = new URL(
   'pdfjs-dist/build/pdf.worker.min.mjs',
@@ -20,35 +21,75 @@ GlobalWorkerOptions.workerSrc = new URL(
 const loadingTask = getDocument({ url: '/report.pdf' });
 const pdf = await loadingTask.promise;
 const page = await pdf.getPage(1);
-const viewport = page.getViewport({ scale: 1.5 });
-const renderTask = page.render({ canvasContext: ctx, viewport });
-await renderTask.promise;
 
-// On unmount:
-await loadingTask.destroy();
+const scale = 1.5;
+const dpr = window.devicePixelRatio || 1;
+const viewport = page.getViewport({ scale });
+
+// 1. HiDPI canvas backing store + DPR transform
+canvas.width = Math.floor(viewport.width * dpr);
+canvas.height = Math.floor(viewport.height * dpr);
+canvas.style.width = `${Math.floor(viewport.width)}px`;
+canvas.style.height = `${Math.floor(viewport.height)}px`;
+
+const renderTask = page.render({
+  canvasContext: ctx,
+  viewport,
+  transform: dpr !== 1 ? [dpr, 0, 0, dpr, 0, 0] : undefined,
+});
+
+// 2. Synchronized TextLayer (PDF.js v4.2+/v5 requires scale CSS vars)
+pageContainer.style.setProperty('--scale-factor', String(viewport.scale));
+pageContainer.style.setProperty('--total-scale-factor', String(viewport.scale));
+textLayerDiv.replaceChildren();
+const textLayer = new TextLayer({
+  textContentSource: page.streamTextContent(),
+  container: textLayerDiv,
+  viewport,
+});
+
+try {
+  await Promise.all([renderTask.promise, textLayer.render()]);
+} catch (err) {
+  if ((err as Error).name !== 'RenderingCancelledException') throw err;
+}
+
+// On zoom/page change: renderTask.cancel(); textLayer.cancel();
+// On unmount: await loadingTask.destroy();
 ```
 
-## PptxGenJS (programmatic `.pptx` generation)
+## PptxGenJS (v3/v4 programmatic `.pptx` generation)
 
 - **Slide masters & physical inches**: set `pres.layout = 'LAYOUT_16x9'` (10" × 5.625") or `defineLayout(...)` in **inches**, and define reusable `defineSlideMaster({ title, background, objects, slideNumber })` templates so headers, footers, margins, and slide numbers stay consistent across every generated slide.
-- **Native editable objects**: prefer `slide.addText(...)`, `slide.addTable(...)` (supports auto-paging across slides), and native charts over rasterizing entire slides as PNG screenshots.
-- **Export API**: pass an options object `await pres.writeFile({ fileName: 'deck.pptx' })` (string argument is deprecated), or `await pres.stream()` for Node buffer streaming.
-- **Font availability**: PowerPoint substitutes missing fonts on recipients' machines—stick to system-safe fonts or embed fonts explicitly when brand typography is mandatory, and inspect the exported `.pptx` in PowerPoint / Keynote / LibreOffice Impress at 100% scale.
+- **Native editable objects**: prefer `slide.addText(...)`, `slide.addTable(...)` (supports auto-paging across slides), and native `slide.addChart(...)` over rasterizing entire slides as PNG screenshots.
+- **RTL localization**: set `pres.rtlMode = true` for Arabic/Hebrew/Persian decks and verify text alignment, chart axis direction, and slide-number anchor positions in PowerPoint/Impress.
+- **Canonical Export API (v3/v4)**: use `await pres.writeFile({ fileName: 'deck.pptx' })` for direct file downloads/writes, or `await pres.write({ outputType: 'nodebuffer' })` in Node.js services (supported `outputType` values: `'nodebuffer' | 'stream' | 'blob' | 'base64' | 'arraybuffer' | 'uint8array'`). Do not pass deprecated string-only arguments to `writeFile` or call removed v2 streaming methods.
+- **Font availability**: PowerPoint substitutes missing fonts on recipients' machines—stick to widely available fonts or embed fonts explicitly when brand typography is mandatory, and inspect the exported `.pptx` in PowerPoint / Keynote / LibreOffice Impress at 100% scale.
 
 ```ts
 import PptxGenJS from 'pptxgenjs';
 
 const pres = new PptxGenJS();
 pres.layout = 'LAYOUT_16x9';
+pres.rtlMode = false; // Set true for RTL locales (ar, he, fa)
+
 pres.defineSlideMaster({
   title: 'REPORT_MASTER',
   background: { color: 'FFFFFF' },
-  slideNumber: { x: 9.2, y: 5.2, fontSize: 10, color: '666666' },
+  slideNumber: { x: 9.2, y: 5.2, fontSize: 10, color: '555555' },
 });
 
 const slide = pres.addSlide({ masterName: 'REPORT_MASTER' });
-slide.addText('Quarterly Operations Review', { x: 0.6, y: 0.5, w: 8.8, fontSize: 24, bold: true });
-await pres.writeFile({ fileName: 'q4-review.pptx' });
+slide.addText('Quarterly Operations Review', { x: 0.6, y: 0.4, w: 8.8, fontSize: 24, bold: true });
+slide.addChart(
+  pres.ChartType.bar,
+  [{ name: 'Uptime %', labels: ['Q1', 'Q2', 'Q3', 'Q4'], values: [99.8, 99.9, 99.95, 99.98] }],
+  { x: 0.6, y: 1.2, w: 8.8, h: 3.6, showValue: true, barDir: 'col' },
+);
+
+// Server-side Buffer (or 'stream' | 'blob' for streaming/browser)
+const buffer = (await pres.write({ outputType: 'nodebuffer' })) as Buffer;
+// Or direct save: await pres.writeFile({ fileName: 'q4-review.pptx' });
 ```
 
 ## Do/don't pairs
@@ -56,9 +97,10 @@ await pres.writeFile({ fileName: 'q4-review.pptx' });
 | Do | Don't |
 |---|---|
 | Set `GlobalWorkerOptions.workerSrc` and call `loadingTask.destroy()` in PDF.js | Parse multi-megabyte PDFs on the main thread or leak PDF workers on unmount |
-| Render a synchronized `TextLayer` over the PDF.js canvas | Ship an image-only PDF canvas where text cannot be selected, searched, or read |
-| Cancel in-flight `renderTask` on zoom/page change and handle `RenderingCancelledException` | Race two concurrent `page.render()` calls onto the same `<canvas>` |
-| Define `LAYOUT_16x9` + `defineSlideMaster` and use native `addText`/`addTable` in PptxGenJS | Paste full-slide PNG screenshots into `.pptx` files or hardcode duplicate footers on every slide |
+| Scale backing canvas by `devicePixelRatio` with `transform: [dpr, 0, 0, dpr, 0, 0]` | Render 1× logical canvas pixels onto Retina screens, producing blurry text |
+| Pair `new TextLayer({ textContentSource, container, viewport }).render()` with `--scale-factor` / `--total-scale-factor` | Ship an image-only PDF canvas or misaligned text overlay that breaks copy/search/a11y |
+| Cancel in-flight `renderTask` and `textLayer` on zoom/page change and ignore `RenderingCancelledException` | Race concurrent `page.render()` calls onto the same `<canvas>` |
+| Use `pres.write({ outputType: 'nodebuffer' })` (or `'stream' \| 'blob'`) and native `addText`/`addTable`/`addChart` | Paste full-slide PNG screenshots, hardcode footers on every slide, or ignore `rtlMode` for RTL locales |
 
 ## Verification commands
 
@@ -66,4 +108,4 @@ await pres.writeFile({ fileName: 'q4-review.pptx' });
 npm run build
 ```
 
-Verify PDF.js worker bundling (`static`), test HiDPI canvas + text-layer selection + zoom cancellation in a real browser (`rendered`), and open exported `.pptx` files in PowerPoint/Impress to confirm no text clipping or font substitution (`rendered`).
+Verify PDF.js worker bundling (`static`), test HiDPI canvas + `TextLayer` selection alignment + zoom cancellation in a real browser (`rendered`), and open exported `.pptx` files in PowerPoint / Keynote / LibreOffice Impress to confirm chart legibility, RTL layout (when enabled), and zero text clipping or font substitution (`rendered`).

@@ -1,70 +1,121 @@
 # SwiftUI
 
-Evidence: Apple environment keys verified in current docs: `@Environment(\.accessibilityReduceMotion)` and `@Environment(\.dynamicTypeSize)`.
-
 ## Token mapping
 
-Map generated Swift colors/values into asset catalogs or a typed semantic theme enum. Prefer asset catalog colors for light/dark/high-contrast variants; use generated constants only where compile-time generation is intentional:
+Map DTCG semantic roles into Asset Catalog color sets (carrying light, dark, and high-contrast variants) and reference them via Xcode-generated **`ColorResource`** symbols rather than raw RGB/hex literals:
 
 ```swift
 enum PC {
-  static let action = Color("Semantic/Action")
+  static let action = Color(.semanticAction)        // ColorResource from Assets.xcassets
+  static let surface = Color(.semanticSurface)
   static let controlInline: CGFloat = 12
+}
+
+// Custom environment tokens with @Entry (iOS 18+ / Xcode 16+)
+extension EnvironmentValues {
+  @Entry var pcSpacingScale: CGFloat = 1.0
 }
 ```
 
-Do not scatter raw RGB/hex initializers through views. Use `ColorAsset` names that express semantic roles.
+Use `ColorResource` names that express semantic roles (`semanticAction`, `semanticDanger`), not palette names (`blue500`). Reserve compile-time constant structs for spacing, radii, and motion durations that Asset Catalogs do not store.
 
-## Layout and responsive idioms
+## iOS 26 Liquid Glass & modern materials
 
-Use stacks, grids, safe-area behavior, size classes, dynamic type adaptation, and container resizing rather than fixed device frames. `ViewThatFits`, `Layout`, geometry-aware composition, and scroll behavior are selected by content need—not used reflexively. Respect navigation stack/split view/tab bar idioms and iPad/macOS resizing where targeted.
-
-## Typography/custom fonts
-
-Prefer system text styles (`.body`, `.headline`, `.title`) because they scale automatically. Register custom fonts correctly in the app target/Info.plist and use scalable relative sizing rather than fixed point-only assumptions. Read `dynamicTypeSize` when layout must switch at accessibility sizes.
-
-## Motion/reduced motion
-
-Use SwiftUI animation/spring/transition intentionally and read:
+On iOS 26+, reserve **Liquid Glass** for floating navigation, toolbars, and controls above scrolling content—never apply glass to primary reading surfaces or stack glass-on-glass:
 
 ```swift
-@Environment(\.accessibilityReduceMotion) private var reduceMotion
+GlassEffectContainer(spacing: 12) {
+  HStack(spacing: 12) {
+    Button("Filter", systemImage: "line.3.horizontal.decrease") { showFilter = true }
+      .buttonStyle(.glass)
+    Button("Create", systemImage: "plus") { createInvoice() }
+      .buttonStyle(.glassProminent)
+  }
+}
+.padding()
+.glassEffect(.regular, in: ConcentricRectangle(corners: .concentric(minimum: 16)))
 ```
 
-Choose non-motion or opacity/static alternatives when true. Do not add `.animation` globally to state that should update instantly; implicit animation scope matters.
+- Group neighboring glass controls inside `GlassEffectContainer` so they share backdrop sampling and morph smoothly during state transitions.
+- Use `.buttonStyle(.glass)` / `.buttonStyle(.glassProminent)`, `ConcentricRectangle` for concentric corner nesting inside sheets/bezels, `.tabBarMinimizeBehavior(.onScrollDown)` for content-first scrolling tabs, and `.scrollEdgeEffectStyle(.soft, for: .top)` (or `.hard`) to preserve legibility where content passes beneath floating chrome.
+- **Mandatory accessibility fallback**: read `@Environment(\.accessibilityReduceTransparency)` and `@Environment(\.colorSchemeContrast)` (`.increased`). When either is active, replace translucent `.glassEffect(...)` surfaces with opaque semantic surfaces and clear borders so text contrast stays ≥ 4.5:1.
+
+## Layout, navigation, and iOS 18–26 idioms
+
+- Use `NavigationStack`, `NavigationSplitView`, `ViewThatFits`, `Layout`, safe-area insets (`.safeAreaInset(edge: .bottom)`), and horizontal/vertical size classes rather than fixed device frames.
+- Use the **`Tab` / `TabSection`** API (iOS 18+, replacing deprecated `.tabItem`) for adaptive iPhone tab bars and iPad floating tab bars / sidebars:
+
+```swift
+TabView(selection: $selectedTab) {
+  Tab("Invoices", systemImage: "doc.text", value: AppTab.invoices) {
+    InvoiceListView()
+  }
+  TabSection("Archive") {
+    Tab("Paid", systemImage: "checkmark.circle", value: AppTab.paid) { PaidListView() }
+  }
+}
+.tabBarMinimizeBehavior(.onScrollDown)
+```
+
+- Use `.navigationTransition(.zoom(sourceID: invoice.id, in: ns))` paired with `.matchedTransitionSource(id: invoice.id, in: ns)` for continuity transitions when opening detail cards/media (bypassing zoom motion when Reduce Motion is enabled).
+- Use native **`ContentUnavailableView`** (and `ContentUnavailableView.search`) for empty, error, and no-results states.
+- On iOS 26+, prefer native SwiftUI **`WebView`** / `WebPage` (WebKit) over custom `UIViewRepresentable` `WKWebView` wrappers when embedding web content.
+- Extend glanceable and ongoing experiences to the Lock Screen / Home Screen via **`WidgetKit`** interactive widgets (`AppIntent`) and **`ActivityKit`** Live Activities (see `references/task-state-composition.md`).
+
+## Typography & Dynamic Type
+
+Prefer system text styles (`.body`, `.headline`, `.title2`) because they scale automatically with Dynamic Type. For custom bundled fonts registered in `Info.plist`, always bind scaling to a semantic text style:
+
+```swift
+Text(invoice.totalFormatted)
+  .font(.custom("BrandSans-SemiBold", size: 17, relativeTo: .body))
+```
+
+Read `@Environment(\.dynamicTypeSize) private var typeSize` and switch horizontal label/value rows to `VStack` (or `ViewThatFits`) when `typeSize.isAccessibilitySize` so numbers and actions never clip.
+
+## Motion, haptics, & reduced motion
+
+Read `@Environment(\.accessibilityReduceMotion) private var reduceMotion` and switch spatial transitions/zooms to instant or cross-dissolve updates when true. Avoid unbounded implicit `.animation(_:)` modifiers; scope animations to explicit value changes or `withAnimation`.
+
+Trigger semantic haptics declaratively with **`.sensoryFeedback`** (iOS 17+) rather than manual UIKit generators:
+
+```swift
+Button("Approve") { approve() }
+  .sensoryFeedback(.success, trigger: approvalCount)
+```
 
 ## Accessibility specifics
 
-Use SwiftUI accessibility modifiers: `accessibilityLabel`, `accessibilityValue`, `accessibilityHint` sparingly, `accessibilityTraits`, `accessibilityElement(children:)`, custom actions, adjustable values, sort priority. Verify VoiceOver order rather than assuming visual order. Minimum touch target baseline is 44×44 pt; padding must produce real hit area.
+Use `.accessibilityLabel`, `.accessibilityValue`, `.accessibilityHint` (sparingly), `.accessibilityAddTraits`, `.accessibilityElement(children: .combine)`, `.accessibilityAction(named:)`, `.accessibilityAdjustableAction`, and `.accessibilitySortPriority`. Maintain ≥ `44×44 pt` hit targets with `.contentShape(Rectangle())` so visual padding actually receives touches. Verify VoiceOver focus order on device/simulator rather than assuming visual order.
 
-## States idiom
+## States & forms idioms
 
-Model view state explicitly: loading/loaded/empty/error/permission/offline/optimistic. Keep state ownership clear through `@State`, `@Binding`, `@Observable`, environment ownership. Preserve state across backgrounding/process restoration where required. Pull-to-refresh/progress indicators must reflect actual lifecycle.
+Model view state as an explicit enum (`loading`, `loaded`, `empty`, `error`, `offline`) owned via `@Observable`, `@State`, `@Binding`, or `@Environment`. Preserve drafts across backgrounding (`@SceneStorage` / SwiftData / disk) and handle `.task` cancellation cleanly.
 
-## Forms idiom
-
-Use `Form`, `LabeledContent`, keyboard type/text content type/submit labels/autocorrection settings, validation after meaningful completion, and input preservation. Secure fields/password autofill/passkeys should integrate with system behavior rather than custom blocking.
+In forms, use `Form`, `LabeledContent`, `.keyboardType`, `.textContentType`, `.submitLabel`, `.autocorrectionDisabled`, and `.focused($field)` sequencing. Integrate system password autofill and Passkeys (`AuthenticationServices`) instead of blocking paste or custom-masking credentials.
 
 ## Do/don't pairs
 
 | Do | Don't |
 |---|---|
-| `Button("Save invoice") { save() }` | `Text("Save invoice").onTapGesture { save() }` as fake button |
-| `@Environment(\.dynamicTypeSize) private var typeSize` and adaptive layout | fixed-height row clipping accessibility text sizes |
-| `if reduceMotion { instantUpdate() } else { withAnimation(...) }` | large animated movement regardless of Reduce Motion |
-| `.accessibilityLabel("Delete \(invoice.name)")` | relying on a trash-can glyph as the only meaning |
-| `.safeAreaInset(edge: .bottom)` for persistent action | placing CTA underneath home indicator/keyboard |
+| `Color(.semanticAction)` via Asset Catalog `ColorResource` | Scattered `Color(red: 0, green: 0.45, blue: 0.79)` literals |
+| `Tab("Home", systemImage: "house") { ... }` + `TabSection` | Deprecated `.tabItem { Label(...) }` on iOS 18+ targets |
+| `.font(.custom("Brand", size: 17, relativeTo: .body))` | `.font(.custom("Brand", fixedSize: 17))` ignoring Dynamic Type |
+| Check `accessibilityReduceTransparency` & `colorSchemeContrast` around `.glassEffect` | Stack `.glassEffect` on reading cards or ignore Increase Contrast |
+| `.sensoryFeedback(.success, trigger: savedCount)` | Triggering haptics on every scroll tick or routine navigation tap |
+| `ContentUnavailableView("No Invoices", systemImage: "doc")` | Blank white `List` with zero explanation when data is empty |
+| `.safeAreaInset(edge: .bottom)` for persistent primary CTA | Hard-coded bottom padding colliding with home indicator or keyboard |
 
 ## Known traps
 
-GeometryReader layout loops, implicit animation explosions, hidden Keyboard avoidance differences, navigation stack state duplication, sheet/full-screen cover focus and dismissal, custom large-title mismatch, preview data mistaken for runtime state, dynamic type truncation, safe-area double padding, task cancellation/lifecycle confusion.
+`GeometryReader` layout loops, implicit animation explosions, stacking glass-on-glass reducing legibility, `NavigationStack` path state duplication, `.task` re-firing on view identity changes, sheet/full-screen cover focus loss on dismiss, custom font fixed-size clipping, safe-area double padding, preview fixtures mistaken for runtime persistence.
 
 ## Verification commands
 
 ```sh
-xcodebuild -scheme App -destination 'platform=iOS Simulator,name=iPhone 15' build
-xcodebuild test -scheme App -destination 'platform=iOS Simulator,name=iPhone 15'
-xcrun simctl boot <device> 2>/dev/null || true
+xcrun simctl list devices available
+xcodebuild -scheme App -destination 'platform=iOS Simulator,name=<SimulatorName>' build
+xcodebuild test -scheme App -destination 'platform=iOS Simulator,name=<SimulatorName>'
 ```
 
-Use Xcode Previews, snapshot tests, simulator screenshots, Accessibility Inspector, VoiceOver, Dynamic Type sizes, dark mode, orientation/split-view runs for rendered evidence.
+Use Xcode Previews, snapshot tests, and real simulator/device runs across Dynamic Type (`AX3`), Dark Mode, Increase Contrast, Reduce Transparency, Reduce Motion, and VoiceOver/Accessibility Inspector for `rendered` evidence. Compilation alone is `static` evidence; label untested physical devices or iOS versions `not-checked`.

@@ -1,61 +1,72 @@
-# Qt / PySide / QML
+# Qt 6 / PySide6 / QML
 
-## Token mapping
+Use this reference for **Qt 6, PySide6 (official Python bindings), Qt Quick / QML, and Kirigami**. For C++ CMake build chains, wxWidgets, FLTK 1.4, Dear ImGui, and lightweight C/Zig desktop GUIs, see `references/cpp-gui.md`.
 
-For Qt Widgets/PySide/QSS, generated Qt variables are preprocessor-style constants because QSS has no runtime CSS variables:
+## Token mapping, `styleHints.colorScheme`, & QSS caveat
 
-```qss
-/* substitute @semantic-color-action before loading */
-QPushButton { background: @semantic-color-action; }
+- **Qt Quick / QML (preferred for bespoke & modern cross-platform UI)**: create a QML `pragma Singleton` theme object keyed to semantic roles and react directly to **`Application.styleHints.colorScheme`** (`Qt.ColorScheme.Dark` / `Light` / `Unknown` in Qt 6.5+):
+
+```qml
+pragma Singleton
+import QtQuick
+
+QtObject {
+    readonly property bool isDark: Application.styleHints.colorScheme === Qt.ColorScheme.Dark
+    readonly property color action: isDark ? "#5bb2ff" : "#0074ca"
+    readonly property color surface: isDark ? "#14161a" : "#ffffff"
+    readonly property int controlInline: 12
+}
 ```
 
-Use Qt resource/palette/theme mechanisms where possible. In QML, create a singleton/theme object or context property containing semantic colors, spacing, type roles, and motion values.
+- **Qt Quick Controls 2 native styles**: select native platform styles (`FluentWinUI3` on Windows 11, `macOS` on macOS, `Fusion`/`Basic` fallback on Linux) via `QQuickStyle.setStyle(...)` / `qtquickcontrols2.conf` so dialogs, scrollbars, and focus rings match the host OS. For adaptive Linux/KDE/convergent apps, layer **Kirigami** (`Kirigami.PageRow`, `Kirigami.Action`, `Kirigami.PlaceholderMessage`) on top of Qt Quick Controls 2.
+- **Qt Widgets / PySide6 QSS warning**: **heavy `setStyleSheet(...)` (QSS) breaks native platform widget styles** (`QStyle` falls back to `QStyleSheetStyle`, stripping native Windows 11 Fluent animations, macOS Aqua chrome, focus rings, and system high-contrast palettes). Prefer **`QPalette`**, **`QApplication.styleHints().colorScheme()`**, and targeted sub-control overrides over full-app QSS rewrites; where QSS is unavoidable, preprocess semantic `@token` placeholders at build time because QSS has no runtime CSS variables.
 
-## Layout and responsive idioms
+```python
+from PySide6.QtCore import Qt
+from PySide6.QtWidgets import QApplication
 
-Widgets: use layout managers (`QVBoxLayout`, `QGridLayout`, size policies, splitter) rather than fixed geometry. QML: anchors/layouts/scaling behavior chosen deliberately. Handle resize/minimum size, high-DPI scaling, multiple monitors, platform style differences, and keyboard focus chain.
+def is_system_dark(app: QApplication) -> bool:
+    return app.styleHints().colorScheme() == Qt.ColorScheme.Dark
+```
 
-## Typography/custom fonts
+## Layout, compilation (`qmltc`), & responsive idioms
 
-Use `QFontDatabase` for font loading and platform font fallback. Qt scaling/point-vs-pixel behavior can vary by DPI/platform; verify actual output. QML font properties should use semantic roles rather than ad hoc pixelsize everywhere.
+- **Qt Widgets**: always use layout managers (`QVBoxLayout`, `QGridLayout`, `QFormLayout`, `QSplitter`) and `QSizePolicy`—never fixed geometry (`setGeometry`).
+- **QML**: prefer `QtQuick.Layouts` (`RowLayout`, `ColumnLayout`, `GridLayout`) with `Layout.fillWidth` and explicit minimum window sizes. Use **`qmltc`** (QML Type Compiler) and `qmllint` on C++/Qt 6 projects to compile QML into C++ for startup performance and catch type/binding bugs statically.
+- Handle fractional HiDPI scaling, multi-monitor DPI changes, and clamped window geometry restoration (`QSettings` / `restoreGeometry`).
 
-## Motion/reduced motion
+## Typography, motion, & reduced motion
 
-Use QML animations/behaviors/NumberAnimation or Qt property animations purposefully. System reduced-motion exposure varies by platform/Qt version; provide application setting or platform-specific detection where necessary. Do not block input in modal animation loops.
+Load custom fonts via `QFontDatabase.addApplicationFont(...)` and verify platform fallback chains (CJK/RTL/emoji) and point-vs-pixel scaling. Keep QML `NumberAnimation` / `Behavior` and `QPropertyAnimation` brief and interruptible; because Qt does not expose one uniform cross-OS reduced-motion property across every desktop environment, query platform hooks or provide an explicit app-level reduced-motion preference so animations can be disabled cleanly.
 
-## Accessibility specifics
+## Accessibility, states, & forms idioms
 
-Qt accessibility APIs expose name/description/role/state through accessible object layers. Set object names/accessibility metadata deliberately, preserve keyboard focus chain/shortcuts/mnemonics, use standard controls first, honor platform high-contrast themes, and test screen readers per OS. Custom painting needs explicit accessibility exposure.
+Use standard Qt/QML controls first (they implement `QAccessible` / platform UIA / NSAccessibility / AT-SPI peers automatically). Set `accessibleName` / `Accessible.name`, `Accessible.role`, `Accessible.description`, keyboard shortcuts (`QShortcut` / `Action`), mnemonics (`&Save`), and explicit `QWidget.setTabOrder` / `KeyNavigation` chains.
 
-## States idiom
-
-Model loading/error/empty/offline/permission/dirty document state explicitly. Long work belongs in worker thread/task patterns with cancellation/progress; never block GUI thread. Multiwindow/document state, close confirmation, crash recovery, and drag/drop failure are UX states.
-
-## Forms idiom
-
-Use labeled line edits/combo boxes/form layouts, validators/input masks carefully, correct focus order, paste/IME behavior, validation timing, and input preservation. Do not use placeholder text as the only label where platform expectation is persistent labeling.
+Never block the Qt GUI event loop (`QApplication.exec()`) with synchronous network or disk I/O—use `QThreadPool` + `QRunnable` / `QObject` worker signals (or Python `QtAsyncio` / `QProcess`) with cancellation and progress states. Intercept `closeEvent` to protect dirty documents. In forms, pair `QFormLayout` / labeled `TextField` controls with `QValidator` / post-edit validation text (not red borders alone) and preserve input on failed submits.
 
 ## Do/don't pairs
 
 | Do | Don't |
 |---|---|
-| layout managers/size policies | fixed geometry copied from one screenshot |
-| worker thread/progress/cancel for long work | blocking the GUI thread and freezing the window |
-| semantic QML singleton/theme object | raw color constants in every component |
-| explicit focus chain/mnemonics | mouse-only custom controls |
-| platform high-contrast/theme testing | forcing custom paint/colors over system accessibility settings |
+| Use `QPalette` / `styleHints().colorScheme()` or Qt Quick Controls 2 (`FluentWinUI3`/`macOS`) | Apply massive global QSS that disables native platform styling and High Contrast |
+| Run `qmllint` / `qmltc` and QML singleton semantic tokens | Scatter raw hex strings and untyped dynamic JS lookups across QML files |
+| Offload I/O to worker threads/async tasks and guard `closeEvent` on dirty docs | Block the Qt main event loop and freeze window repainting |
+| Use `QFormLayout`, `QSplitter`, `QtQuick.Layouts`, and `Kirigami` where fitting | Hard-code pixel `setGeometry` coordinates for one monitor DPI |
+| Set `Accessible.name`/`role` and verify VoiceOver, Narrator, and Orca | Custom-paint interactive `QWidget` or `Item` surfaces with zero accessibility |
 
 ## Known traps
 
-QSS unsupported variable assumptions, stylesheet cascading unpredictably, GUI-thread blocking, DPI scaling mismatch, font metric differences, object lifetime/deletion in Python/C++ boundary, focus proxy confusion, platform theme clash, accessibility metadata absent in custom widgets/QML items.
+Global QSS breaking native Windows 11/macOS chrome and High Contrast, PySide6 Python GC prematurely collecting unparented `QObject`/worker references, GUI-thread blocking, missing `qmllint` hiding runtime QML reference errors, fractional DPI blur on raster icons (use SVG/high-DPI pixmaps), custom `QPainter` widgets invisible to screen readers.
 
 ## Verification commands
 
 ```sh
-python -m pytest 2>/dev/null || true
-cmake --build build 2>/dev/null || true
-qmltestrunner 2>/dev/null || true
-python main.py 2>/dev/null || true
+# Run the test & build commands matching your project (PySide6 vs C++/QML):
+python -m pytest
+qmllint qml/
+qmltestrunner -input tests/qml
+cmake --build build
 ```
 
-Use real OS runs, Qt accessibility inspection where available, keyboard-only completion, high-DPI/multi-monitor/resize tests, screen readers, high-contrast themes, and window-state verification.
+Test runners and `qmllint` provide `static` / logic evidence. Launch the real desktop app across Windows/macOS/Linux to verify native styles (`FluentWinUI3`/`macOS`), Dark & High Contrast modes, fractional HiDPI, keyboard-only Tab/mnemonic completion, screen readers, and dirty `closeEvent` flows for `rendered` evidence; label untested OSes `not-checked`.

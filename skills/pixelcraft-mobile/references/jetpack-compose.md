@@ -1,53 +1,112 @@
 # Jetpack Compose
 
-## Token mapping
+## Token mapping & Material 3 Expressive
 
-Map generated Kotlin values into `ColorScheme`, typography, shapes, spacing object, and `CompositionLocal` only when Material/theme APIs cannot express the role:
+Map DTCG semantic tokens into `ColorScheme`, `Typography`, `Shapes`, `MotionScheme`, and a typed spacing `CompositionLocal` only when Material theme slots cannot express the role. On Material 3 Expressive (`material3` 1.4+), use **`MaterialExpressiveTheme`** and **`MotionScheme.expressive()`** rather than scattering raw `Color(0xff…)` or ad-hoc spring specs:
 
 ```kotlin
-val LightColors = lightColorScheme(primary = SemanticAction)
-val spacing = LocalSpacing.current
+@OptIn(ExperimentalMaterial3ExpressiveApi::class)
+@Composable
+fun PixelcraftTheme(
+  darkTheme: Boolean = isSystemInDarkTheme(),
+  content: @Composable () -> Unit,
+) {
+  val colors = if (darkTheme) DarkSemanticColors else LightSemanticColors
+  MaterialExpressiveTheme(
+    colorScheme = colors,
+    motionScheme = MotionScheme.expressive(),
+    typography = SemanticTypography,
+    content = content,
+  )
+}
 ```
 
-Use generated `.dp`/`.sp` output semantically. Do not scatter raw `Color(0xff…)` or hard-coded dimensions in composables.
+Adopt Material 3 Expressive components where they clarify action hierarchy: **`FloatingToolbar`** (horizontal/vertical contextual toolbars), **`SplitButtonLayout`** (primary action + attached menu), **`ButtonGroup`** (connected option clusters), and **`LoadingIndicator` / `ContainedLoadingIndicator`** (shape-morphing indeterminate progress).
 
-## Layout and responsive idioms
+## Edge-to-Edge (Android 15/16) & responsive adaptive layouts
 
-Use `Column`/`Row`/lazy layouts/box/grid constraints deliberately; measure with constraints and adapt through window size classes/pane scaffold where relevant. Handle predictive back, system bars, display cutouts, foldables, landscape, keyboard insets, and content padding. Do not hard-code screen width buckets copied from web breakpoints.
+Android 15 (API 35) enforces edge-to-edge by default and Android 16 (API 36) removes the opt-out window flag. Call **`enableEdgeToEdge()`** before `setContent` in `ComponentActivity`, and consume insets deliberately so content never hides behind status bars, display cutouts, gesture navigation bars, or the soft keyboard:
 
-## Typography/custom fonts
+```kotlin
+enableEdgeToEdge()
+setContent {
+  PixelcraftTheme {
+    Scaffold(
+      contentWindowInsets = WindowInsets.safeDrawing,
+      bottomBar = { ActionBar(Modifier.imePadding()) },
+    ) { innerPadding ->
+      ContentList(Modifier.padding(innerPadding).consumeWindowInsets(innerPadding))
+    }
+  }
+}
+```
 
-Use Material typography roles and `sp` scaling. Font resources/downloadable fonts must declare fallbacks/weights correctly. Respect user font scale; avoid fixed-height single-line text for essential content unless truncation/expansion behavior is deliberate.
+For tablets, foldables, and ChromeOS/desktop windows, use **`material3-adaptive`** (`ListDetailPaneScaffold`, `SupportingPaneScaffold`, `NavigationSuiteScaffold`, `currentWindowAdaptiveInfo()`) instead of hard-coding web-style pixel breakpoints.
 
-## Motion/reduced motion
+## Navigation 3 & Predictive Back
 
-Compose animation APIs since 1.2 generally honor Android Remove animations for Animator-based behavior, but custom/Lottie/progress motion may need explicit checks. Use `Settings.Global.ANIMATOR_DURATION_SCALE` (and transition scale where appropriate) as a proxy; zero means animations disabled. Provide static/opacity alternatives.
+- **Predictive Back**: declare `android:enableOnBackInvokedCallback="true"` in `AndroidManifest.xml` and handle custom interruptible back gestures with **`PredictiveBackHandler`** (consuming `progress: Flow<BackEventCompat>`, cleaning up on `CancellationException` when the user aborts the swipe, and committing only on completion):
+
+```kotlin
+PredictiveBackHandler(enabled = hasUnsavedDraft) { progress: Flow<BackEventCompat> ->
+  try {
+    progress.collect { backEvent -> previewDismissProgress = backEvent.progress }
+    discardOrPromptDraft()
+  } catch (_: CancellationException) {
+    previewDismissProgress = 0f
+  }
+}
+```
+
+- **Navigation 3 (`androidx.navigation3`)**: for new Compose-first architectures, prefer Navigation 3's user-owned back stack (`rememberNavBackStack` / `SnapshotStateList`), `NavDisplay`, `entryProvider`, and multi-pane `SceneStrategy` (retaining Navigation 2 where an existing codebase already standardizes on it).
+
+## Typography & custom fonts
+
+Use Material typography roles and `sp` scaling. Declare bundled or downloadable font weights and fallbacks explicitly. Test at `200%` font scale and large display size; switch horizontal rows to vertical stacks instead of single-line clipping essential values.
+
+## Motion, springs, & reduced motion
+
+`MotionScheme` separates **spatial springs** (`defaultSpatialSpec` / `fastSpatialSpec` — position, size, bounds, allowed subtle overshoot) from **effects springs** (`defaultEffectsSpec` — color, alpha, elevation, critically damped with zero overshoot). Use **`SharedTransitionLayout`** (`Modifier.sharedElement` / `Modifier.sharedBounds`) for continuity between list and detail views.
+
+Check `Settings.Global.ANIMATOR_DURATION_SCALE` (`0f` = Remove animations enabled) for custom loops, Lottie animations, or shared transitions, falling back to instant/crossfade state changes.
 
 ## Accessibility specifics
 
-Use semantics modifiers: `semantics`, `contentDescription`, `role`, `stateDescription`, `progressBarRangeInfo`, custom actions, traversal ordering. Do not label decorative images. Test TalkBack order/action semantics. Touch target baseline is 48×48 dp; use size/minimum touch target behavior rather than visual-only padding illusions.
+Use `Modifier.semantics` (`contentDescription`, `stateDescription`, `role`, `heading()`, `liveRegion`, `customActions`, `isTraversalGroup`, `traversalIndex`). Pass `contentDescription = null` for purely decorative vectors. Keep touch targets ≥ `48×48 dp` (`minimumInteractiveComponentSize()`). Verify TalkBack focus order on a real device/emulator.
 
-## States idiom
+## States, Strong Skipping Mode, & Forms (`TextFieldState`)
 
-State hoisting/recomposition ownership must be explicit. Represent loading/refreshing/empty/error/offline/permission/optimistic state in UI state rather than boolean soup. Use stable keys in lazy lists; preserve/restore state with lifecycle-aware primitives. Duplicate clicks/recomposition/network retry need idempotent behavior.
+Hoist explicit sealed UI state (`Loading`, `Content`, `Empty`, `Error`, `Offline`) from `ViewModel` via `collectAsStateWithLifecycle()`. Provide stable keys in `LazyColumn`/`LazyRow` (`items(rows, key = { it.id })`).
 
-## Forms idiom
+**Strong Skipping Mode** is enabled by default in Kotlin 2.0.20+ Compose compilers (skipping composables with unstable parameters via instance equality and auto-remembering lambdas), which reduces defensive `@Stable` boilerplate—yet stable immutable models and explicit lazy item keys remain mandatory for predictable diffing and process-death restoration (`rememberSaveable` / `SavedStateHandle`).
 
-Use `KeyboardOptions`, `KeyboardActions`, correct `keyboardType`/`imeAction`, capitalization/autocorrect where exposed, focus requester/order, validation after completion, and input preservation through process/state changes. Do not clear text field state because recomposition recreated it incorrectly.
+For text input, prefer **`TextFieldState` + `BasicTextField` v2** (and Material `TextField(state = ...)` overloads) over legacy `value`/`onValueChange` to eliminate async IME/cursor race conditions:
+
+```kotlin
+val emailState = rememberTextFieldState()
+OutlinedTextField(
+  state = emailState,
+  label = { Text("Work email") },
+  lineLimits = TextFieldLineLimits.SingleLine,
+  keyboardOptions = KeyboardOptions(keyboardType = KeyboardType.Email, imeAction = ImeAction.Next),
+  inputTransformation = InputTransformation.maxLength(120),
+)
+```
 
 ## Do/don't pairs
 
 | Do | Don't |
 |---|---|
-| `Button(onClick = { save() }) { Text("Save invoice") }` | clickable `Text` masquerading as a button |
-| stable lazy item key `items(items, key = { it.id })` | index-only reuse causing wrong focus/scroll/state |
-| consume `WindowInsets` / scaffold padding deliberately | CTA hidden behind gesture navigation/keyboard |
-| validate after field completion/submit with recovery copy | error every keystroke before input is finished |
-| `Modifier.semantics { contentDescription = "Delete invoice" }` | trash-can vector as sole accessible meaning |
+| `enableEdgeToEdge()` + `WindowInsets.safeDrawing` + `Modifier.imePadding()` | Assume system bars reserve space on Android 15/16 or hard-code `24.dp` status-bar padding |
+| `PredictiveBackHandler` handling cancellation gracefully | Intercept `BackHandler` unconditionally and break Android predictive back preview |
+| `TextFieldState` + `rememberTextFieldState()` for new inputs | Async `StateFlow` `value`/`onValueChange` loops that jump the IME cursor |
+| `MotionScheme.expressive()` effects springs for color/alpha changes | Apply bouncy overshooting spatial springs to opacity or text color |
+| `ListDetailPaneScaffold` / `NavigationSuiteScaffold` for large screens | Stretch a single phone column across a 12-inch tablet or unfolded display |
+| `items(invoices, key = { it.id })` with explicit `Modifier.semantics` | Index-keyed lazy lists or clickable `Text` without `Role.Button` |
 
 ## Known traps
 
-Recomposition caused by unstable inputs, state loss across process death, incorrect `remember` keys, lazy list focus/reuse, inset double padding, gesture conflicts/nested scroll, accessibility traversal order, custom theme bypassing Material state layers, assuming all animation automatically respects Remove animations.
+Double-applying `WindowInsets` padding (applying both `Scaffold` padding and `systemBarsPadding()`), uncancelled `PredictiveBackHandler` leaving partial swipe offsets stuck on screen, legacy `TextField` cursor jumping under fast IME typing, state loss across process death (`remember` vs `rememberSaveable`), custom animations ignoring `ANIMATOR_DURATION_SCALE == 0f`, skipping TalkBack traversal verification on `SharedTransitionLayout`.
 
 ## Verification commands
 
@@ -58,4 +117,4 @@ Recomposition caused by unstable inputs, state loss across process death, incorr
 ./gradlew lint
 ```
 
-Use emulator/device screenshots, Layout Inspector, Accessibility Scanner, TalkBack, font scale/display size, dark mode, landscape/foldable/split-screen, network throttling, and Remove animations settings for evidence.
+Build/unit tests provide `static` evidence. Capture emulator/device runs with Layout Inspector, Accessibility Scanner, TalkBack, `200%` font scale, Dark Mode, foldable/tablet window sizes, Android 15/16 edge-to-edge + predictive back gestures, and Remove animations enabled for `rendered` evidence; label untested hardware `not-checked`.
