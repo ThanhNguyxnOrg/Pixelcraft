@@ -45,6 +45,7 @@ The plan must state: chosen stack; platform skill and framework reference by nam
 
 - Do not select a stack before inventorying hard constraints.
 - Do not rely on training-data memory for version-sensitive APIs, config syntax, or current package versions. When choosing a greenfield stack or upgrading dependencies, verify current versions and APIs using whatever live docs/registry capability the host provides (such as a documentation MCP like Context7, official docs lookup, or package registry queries like `npm view`); if unavailable, record the assumed version in `.pixelcraft/plan.md` as `assumption` / `not-checked`.
+- Keep brownfield runtime and dependencies unless an upgrade is in scope. For a new application, resolve a compatible supported stable stack and commit its lockfile; never resolve floating `@latest` on every CI build or deploy.
 - Do not treat familiarity, hype, or example availability as evidence of fit.
 - Do not hide uncertainty behind precise scores; annotate confidence.
 - Do not overwrite an existing `.pixelcraft/plan.md` without preserving prior decisions and recording why they changed.
@@ -55,4 +56,5 @@ The plan must state: chosen stack; platform skill and framework reference by nam
 - Read [references/repo-discovery.md](references/repo-discovery.md) for brownfield inventory order and ecosystem signal files.
 - Read [references/design-input.md](references/design-input.md) when the task includes Figma, screenshots, mockups, prototypes, existing UI, or visual references.
 - Read [references/stack-selection.md](references/stack-selection.md) for criteria, weighting, matrix format, and use-case shortlists.
+- Read [references/stack-freshness.md](references/stack-freshness.md) when choosing or upgrading versions, or setting up dependency maintenance for a generated app.
 - Read [references/plan-template.md](references/plan-template.md) before writing `.pixelcraft/plan.md`.

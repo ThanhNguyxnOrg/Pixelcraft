@@ -8,9 +8,11 @@ const markupExts = new Set(['.html','.vue','.svelte']);
 const skip = new Set(['node_modules','.git','dist','build','coverage']);
 const skillHosts = new Set(['.claude','.agents','.cursor','.gemini','.github','.copilot']);
 const disclaimer = 'A zero score means only that these known fingerprints were not detected; zero findings is not evidence of good design.';
+const brandRules = new Set(['default-font-only', 'purple-blue-gradient', 'rounded-2xl-repetition',
+  'uniform-shadow', 'centered-hero-two-ctas', 'gradient-text-treatment', 'rounded-accent-rail']);
 
 function help() {
-  return `Usage: node slop-scan.mjs <directory> [--json]\n\nScan source files for recurring AI-slop fingerprints. Output includes file:line,\nseverity, score contribution, and a suggested fix. ${disclaimer}`;
+  return `Usage: node slop-scan.mjs <file-or-directory> [--json] [--waivers FILE]\n\nScan source files for recurring AI-slop fingerprints. Output includes file:line,\nseverity, score contribution, and a suggested fix. ${disclaimer}`;
 }
 function partsOf(file) { return file.split(/[\\/]/); }
 function isInstalledPixelcraftSkill(file) {
@@ -464,6 +466,26 @@ function scanFile(file, root) {
   for (const segment of cssSegments(file, text)) {
     const maskedSegment = { text: maskCssComments(segment.text), offset: segment.offset };
     scanRules(maskedSegment, segment.offset, maskedSegment.text, (selectorText, decls, location, contexts) => {
+      const lastFirst = [...decls].reverse();
+      const declaration = (property) => lastFirst.find((decl) => property.test(decl.prop));
+      const clip = declaration(/^(?:-webkit-)?background-clip$/);
+      const background = declaration(/^background(?:-image)?$/);
+      const color = declaration(/^(?:color|-webkit-text-fill-color)$/);
+      if (clip && cleanValue(clip.value) === 'text' && background && /gradient\(/i.test(background.value)
+          && color && cleanValue(color.value) === 'transparent') {
+        add('gradient-text-treatment','P3',1,lineOf(text,location.bodyIndex + clip.offset),selectorText,
+          'Check that decorative gradient text fits the direction and remains legible.');
+      }
+      const rail = declaration(/^border-(?:left|right|inline-start|inline-end)$/);
+      const radius = declaration(/^border-radius$/);
+      const railTokens = rail ? splitValueTokens(cleanValue(rail.value)) : [];
+      if (radius && /^\d*\.?\d+(?:px|em|rem|%)(?:\s|$)/.test(cleanValue(radius.value))
+          && Number.parseFloat(radius.value) > 0 && rail && visibleBorder(rail.value)
+          && railTokens.some((token) => /^\d+(?:\.\d+)?px$/.test(token) && Number.parseFloat(token) >= 4)
+          && /\.(?:\w+-)?(?:card|tile|panel)\b/i.test(selectorText)) {
+        add('rounded-accent-rail','P3',1,lineOf(text,location.bodyIndex + rail.offset),selectorText,
+          'Check whether the thick edge communicates a status or is repeated decoration.');
+      }
       const outline = analyzeOutline(decls);
       if (!outline.removal || visibleReplacement(decls, outline)) return;
       for (const context of contexts) {
@@ -504,23 +526,58 @@ function scanFile(file, root) {
   return findings.filter((f) => !f.drop);
 }
 
+function applyWaivers(findings, file) {
+  const items = JSON.parse(fs.readFileSync(file, 'utf8'));
+  if (!Array.isArray(items)) throw new Error('waivers must be an array of {rule, file, line, reason}');
+  const byFinding = new Map();
+  for (const item of items) {
+    if (!item || !brandRules.has(item.rule) || typeof item.file !== 'string' || !item.file.trim()
+        || !Number.isInteger(item.line) || item.line < 1 || typeof item.reason !== 'string' || !item.reason.trim()) {
+      throw new Error('waivers require an advisory brand rule, exact file and line, and a nonempty reason');
+    }
+    const key = JSON.stringify([item.rule, item.file.replace(/\\/g, '/'), item.line]);
+    if (byFinding.has(key)) throw new Error(`duplicate waiver: ${key}`);
+    byFinding.set(key, item);
+  }
+  const waived = [];
+  const active = findings.filter((finding) => {
+    const key = JSON.stringify([finding.rule, finding.file.replace(/\\/g, '/'), finding.line]);
+    const item = byFinding.get(key);
+    if (!item) return true;
+    waived.push({ ...finding, label: 'waived', reason: item.reason.trim() });
+    byFinding.delete(key);
+    return false;
+  });
+  return { active, waived, unusedWaivers: Array.from(byFinding.values()) };
+}
+
 try {
   const args = process.argv.slice(2);
   if (args.includes('--help') || args.includes('-h')) { console.log(help()); process.exit(0); }
   const json = args.includes('--json');
-  const dir = args.find((a) => !a.startsWith('-'));
+  let dir, waivers;
+  for (let index = 0; index < args.length; index += 1) {
+    const argument = args[index];
+    if (argument === '--json') continue;
+    if (argument === '--waivers' && !waivers && args[index + 1] && !args[index + 1].startsWith('-')) waivers = args[++index];
+    else if (!dir && !argument.startsWith('-')) dir = argument;
+    else throw new Error(`unexpected argument: ${argument}`);
+  }
   if (!dir || !fs.existsSync(dir)) throw new Error('provide an existing file or directory to scan');
   const input = path.resolve(dir);
   const stat = fs.statSync(input);
   const root = stat.isDirectory() ? input : path.dirname(input);
   const files = stat.isDirectory() ? walk(input) : [input];
-  const findings = files.flatMap((file) => scanFile(file, root));
+  const detected = files.flatMap((file) => scanFile(file, root));
+  const { active: findings, ...waiverReport } = waivers ? applyWaivers(detected, waivers) : { active: detected };
   const score = findings.reduce((sum, f) => sum + f.weight, 0);
-  const output = { score, disclaimer, findings };
+  const output = { score, disclaimer, findings, ...waiverReport };
   if (json) console.log(JSON.stringify(output, null, 2));
   else {
     console.log(`slop-scan score: ${score}`);
     for (const f of findings) console.log(`${f.severity} ${f.file}:${f.line} ${f.rule} (+${f.weight}) — ${f.match}\n  fix: ${f.fix}`);
+    for (const f of waiverReport.waived ?? []) console.log(`waived ${f.file}:${f.line} ${f.rule} — ${f.reason}`);
+    for (const f of waiverReport.unusedWaivers ?? []) console.log(`unused waiver ${f.file}:${f.line} ${f.rule}`);
     console.log(`disclaimer: ${disclaimer}`);
   }
 } catch (error) {

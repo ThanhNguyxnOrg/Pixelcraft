@@ -1,0 +1,17 @@
+<!doctype html>
+<html lang="en">
+<meta charset="utf-8">
+<title>Modal occlusion</title>
+<style>
+  body { color: #171717; background: white; }
+  dialog::backdrop, .cover { background: white; }
+  .sample { position: relative; width: max-content; }
+  .cover { position: absolute; inset: 0; z-index: 1; }
+</style>
+<p id="behind-modal">Background text intentionally covered by a modal backdrop.</p>
+<dialog aria-label="Settings">
+  <p id="readable-modal">Readable modal text.</p>
+  <div class="sample"><span id="occluded-modal">Hidden modal text.</span><div class="cover"></div></div>
+</dialog>
+<script>document.querySelector('dialog').showModal();</script>
+</html>

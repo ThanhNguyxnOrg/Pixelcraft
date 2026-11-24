@@ -22,13 +22,15 @@ Options:
   --wait-ms MS          Maximum post-load selector/network/font settle time
                         (default: 5000)
   --allow-http-error    Capture HTTP 4xx/5xx pages without failing the run
+  --keyboard            Probe the first eight real Tab stops on a safe fixture
   --light-only          Skip dark-mode captures
   --no-reduced-motion   Skip reduced-motion captures
   --help                Show this help
 
 Outputs PNG captures plus report.json. Audits are heuristic leads for human
-inspection: horizontal overflow, off-viewport elements, clipped text, and low
-contrast text. They are not proof of accessibility or visual quality.
+inspection: overflow, clipping, low contrast, broken images, hidden essential
+content, text occlusion, and optional keyboard focus. They are not proof of
+accessibility or visual quality.
 
 Install Playwright in the target project when capture is desired, for example:
   npm install --save-dev playwright
@@ -45,6 +47,7 @@ function parse(args) {
     else if (arg === '--light-only') options.lightOnly = true;
     else if (arg === '--no-reduced-motion') options.reducedMotion = false;
     else if (arg === '--allow-http-error') options.allowHttpError = true;
+    else if (arg === '--keyboard') options.keyboard = true;
     else if (arg === '--out') options.out = args[++index];
     else if (arg.startsWith('--out=')) options.out = arg.slice(6);
     else if (arg === '--breakpoints') options.breakpoints = args[++index];
@@ -245,16 +248,16 @@ const auditSource = `() => {
     }
     return false;
   };
-  const textNodeIsRendered = (node) => {
+  const renderedTextRects = (node) => {
     const parent = node.parentElement;
-    if (!parent) return false;
+    if (!parent) return [];
     if (typeof parent.checkVisibility === 'function') {
-      if (!parent.checkVisibility({ opacityProperty: true, visibilityProperty: true })) return false;
+      if (!parent.checkVisibility({ opacityProperty: true, visibilityProperty: true })) return [];
     } else {
       let ancestor = parent;
       while (ancestor && ancestor.nodeType === 1) {
         const ancestorStyle = getComputedStyle(ancestor);
-        if (ancestorStyle.display === 'none' || ancestorStyle.visibility === 'hidden' || ancestorStyle.visibility === 'collapse' || Number.parseFloat(ancestorStyle.opacity) === 0) return false;
+        if (ancestorStyle.display === 'none' || ancestorStyle.visibility === 'hidden' || ancestorStyle.visibility === 'collapse' || Number.parseFloat(ancestorStyle.opacity) === 0) return [];
         ancestor = ancestor.parentElement;
       }
     }
@@ -262,23 +265,80 @@ const auditSource = `() => {
     range.selectNodeContents(node);
     const rects = Array.from(range.getClientRects()).filter((rect) => rect.width > 0 && rect.height > 0);
     if (range.detach) range.detach();
-    return rects.some((rect) => {
+    return rects.filter((rect) => {
       const documentRect = { left: rect.left + window.scrollX, right: rect.right + window.scrollX, top: rect.top + window.scrollY, bottom: rect.bottom + window.scrollY };
       const withinDocument = documentRect.right > 0 && documentRect.bottom > 0 && documentRect.left < documentBounds.right && documentRect.top < documentBounds.bottom;
       return withinDocument && !clippedByAncestor(parent, rect);
     });
   };
-  const hasRenderedText = (element) => Array.from(element.childNodes).some((node) => node.nodeType === 3 && node.textContent.trim() && textNodeIsRendered(node));
+  const isModalBackdrop = (overlay, owner, style) => {
+    if (style.position !== 'fixed' || !overlay.parentElement) return false;
+    const bounds = overlay.getBoundingClientRect();
+    if (bounds.left > 0 || bounds.top > 0 || bounds.right < vw || bounds.bottom < innerHeight) return false;
+    return Array.from(overlay.parentElement.children).some((dialog) => {
+      if (dialog === overlay || !dialog.matches('[aria-modal="true"]') || dialog.contains(owner)
+          || dialog.closest('[hidden], [aria-hidden="true"], [inert]')
+          || !dialog.checkVisibility({ opacityProperty: true, visibilityProperty: true })) return false;
+      const rect = dialog.getBoundingClientRect();
+      const left = Math.max(0, rect.left), right = Math.min(vw, rect.right);
+      const top = Math.max(0, rect.top), bottom = Math.min(innerHeight, rect.bottom);
+      if (left >= right || top >= bottom) return false;
+      const stack = document.elementsFromPoint((left + right) / 2, (top + bottom) / 2);
+      const dialogIndex = stack.findIndex((hit) => dialog.contains(hit));
+      return dialogIndex !== -1 && stack.indexOf(overlay) > dialogIndex;
+    });
+  };
+  const coveringElement = (owner, rect) => {
+    if (rect.left < 0 || rect.right > vw || rect.top < 0 || rect.bottom > innerHeight
+        || rect.width < 8 || rect.height < 8) return null;
+    const y = rect.top + rect.height / 2;
+    const hits = [0.25, 0.5, 0.75].map((frac) => document.elementFromPoint(rect.left + rect.width * frac, y));
+    const cover = hits[0];
+    if (!cover || !hits.every((hit) => hit === cover) || cover.contains(owner) || owner.contains(cover)) return null;
+    const modal = cover.closest('dialog:modal, [aria-modal="true"]');
+    if (modal && !modal.contains(owner)) return null;
+    let current = cover;
+    while (current && !current.contains(owner)) {
+      const style = getComputedStyle(current);
+      if (Number.parseFloat(style.opacity) !== 1) return null;
+      if ((parseColor(style.backgroundColor)?.a ?? 0) >= 0.99) {
+        for (let ancestor = current.parentElement; ancestor; ancestor = ancestor.parentElement) {
+          if (Number.parseFloat(getComputedStyle(ancestor).opacity) !== 1) return null;
+        }
+        return isModalBackdrop(current, owner, style) ? null : current;
+      }
+      current = current.parentElement;
+    }
+    return null;
+  };
+  const closedDisclosures = Array.from(document.querySelectorAll('details:not([open])'));
+  const intentionallyHidden = (element) => element.closest('[hidden], [aria-hidden="true"], [inert], dialog:not([open])')
+    || closedDisclosures.some((details) =>
+      details.contains(element) && !Array.from(details.children).find((child) => child.tagName === 'SUMMARY')?.contains(element));
   for (const element of elements) {
     const rect = element.getBoundingClientRect();
     const style = getComputedStyle(element);
+    const essential = element.matches('main, h1, [data-pixelcraft-essential]');
+    if (essential && !intentionallyHidden(element)
+        && element.checkVisibility?.({ opacityProperty: true, visibilityProperty: true }) === false
+        && style.display !== 'contents') {
+      add('content-hidden-at-rest', 'medium', 'landmark, heading or marked essential content was not visible after settling', element);
+    }
+    if (element.tagName === 'IMG' && (element.currentSrc || element.getAttribute('src')?.trim() || element.getAttribute('srcset')?.trim())
+        && element.complete && element.naturalWidth === 0 && !intentionallyHidden(element) && rect.width > 0 && rect.height > 0
+        && element.checkVisibility?.({ opacityProperty: true, visibilityProperty: true }) !== false) {
+      add('broken-image', 'high', 'visible image finished loading with no intrinsic width', element);
+    }
     if (rect.width > 2 && rect.height > 2 && style.visibility !== 'hidden' && style.display !== 'none') {
       if (rect.left < -2 || rect.right > vw + 2) add('outside-viewport', 'medium', 'rendered box extends outside horizontal viewport: ' + JSON.stringify({ left: Math.round(rect.left), right: Math.round(rect.right), viewport: vw }), element);
       const clippedX = element.scrollWidth > element.clientWidth + 2 && /hidden|clip/.test(style.overflowX);
       const clippedY = element.scrollHeight > element.clientHeight + 2 && /hidden|clip/.test(style.overflowY);
       if ((clippedX || clippedY) && element.textContent.trim()) add('clipped-text', 'medium', 'text content may be clipped by hidden overflow', element);
     }
-    if (hasRenderedText(element)) {
+    const textRects = Array.from(element.childNodes).flatMap((node) => node.nodeType === 3 && node.textContent.trim() ? renderedTextRects(node) : []);
+    if (textRects.length) {
+      const cover = textRects.slice(0, 8).map((line) => coveringElement(element, line)).find(Boolean);
+      if (cover) add('text-occlusion', 'medium', 'visible text range is covered at three sample points by ' + describe(cover), element);
       const fg = parseColor(style.color);
       if (fg) {
         const background = backgroundFor(element);
@@ -296,6 +356,49 @@ const auditSource = `() => {
   }
   return { viewportWidth: vw, documentWidth: document.documentElement.scrollWidth, findings };
 }`;
+
+async function auditKeyboard(page) {
+  const initial = await page.evaluateHandle(() => {
+    const properties = ['outlineColor', 'outlineStyle', 'outlineWidth', 'outlineOffset', 'boxShadow',
+      'borderColor', 'borderWidth', 'backgroundColor', 'color', 'textDecorationLine', 'textDecorationColor',
+      'opacity', 'visibility', 'content', 'transform'];
+    const signature = (element) => {
+      const styles = [getComputedStyle(element), getComputedStyle(element, '::before'), getComputedStyle(element, '::after')];
+      return styles.map((style) => properties.map((key) => style[key]).join('|')).join(':');
+    };
+    const baseline = new WeakMap();
+    for (const element of document.querySelectorAll('html, body, body *')) baseline.set(element, signature(element));
+    return { baseline, signature };
+  });
+  const stops = [];
+  const findings = [];
+  try {
+    for (let index = 0; index < 8; index += 1) {
+      await page.keyboard.press('Tab');
+      const stop = await page.evaluate(({ baseline, signature }) => {
+        const element = document.activeElement;
+        if (!element || element === document.body || element === document.documentElement) return null;
+        const name = element.localName + (element.id ? '#' + element.id : '');
+        if (!baseline.has(element) || element.shadowRoot || element.matches('iframe, :read-write')) {
+          return { element: name, indicator: 'not-checked' };
+        }
+        for (let node = element; node; node = node.parentElement) {
+          if (!baseline.has(node)) return { element: name, indicator: 'not-checked' };
+          if (signature(node) !== baseline.get(node)) return { element: name, indicator: 'style-change' };
+        }
+        const style = getComputedStyle(element);
+        return { element: name, indicator: style.outlineStyle === 'none' || parseFloat(style.outlineWidth) === 0 ? 'not-detected' : 'not-checked' };
+      }, initial);
+      if (!stop) break;
+      stops.push(stop);
+      if (stop.indicator === 'not-detected') findings.push({ type: 'keyboard-focus-not-detected', severity: 'medium',
+        element: stop.element, message: 'Tab reached this element but no focus style change was detected; inspect the focused state manually' });
+    }
+  } finally {
+    await initial.dispose();
+  }
+  return { stops, findings };
+}
 
 function trackDataRequests(page) {
   let pending = 0;
@@ -381,6 +484,11 @@ async function main() {
           const file = path.join(out, name);
           await page.screenshot({ path: file, fullPage: true });
           const audit = await page.evaluate(`(${auditSource})()`);
+          if (options.keyboard) {
+            const keyboard = await auditKeyboard(page);
+            audit.keyboard = keyboard.stops;
+            audit.findings.push(...keyboard.findings);
+          }
           report.captures.push({ file: name, viewport, colorScheme, reducedMotion: reducedMotion === 'reduce', status, ...(settle.waitForTimedOut ? { waitFor: options.waitFor, waitForTimedOut: true } : {}), ...audit });
           console.log(`captured: ${name}; findings=${audit.findings.length}`);
           await page.close();

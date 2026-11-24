@@ -1,0 +1,19 @@
+<!doctype html>
+<html lang="en">
+<meta charset="utf-8">
+<title>ARIA modal occlusion</title>
+<style>
+  body { color: #171717; background: white; }
+  .backdrop { position: fixed; inset: 0; background: white; }
+  .modal { position: fixed; inset: 40% 25% auto; padding: 1rem; background: white; }
+  .sample { position: relative; width: max-content; }
+  .cover { position: absolute; inset: 0; background: white; }
+  @media (max-width: 500px) { .modal { display: none; } }
+</style>
+<p id="behind-aria-modal">Background text intentionally covered by a sibling backdrop.</p>
+<div class="backdrop"></div>
+<div class="modal" role="dialog" aria-modal="true" aria-label="Settings">
+  <p id="readable-aria-modal">Readable modal text.</p>
+  <div class="sample"><span id="occluded-aria-modal">Hidden modal text.</span><div class="cover"></div></div>
+</div>
+</html>

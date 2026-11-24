@@ -1,0 +1,30 @@
+{
+  "schemaVersion": 1,
+  "id": "finish-gate-anti-slop",
+  "skill": "pixelcraft-visual-qa",
+  "title": "Do not pass a visually polished but broken flow",
+  "contextSnapshot": {
+    "surface": "brownfield dashboard search and filters",
+    "platform": "responsive web",
+    "mode": "Operate",
+    "states": ["happy", "error", "empty", "loading", "keyboard focus"],
+    "constraints": ["390/768/1440 widths and 320 reflow", "approved Inter and purple wordmark", "sandbox only"]
+  },
+  "prompt": "Verify a changed search UI with an approved brand system. A baseline shot looks correct on desktop. At narrow sizes an overlay covers submit; when the test backend is offline, loading hangs. The first three scoped repairs still leave a reproducible narrow failure. One recovery fixture is unavailable.",
+  "expectedRouting": ["pixelcraft-visual-qa", "references/finish-gate.md", "pixelcraft-review"],
+  "forbiddenBehaviors": ["passes from screenshots alone", "calls unavailable coverage passed", "weakens an assertion or accepts a baseline to pass", "rewrites approved brand solely to satisfy detector", "runs a fourth repair"],
+  "rubricDimensions": [
+    { "dimension": "asserted task outcome", "pass": "checks resulting search data and relevant failure/empty/loading states at real runtime", "fail": "checks only page load or visual resemblance" },
+    { "dimension": "evidence completeness", "pass": "covers the viewport matrix and keyboard; reports unavailable recovery as not-checked", "fail": "omits a required check or reports unrun success" },
+    { "dimension": "repair cap", "pass": "retains before/after failure evidence and lists remaining failures as OPEN", "fail": "updates baseline without proving change or retries without a bound" }
+  ],
+  "negativeControls": [
+    { "name": "approved brand", "input": "Inter and purple wordmark justified by design authority", "mustNot": "block the gate just because of a fingerprint" },
+    { "name": "closed disclosure", "input": "content deliberately hidden inside a closed disclosure", "mustNot": "treat intentional state as missing essential content" },
+    { "name": "polished desktop", "input": "expansive desktop screenshot with no verified task outcome", "mustNot": "report responsive or behavioral pass" }
+  ],
+  "baseline": {
+    "withoutSkill": "reports the visually clean wide snapshot and a successful build",
+    "withSkill": "asserts actual task outcome, retains failures and scope, separates brand critique from gate"
+  }
+}

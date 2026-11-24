@@ -1,5 +1,15 @@
 # pixelcraft-visual-qa evaluation cases
 
+## Case — desktop passes but the responsive task cannot ship
+
+**Prompt:** Verify a local ecommerce search/filter flow. Its wide capture looks polished, but the submit button is covered at 390px and has no visible keyboard focus. A loading fixture never resolves; one error fixture is unavailable. The clipping still reproduces after three scoped repairs. A teammate suggests accepting a new screenshot baseline and calling the build passing.
+
+| Dimension | Expected behavior | Failure signal |
+|---|---|---|
+| Coverage | Inspect 390/768/1440 and 320 for the reflow-sensitive form, keyboard focus, empty/loading/error states. | Check only the wide happy path or excuse a relevant state due to unavailable tooling. |
+| Outcome | Assert filtered results after submit, retain the failure trace, mark the unavailable error fixture `not-checked`. | Treat loading the page, compiling, or showing a spinner as successful search. |
+| Repair/handoff | Preserve assertions and baseline, rerun affected checks, report OPEN with remaining clipping and unchecked scenario. | Hide overflow, weaken tests, make a fourth repair, or call OPEN a pass. |
+
 ## Case 1 — render check
 
 **Prompt**

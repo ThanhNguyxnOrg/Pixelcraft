@@ -47,7 +47,7 @@ Record runtime/build/version, platform/emulation status, viewport/device, locale
 4. Verify the end state in data/UI terms, not only visual similarity: object created, navigation location correct, input preserved, error shown, undo available, permission enforced.
 5. Capture failure traces at the moment of failure. Do not retry until evidence disappears.
 6. Fix one deterministic defect at a time and rerun the affected task only.
-7. Stop after the agreed repair round; report remaining behavioral uncertainty instead of looping by taste.
+7. Stop after the agreed repair budget (at most three rounds); report remaining defects or uncertainty instead of looping by taste.
 
 ## Failure classification
 
@@ -78,4 +78,4 @@ Never escalate a screenshot reading into task-completion evidence.
 
 ## Lightweight two-width evidence floor
 
-Even when the full device matrix is out of scope, capture at least one desktop width and one narrow mobile width such as 390 px for web-responsive work. Compare hierarchy, measure, navigation availability, clipping, touch target spacing, and whether the signature composition survives or intentionally degrades. If only one width is captured, mark responsive behavior `not-checked` rather than inferring it.
+For a narrow review outside the finish gate, capture at least one desktop width and one narrow mobile width such as 390 px. Compare hierarchy, measure, navigation availability, clipping, touch target spacing, and whether the signature composition survives or intentionally degrades. If only one width is captured, mark responsive behavior `not-checked`. For a new or materially changed flow, use the full width matrix in [finish-gate.md](finish-gate.md).
