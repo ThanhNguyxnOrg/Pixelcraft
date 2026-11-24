@@ -16,6 +16,8 @@ Select the bundler, rendering architecture, microfrontend boundary, and browser 
 
 ### Vite 8 (Rolldown + Oxc) config idiom
 
+- **Chunk splitting breaking change**: Vite 8 / Rolldown removes object-form `manualChunks` and deprecates function-form `manualChunks`. Use `build.rolldownOptions.output.codeSplitting.groups` (`name`, `test`, `priority`), and enable `strictExecutionOrder` only if aggressive chunk splitting causes module-initialization order errors. In SSR meta-frameworks using Vite Environment API, scope client chunking under `environments.client.build`.
+
 ```ts
 // vite.config.ts (Vite 8+)
 import { defineConfig } from 'vite';
@@ -32,6 +34,13 @@ export default defineConfig({
   build: {
     rolldownOptions: {
       output: {
+        // replaces Rollup manualChunks (object form removed in Vite 8)
+        codeSplitting: {
+          groups: [
+            { name: 'react-vendor', test: /node_modules[\\/](?:react|react-dom|scheduler)[\\/]/, priority: 30 },
+            { name: 'vendor', test: /node_modules[\\/]/, priority: 10 },
+          ],
+        },
         // replaces esbuild.drop / minify options
         minify: {
           compress: { dropConsole: true },

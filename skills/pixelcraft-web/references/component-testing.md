@@ -95,9 +95,10 @@ Follow Testing Library's accessibility-first query priority so tests validate th
 
 Always initialize `const user = userEvent.setup()` and `await user.click(...)` / `await user.type(...)` instead of low-level `fireEvent`, which bypasses focus, disabled, and visibility checks.
 
-## Playwright E2E, visual regression, and axe-core
+## Playwright E2E, ARIA snapshots, visual regression, and axe-core
 
 - **Accessibility fixture**: share a pre-configured `AxeBuilder` fixture via `test.extend()` targeting `['wcag2a', 'wcag2aa', 'wcag21a', 'wcag21aa']` (add `wcag22aa` where required) and assert `expect(results.violations).toEqual([])`.
+- **Semantic ARIA snapshots**: use `await expect(locator).toMatchAriaSnapshot(...)` (inline YAML or `.aria.yml` file) to lock down roles, accessible names, heading levels, and checked/expanded states without breaking on benign CSS refactors.
 - **Visual snapshots**: stabilize `toHaveScreenshot()` by disabling/reducing animations (`animations: 'disabled'`), waiting for `document.fonts.ready`, and masking dynamic timestamps or charts (`mask: [page.locator('[data-dynamic]')]`).
 - **Component testing on Playwright 1.63+**: `@playwright/experimental-ct-*` packages were removed in Playwright 1.63; mount component stories through the app's dev server (or Storybook) using standard `@playwright/test` fixtures, or use Vitest Browser Mode.
 

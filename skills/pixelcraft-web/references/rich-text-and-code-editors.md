@@ -113,11 +113,12 @@ export function setTabSize(size: number) {
 
 - **Puck**: define a typed `Config` mapping component names to `fields` and `render`, author via `<Puck config={config} data={data} onPublish={save} />`, and render the published page cleanly on the server with `<Render config={config} data={data} />` without shipping editor chrome to end users.
 
-## Accessibility & keyboard rules for editors
+## Accessibility, IME, and collaborative CRDT rules for editors
 
 - Every editor must have an accessible name (`aria-label` or `aria-labelledby`) and a documented keyboard escape hatch from `Tab` indentation (for example, `Esc` then `Tab` or a visible toggle) so keyboard users are never trapped (WCAG 2.1.2).
 - Toolbars must use roving `tabindex` (`role="toolbar"`) with `aria-pressed` on formatting toggles (`Bold`, `Italic`, `Code`).
-- Never break IME composition (CJK/Vietnamese/accented input) by rewriting editor content synchronously on `keydown`/`input` during `isComposing`.
+- Never break IME composition (CJK/Vietnamese/accented input) by rewriting editor content synchronously on `keydown`/`input` during `isComposing`. For custom canvas or virtualized code editors in Chromium 121+, feature-detect the W3C **EditContext API** (`'EditContext' in window`) to decouple OS/IME composition (`textupdate`, `updateControlBounds`) from hidden DOM hacks, with a fallback for Safari/Firefox.
+- **Collaborative rich text**: never roll ad-hoc string diffing or last-write-wins patches for concurrent document editing—use proven CRDT/OT engines (Yjs/YATA, Peritext-style rich-text mark CRDTs, or Fugue non-interleaving sequence CRDTs) so concurrent insertions at the same cursor do not corrupt or interleave characters.
 
 ## Do/don't pairs
 

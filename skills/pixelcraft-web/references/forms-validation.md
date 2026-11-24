@@ -67,8 +67,9 @@ export async function saveProfile(_prev: unknown, formData: FormData) {
 }
 ```
 
-## Multi-step, server errors, and draft recovery
+## Multi-step, validation timing, server errors, and draft recovery
 
+- **Inline validation timing ("reward early, punish late")**: do not show red error messages on the first keystroke while a user is still typing a valid value (empirical HCI evidence: Seckler et al., CHI '14). Trigger initial field errors on `onBlur` or submit, then validate immediately on `onChange` once a field is invalid so errors clear the instant the user fixes them.
 - **Multi-step wizards**: keep one typed parent schema (or per-step sub-schemas merged on final submit); validate only the active step on `Next`, allow stepping backward without losing values, and mirror step progress in URL/state.
 - **Server validation errors**: map field-level backend errors back to their exact field (`setError` in RHF, `submission.reply({ fieldErrors })` in Conform) and focus the first invalid field or error summary while preserving every entered value.
 - **Async validation**: always debounce (`300–500 ms`), cancel stale in-flight checks (`AbortSignal` / request token), and show pending state without blocking unrelated fields.

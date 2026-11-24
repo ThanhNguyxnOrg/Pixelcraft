@@ -14,6 +14,7 @@ Do not put every piece of application state into one global store. Classify stat
 
 ## Server-state and GraphQL clients
 
+- **React 19 native action hooks (`useActionState`, `useOptimistic`)**: use for component-scoped mutation lifecycles and transient optimistic UI overrides during form/action submission. They have **no global cache, deduplication, or background refetching**—they complement rather than replace TanStack Query (server cache) or Zustand (cross-tree client UI store).
 - **REST / RPC**: use **TanStack Query v5** (React/Vue/Solid/Svelte/Angular) for structured caching, stale-while-revalidate, dependent queries, and optimistic mutations; **SWR** for lightweight React read-heavy apps; **RTK Query** when the codebase already standardizes on Redux Toolkit.
 - **GraphQL**: use **Apollo Client** for normalized cache + local reactive variables; **Relay** when strict fragment colocation and compiler-enforced data masking justify the build step; **urql** for lightweight extensible document/graph caching.
 - **Optimistic mutation contract**: always `cancelQueries` before mutating cache so in-flight refetches cannot overwrite optimistic data, snapshot previous data for `onError` rollback, and `invalidateQueries` in `onSettled`:

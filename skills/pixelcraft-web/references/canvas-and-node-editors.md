@@ -119,6 +119,7 @@ useEffect(() => {
 
 ## Canvas & diagram accessibility rules
 
+- **WCAG 2.2 SC 2.5.7 (Dragging Movements)**: keyboard-only reordering satisfies WCAG 2.1.1 but does **not** satisfy 2.5.7. Every non-essential drag interaction (sortable lists, kanban cards, sliders, map/diagram controls—everything except essential freehand drawing/signature pads) **must also** provide a **single-pointer (click/tap) alternative** without holding and dragging (for example, clickable "Move up / Move down" buttons, a "Move to column…" menu, or click-on-track slider jumps).
 - Any canvas or node-graph product that users must operate—not just view—needs keyboard navigation (pan/zoom shortcuts, focusable nodes/handles, delete/undo shortcuts) and an accessible structural view (outline list or inspector panel) for screen-reader users.
 - Honor `prefers-reduced-motion` on auto-layout transitions, `fitView` animations, and zoom springs.
 

@@ -35,7 +35,7 @@ Choose a component system by **code ownership, visual distinctiveness, accessibi
 
 ## Positioning: Floating UI vs native browser primitives
 
-- Prefer **native HTML `[popover]` + CSS Anchor Positioning** (`anchor-name`, `position-anchor`, `position-try-fallbacks`) for standard tooltips, dropdowns, and menus when target browser support allows—zero JS layout loops and native top-layer stacking.
+- Prefer **native HTML primitives** when target browser support allows: `[popover]` + CSS Anchor Positioning (`anchor-name`, `position-anchor`, `position-try-fallbacks`) for top-layer tooltips/menus, **Invoker Commands** (`<button commandfor="id" command="toggle-popover">`) for zero-JS declarative triggers, and **Customizable `<select>`** (`@supports (appearance: base-select)` + `::picker(select)`) for styled dropdowns that keep native keyboard, form, and accessibility semantics.
 - Use **Floating UI** (`@floating-ui/dom` for positioning only, or `@floating-ui/react` which adds `useClick`, `useDismiss`, `useRole`, `useInteractions`, and `FloatingFocusManager`) when you need virtual reference elements (cursor-following tooltips, text-selection popovers), custom collision boundaries, or legacy browser parity.
 - **Critical `autoUpdate` lifecycle rule**: pass `whileElementsMounted: autoUpdate` to `useFloating()` **only** when the floating element is conditionally mounted/unmounted; if hidden via CSS (`display: none`), call `autoUpdate` inside an effect keyed on `isOpen` and return its cleanup function to avoid leaking scroll/resize listeners.
 

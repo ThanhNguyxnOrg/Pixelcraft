@@ -72,11 +72,12 @@ export async function dynamicActivate(locale: string) {
 - **Paraglide JS**: configure `paraglideVitePlugin({ project, outdir, strategy: ['url', 'cookie', 'baseLocale'] })`, call tree-shaken `m.greeting({ name })`, and switch locales via `setLocale('de')`.
 - **Vue I18n**: initialize `createI18n({ legacy: false, locale, fallbackLocale })`, lazy-load locale JSON in `router.beforeEach` via `i18n.global.setLocaleMessage(locale, mod.default)`, and sync `<html lang>` and `dir`.
 
-## Locale routing, RTL, and script/font fallback
+## Locale routing, RTL, bidirectional isolation, and script/font fallback
 
 - **Document attributes**: update both `<html lang="ar">` and `<html dir="rtl">` (or `dir="ltr"`) whenever the active locale changes; emit `<link rel="alternate" hreflang="...">` for SEO-indexed localized routes.
+- **Mixed-direction isolation (Unicode UAX #9)**: wrap interpolated user-generated or unknown-direction text (usernames, product titles, file paths) in `<bdi>` or set `dir="auto"` / `unicode-bidi: isolate` (never legacy `unicode-bidi: embed`) so opposite-direction characters do not bleed into surrounding punctuation and numbers.
 - **Logical CSS & selective mirroring**: use CSS logical properties (`margin-inline-start`, `padding-inline-end`, `inset-inline-start`, `text-align: start`). Mirror directional navigation icons (back/forward arrows, chevrons) in RTL, but **never** mirror clocks, media playback scrubbers, checkmarks, or mathematical/time-series graphs.
-- **Locale-aware formatting**: use `Intl.DateTimeFormat`, `Intl.NumberFormat`, `Intl.RelativeTimeFormat`, `Intl.ListFormat`, and `Intl.Collator` (for sorting) instead of hardcoded `MM/DD/YYYY`, `.toFixed(2)`, or `.sort()`.
+- **Locale-aware formatting & MF2 evolution**: use `Intl.DateTimeFormat`, `Intl.NumberFormat`, `Intl.RelativeTimeFormat`, `Intl.ListFormat`, and `Intl.Collator` (for sorting) instead of hardcoded `MM/DD/YYYY`, `.toFixed(2)`, or `.sort()`. Track **Unicode MessageFormat 2 (LDML Part 9 / TC39 `Intl.MessageFormat`)** as the evolving standard successor to ICU MessageFormat 1 when planning long-lived TMS/localization pipelines.
 - **Font and script fallback**: pair Latin display/body fonts with explicit script-specific fallbacks (`@font-face` with `unicode-range` for Arabic, Devanagari, Thai, CJK) and increase `line-height` slightly for tall/diacritic scripts (Arabic, Vietnamese, Thai) so ascenders/descenders do not clip.
 
 ## Do/don't pairs
