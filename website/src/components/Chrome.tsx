@@ -141,7 +141,7 @@ export function Header() {
         <nav
           id="mobile-nav"
           aria-label="Sections"
-          className="gborder surface mx-auto mt-2 max-h-[calc(100dvh-5.5rem)] max-w-[72rem] overflow-x-hidden overflow-y-auto overscroll-contain rounded-card bg-void/95 backdrop-blur-xl xl:hidden"
+          className="gborder mx-auto mt-2 max-h-[calc(100dvh-5.5rem)] max-w-[72rem] overflow-x-hidden overflow-y-auto overscroll-contain rounded-card bg-void text-ink shadow-lift xl:hidden"
         >
           <ul className="grid p-2">
             {NAV.map(([href, label]) => (
