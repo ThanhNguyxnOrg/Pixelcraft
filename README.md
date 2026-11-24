@@ -209,7 +209,7 @@ The same canonical `skills/` tree is used by the manifests; no copy of the skill
 
 | Host | Installation | Status |
 |---|---|---|
-| [Claude Code](https://code.claude.com/docs/en/plugins/marketplace-reference) | Marketplace commands above; `.claude-plugin/marketplace.json` lists the bundled skills explicitly. | CLI install checked. |
+| [Claude Code](https://code.claude.com/docs/en/plugins/marketplace-reference) | Marketplace commands above; the GitHub source loads `.claude-plugin/plugin.json` and discovers the bundled `skills/`. | CLI install checked. |
 | [Claude Desktop / Cowork / web](https://support.claude.com/en/articles/12512198-how-to-create-custom-skills) | Marketplace or per-skill ZIP upload as described above. | ZIP contents checked; client sync and upload not checked. |
 | [ChatGPT](https://learn.chatgpt.com/docs/plugins) | Use the portable `plugin.json` with `.agents/plugins/marketplace.json` in supported sessions, or use the Skills editor where available. | Client and workspace not checked. |
 | [Cursor](https://cursor.com/docs/reference/plugins) | Use the bundled Cursor installer, or for local plugin testing place `plugin.json` and `skills/` under `~/.cursor/plugins/local/pixelcraft/`. The root manifest is also suitable for Cursor marketplaces. | Plugin loading in Cursor not checked. |
@@ -382,7 +382,7 @@ scripts/                     validation tooling
 skills/                      self-contained Agent Skills
 docs/ARCHITECTURE.md         system design and conventions
 docs/DESIGN-RATIONALE.md      contributor rationale for major rules
-.claude-plugin/              Claude marketplace metadata
+.claude-plugin/              Claude marketplace and plugin manifests
 .github/workflows/           validation and tag-release workflows
 ```
 

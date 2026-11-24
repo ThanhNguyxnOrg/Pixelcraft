@@ -16,6 +16,7 @@ const json = (relativePath) => JSON.parse(fs.readFileSync(path.join(root, relati
 const pkg = json('package.json');
 const portable = json('plugin.json');
 const claudeCatalog = json('.claude-plugin/marketplace.json');
+const claudePlugin = json('.claude-plugin/plugin.json');
 const codexCatalog = json('.agents/plugins/marketplace.json');
 const gemini = json('gemini-extension.json');
 const skillDirectories = fs.readdirSync(path.join(root, 'skills'), { withFileTypes: true })
@@ -29,10 +30,11 @@ for (const manifest of [portable, claude, gemini]) {
   assert.equal(manifest.name, 'pixelcraft');
   assert.equal(manifest.version, pkg.version);
 }
-assert.equal(claude.source, './');
-assert.equal(claude.strict, false);
-assert.deepEqual([...claude.skills].sort(), skillDirectories);
-assert.ok(!fs.existsSync(path.join(root, '.claude-plugin/plugin.json')), 'the inline Claude marketplace entry must be the only Claude plugin manifest');
+assert.deepEqual(claude.source, { source: 'github', repo: 'ThanhNguyxnOrg/Pixelcraft' });
+assert.equal(claudePlugin.name, claude.name);
+assert.equal(claudePlugin.version, undefined, 'Claude must use the release-managed marketplace version');
+assert.equal(claude.strict, undefined);
+assert.equal(claude.skills, undefined, 'Claude discovers the canonical skills/ directory from the plugin root');
 assert.equal(codexCatalog.plugins[0].name, portable.name);
 assert.equal(codexCatalog.plugins[0].source.source, 'local');
 assert.equal(path.resolve(root, codexCatalog.plugins[0].source.path), path.resolve(root));
@@ -53,7 +55,7 @@ const [pack] = JSON.parse(execFileSync(npmCli ? process.execPath : 'npm', npmCli
 assert.equal(pack.name, 'pixelcraft');
 const files = new Set(pack.files.map((entry) => entry.path));
 for (const expected of ['package.json', pkg.bin.pixelcraft, 'plugin.json', 'gemini-extension.json', 'scripts/build-skill-zips.mjs',
-  '.claude-plugin/marketplace.json', '.agents/plugins/marketplace.json', 'assets/pixelcraft-logo-512.png']) {
+  '.claude-plugin/marketplace.json', '.claude-plugin/plugin.json', '.agents/plugins/marketplace.json', 'assets/pixelcraft-logo-512.png']) {
   assert.ok(files.has(expected), `missing from npm package: ${expected}`);
 }
 for (const directory of skillDirectories) {
