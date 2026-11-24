@@ -45,9 +45,11 @@ test("showcase identities, version, references, and agent count stay synced with
   assert.ok(meta.stacks.length > 0);
 });
 
-test("gallery metadata matches source scanner output, and all paired assets exist", async () => {
+test("gallery metadata matches source scanner output, covers all 6 multi-stack exhibits, and all paired assets exist", async () => {
   const { execFileSync } = await import("node:child_process");
   const meta = JSON.parse(await read("src/generated/gallery.json"));
+  const expectedIds = ["coffee", "clinic", "grid", "tui", "mobile", "document"];
+  assert.deepEqual(Object.keys(meta.items).sort(), [...expectedIds].sort());
   for (const [id, pair] of Object.entries(meta.items)) {
     for (const side of ["before", "after"]) {
       const path = resolve(root, `public/gallery/${id}/${side}.html`);
@@ -68,11 +70,47 @@ test("gallery metadata matches source scanner output, and all paired assets exis
         scan.findings.map((f) => [f.rule, f.severity, f.line]),
         `${id}/${side} findings`,
       );
+      if (side === "after") {
+        assert.equal(
+          scan.score,
+          0,
+          `${id}/after.html must score 0 under slop-scan.mjs, got ${scan.score}: ${JSON.stringify(scan.findings)}`,
+        );
+      }
       assert.ok(
         (await stat(resolve(root, `public/gallery/${id}/${side}.webp`))).size >
           1000,
       );
     }
+  }
+});
+
+test("shipped website UI components, CSS, and entry shell score 0 under Pixelcraft slop-scan", async () => {
+  const { execFileSync } = await import("node:child_process");
+  const scanner = resolve(
+    root,
+    "../skills/pixelcraft-review/scripts/slop-scan.mjs",
+  );
+  for (const target of [
+    "src/components",
+    "src/App.tsx",
+    "src/index.css",
+    "index.html",
+  ]) {
+    const scan = JSON.parse(
+      execFileSync(
+        process.execPath,
+        [scanner, resolve(root, target), "--json"],
+        {
+          encoding: "utf8",
+        },
+      ),
+    );
+    assert.equal(
+      scan.score,
+      0,
+      `${target} failed dogfooding slop-scan (score ${scan.score}): ${JSON.stringify(scan.findings)}`,
+    );
   }
 });
 

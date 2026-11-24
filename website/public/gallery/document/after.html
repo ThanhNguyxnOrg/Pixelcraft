@@ -1,0 +1,137 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Typst PDF/UA Statement & MJML Dark-Safe Email (with Pixelcraft)</title>
+<link rel="stylesheet" href="../../fonts/gallery.css">
+<style>
+  :root {
+    --stage: #12171b; --stage-ink: #e8eef0; --stage-dim: #9ab0ba; --stage-rule: #25343f;
+    --paper: #fcfcf9; --paper-ink: #161b1e; --paper-dim: #4c5a62; --paper-rule: #cfd7dc; --paper-accent: #144d53;
+    --mail-bg: #151b20; --mail-card: #1d262d; --mail-ink: #eff5f3; --mail-dim: #a5bac2; --mail-rule: #31424e; --mail-cta: #7ce3b8; --mail-on-cta: #10201d;
+    --sans: "Public Sans", system-ui, sans-serif; --mono: "IBM Plex Mono", ui-monospace, monospace;
+  }
+  * { box-sizing: border-box; }
+  body { margin: 0; background: var(--stage); color: var(--stage-ink); font-family: var(--sans); min-height: 100vh; padding: 24px 36px; display: flex; flex-direction: column; gap: 18px; }
+  header.meta { display: flex; justify-content: space-between; align-items: baseline; font-family: var(--mono); font-size: 12px; color: var(--stage-dim); }
+  header.meta strong { color: var(--stage-ink); font-family: var(--sans); font-size: 15px; }
+  main.split { flex: 1; display: grid; grid-template-columns: 1.05fr 1fr; gap: 28px; align-items: stretch; }
+  .col-cap { font-family: var(--mono); font-size: 11.5px; color: var(--stage-dim); margin: 0 0 8px; text-transform: uppercase; letter-spacing: .04em; }
+
+  .a4 { background: var(--paper); color: var(--paper-ink); padding: 34px 38px 26px; display: flex; flex-direction: column; min-height: 752px; border: 1px solid var(--paper-rule); }
+  .a4-top { display: flex; justify-content: space-between; align-items: flex-start; border-bottom: 2px solid var(--paper-ink); padding-bottom: 16px; }
+  .a4-top h1 { margin: 0; font-size: 24px; letter-spacing: -.01em; font-weight: 800; }
+  .a4-top .inv-id { font-family: var(--mono); font-size: 13px; text-align: end; color: var(--paper-dim); font-variant-numeric: tabular-nums; }
+  .a4-top .inv-id b { display: block; color: var(--paper-ink); font-size: 16px; }
+  .parties { display: grid; grid-template-columns: 1fr 1fr; gap: 24px; margin: 18px 0 20px; font-size: 13px; line-height: 1.5; }
+  .parties dt { font-family: var(--mono); font-size: 11px; color: var(--paper-dim); text-transform: uppercase; }
+  .parties dd { margin: 4px 0 0; }
+  table.pdf { width: 100%; border-collapse: collapse; font-size: 13.5px; font-variant-numeric: tabular-nums; }
+  table.pdf th { text-align: start; font-family: var(--mono); font-size: 11px; color: var(--paper-dim); text-transform: uppercase; padding: 8px 0; border-bottom: 1px solid var(--paper-ink); }
+  table.pdf th.num, table.pdf td.num { text-align: end; }
+  table.pdf td { padding: 10px 0; border-bottom: 1px solid var(--paper-rule); }
+  .totals { margin-top: 16px; margin-inline-start: auto; width: 250px; font-size: 13.5px; font-variant-numeric: tabular-nums; }
+  .totals div { display: flex; justify-content: space-between; padding: 5px 0; }
+  .totals .grand { border-top: 2px solid var(--paper-ink); margin-top: 4px; padding-top: 8px; font-weight: 800; font-size: 16px; }
+  .remit { margin-top: 22px; padding: 12px 14px; border: 1px solid var(--paper-rule); font-family: var(--mono); font-size: 11.5px; color: var(--paper-dim); line-height: 1.6; }
+  .a4-foot { margin-top: auto; padding-top: 14px; border-top: 1px solid var(--paper-rule); display: flex; justify-content: space-between; font-family: var(--mono); font-size: 11px; color: var(--paper-dim); }
+
+  .mail-wrap { display: flex; flex-direction: column; gap: 14px; }
+  .mail { background: var(--mail-bg); border: 1px solid var(--mail-rule); padding: 26px 28px; color: var(--mail-ink); }
+  .mail-head { display: flex; justify-content: space-between; align-items: center; border-bottom: 1px solid var(--mail-rule); padding-bottom: 14px; margin-bottom: 18px; }
+  .mail-brand { font-weight: 800; font-size: 16px; letter-spacing: .04em; color: var(--mail-ink); }
+  .mail-tag { font-family: var(--mono); font-size: 11px; color: var(--mail-dim); }
+  .mail h2 { margin: 0 0 8px; font-size: 22px; line-height: 1.2; }
+  .mail p { margin: 0 0 16px; font-size: 14.5px; line-height: 1.55; color: var(--mail-dim); }
+  table.email-rows { width: 100%; border-collapse: collapse; margin: 14px 0 20px; font-family: var(--mono); font-size: 13px; font-variant-numeric: tabular-nums; }
+  table.email-rows td { padding: 8px 0; border-bottom: 1px solid var(--mail-rule); }
+  table.email-rows td:last-child { text-align: end; color: var(--mail-ink); font-weight: 600; }
+  .mail-btn { display: inline-block; background: var(--mail-cta); color: var(--mail-on-cta); padding: 13px 22px; font-weight: 700; font-size: 14.5px; text-decoration: none; border-radius: 6px; }
+  .mail-btn:focus-visible { outline: 3px solid var(--mail-ink); outline-offset: 2px; }
+  .plain { background: var(--mail-card); border: 1px solid var(--mail-rule); padding: 18px 22px; flex: 1; }
+  .plain h3 { margin: 0 0 8px; font-family: var(--mono); font-size: 11px; color: var(--mail-dim); text-transform: uppercase; letter-spacing: .05em; }
+  .plain pre { margin: 0; font-family: var(--mono); font-size: 12px; line-height: 1.6; color: var(--mail-ink); white-space: pre-wrap; }
+  @media (max-width: 960px) {
+    main.split { grid-template-columns: 1fr; }
+    body { padding: 16px; }
+  }
+</style>
+</head>
+<body>
+  <header class="meta">
+    <strong>NORTHERN LEDGER · TYPST PDF/UA + MJML EMAIL</strong>
+    <span>Physical A4 margins (18 mm) · 19.4 KB HTML email (&lt;102 KB Gmail cap) · Dark-mode + Plaintext parity</span>
+  </header>
+  <main class="split">
+    <section aria-label="Typst A4 PDF statement">
+      <p class="col-cap">Typst 0.13 · Tagged PDF/UA-1 · A4 (210 × 297 mm)</p>
+      <article class="a4">
+        <div class="a4-top">
+          <div>
+            <h1>NORTHERN LEDGER</h1>
+            <div style="font-size:12.5px;color:var(--paper-dim);margin-top:4px">Statement of Account · VAT GB 482 1903 11</div>
+          </div>
+          <div class="inv-id"><b>INV-2026-4091</b>Issued 14 Oct 2026 · Due 31 Oct</div>
+        </div>
+        <dl class="parties">
+          <div><dt>Billed to</dt><dd><strong>Kestrel Systems Ltd</strong><br>42 Clerkenwell Rd, London EC1M 5PS</dd></div>
+          <div><dt>Period</dt><dd>1 Oct – 31 Oct 2026<br>Currency: USD · Net 17</dd></div>
+        </dl>
+        <table class="pdf">
+          <thead>
+            <tr><th scope="col">Line item</th><th scope="col" class="num">Qty</th><th scope="col" class="num">Unit</th><th scope="col" class="num">Amount</th></tr>
+          </thead>
+          <tbody>
+            <tr><td>Workspace seats (active members)</td><td class="num">42</td><td class="num">$29.00</td><td class="num">$1,218.00</td></tr>
+            <tr><td>EU data residency cluster</td><td class="num">1</td><td class="num">$350.00</td><td class="num">$350.00</td></tr>
+            <tr><td>Audit log retention (365 days)</td><td class="num">1</td><td class="num">$240.00</td><td class="num">$240.00</td></tr>
+            <tr><td>Priority support SLA</td><td class="num">1</td><td class="num">$400.00</td><td class="num">$400.00</td></tr>
+          </tbody>
+        </table>
+        <div class="totals">
+          <div><span>Subtotal</span><span>$2,208.00</span></div>
+          <div><span>VAT (0% reverse charge)</span><span>$0.00</span></div>
+          <div class="grand"><span>Total due</span><span>$2,208.00</span></div>
+        </div>
+        <div class="remit">
+          <strong>Kept-together remittance block (breakable: false)</strong><br>
+          IBAN: GB29 NWBK 6016 1331 9268 19 · Ref: INV-2026-4091
+        </div>
+        <div class="a4-foot">
+          <span>Northern Ledger Ltd · Embedded fonts: Public Sans, IBM Plex Mono</span>
+          <span>Page 1 of 1</span>
+        </div>
+      </article>
+    </section>
+
+    <section class="mail-wrap" aria-label="MJML dark mode and plaintext email">
+      <p class="col-cap">MJML Table Email · Dark Mode + Images-Off + Plaintext Parity</p>
+      <article class="mail">
+        <div class="mail-head">
+          <span class="mail-brand">NORTHERN LEDGER</span>
+          <span class="mail-tag">19.4 KB · Outlook/Gmail safe</span>
+        </div>
+        <h2>Invoice INV-2026-4091 for $2,208.00 is due 31 Oct</h2>
+        <p>Live text header and table layout survive image blocking, Outlook Word rendering, and forced dark-mode inversion.</p>
+        <table class="email-rows" role="presentation">
+          <tr><td>Invoice number</td><td>INV-2026-4091</td></tr>
+          <tr><td>Amount due</td><td>$2,208.00 USD</td></tr>
+          <tr><td>Due date</td><td>31 Oct 2026</td></tr>
+        </table>
+        <a class="mail-btn" href="#download-pdf">Download PDF statement (48 KB)</a>
+      </article>
+      <div class="plain">
+        <h3>Plaintext MIME companion (exact order &amp; link parity)</h3>
+<pre>NORTHERN LEDGER — Invoice INV-2026-4091
+
+Amount due: $2,208.00 USD (due 31 Oct 2026)
+Billed to:  Kestrel Systems Ltd
+
+Download PDF: https://billing.example/invoices/INV-2026-4091.pdf
+Questions or billing support: billing@northernledger.example</pre>
+      </div>
+    </section>
+  </main>
+</body>
+</html>

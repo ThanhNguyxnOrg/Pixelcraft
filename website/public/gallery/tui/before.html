@@ -1,0 +1,51 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Deploy Monitor TUI (default agent output)</title>
+<style>
+  body { margin: 0; background: #09090b; color: #e4e4e7; font-family: Inter, monospace; padding: 36px 48px; }
+  .term { background: #111115; border: 1px solid #27272a; border-radius: 24px; padding: 28px 32px; box-shadow: 0 20px 50px rgba(0,0,0,.55); max-width: 1300px; margin: 0 auto; }
+  .bar { display: flex; gap: 8px; margin-bottom: 18px; }
+  .dot { width: 12px; height: 12px; border-radius: 999px; }
+  .ascii { color: #a855f7; font-family: monospace; font-size: 13px; line-height: 1.15; white-space: pre; margin: 0 0 20px; background: linear-gradient(90deg, #7c3aed, #3b82f6); -webkit-background-clip: text; color: transparent; }
+  .headline { font-size: 17px; color: #94a3b8; margin: 0 0 18px; }
+  pre.log { margin: 0; font-family: monospace; font-size: 14px; line-height: 1.75; white-space: pre; overflow: hidden; }
+  .ok { color: #22c55e; }
+  .bad { color: #ef4444; }
+  .warn { color: #eab308; }
+  .dim { color: #52525b; }
+  .prompt { margin-top: 22px; display: flex; gap: 12px; }
+  input { flex: 1; background: #18181b; color: #f4f4f5; border: 1px solid #3f3f46; border-radius: 10px; padding: 10px 14px; font-size: 14px; transition: all .2s; }
+  input:focus, button:focus { outline: none; }
+  button { background: linear-gradient(135deg, #7c3aed, #3b82f6); color: #fff; border: 0; border-radius: 10px; padding: 10px 18px; font-weight: 600; cursor: pointer; }
+</style>
+</head>
+<body>
+  <div class="term">
+    <div class="bar"><span class="dot" style="background:#ef4444"></span><span class="dot" style="background:#f59e0b"></span><span class="dot" style="background:#22c55e"></span></div>
+    <pre class="ascii" data-slop="gradient-text-treatment">
+ ____  _____ ____  _     _____   __   ____ _     ___
+|  _ \| ____|  _ \| |   / _ \ \ / /  / ___| |   |_ _|
+| | | |  _| | |_) | |  | | | \ V /  | |   | |    | |
+| |_| | |___|  __/| |__| |_| || |   | |___| |___ | |
+|____/|_____|_|   |_____\___/ |_|    \____|_____|___|
+    </pre>
+    <p class="headline" data-slop="generic-copy">Supercharge your deployment workflow seamlessly with our cutting-edge CLI!</p>
+    <pre class="log" data-slop="purple-blue-gradient">
+[14:38:01] <span class="ok">api-gateway      v2.18.4   running   12ms   us-east-1a   pod-8f7a9c4b-x92km   healthy   replicas=6/6   cpu=42%   mem=512Mi   canary=off</span>
+[14:38:02] <span class="bad">billing-worker   v2.18.4   crashed   ---    us-east-1b   pod-4c2d1e8a-m19zq   OOMKilled replicas=2/4   cpu=98%   mem=2048Mi  restarts=14</span>
+[14:38:03] <span class="warn">search-indexer   v2.18.3   draining  184ms  eu-west-1c   pod-9b1f7a3c-k44wp   degraded  replicas=3/4   cpu=87%   mem=1640Mi  lag=48210</span>
+[14:38:04] <span class="ok">auth-tokens      v2.18.4   running   8ms    us-east-1a   pod-2a6e8d5f-t07vn   healthy   replicas=4/4   cpu=19%   mem=256Mi   canary=off</span>
+[14:38:05] <span class="dim">2026-10-14T14:38:05Z DEBUG retrying healthcheck attempt=4/10 target=10.42.8.19:8080 err="connection reset by peer" raw_ansi=\x1b[31mFAIL\x1b[0m</span>
+[14:38:06] <span class="dim">2026-10-14T14:38:06Z DEBUG retrying healthcheck attempt=5/10 target=10.42.8.19:8080 err="connection reset by peer" raw_ansi=\x1b[31mFAIL\x1b[0m</span>
+[14:38:07] <span class="dim">2026-10-14T14:38:07Z INFO  streaming logs... (press Ctrl+C to kill process — no rollback or help keys wired)</span>
+    </pre>
+    <div class="prompt">
+      <input placeholder="Type command..." data-slop="placeholder-as-label">
+      <button type="button" data-slop="outline-removed">Run</button>
+    </div>
+  </div>
+</body>
+</html>

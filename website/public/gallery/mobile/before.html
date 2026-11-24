@@ -1,0 +1,66 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Transit Pass iOS App (default agent output)</title>
+<style>
+  body { margin: 0; background: #0f172a; color: #f8fafc; font-family: Inter, sans-serif; padding: 18px 48px; }
+  .wrap { max-width: 1180px; margin: 0 auto; display: grid; grid-template-columns: repeat(2, 390px); justify-content: center; gap: 56px; }
+  .phone { width: 390px; height: 780px; background: #f8fafc; color: #1e293b; border-radius: 44px; border: 8px solid #1e293b; overflow: hidden; display: flex; flex-direction: column; box-shadow: 0 24px 60px rgba(0,0,0,.5); }
+  .status { padding: 12px 24px 6px; display: flex; justify-content: space-between; font-size: 12px; font-weight: 600; background: linear-gradient(135deg, #7c3aed, #3b82f6); color: #fff; }
+  .hero { background: linear-gradient(135deg, #7c3aed, #3b82f6); color: #fff; padding: 18px 24px 28px; text-align: center; }
+  .hero h1 { font-size: 24px; margin: 8px 0 6px; }
+  .hero p { font-size: 13px; margin: 0; opacity: .88; }
+  .content { padding: 16px; flex: 1; }
+  .card { background: #fff; border-radius: 24px; padding: 14px 16px; margin-bottom: 12px; box-shadow: 0 10px 25px rgba(0,0,0,.1); display: flex; align-items: center; justify-content: space-between; height: 64px; overflow: hidden; transition: all .3s; }
+  .card.ax3 { font-size: 24px; }
+  .dot { width: 10px; height: 10px; border-radius: 999px; display: inline-block; margin-right: 6px; }
+  .tiny-btn { height: 26px; padding: 0 10px; border-radius: 999px; border: 0; background: #ede9fe; color: #6d28d9; font-size: 11px; font-weight: 600; cursor: pointer; }
+  .tiny-btn:focus, .bottom-cta:focus { outline: none; }
+  .bottom-cta { width: 100%; padding: 14px; border: 0; background: linear-gradient(135deg, #7c3aed, #3b82f6); color: #fff; font-weight: 700; font-size: 15px; cursor: pointer; }
+  .home-ind { position: relative; height: 0; }
+  .home-ind::after { content: ""; position: absolute; left: 50%; transform: translateX(-50%); bottom: 6px; width: 134px; height: 5px; border-radius: 99px; background: rgba(255,255,255,.7); }
+  .caption { text-align: center; font-size: 13px; color: #94a3b8; margin-top: 12px; }
+</style>
+</head>
+<body>
+  <div class="wrap">
+    <div>
+      <div class="phone">
+        <div class="status"><span>9:41</span><span>5G · 82%</span></div>
+        <div class="hero" data-slop="purple-blue-gradient">
+          <h1 data-slop="generic-copy">Elevate your commute seamlessly</h1>
+          <p>Unlock next-gen transit tracking today.</p>
+        </div>
+        <div class="content" data-slop="transition-all">
+          <div class="card"><span><i class="dot" style="background:#22c55e"></i>St. Pancras → Brighton</span><button type="button" class="tiny-btn" data-slop="outline-removed">Track</button></div>
+          <div class="card"><span><i class="dot" style="background:#ef4444"></i>Victoria → Gatwick</span><button type="button" class="tiny-btn">Track</button></div>
+          <div class="card"><span><i class="dot" style="background:#f59e0b"></i>King’s Cross → York</span><button type="button" class="tiny-btn">Track</button></div>
+        </div>
+        <button type="button" class="bottom-cta">Get started</button>
+        <div class="home-ind"></div>
+      </div>
+      <p class="caption">Default text — 26pt buttons, web gradient card, CTA colliding with home bar</p>
+    </div>
+
+    <div>
+      <div class="phone">
+        <div class="status"><span>9:41</span><span>Dynamic Type AX3</span></div>
+        <div class="hero">
+          <h1 style="font-size:32px">Elevate your commute</h1>
+          <p style="font-size:20px">Unlock next-gen transit</p>
+        </div>
+        <div class="content">
+          <div class="card ax3"><span style="white-space:nowrap;overflow:hidden;text-overflow:ellipsis"><i class="dot" style="background:#22c55e"></i>St. Pancras → Brigh...</span><button type="button" class="tiny-btn">Tr...</button></div>
+          <div class="card ax3"><span style="white-space:nowrap;overflow:hidden;text-overflow:ellipsis"><i class="dot" style="background:#ef4444"></i>Victoria → Gatwi...</span><button type="button" class="tiny-btn">Tr...</button></div>
+          <div class="card ax3"><span style="white-space:nowrap;overflow:hidden;text-overflow:ellipsis"><i class="dot" style="background:#f59e0b"></i>King’s Cross → Yo...</span><button type="button" class="tiny-btn">Tr...</button></div>
+        </div>
+        <button type="button" class="bottom-cta">Get started</button>
+        <div class="home-ind"></div>
+      </div>
+      <p class="caption">Dynamic Type AX3 — fixed 64pt row clips station names and buttons</p>
+    </div>
+  </div>
+</body>
+</html>

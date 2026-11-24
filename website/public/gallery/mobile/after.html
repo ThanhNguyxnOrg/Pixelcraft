@@ -1,0 +1,121 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Railward · SwiftUI iOS Departures (with Pixelcraft)</title>
+<link rel="stylesheet" href="../../fonts/gallery.css">
+<style>
+  :root {
+    --stage-bg: #10161c; --stage-ink: #e8eef0; --stage-dim: #9ab0ba;
+    --ios-bg: #f2f3f5; --ios-card: #ffffff; --ios-ink: #11181c; --ios-sub: #4b5862; --ios-line: #d4dce0;
+    --ios-accent: #0b5fd6; --ios-on-accent: #ffffff;
+    --ok: #0e6b44; --ok-bg: #e2f5ec; --warn: #9a4d04; --warn-bg: #fef0dc; --bad: #b4233f; --bad-bg: #fce6eb;
+    --sans: "Public Sans", -apple-system, BlinkMacSystemFont, system-ui, sans-serif;
+    --mono: "IBM Plex Mono", ui-monospace, monospace;
+  }
+  * { box-sizing: border-box; }
+  body { margin: 0; background: var(--stage-bg); color: var(--stage-ink); font-family: var(--sans); min-height: 100vh; padding: 24px 36px; display: flex; flex-direction: column; gap: 18px; }
+  header.meta { display: flex; justify-content: space-between; align-items: baseline; font-family: var(--mono); font-size: 12px; color: var(--stage-dim); }
+  header.meta strong { color: var(--stage-ink); font-family: var(--sans); font-size: 15px; }
+  main.phones { flex: 1; display: grid; grid-template-columns: repeat(2, 390px); justify-content: center; gap: 52px; align-items: start; }
+  .col { display: flex; flex-direction: column; align-items: center; }
+  .phone { width: 390px; height: 790px; background: var(--ios-bg); color: var(--ios-ink); border-radius: 44px; border: 8px solid #1e2a34; overflow: hidden; display: flex; flex-direction: column; }
+  .status { padding: 14px 26px 6px; display: flex; justify-content: space-between; font-size: 13px; font-weight: 700; color: var(--ios-ink); }
+  .nav-bar { padding: 6px 20px 12px; border-bottom: 1px solid var(--ios-line); background: var(--ios-bg); }
+  .nav-sub { font-family: var(--mono); font-size: 11px; color: var(--ios-sub); margin: 0 0 2px; text-transform: uppercase; letter-spacing: .04em; }
+  .nav-bar h1 { font-size: 28px; line-height: 1.1; margin: 0; font-weight: 800; letter-spacing: -.02em; }
+  .list { flex: 1; padding: 14px 16px; display: flex; flex-direction: column; gap: 10px; overflow: hidden; }
+  .row { background: var(--ios-card); border: 1px solid var(--ios-line); border-radius: 14px; padding: 12px 14px; display: flex; justify-content: space-between; align-items: center; gap: 12px; }
+  .row-stack { flex-direction: column; align-items: stretch; gap: 8px; }
+  .route { font-size: 16px; font-weight: 700; margin: 0; }
+  .meta-line { font-family: var(--mono); font-size: 12.5px; color: var(--ios-sub); margin: 3px 0 0; font-variant-numeric: tabular-nums; }
+  .pill { display: inline-flex; align-items: center; gap: 5px; font-family: var(--mono); font-size: 12px; font-weight: 600; padding: 5px 10px; border-radius: 8px; white-space: nowrap; }
+  .pill.ok { background: var(--ok-bg); color: var(--ok); }
+  .pill.bad { background: var(--bad-bg); color: var(--bad); }
+  .pill.warn { background: var(--warn-bg); color: var(--warn); }
+  .ax3 .nav-bar h1 { font-size: 32px; }
+  .ax3 .route { font-size: 21px; line-height: 1.2; }
+  .ax3 .meta-line { font-size: 15px; }
+  .ax3 .pill { font-size: 14px; align-self: flex-start; }
+  .dock { padding: 12px 16px 28px; border-top: 1px solid var(--ios-line); background: var(--ios-card); }
+  .cta { width: 100%; min-height: 50px; border-radius: 14px; border: 0; background: var(--ios-accent); color: var(--ios-on-accent); font: 700 16px var(--sans); cursor: pointer; }
+  .cta:focus-visible { outline: 3px solid var(--ios-ink); outline-offset: 2px; }
+  .home-safe { width: 134px; height: 5px; border-radius: 99px; background: var(--ios-ink); opacity: .28; margin: 12px auto 0; }
+  .cap { margin: 10px 0 0; font-family: var(--mono); font-size: 12px; color: var(--stage-dim); text-align: center; }
+  @media (max-width: 900px) {
+    main.phones { grid-template-columns: 1fr; }
+    .phone { width: 100%; max-width: 390px; }
+  }
+</style>
+</head>
+<body>
+  <header class="meta">
+    <strong>RAILWARD · SWIFTUI iOS (NAVIGATIONSTACK + VIEWTHATFITS)</strong>
+    <span>Standard vs Dynamic Type AX3 · ≥44pt targets · Safe-area inset respected · Illustrative fixture</span>
+  </header>
+  <main class="phones">
+    <section class="col" aria-label="Standard text size">
+      <div class="phone">
+        <div class="status"><span>9:41</span><span>5G · 82%</span></div>
+        <div class="nav-bar">
+          <p class="nav-sub">London St. Pancras · Live</p>
+          <h1>Departures</h1>
+        </div>
+        <div class="list">
+          <article class="row">
+            <div><p class="route">Brighton</p><p class="meta-line">14:48 · Platform 4 · Direct</p></div>
+            <span class="pill ok">● On time</span>
+          </article>
+          <article class="row">
+            <div><p class="route">Gatwick Airport</p><p class="meta-line">14:54 · Platform 2 · 3 stops</p></div>
+            <span class="pill bad">▲ +6 min</span>
+          </article>
+          <article class="row">
+            <div><p class="route">Cambridge North</p><p class="meta-line">15:02 · Platform 9 · Direct</p></div>
+            <span class="pill warn">◆ Plat. TBC</span>
+          </article>
+          <article class="row">
+            <div><p class="route">Bedford</p><p class="meta-line">15:10 · Platform 1 · 5 stops</p></div>
+            <span class="pill ok">● On time</span>
+          </article>
+        </div>
+        <div class="dock">
+          <button type="button" class="cta">Pin 14:48 Brighton to Lock Screen</button>
+          <div class="home-safe" aria-hidden="true"></div>
+        </div>
+      </div>
+      <p class="cap">Default Dynamic Type · 50pt thumb-zone CTA clearing home indicator</p>
+    </section>
+
+    <section class="col" aria-label="Dynamic Type AX3 reflow">
+      <div class="phone ax3">
+        <div class="status"><span>9:41</span><span>Dynamic Type AX3</span></div>
+        <div class="nav-bar">
+          <p class="nav-sub">St. Pancras · Live</p>
+          <h1>Departures</h1>
+        </div>
+        <div class="list">
+          <article class="row row-stack">
+            <div><p class="route">Brighton</p><p class="meta-line">14:48 · Platform 4</p></div>
+            <span class="pill ok">● On time</span>
+          </article>
+          <article class="row row-stack">
+            <div><p class="route">Gatwick Airport</p><p class="meta-line">14:54 · Platform 2</p></div>
+            <span class="pill bad">▲ +6 min delay</span>
+          </article>
+          <article class="row row-stack">
+            <div><p class="route">Cambridge North</p><p class="meta-line">15:02 · Platform 9</p></div>
+            <span class="pill warn">◆ Platform TBC</span>
+          </article>
+        </div>
+        <div class="dock">
+          <button type="button" class="cta">Pin 14:48 Brighton</button>
+          <div class="home-safe" aria-hidden="true"></div>
+        </div>
+      </div>
+      <p class="cap">Dynamic Type AX3 · ViewThatFits switches row to vertical stack, zero clipping</p>
+    </section>
+  </main>
+</body>
+</html>

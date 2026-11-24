@@ -37,10 +37,34 @@ const BROWSER =
     : "/usr/bin/chromium");
 const W = 1440;
 const H = 900;
-const IDS = ["coffee", "clinic", "grid"];
+const IDS = ["coffee", "clinic", "grid", "tui", "mobile", "document"];
 
 if (!existsSync(SCAN))
   throw new Error(`slop-scan.mjs not found at ${SCAN}. Pass --scan <path>.`);
+
+function encodeWebp(pngPath, webpPath) {
+  try {
+    execFileSync("ffmpeg", [
+      "-y",
+      "-v",
+      "error",
+      "-i",
+      pngPath,
+      "-c:v",
+      "libwebp",
+      "-quality",
+      "88",
+      webpPath,
+    ]);
+  } catch {
+    execFileSync("python3", [
+      "-c",
+      "import sys; from PIL import Image; Image.open(sys.argv[1]).save(sys.argv[2], 'WEBP', quality=88, method=6)",
+      pngPath,
+      webpPath,
+    ]);
+  }
+}
 
 const chrome = (args) =>
   execFileSync(
@@ -108,18 +132,7 @@ for (const id of IDS) {
       "--virtual-time-budget=12000",
       `file://${file}`,
     ]);
-    execFileSync("ffmpeg", [
-      "-y",
-      "-v",
-      "error",
-      "-i",
-      png,
-      "-c:v",
-      "libwebp",
-      "-quality",
-      "88",
-      path.join(dir, `${side}.webp`),
-    ]);
+    encodeWebp(png, path.join(dir, `${side}.webp`));
 
     const s = scan(file);
     let pins = {};

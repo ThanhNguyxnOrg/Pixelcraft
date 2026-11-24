@@ -4,8 +4,8 @@
   "license": "MIT",
   "repoUrl": "https://github.com/ThanhNguyxnOrg/Pixelcraft",
   "totalSkills": 26,
-  "totalReferences": 243,
-  "totalScripts": 5,
+  "totalReferences": 247,
+  "totalScripts": 9,
   "canonicalAgents": [
     "claude",
     "codex",
@@ -55,6 +55,12 @@
     "Radix UI",
     "React Aria",
     "shadcn/ui",
+    "cmdk",
+    "Vaul",
+    "Sonner",
+    "Embla",
+    "Pagefind",
+    "Orama",
     "TanStack Query",
     "Zustand",
     "XState",
@@ -121,6 +127,8 @@
     "Kotlin Multiplatform",
     "NativeScript",
     "Skip",
+    "HarmonyOS ArkUI",
+    "LiveView Native",
     ".NET MAUI",
     "marimo",
     "Solara",
@@ -234,10 +242,11 @@
     {
       "name": "pixelcraft-plan",
       "category": "Core",
-      "purpose": "Plans greenfield and brownfield UI work, selects platforms and technology stacks, checks dependency freshness and lockfile reproducibility, records architecture decisions (ADR), and produces the .pixelcraft/plan.md consumed by later Pixelcraft skills.",
+      "purpose": "Plans greenfield and brownfield UI work, runs Socratic Grill-Me discovery interviews for ambiguous or greenfield briefs, selects platforms and technology stacks while rejecting lazy defaults, maps complex capabilities to purpose-built libraries, checks dependency freshness and lockfile reproducibility, records architecture decisions (ADR), and produces the .pixelcraft/plan.md consumed by later Pixelcraft skills.",
       "references": [
         "design-input",
         "discovery-interview",
+        "grill-me-protocol",
         "plan-template",
         "repo-discovery",
         "stack-freshness",
@@ -250,6 +259,7 @@
       "purpose": "Generates distinctive visual direction without template collapse.",
       "references": [
         "composition-library",
+        "creative-brainstorming",
         "direction-card",
         "direction-scoring",
         "motion-identity",
@@ -378,7 +388,7 @@
     {
       "name": "pixelcraft-web",
       "category": "Platforms",
-      "purpose": "Translates Pixelcraft direction, tokens, UX, and floor requirements into idiomatic web UI across HTML/CSS, React, Next.js, React Router, TanStack Start, Vue, Nuxt, SvelteKit, SolidStart, Angular, Astro, Qwik, Preact, Fresh, Hono, htmx, Alpine, Datastar, Lit, Rails/Hotwire, Laravel/Livewire/Inertia, Django/FastHTML, Phoenix LiveView, Blazor, Go templ, Rust Leptos/Dioxus/Yew, Kotlin, Java Vaadin/Hilla, Elm, ClojureScript, F# Fable, and Scala Laminar.",
+      "purpose": "Translates Pixelcraft direction, tokens, UX, and floor requirements into idiomatic web UI across HTML/CSS, React, Next.js, Vue, Nuxt, SvelteKit, SolidStart, Angular, Astro, Qwik, Preact, Fresh, Hono, htmx, Alpine, Lit, Rails/Hotwire, Laravel/Livewire/Filament/Inertia, Symfony UX, WordPress, Django/FastAPI/FastHTML, Phoenix LiveView, Blazor, Go templ/Gomponents, Rust Leptos/Dioxus, Kotlin, Java, Dart Jaspr, Elm, ClojureScript, F#, and Scala.",
       "references": [
         "accessibility-performance",
         "adaptive-layout",
@@ -403,6 +413,7 @@
         "html-css",
         "htmx-alpine",
         "i18n-engineering",
+        "interaction-and-search-primitives",
         "java-web",
         "kotlin-web",
         "leptos-yew",
@@ -438,11 +449,12 @@
     {
       "name": "pixelcraft-mobile",
       "category": "Platforms",
-      "purpose": "Translates Pixelcraft direction, tokens, UX, and floor requirements into idiomatic mobile UI across SwiftUI, UIKit, Jetpack Compose, Flutter, React Native/Expo, Expo Router, LynxJS, Kotlin Multiplatform, NativeScript, Skip, Ionic/Capacitor, .NET MAUI, Flet, and Kivy.",
+      "purpose": "Translates Pixelcraft direction, tokens, UX, and floor requirements into idiomatic mobile UI across SwiftUI (incl.",
       "references": [
         "dotnet-maui",
         "flet",
         "flutter",
+        "harmonyos-and-emerging-mobile",
         "ionic-capacitor",
         "jetpack-compose",
         "kivy",
@@ -480,7 +492,7 @@
     {
       "name": "pixelcraft-desktop",
       "category": "Platforms",
-      "purpose": "Translates Pixelcraft direction, tokens, UX, and floor requirements into desktop applications across Tauri, Electron, Electrobun, Qt 6/PySide6/QML, WinUI 3/WPF, AppKit, SwiftUI macOS, GTK4/libadwaita, Avalonia, Rust GUI (GPUI, Dioxus, Iced, Slint, egui, AccessKit), JavaFX/Swing, C++/C/Zig GUI (FLTK, wxWidgets, Dear ImGui), Go GUI (Wails v3, Fyne, Gio), and Uno Platform.",
+      "purpose": "Translates Pixelcraft direction, tokens, UX, and floor requirements into desktop applications across Tauri, Electron, Electrobun, Qt 6/PySide6/PyQt6/QML, WinUI 3/WPF, AppKit, SwiftUI macOS, GTK4/libadwaita, Avalonia, Rust GUI (GPUI, Dioxus, Iced, libcosmic, Vizia, Slint, egui, AccessKit), JavaFX/Swing, C++/C/Zig GUI (JUCE, GTKmm, FLTK, wxWidgets, Dear ImGui, Nuklear, Ultralight), Go GUI (Wails v3, Fyne, Gio), and Uno Platform.",
       "references": [
         "appkit",
         "avalonia",
@@ -526,7 +538,7 @@
     {
       "name": "pixelcraft-game-ui",
       "category": "Platforms",
-      "purpose": "Translates Pixelcraft direction, tokens, UX, and floor requirements into game interfaces across Unity UI Toolkit, Unity uGUI/TextMeshPro, Godot Control/UI, Unreal UMG/CommonUI/MVVM, Bevy, LÖVE2D, MonoGame, Phaser/PixiJS/Kaplay, NoesisGUI/RmlUi/Gameface/Dear ImGui, and Raylib/SDL3/Defold/Cocos.",
+      "purpose": "Translates Pixelcraft direction, tokens, UX, and floor requirements into game interfaces across Unity UI Toolkit, Unity uGUI/TextMeshPro, Godot Control/UI (GDScript/C#), Unreal UMG/CommonUI/MVVM, Bevy, LÖVE2D, MonoGame, Phaser/PixiJS/Kaplay, Ebitengine, Macroquad, Flame, Pygame/Arcade, NoesisGUI/RmlUi/Gameface/Dear ImGui, and Raylib/SDL3/Defold/Cocos.",
       "references": [
         "bevy",
         "godot",
@@ -639,6 +651,10 @@
         "task-verification"
       ],
       "scripts": [
+        "check-contrast.mjs",
+        "check-email.mjs",
+        "check-pdf.mjs",
+        "check-tui.mjs",
         "finish-gate.mjs",
         "shoot.mjs",
         "style-inventory.mjs"
