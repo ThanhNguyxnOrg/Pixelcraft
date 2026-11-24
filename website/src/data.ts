@@ -3,7 +3,7 @@
 
 export const REPO_URL = "https://github.com/ThanhNguyxnOrg/Pixelcraft";
 export const VERSION = "0.1.0";
-export const NPM_PKG = "pixelcraft";
+export const NPM_PKG = "@thanhnguyxn/pixelcraft";
 
 export type Category = "Core" | "System" | "Platforms" | "Channels" | "Verify";
 

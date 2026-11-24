@@ -28,7 +28,7 @@ The supplied 16-second silent demo is preserved; its two baked-in installer labe
 
 The hero's light routes and gradient drift share the existing pixel identity. Continuous work stops offscreen and in hidden tabs. One bounded-resolution Canvas replaces the live blurred duplicate; the gallery's automatic divider paints a CSS variable instead of re-rendering its exhibit each frame. Resize-driven ScrollTrigger measurements are debounced. Process cards settle with a short, staggered 2D fan; native scroll remains unchanged. These are implementation choices, not claims of field performance.
 
-The standalone website is excluded from the root package's explicit npm file allowlist. `src/data.ts` contains editorial skill summaries; tests verify skill identities and installer naming against the root repository. Source links remain upstream. No host-specific scaffold, deployment plugin or service dependency is retained.
+The standalone website is excluded from the root package's explicit npm file allowlist. `src/data.ts` contains editorial skill summaries; tests verify skill identities and installer naming against the root repository. Installer examples and the film use the root package's current `@thanhnguyxn/pixelcraft` name; the CLI executable remains `pixelcraft`. Source links remain upstream. No host-specific scaffold, deployment plugin or service dependency is retained.
 
 ## Assets and verification
 
