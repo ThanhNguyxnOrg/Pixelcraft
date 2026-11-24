@@ -4,7 +4,7 @@ import { usePromoMotion } from "../lib/usePromoMotion";
 import { PixelLabel } from "./pixel";
 
 const frame =
-  "gborder relative isolate overflow-hidden rounded-card border border-line bg-deep";
+  "gborder relative isolate w-full min-w-0 overflow-hidden rounded-card border border-line bg-deep";
 
 function PackPromo() {
   const root = useRef<HTMLDivElement>(null);
@@ -334,7 +334,7 @@ export function MotionDemos() {
             live AI runs.
           </p>
         </div>
-        <div className="grid gap-x-7 gap-y-14 lg:grid-cols-2">
+        <div className="grid grid-cols-1 gap-x-7 gap-y-14 lg:grid-cols-2">
           <article className="min-w-0">
             <PackPromo />
             <div className="mt-5 flex gap-4">
@@ -365,7 +365,7 @@ export function MotionDemos() {
               </div>
             </div>
           </article>
-          <article className="grid min-w-0 items-center gap-7 border-t border-line pt-10 lg:col-span-2 lg:grid-cols-[.7fr_1.3fr] lg:gap-14">
+          <article className="grid min-w-0 grid-cols-1 items-center gap-7 border-t border-line pt-10 lg:col-span-2 lg:grid-cols-[.7fr_1.3fr] lg:gap-14">
             <div className="flex gap-4">
               <span className="pt-1 font-mono text-xs text-action">03 /</span>
               <div>
