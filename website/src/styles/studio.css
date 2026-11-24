@@ -276,6 +276,7 @@ h2 {
 .proof-backplate {
   position: absolute;
   inset: 0 40px 18px 12px;
+  overflow: hidden;
   transform: rotate(8deg);
   background: #3438cb;
   border-radius: 12px;

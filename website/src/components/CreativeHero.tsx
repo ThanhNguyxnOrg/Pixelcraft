@@ -53,9 +53,11 @@ const worlds = [
 export default function CreativeHero() {
   const [world, setWorld] = useState(0);
   const [paused, setPaused] = useState(false);
+  const [hydrated, setHydrated] = useState(false);
   const stage = useRef<HTMLDivElement>(null);
   const visible = useInView(stage, { amount: 0.1 });
   const reduce = useReducedMotion();
+  const reducedState = hydrated && reduce;
   const px = useMotionValue(0);
   const py = useMotionValue(0);
   const rotateX = useSpring(py, { stiffness: 120, damping: 24 });
@@ -65,6 +67,9 @@ export default function CreativeHero() {
     offset: ["start start", "end start"],
   });
   const drift = useTransform(scrollYProgress, [0, 1], [0, 65]);
+  // The server cannot know matchMedia; keep the first client render identical.
+  // CSS already suppresses motion before hydration for reduced-motion users.
+  useEffect(() => setHydrated(true), []);
   useEffect(() => {
     document.documentElement.dataset.ambient =
       paused || reduce ? "paused" : "playing";
@@ -205,17 +210,17 @@ export default function CreativeHero() {
           className="ambient-toggle"
           onClick={() => setPaused(!paused)}
           aria-pressed={paused}
-          disabled={!!reduce}
+          disabled={!!reducedState}
           aria-label={
-            reduce
+            reducedState
               ? "Ambient motion disabled by system preference"
               : paused
                 ? "Resume ambient motion"
                 : "Pause ambient motion"
           }
         >
-          <span aria-hidden="true">{paused || reduce ? "▶" : "Ⅱ"}</span>
-          {reduce
+          <span aria-hidden="true">{paused || reducedState ? "▶" : "Ⅱ"}</span>
+          {reducedState
             ? "Reduced motion"
             : paused
               ? "Motion paused"
