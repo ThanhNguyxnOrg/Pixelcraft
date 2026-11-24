@@ -107,12 +107,12 @@ function Stage({ item }: { item: GalleryItem }) {
   const clip = view === "before" ? 0 : view === "after" ? 100 : 100 - pos;
 
   return (
-    <div>
+    <div className="min-w-0">
       <div className="flex flex-wrap items-center justify-between gap-3 pb-4">
         <div
           role="group"
           aria-label="View"
-          className="flex rounded-full bg-paper-2 p-1"
+          className="flex max-w-full rounded-full bg-paper-2 p-1"
         >
           {(
             [
@@ -126,7 +126,7 @@ function Stage({ item }: { item: GalleryItem }) {
               type="button"
               aria-pressed={view === v}
               onClick={() => setView(v)}
-              className={`min-h-10 rounded-full px-4 font-mono text-[0.8125rem] transition-[background-color,color] duration-150 motion-reduce:transition-none ${
+              className={`min-h-10 rounded-full px-2 font-mono text-[0.8125rem] transition-[background-color,color] duration-150 sm:px-4 motion-reduce:transition-none ${
                 view === v
                   ? "bg-paper-ink text-paper shadow-[0_6px_18px_-6px_rgba(11,18,64,0.6)]"
                   : "text-paper-ink hover:bg-white/70"
@@ -238,7 +238,7 @@ function Stage({ item }: { item: GalleryItem }) {
           <EvidenceStamp label="rendered" tone="paper" /> Captured in Chromium
           at {w} × {h}
         </span>
-        <span className="flex gap-5">
+        <span className="flex max-w-full flex-wrap gap-x-5 gap-y-3">
           <a
             href={item.liveBefore}
             target="_blank"
@@ -464,7 +464,7 @@ export function Gallery() {
     >
       <div className="mx-auto max-w-[88rem] px-5 py-24 sm:px-8 lg:py-32">
         <div className="grid gap-8 lg:grid-cols-12 lg:items-end">
-          <div className="lg:col-span-8">
+          <div className="min-w-0 lg:col-span-8">
             <p className="flex items-center gap-2.5 font-pixel text-[0.75rem] tracking-[0.06em] text-paper-ink-2 uppercase">
               <span
                 aria-hidden="true"
@@ -522,7 +522,7 @@ export function Gallery() {
                   transition={{ duration: 0.2, ease: [0.2, 0, 0, 1] }}
                   className="grid items-start gap-6 lg:grid-cols-12"
                 >
-                  <div className="lg:col-span-8">
+                  <div className="min-w-0 lg:col-span-8">
                     <Stage item={g} />
                   </div>
                   <div className="lg:col-span-4">

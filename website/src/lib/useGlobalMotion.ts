@@ -13,10 +13,10 @@ export function useGlobalMotion(
   paused: boolean,
 ) {
   useGSAP(
-    (context) => {
+    () => {
       if (paused) return;
       const mm = gsap.matchMedia();
-      mm.add(MOTION_OK, () => {
+      mm.add(MOTION_OK, (context) => {
         gsap.utils.toArray<HTMLElement>("[data-split]").forEach((el) => {
           SplitText.create(el, {
             type: "lines",
@@ -38,6 +38,8 @@ export function useGlobalMotion(
           start: "top 94%",
           once: true,
           onEnter: (batch) => {
+            // Own deferred reveals in this media context, not its useGSAP parent.
+            // Re-entering the parent here makes a cyclic context tree during cleanup.
             context.add(() => {
               gsap.fromTo(
                 batch,
