@@ -31,6 +31,13 @@ export const CATEGORIES: { id: Category; blurb: string }[] = [
 
 export const TOTAL_REFERENCES = repoMeta.totalReferences;
 export const TOTAL_SCRIPTS = repoMeta.totalScripts;
+export const TOTAL_EVAL_FIXTURES = repoMeta.totalEvalFixtures;
+export const TOTAL_EVAL_CASES = repoMeta.totalEvalCases;
+export const SCAN_EXTENSION_COUNT = repoMeta.scanExtensionCount;
+
+const SURFACE_SKILLS_COUNT = SKILLS.filter(
+  (s) => s.category === "Platforms" || s.category === "Channels",
+).length;
 
 export const LANGUAGE_PILLS = [
   { label: "HTML / CSS / TS" },
@@ -228,7 +235,7 @@ export const PHASES: Phase[] = [
       "pixelcraft-mobile",
       "pixelcraft-desktop",
       "pixelcraft-tui",
-      "+9 more",
+      `+${Math.max(0, SURFACE_SKILLS_COUNT - 4)} more`,
     ],
     artifact: "idiomatic code in target stack",
     gate: "Version-sensitive APIs verified against official docs; zero unapproved mocks or stubs.",
@@ -329,8 +336,7 @@ export const THIS_PAGE_DIRECTIONS: Direction[] = [
     name: "Fake agent terminal",
     p: 0.2,
     score: 15,
-    verdict:
-      "Decorative macOS chrome harms scanning 26 skills and multi-stack exhibits on mobile.",
+    verdict: `Decorative macOS chrome harms scanning ${SKILLS.length} skills and multi-stack exhibits on mobile.`,
   },
   {
     id: "D",
@@ -719,14 +725,13 @@ export const TOOLS: Tool[] = [
     id: "scan",
     file: "slop-scan.mjs",
     surface: "Multi-lang",
-    blurb:
-      "Scans 50+ UI file extensions for focus removal, TODO stubs, dead handlers, AI copy clichés, Compose .dp fonts, Flutter zoom locks, and reduced-motion gaps.",
+    blurb: `Scans ${SCAN_EXTENSION_COUNT} UI file extensions for focus removal, TODO stubs, dead handlers, AI copy clichés, Compose .dp fonts, Flutter zoom locks, and reduced-motion gaps.`,
     command: "node slop-scan.mjs <dir> --fail-on p0 [--waivers FILE]",
   },
   {
     id: "tokens",
     file: "export-tokens.mjs",
-    surface: "19 targets",
+    surface: `${repoMeta.totalTokenFormats} targets`,
     blurb:
       "Exports DTCG 2025.10 tokens ($root, $deprecated, modes) to CSS, Tailwind, Swift, Kotlin, Dart, Rust, Go Lip Gloss, Godot, Unity USS, Slint, GTK4, Typst, and more.",
     command: "node export-tokens.mjs tokens.json --format all",
@@ -789,53 +794,9 @@ export const TOOLS: Tool[] = [
   },
 ];
 
-export const SCAN_RULES = [
-  "outline-removed",
-  "zoom-disabled",
-  "paste-blocked",
-  "flutter-text-scaling-locked",
-  "placeholder-as-label",
-  "positive-tabindex",
-  "missing-reduced-motion",
-  "todo-stub-in-ui",
-  "empty-event-handler",
-  "compose-dp-font-size",
-  "lazy-diy-antipattern",
-  "egui-unconditional-repaint",
-  "default-font-only",
-  "transition-all",
-  "emoji-as-icon",
-  "generic-copy",
-  "purple-blue-gradient",
-  "hardcoded-color-literals",
-  "rounded-2xl-repetition",
-  "uniform-shadow",
-  "centered-hero-two-ctas",
-  "gradient-text-treatment",
-  "rounded-accent-rail",
-];
+export const SCAN_RULES: string[] = repoMeta.scanRules;
 
-export const TOKEN_FORMATS = [
-  "css",
-  "tailwind",
-  "scss",
-  "ts",
-  "swift",
-  "kotlin",
-  "android-xml",
-  "dart",
-  "python",
-  "qt",
-  "textual",
-  "xaml",
-  "rust",
-  "go-lipgloss",
-  "godot",
-  "unity-uss",
-  "slint",
-  "gtk4",
-  "typst",
-];
+export const TOKEN_FORMATS: string[] = repoMeta.tokenFormats;
 
 export const GATE_EXITS: { code: number; label: string }[] = [
   { code: 0, label: "PASS — all required rendered evidence present" },
@@ -1073,7 +1034,7 @@ export const FAQ: { q: string; a: string }[] = [
   },
   {
     q: "How do I verify the skills and tooling locally?",
-    a: "Run `npm test` for all validator and script contract suites, `npm run eval:offline` for the 66-fixture multi-language eval harness, and `pixelcraft doctor` to inspect installed agent directories.",
+    a: `Run \`npm test\` for all validator, doc-sync, and script contract suites, \`npm run eval:offline\` for the ${TOTAL_EVAL_FIXTURES}-fixture multi-language eval harness, and \`pixelcraft doctor\` to inspect installed agent directories.`,
   },
   {
     q: "What is the license?",

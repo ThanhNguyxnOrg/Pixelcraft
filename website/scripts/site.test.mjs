@@ -43,6 +43,18 @@ test("showcase identities, version, references, and agent count stay synced with
   assert.equal(meta.totalScripts, expectedScripts);
   assert.ok(meta.agentTargetCount >= 14);
   assert.ok(meta.stacks.length > 0);
+  assert.ok(Array.isArray(meta.tokenFormats) && meta.tokenFormats.length >= 19);
+  assert.equal(meta.totalTokenFormats, meta.tokenFormats.length);
+  assert.ok(Array.isArray(meta.scanRules) && meta.scanRules.length >= 23);
+  assert.equal(meta.totalScanRules, meta.scanRules.length);
+  assert.ok(meta.scanExtensionCount >= 50);
+
+  const expectedFixtures = (
+    await readdir(resolve(root, "../evals/fixtures"))
+  ).filter((f) => f.endsWith(".json")).length;
+  assert.equal(meta.totalEvalFixtures, expectedFixtures);
+  assert.ok(meta.totalEvalCases >= expectedSkills.length);
+  assert.equal(meta.totalGalleryExhibits, 6);
 });
 
 test("gallery metadata matches source scanner output, covers all 6 multi-stack exhibits, and all paired assets exist", async () => {
@@ -115,6 +127,7 @@ test("shipped website UI components, CSS, and entry shell score 0 under Pixelcra
 });
 
 test("shipped source has no host scaffold, remote font or superseded 3D dependency", async () => {
+  const meta = JSON.parse(await read("src/generated/repo-meta.json"));
   async function files(path) {
     const out = [];
     for (const e of await readdir(resolve(root, path), {
@@ -143,6 +156,11 @@ test("shipped source has no host scaffold, remote font or superseded 3D dependen
   const shell = await read("dist/index.html");
   assert.match(shell, /lang="en"/);
   assert.match(shell, /<noscript\s*>/);
+  assert.doesNotMatch(shell, /%PIXELCRAFT_/);
+  assert.ok(
+    shell.includes(`${meta.totalSkills} portable Agent Skills`),
+    "dist/index.html must include live skill count from repo-meta.json",
+  );
   const bundles = [
     ...shell.matchAll(/(?:src|href)="([^"#]*\/assets\/[^"#]+)"/g),
   ].map((m) => m[1]);

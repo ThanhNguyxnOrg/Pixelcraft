@@ -199,8 +199,8 @@ node bin/pixelcraft.mjs remove <skill> --agent claude    # uninstall selected sk
 
 | Script | Purpose & example command |
 |---|---|
-| `slop-scan.mjs` | Multi-language static scanner (50+ UI extensions; detects `outline-removed`, TODO stubs, dead handlers, AI clichés, Compose `.dp` fonts, Flutter zoom locks, missing reduced-motion).<br/>`node skills/pixelcraft-review/scripts/slop-scan.mjs <dir> --fail-on p0 [--waivers FILE] [--json]` |
-| `export-tokens.mjs` | DTCG 2025.10 exporter (`$root`, `$deprecated`, modes) across **19 targets**: `css`, `tailwind`, `scss`, `ts`, `swift`, `kotlin`, `android-xml`, `dart`, `python`, `qt`, `textual`, `xaml`, `rust`, `go-lipgloss`, `godot`, `unity-uss`, `slint`, `gtk4`, `typst` (`--format all`).<br/>`node skills/pixelcraft-tokens/scripts/export-tokens.mjs skills/pixelcraft-tokens/assets/tokens.example.json --format all --out-dir generated/tokens` |
+| `slop-scan.mjs` | Multi-language static scanner (59 UI extensions; detects `outline-removed`, TODO stubs, dead handlers, AI clichés, Compose `.dp` fonts, Flutter zoom locks, missing reduced-motion).<br/>`node skills/pixelcraft-review/scripts/slop-scan.mjs <dir> --fail-on p0 [--waivers FILE] [--json]` |
+| `export-tokens.mjs` | DTCG 2025.10 exporter (`$root`, `$deprecated`, modes) across **19 targets**: `css`, `tailwind`, `swift`, `kotlin`, `dart`, `python`, `qt`, `textual`, `ts`, `scss`, `xaml`, `android-xml`, `rust`, `go-lipgloss`, `godot`, `unity-uss`, `slint`, `gtk4`, `typst` (`--format all`).<br/>`node skills/pixelcraft-tokens/scripts/export-tokens.mjs skills/pixelcraft-tokens/assets/tokens.example.json --format all --out-dir generated/tokens` |
 | `check-contrast.mjs` | Exact WCAG 2.2 luminance contrast + APCA Lc (SAPC 0.0.98G-4g) directly on DTCG token JSON across modes.<br/>`node skills/pixelcraft-visual-qa/scripts/check-contrast.mjs tokens.json --mode dark [--pairs FILE] [--json]` |
 | `check-email.mjs` | HTML email QA: Gmail 102 KB clip threshold, Outlook Word-engine unsafe CSS, missing `alt` / `role="presentation"`, plaintext parity.<br/>`node skills/pixelcraft-visual-qa/scripts/check-email.mjs receipt.html --plaintext receipt.txt [--json]` |
 | `check-tui.mjs` | Terminal QA: inspects captured output or executes a CLI under `NO_COLOR=1` and non-TTY pipes for ANSI leaks and 80-col overflow.<br/>`node skills/pixelcraft-visual-qa/scripts/check-tui.mjs --cols 80 -- ./my-cli status` |
@@ -215,7 +215,8 @@ node bin/pixelcraft.mjs remove <skill> --agent claude    # uninstall selected sk
 
 ```bash
 npm run validate               # validate 26 skills, frontmatter, links, headings, routing sync & evals
-npm test                       # run full validator, distribution, installer, adapter, token, QA & slop-scan tests
+npm run sync:docs              # auto-sync live counts & versions across README, docs, and manifests
+npm test                       # run full validator, doc-sync check, distribution, installer, adapter, token, QA & slop-scan tests
 npm run eval:offline           # run deterministic offline routing & fixture contract checks (66 JSON fixtures)
 npm --prefix website test      # verify showcase sync, 6-exhibit gallery scores & website/src slop-scan === 0
 ```

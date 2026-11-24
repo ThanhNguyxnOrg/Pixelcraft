@@ -19,7 +19,7 @@ PORT=4321 npm start --prefix website
 
 Publish `website/dist/` on any static host. The zero-dependency preview server (`scripts/serve.mjs`) supports `HEAD` and gzip responses. For immutable releases, copy `dist/` to a release directory and start with `SITE_ROOT=/absolute/path/to/release`. No API, database, analytics, remote fonts, or runtime model call is required.
 
-The live site is deployed at https://thanhnguyxnorg.github.io/Pixelcraft/. [`.github/workflows/website.yml`](../.github/workflows/website.yml) rebuilds and deploys it to GitHub Pages on every push to `main` touching `website/` or `skills/`, after all checks pass. GitHub Pages serves the site under `/Pixelcraft/`, so CI builds with `SITE_BASE=/Pixelcraft/` (Vite's `base`; default `/`). Reference files in `public/` exclusively via `publicUrl()` from `src/lib/publicUrl.ts`, never root-relative `/…` paths (`npm test` enforces this).
+The live site is deployed at https://thanhnguyxnorg.github.io/Pixelcraft/. [`.github/workflows/website.yml`](../.github/workflows/website.yml) rebuilds and deploys it to GitHub Pages on every push to `main` touching `website/`, `skills/`, `evals/`, `package.json`, or `bin/pixelcraft.mjs`, after all checks pass. GitHub Pages serves the site under `/Pixelcraft/`, so CI builds with `SITE_BASE=/Pixelcraft/` (Vite's `base`; default `/`). Reference files in `public/` exclusively via `publicUrl()` from `src/lib/publicUrl.ts`, never root-relative `/…` paths (`npm test` enforces this).
 
 ## Architecture and craft choices
 
