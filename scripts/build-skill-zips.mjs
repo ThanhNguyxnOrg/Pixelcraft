@@ -69,7 +69,7 @@ function buildZip(skill) {
 const args = process.argv.slice(2);
 if (args.includes('--help') || args.includes('-h')) {
   console.log('Usage: node scripts/build-skill-zips.mjs [--out DIRECTORY]');
-  console.log('Build one upload ZIP per canonical skill (default: dist/skill-zips).');
+  console.log('Build one upload ZIP per canonical skill (default: skill-zips/).');
   process.exit(0);
 }
 
@@ -77,7 +77,7 @@ try {
   if (args.length !== 0 && (args.length !== 2 || args[0] !== '--out' || args[1].startsWith('-'))) {
     throw new Error('expected --out DIRECTORY (see --help)');
   }
-  const out = args.length ? path.resolve(args[1]) : path.join(root, 'dist', 'skill-zips');
+  const out = args.length ? path.resolve(args[1]) : path.join(root, 'skill-zips');
   const names = fs.readdirSync(skills, { withFileTypes: true })
     .filter((entry) => entry.isDirectory() && fs.existsSync(path.join(skills, entry.name, 'SKILL.md')))
     .map((entry) => entry.name)
