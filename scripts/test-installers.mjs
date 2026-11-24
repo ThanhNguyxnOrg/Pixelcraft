@@ -35,7 +35,11 @@ const assertHarnessPaths = (output) => {
   assert.deepEqual(fs.readdirSync(destination), []);
 };
 
-const expandedGlobExts = ['mjml', 'typ', 'tex', 'uxml', 'uss', 'gd', 'tscn', 'qml', 'xaml', 'cpp', 'h', 'glsl', 'wgsl', 'mdx', 'razor', 'heex', 'erb', 'templ', 'tcss', 'qss', 'r', 'jl'];
+const expandedGlobExts = [
+  'mjml', 'typ', 'tex', 'qmd', 'uxml', 'uss', 'gd', 'tscn', 'qml', 'xaml', 'axaml', 'fxml',
+  'blp', 'slint', 'ets', 'zig', 'less', 'pcss', 'twig', 'cpp', 'h', 'glsl', 'wgsl', 'mdx',
+  'razor', 'heex', 'erb', 'templ', 'tcss', 'qss', 'r', 'jl',
+];
 
 function assertProjectAdapterParity(projectDir) {
   const cursorRule = fs.readFileSync(path.join(projectDir, '.cursor/rules/pixelcraft.mdc'), 'utf8');
@@ -72,21 +76,81 @@ function assertProjectAdapterParity(projectDir) {
 }
 
 try {
-  const cliHelp = run(process.execPath, [path.join(root, 'bin/pixelcraft.mjs'), '--help']);
+  const cli = path.join(root, 'bin/pixelcraft.mjs');
+  const cliHelp = run(process.execPath, [cli, '--help']);
   assert.match(cliHelp, /antigravity=\.agents\/skills/);
   assert.match(cliHelp, /windsurf=\.windsurf\/skills/);
-  assertGuidance(process.execPath, [path.join(root, 'bin/pixelcraft.mjs'), 'add', 'pixelcraft-plan', '--agent', 'agents', '--dry-run'], '--docs-mcp');
+  assert.match(cliHelp, /\bdoctor\b/);
+  assert.match(cliHelp, /\bremove\b/);
+  assert.match(cliHelp, /\binit-router\b/);
+  assert.match(cliHelp, /\bcheck\b/);
+  assertGuidance(process.execPath, [cli, 'add', 'pixelcraft-plan', '--agent', 'agents', '--dry-run'], '--docs-mcp');
   console.log('ok - Node installer only prints MCP guidance on opt-in and dry-run leaves the workspace unchanged');
-  assertHarnessPaths(run(process.execPath, [path.join(root, 'bin/pixelcraft.mjs'), 'add', 'pixelcraft-plan', '--agent', harnesses, '--dry-run']));
+  assertHarnessPaths(run(process.execPath, [cli, 'add', 'pixelcraft-plan', '--agent', harnesses, '--dry-run']));
   console.log('ok - Node installer maps native harnesses and deduplicates shared project skills');
 
   const nodeProject = fs.mkdtempSync(path.join(os.tmpdir(), 'pixelcraft-node-adapters-'));
   try {
     fs.mkdirSync(path.join(nodeProject, '.github'), { recursive: true });
     fs.writeFileSync(path.join(nodeProject, '.github/copilot-instructions.md'), '# Team notes\n\nExisting user note.\n');
-    run(process.execPath, [path.join(root, 'bin/pixelcraft.mjs'), 'add', 'pixelcraft-plan', '--agent', 'claude,cursor,copilot,windsurf,kiro'], nodeProject);
+    run(process.execPath, [cli, 'add', 'pixelcraft-plan', '--agent', 'claude,cursor,copilot,windsurf,kiro'], nodeProject);
     assertProjectAdapterParity(nodeProject);
     console.log('ok - Node installer writes project-relative adapter paths, 4 Claude commands, expanded Copilot glob, and managed Copilot block');
+
+    // doctor reports healthy installation, then catches missing core skill after remove
+    const doctorOk = run(process.execPath, [cli, 'doctor', '--agent', 'claude'], nodeProject);
+    assert.match(doctorOk, /OK\s+\.claude\/skills: 2 skill\(s\) installed and healthy/);
+
+    const removeDry = run(process.execPath, [cli, 'remove', 'pixelcraft-plan', '--agent', 'claude', '--dry-run'], nodeProject);
+    assert.match(removeDry, /dry-run: remove pixelcraft-plan/);
+    assert.ok(fs.existsSync(path.join(nodeProject, '.claude/skills/pixelcraft-plan')));
+
+    // Refuse removing non-Pixelcraft folders
+    const nonPc = spawnSync(process.execPath, [cli, 'remove', 'other-skill', '--agent', 'claude'], { cwd: nodeProject, encoding: 'utf8' });
+    assert.notEqual(nonPc.status, 0);
+    assert.match(nonPc.stderr, /non-Pixelcraft/);
+
+    run(process.execPath, [cli, 'remove', 'pixelcraft-plan', '--agent', 'claude'], nodeProject);
+    assert.equal(fs.existsSync(path.join(nodeProject, '.claude/skills/pixelcraft-plan')), false);
+
+    const doctorMissingCore = spawnSync(process.execPath, [cli, 'doctor', '--agent', 'claude'], { cwd: nodeProject, encoding: 'utf8' });
+    assert.equal(doctorMissingCore.status, 1, 'doctor must flag missing core skill pixelcraft-plan');
+    assert.match(doctorMissingCore.stdout, /missing required core skill 'pixelcraft-plan'/);
+
+    // init-router detects multi-language manifests and upserts managed block idempotently
+    fs.writeFileSync(path.join(nodeProject, 'Cargo.toml'), '[dependencies]\nratatui = "0.29"\n');
+    fs.writeFileSync(path.join(nodeProject, 'go.mod'), 'module example\nrequire github.com/charmbracelet/bubbletea v1.0.0\n');
+    fs.writeFileSync(path.join(nodeProject, 'AGENTS.md'), '# Repo rules\n\nKeep commits focused.\n');
+    const routerStdout = run(process.execPath, [cli, 'init-router', '--dir', nodeProject], nodeProject);
+    assert.match(routerStdout, /pixelcraft-tui/);
+    assert.match(routerStdout, /Cargo\.toml/);
+    run(process.execPath, [cli, 'init-router', '--dir', nodeProject, '--write', 'AGENTS.md'], nodeProject);
+    run(process.execPath, [cli, 'init-router', '--dir', nodeProject, '--write', 'AGENTS.md'], nodeProject);
+    const agentsMd = fs.readFileSync(path.join(nodeProject, 'AGENTS.md'), 'utf8');
+    assert.ok(agentsMd.includes('Keep commits focused.'));
+    assert.equal(agentsMd.split('<!-- pixelcraft:start -->').length, 2, 'init-router --write must be idempotent');
+
+    // check dispatches slop-scan, check-contrast (DTCG JSON), check-pdf (.pdf), and notes check-email for .mjml
+    const cleanHtml = path.join(root, 'skills/pixelcraft-review/scripts/fixtures/clean.html');
+    const checkHtml = run(process.execPath, [cli, 'check', cleanHtml, '--json', '--fail-on', 'any'], nodeProject);
+    assert.equal(JSON.parse(checkHtml).score, 0);
+
+    const tokensJson = path.join(root, 'skills/pixelcraft-tokens/assets/tokens.example.json');
+    const checkTokens = run(process.execPath, [cli, 'check', tokensJson, '--json'], nodeProject);
+    assert.equal(JSON.parse(checkTokens).pass, true);
+
+    const sampleMjml = path.join(nodeProject, 'receipt.mjml');
+    fs.writeFileSync(sampleMjml, '<mjml><mj-body><mj-section><mj-column><mj-text>Receipt #10</mj-text></mj-column></mj-section></mj-body></mjml>\n');
+    const checkMjml = spawnSync(process.execPath, [cli, 'check', sampleMjml, '--json'], { cwd: nodeProject, encoding: 'utf8' });
+    assert.equal(checkMjml.status, 0, checkMjml.stderr);
+    assert.equal(JSON.parse(checkMjml.stdout).score, 0);
+    assert.match(checkMjml.stderr, /check-email\.mjs/);
+
+    const samplePdf = path.join(nodeProject, 'doc.pdf');
+    fs.writeFileSync(samplePdf, Buffer.from('%PDF-1.7\n1 0 obj << /Type /Page /StructTreeRoot 2 0 R /MarkInfo << /Marked true >> /Lang (en) /Title (Test) /FontFile2 3 0 R >> endobj\n%%EOF\n', 'latin1'));
+    const checkPdf = run(process.execPath, [cli, 'check', samplePdf, '--json'], nodeProject);
+    assert.equal(JSON.parse(checkPdf).pass, true);
+    console.log('ok - CLI doctor, remove, init-router, and check subcommands work cleanly');
   } finally {
     fs.rmSync(nodeProject, { recursive: true, force: true });
   }

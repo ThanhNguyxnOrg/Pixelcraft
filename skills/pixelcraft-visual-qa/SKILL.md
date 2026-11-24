@@ -27,6 +27,10 @@ Render the actual surface, inspect representative captures, execute the primary 
 - Read [references/capture-document.md](references/capture-document.md) when verifying final PDFs, print layouts, PDF/UA tags, embedded fonts, or Slidev/Marp slide exports.
 - Read [references/capture-desktop-game.md](references/capture-desktop-game.md) for native windows, Wayland/X11/macOS/Windows capture, Electron/Tauri drivers, high-DPI, frame capture, HUD legibility, and game-safe-area checks.
 - Run `node scripts/shoot.mjs --help` for optional browser capture/audit. The script has no required dependencies; it uses Playwright only when already installed or installable by the user.
+- Run `node scripts/check-contrast.mjs --help` for zero-dependency WCAG 2.2 / APCA contrast verification across tokens and stylesheets.
+- Run `node scripts/check-email.mjs --help` for zero-dependency email HTML auditing (102 KB Gmail clipping, Outlook/Flexbox hazards, image alt text, plaintext parity).
+- Run `node scripts/check-tui.mjs --help` for zero-dependency terminal output auditing (ANSI width/wrapping, `NO_COLOR` resilience, capability fallbacks).
+- Run `node scripts/check-pdf.mjs --help` for zero-dependency PDF verification (page geometry, embedded fonts, text extractability, PDF/UA structure checks).
 
 ## Required loop
 
@@ -52,13 +56,20 @@ Choose rows relevant to the surface; do not claim rows skipped without saying so
 ## Browser quick path
 
 ```bash
-node scripts/shoot.mjs http://localhost:3000 --out visual-qa
-node scripts/shoot.mjs dist/index.html --breakpoints 390x844,768x1024,1440x900
+node scripts/shoot.mjs http://localhost:3000 --out visual-qa --keyboard
+node scripts/shoot.mjs dist/index.html --breakpoints 390x844,768x1024,1440x900 --keyboard
 ```
 
 The script writes PNGs plus `report.json`; highlights overflow, clipping, contrast, broken images, essential content hidden after settling, and visible text possibly covered by opaque elements. Use `data-pixelcraft-essential` on task-critical content outside the built-in main/heading targets. Opt in with `--keyboard` on a safe fixture to probe up to eight Tab stops and likely missing visual indicators. Treat findings as leads: inspect the relevant state manually. A probe or clean report is not proof of task completion, contrast compliance, or correct focus order.
 
 For local files, the built-in server defaults to the file's own directory. Pass `--root` only when shared parent assets are required: it exposes every non-dotfile beneath that root to page scripts for the duration of the capture. Dot-segments such as `.env` and `.git/` are refused. HTTP error pages are still captured and recorded; runs exit non-zero for 4xx/5xx unless `--allow-http-error` is intentionally used for error-page design review.
+
+## Iron Law against abusing `not-checked`
+
+**IRON LAW:** `not-checked` is an honest fallback for genuinely unavailable tooling—never an excuse to skip running available checks. Before marking *any* verification item `not-checked`:
+
+1. Actively check and attempt every available local runtime/tool first (local dev server + Playwright/`shoot.mjs`, zero-dep `check-contrast.mjs` / `check-email.mjs` / `check-tui.mjs` / `check-pdf.mjs`, simulator/emulator, CLI capture, or build/test runner) and record the exact attempted command or missing binary.
+2. **Never declare a UI "done", "verified", "clean", or "production-ready" while rendered checks remain `not-checked`.** Report the work as *implemented / statically checked only, pending rendered verification* and name the exact next command to verify it.
 
 ## Hard rules
 

@@ -53,10 +53,80 @@ Keep high-value text, pricing, forms, and primary controls in the DOM. Treat the
 - Keep postprocessing selective: a single restrained pass can be meaningful; multiple full-screen passes multiply fill-rate and VRAM cost.
 - Make object manipulation bounded, resettable, and understandable. Avoid involuntary idle camera spin.
 
+## Choreography & designer-authored WebGL scenes
+
+### Theatre.js (keyframe & sequence choreography)
+
+Use **Theatre.js** (`@theatre/core`, `@theatre/studio`, `@theatre/r3f`) when camera rails, lighting transitions, or DOM + Three.js/R3F properties require timeline curves authored visually instead of brittle nested `setTimeout` or hand-tuned easing arrays:
+
+- **Strip Studio from production builds**: import `@theatre/studio` dynamically behind a build-time dev guard (`if (import.meta.env.DEV)`) and load the exported static `state.json` into `getProject('Hero', { state })` in production—never bundle Studio UI into end-user JavaScript.
+- **Reduced motion**: when `prefers-reduced-motion: reduce` matches, seek directly to the resting keyframe (`sheet.sequence.position = REST_TIME`) instead of playing camera sweeps.
+
+```ts
+import { getProject, types } from '@theatre/core';
+import bakedState from './hero-sequence.theatre-project-state.json';
+
+if (import.meta.env.DEV) {
+  const studio = (await import('@theatre/studio')).default;
+  studio.initialize();
+}
+
+const project = getProject('ProductShowcase', { state: bakedState });
+const sheet = project.sheet('Intro');
+const cameraRig = sheet.object('Camera', {
+  fov: types.number(40, { range: [25, 75] }),
+  orbitY: types.number(0, { range: [-Math.PI, Math.PI] }),
+});
+```
+
+### Spline (`@splinetool/react-spline` / `@splinetool/runtime`)
+
+Use **Spline** only when a designer-authored interactive 3D scene justifies its runtime payload and the following budget rules are enforced:
+
+- **Lazy-load**: wrap `@splinetool/react-spline` in `React.lazy` (or load `@splinetool/runtime` on `IntersectionObserver` entry) so the Spline runtime never blocks hydration or first paint.
+- **Scene weight budget**: audit `.splinecode` transfer size and embedded texture resolution before shipping (compress textures, cull hidden meshes, keep total scene transfer bounded rather than shipping 15 MB hero downloads).
+- **Static poster & reduced-motion fallback**: render a high-craft static WebP/AVIF poster image immediately for LCP, keep the static poster when `prefers-reduced-motion: reduce` or Save-Data is active (with an explicit opt-in play toggle if interactive inspection matters), and keep all copy, buttons, and forms in semantic DOM above the canvas.
+
+```tsx
+'use client';
+
+import { lazy, Suspense, useEffect, useState } from 'react';
+
+const Spline = lazy(() => import('@splinetool/react-spline'));
+
+export function ProductSpline({ sceneUrl, posterUrl, alt }: { sceneUrl: string; posterUrl: string; alt: string }) {
+  const [reducedMotion, setReducedMotion] = useState(true);
+
+  useEffect(() => {
+    setReducedMotion(window.matchMedia('(prefers-reduced-motion: reduce)').matches);
+  }, []);
+
+  if (reducedMotion) {
+    return <img src={posterUrl} alt={alt} className="scene-poster" />;
+  }
+
+  return (
+    <Suspense fallback={<img src={posterUrl} alt={alt} className="scene-poster" />}>
+      <Spline scene={sceneUrl} aria-label={alt} />
+    </Suspense>
+  );
+}
+```
+
+### Unicorn Studio (interactive WebGL scene embeds)
+
+Use **Unicorn Studio** when embedding designer-authored shader/WebGL motion backdrops with explicit performance and accessibility guardrails:
+
+- Lazy-initialize (`UnicornStudio.init()`) only when the section approaches the viewport, cap DPR (`data-us-dpi="1.5"`), and destroy/pause instances when scrolled offscreen or unmounted (`UnicornStudio.destroy()`).
+- Always render a lightweight CSS/static poster fallback beneath the canvas for `prefers-reduced-motion: reduce`, low-power/Save-Data devices, or WebGL context failure.
+- Treat Unicorn Studio strictly as an atmospheric layer—never lock readable headlines, navigation, or conversion forms inside the WebGL canvas.
+
 ## Official references
 
 - Three.js docs: https://threejs.org/docs/
 - Three.js WebGPU & TSL wiki/examples: https://threejs.org/examples/?q=webgpu
 - React Three Fiber docs: https://r3f.docs.pmnd.rs/
 - Drei docs: https://drei.docs.pmnd.rs/
+- Theatre.js docs: https://www.theatrejs.com/docs/latest
+- Spline docs: https://docs.spline.design/
 - WebGPU API: https://developer.mozilla.org/en-US/docs/Web/API/WebGPU_API

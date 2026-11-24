@@ -1,40 +1,51 @@
 import { useEffect, useRef, useState } from "react";
 import logoUrl from "../assets/pixelcraft-logo-256.png";
-import { motion, useScroll, useSpring } from "motion/react";
-import { NPM_PKG, REPO_URL, VERSION } from "../data";
-import {
-  CopyCommand,
-  EvidenceStamp,
-  PixelIcon,
-  PixelLabel,
-  useMotionPause,
-} from "./pixel";
-import { publicUrl } from "../lib/publicUrl";
-import { useMediaPlayback } from "../lib/useMediaPlayback";
+import { REPO_URL, VERSION } from "../data";
+import { EvidenceStamp, PixelIcon } from "./pixel";
 
 const NAV = [
-  ["#film", "Demos"],
   ["#gallery", "Gallery"],
-  ["#loop", "Loop"],
-  ["#tools", "Tools"],
+  ["#process", "Loop & Floor"],
   ["#skills", "Skills"],
-  ["#floor", "Floor"],
+  ["#tools", "Tools"],
   ["#install", "Install"],
+  ["#faq", "FAQ"],
 ];
 
-/** Thin reading-progress line. Scroll-linked, so it is the one place motion tracks the user directly. */
+/** Scroll-linked reading progress bar. Tracks user scroll directly with zero autonomous motion. */
 function Progress() {
-  const { scrollYProgress } = useScroll();
-  const x = useSpring(scrollYProgress, {
-    stiffness: 140,
-    damping: 30,
-    mass: 0.4,
-  });
+  const barRef = useRef<HTMLDivElement>(null);
+
+  useEffect(() => {
+    let raf = 0;
+    const update = () => {
+      raf = 0;
+      const doc = document.documentElement;
+      const span = Math.max(1, doc.scrollHeight - window.innerHeight);
+      const ratio = Math.min(1, Math.max(0, window.scrollY / span));
+      if (barRef.current) {
+        barRef.current.style.transform = `scaleX(${ratio})`;
+      }
+    };
+    const onScroll = () => {
+      if (!raf) raf = window.requestAnimationFrame(update);
+    };
+    update();
+    window.addEventListener("scroll", onScroll, { passive: true });
+    window.addEventListener("resize", onScroll, { passive: true });
+    return () => {
+      if (raf) window.cancelAnimationFrame(raf);
+      window.removeEventListener("scroll", onScroll);
+      window.removeEventListener("resize", onScroll);
+    };
+  }, []);
+
   return (
-    <motion.div
+    <div
+      ref={barRef}
       aria-hidden="true"
-      style={{ scaleX: x }}
-      className="fixed inset-x-0 top-0 z-50 h-[3px] origin-left bg-[linear-gradient(90deg,var(--color-glow-cyan),var(--color-glow-magenta),var(--color-glow-orange))]"
+      style={{ transform: "scaleX(0)" }}
+      className="fixed inset-x-0 top-0 z-50 h-[3px] origin-[inline-start] bg-action"
     />
   );
 }
@@ -51,7 +62,6 @@ export function Header() {
     return () => window.removeEventListener("scroll", on);
   }, []);
 
-  // Escape closes the mobile menu and returns focus to its button.
   useEffect(() => {
     if (!open) return;
     const on = (e: KeyboardEvent) => {
@@ -74,31 +84,33 @@ export function Header() {
         Skip to content
       </a>
       <div
-        className={`gborder mx-auto flex h-14 max-w-[72rem] items-center gap-3 rounded-full px-2.5 backdrop-blur-xl transition-colors duration-200 motion-reduce:transition-none ${scrolled ? "bg-void/80 shadow-lift" : "bg-void/50"}`}
+        className={`mx-auto flex h-14 max-w-[74rem] items-center gap-3 rounded-full border border-line px-2.5 backdrop-blur-md transition-colors duration-200 motion-reduce:transition-none ${
+          scrolled ? "bg-void/92 shadow-lift" : "bg-void/78"
+        }`}
       >
         <a
           href="#top"
-          className="flex items-center gap-3 ps-2"
+          className="flex items-center gap-2.5 ps-2"
           aria-label="Pixelcraft, back to top"
         >
           <img
             src={logoUrl}
             alt=""
-            width={30}
-            height={30}
-            className="size-[30px]"
+            width={28}
+            height={28}
+            className="size-[28px]"
           />
-          <span className="font-pixel text-[1rem] font-bold tracking-[0.04em] max-[359px]:hidden">
+          <span className="font-pixel text-[0.9375rem] font-bold tracking-[0.04em] max-[359px]:hidden">
             PIXELCRAFT
           </span>
         </a>
-        <nav aria-label="Sections" className="ms-auto hidden xl:block">
-          <ul className="flex items-center">
+        <nav aria-label="Sections" className="ms-auto hidden lg:block">
+          <ul className="flex items-center gap-1">
             {NAV.map(([href, label]) => (
               <li key={href}>
                 <a
                   href={href}
-                  className="inline-flex min-h-10 items-center rounded-full px-3.5 text-[0.9375rem] text-ink-muted transition-colors hover:bg-white/8 hover:text-ink motion-reduce:transition-none"
+                  className="inline-flex min-h-10 items-center rounded-full px-3.5 text-[0.9375rem] text-ink-muted transition-colors hover:bg-raised hover:text-ink motion-reduce:transition-none"
                 >
                   {label}
                 </a>
@@ -108,7 +120,7 @@ export function Header() {
         </nav>
         <a
           href={REPO_URL}
-          className="inline-flex min-h-10 items-center gap-2 rounded-full bg-action px-5 font-mono text-[0.8125rem] font-medium text-on-action shadow-glow-action transition-[background-color,transform] duration-150 hover:bg-ink active:scale-[0.97] max-xl:ms-auto motion-reduce:transition-none"
+          className="inline-flex min-h-10 items-center gap-2 rounded-full bg-action px-4 font-mono text-[0.8125rem] font-medium text-on-action transition-colors duration-150 hover:bg-ink max-lg:ms-auto motion-reduce:transition-none"
         >
           <PixelIcon name="star" size={12} />
           <span className="max-sm:sr-only">GitHub</span>
@@ -119,7 +131,7 @@ export function Header() {
           aria-expanded={open}
           aria-controls="mobile-nav"
           onClick={() => setOpen(!open)}
-          className="inline-flex size-10 items-center justify-center rounded-full bg-white/8 hover:bg-white/14 xl:hidden"
+          className="inline-flex size-10 items-center justify-center rounded-full border border-line bg-panel hover:border-action lg:hidden"
         >
           <PixelIcon name={open ? "close" : "plus"} size={14} />
           <span className="sr-only">{open ? "Close menu" : "Open menu"}</span>
@@ -128,8 +140,8 @@ export function Header() {
       {open ? (
         <nav
           id="mobile-nav"
-          aria-label="Sections"
-          className="gborder mx-auto mt-2 max-h-[calc(100dvh-5.5rem)] max-w-[72rem] overflow-x-hidden overflow-y-auto overscroll-contain rounded-card bg-void text-ink shadow-lift xl:hidden"
+          aria-label="Mobile sections"
+          className="mx-auto mt-2 max-h-[calc(100dvh-5.5rem)] max-w-[74rem] overflow-y-auto rounded-card border border-line bg-void text-ink shadow-lift lg:hidden"
         >
           <ul className="grid p-2">
             {NAV.map(([href, label]) => (
@@ -137,7 +149,7 @@ export function Header() {
                 <a
                   href={href}
                   onClick={() => setOpen(false)}
-                  className="flex min-h-12 items-center rounded-tile px-4 text-[1.0625rem] text-ink hover:bg-white/8"
+                  className="flex min-h-12 items-center rounded-tile px-4 text-[1rem] text-ink hover:bg-panel"
                 >
                   {label}
                 </a>
@@ -150,127 +162,91 @@ export function Header() {
   );
 }
 
-function LoopBackdrop() {
-  const ref = useRef<HTMLVideoElement>(null);
-  const { paused } = useMotionPause();
-  useMediaPlayback(ref, paused);
-
-  return (
-    <video
-      ref={ref}
-      className="absolute inset-0 -z-10 h-full w-full object-cover opacity-35"
-      poster={publicUrl("media/pixelcraft-loop.jpg")}
-      muted
-      loop
-      playsInline
-      preload="none"
-      aria-hidden="true"
-      tabIndex={-1}
-    >
-      <source src={publicUrl("media/pixelcraft-loop.mp4")} type="video/mp4" />
-      <source src={publicUrl("media/pixelcraft-loop.webm")} type="video/webm" />
-    </video>
-  );
-}
-
 export function Footer() {
   return (
-    <footer className="relative isolate overflow-hidden bg-void">
-      <LoopBackdrop />
-      <div
-        aria-hidden="true"
-        className="absolute inset-0 -z-10 [background:linear-gradient(180deg,var(--color-void),color-mix(in_oklab,var(--color-void)_55%,transparent)_40%,var(--color-void)_100%)]"
-      />
-      <div className="mx-auto max-w-[88rem] px-5 pt-32 sm:px-8 lg:pt-44">
-        <div className="grid gap-12 lg:grid-cols-12 lg:items-end">
-          <div className="min-w-0 lg:col-span-7">
-            <PixelLabel>Next step</PixelLabel>
-            <h2
-              data-split
-              className="mt-6 max-w-[14ch] display-wide text-[clamp(2.5rem,6.4vw,5.75rem)] leading-[0.92]"
-            >
-              Install it. Then make your agent show its work.
-            </h2>
-          </div>
-          <div className="min-w-0 lg:col-span-5">
-            <CopyCommand
-              variant="hero"
-              lines={[`npm i -g ${NPM_PKG}`, "pixelcraft"]}
-            />
-          </div>
-        </div>
-
-        <div className="mt-28 grid gap-12 border-t border-line pt-12 lg:grid-cols-12">
+    <footer className="border-t border-line bg-deep">
+      <div className="mx-auto max-w-[84rem] px-5 py-16 sm:px-8 lg:py-20">
+        <div className="grid gap-12 lg:grid-cols-12">
           <div className="lg:col-span-4">
-            <p className="max-w-[36ch] text-[0.9375rem] leading-relaxed text-ink-muted">
+            <p className="font-pixel text-[0.875rem] tracking-[0.04em] text-ink">
+              PIXELCRAFT
+            </p>
+            <p className="mt-3 max-w-[36ch] text-[0.9375rem] leading-relaxed text-ink-muted">
               Portable Agent Skills for distinctive, evidence-verified UI and
-              rigorous UX across frontend stacks.
+              rigorous UX across web, mobile, desktop, terminal, document,
+              email, data, spatial, and game stacks.
             </p>
-            <p className="mt-5 font-mono text-[0.8125rem] text-ink-faint">
-              v{VERSION} · MIT License · © 2026 Pixelcraft contributors
+            <p className="mt-4 font-mono text-[0.8125rem] text-ink-faint">
+              v{VERSION} · MIT License · Zero-dependency CLI &amp; scripts
             </p>
-            <p className="mt-5 flex flex-wrap gap-x-6 gap-y-2 text-[0.9375rem]">
+            <div className="mt-5 flex flex-wrap gap-x-5 gap-y-2 font-mono text-[0.8125rem]">
               <a
                 href={REPO_URL}
-                className="inline-flex items-center gap-2 text-ink underline decoration-line-strong underline-offset-4 hover:decoration-action"
+                className="inline-flex items-center gap-1.5 text-ink underline decoration-line-strong underline-offset-4 hover:decoration-action"
               >
                 GitHub <PixelIcon name="external" size={10} />
               </a>
-            </p>
+              <a
+                href={`${REPO_URL}/blob/main/docs/ARCHITECTURE.md`}
+                className="inline-flex items-center gap-1.5 text-ink-muted underline decoration-line underline-offset-4 hover:text-ink hover:decoration-action"
+              >
+                Architecture <PixelIcon name="external" size={10} />
+              </a>
+              <a
+                href={`${REPO_URL}/blob/main/docs/DESIGN-RATIONALE.md`}
+                className="inline-flex items-center gap-1.5 text-ink-muted underline decoration-line underline-offset-4 hover:text-ink hover:decoration-action"
+              >
+                Rationale <PixelIcon name="external" size={10} />
+              </a>
+            </div>
           </div>
 
           <div className="lg:col-span-7 lg:col-start-6">
-            <h2 className="font-pixel text-[0.75rem] text-ink-faint uppercase">
-              Report for this page
+            <h2 className="font-mono text-[0.8125rem] font-medium text-ink">
+              Verification report for this page
             </h2>
-            <ul className="mt-5 grid gap-3.5 text-[0.9375rem] text-ink-muted">
-              <li className="flex flex-wrap items-baseline gap-3">
+            <ul className="mt-4 grid gap-3 text-[0.875rem] text-ink-muted">
+              <li className="flex flex-wrap items-baseline gap-2.5">
                 <EvidenceStamp label="rendered" />
                 <span>
-                  Gallery pages were captured in Chromium at 1440 × 900. Promo
-                  studies are authored illustrations, not live AI runs.
+                  All 6 multi-stack gallery exhibits were captured in Chromium
+                  at 1440 × 900. Fixtures are fictional reference specimens, not
+                  live production client screenshots.
                 </span>
               </li>
-              <li className="flex flex-wrap items-baseline gap-3">
+              <li className="flex flex-wrap items-baseline gap-2.5">
                 <EvidenceStamp label="static" />
                 <span>
-                  Every gallery score is slop-scan.mjs output
-                  (scripts/capture-gallery.mjs). Counts and commands come from
-                  the repo and the installer’s own --help.
+                  Every gallery score and pin is emitted by slop-scan.mjs; skill
+                  counts, references, scripts, and CLI flags are synced from the
+                  repository.
                 </span>
               </li>
-              <li className="flex flex-wrap items-baseline gap-3">
+              <li className="flex flex-wrap items-baseline gap-2.5">
                 <EvidenceStamp label="model-judgment" />
                 <span>
-                  Direction scores and the notes on visual quality are editorial
-                  judgment, not measurements.
+                  Direction scores and qualitative critique notes are editorial
+                  judgment, not mechanical measurements.
                 </span>
               </li>
-              <li className="flex flex-wrap items-baseline gap-3">
+              <li className="flex flex-wrap items-baseline gap-2.5">
                 <EvidenceStamp label="waived" />
                 <span>
-                  The supplied pixel identity and directional light are
-                  retained; the palette is a deliberate brand choice.
+                  The project’s owned petrol-and-mint pixel palette is preserved
+                  by explicit brand authority.
                 </span>
               </li>
-              <li className="flex flex-wrap items-baseline gap-3">
+              <li className="flex flex-wrap items-baseline gap-2.5">
                 <EvidenceStamp label="not-checked" />
                 <span>
-                  Physical devices, manual screen-reader use, and field Core Web
-                  Vitals.
+                  Physical hardware devices, manual screen-reader sessions, and
+                  field Core Web Vitals.
                 </span>
               </li>
             </ul>
           </div>
         </div>
       </div>
-
-      <p
-        aria-hidden="true"
-        className="mt-24 overflow-hidden pb-[1.5vw] text-center display-wide text-[clamp(3rem,12.2vw,14rem)] leading-[0.82] whitespace-nowrap text-raised/80 select-none"
-      >
-        PIXELCRAFT
-      </p>
     </footer>
   );
 }

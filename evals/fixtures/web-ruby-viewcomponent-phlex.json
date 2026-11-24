@@ -1,0 +1,49 @@
+{
+  "schemaVersion": 1,
+  "id": "web-ruby-viewcomponent-phlex",
+  "skill": "pixelcraft-web",
+  "title": "Build a Ruby on Rails ViewComponent / Phlex + Hotwire Turbo Frames invoice filter workspace without SPA bloat",
+  "contextSnapshot": {
+    "surface": "Server-rendered Rails invoice search, filter, and inline status update workspace",
+    "platform": "Ruby on Rails 8 / ViewComponent or Phlex + Hotwire (Turbo Frames/Streams + Stimulus)",
+    "mode": "Operate",
+    "states": ["initial URL-synced filters", "empty filter match", "Turbo Frame busy indicator", "422 validation error stream", "JavaScript-disabled progressive fallback"],
+    "constraints": ["HTML-first Rails/ViewComponent/Phlex composition", "minimal Stimulus controller only for progressive focus/keyboard enhancement", "preserve back/forward history and accessible focus management"]
+  },
+  "prompt": "Build an invoice search and status-update workspace in our Rails 8 app using Phlex or ViewComponent with Turbo Frames and minimal Stimulus, ensuring filters sync to the URL, errors render cleanly with 422 responses, and keyboard focus is preserved across Turbo updates.",
+  "expectedRouting": ["pixelcraft-web", "references/server-rendered.md", "references/component-systems.md"],
+  "forbiddenBehaviors": [
+    "introduces React or heavy client-side state stores in a Rails + Hotwire codebase",
+    "breaks browser back/forward history by updating Turbo Frames without data-turbo-action=\"advance\"",
+    "replaces native HTML <form>/<button>/<a> controls with div click handlers in Stimulus",
+    "omits aria-busy/aria-live or loses focus when a Turbo Stream replaces an invoice row"
+  ],
+  "rubricDimensions": [
+    {
+      "dimension": "Rails + Phlex/ViewComponent + Hotwire idioms",
+      "pass": "composes clean typed ViewComponent/Phlex views, syncs search/filter state in URL params with Turbo Frame advance, and keeps Stimulus scoped to narrow progressive behavior",
+      "fail": "rebuilds client-side routing/state in JS or scatters raw HTML partials without component boundaries"
+    },
+    {
+      "dimension": "accessibility and resilient states",
+      "pass": "uses semantic form labels, handles 422 inline validation errors, manages focus across Turbo Frame/Stream swaps, and degrades cleanly without JS",
+      "fail": "uses placeholder-only search inputs or drops focus to document.body on every stream update"
+    },
+    {
+      "dimension": "honest verification labeling",
+      "pass": "separates RSpec/Minitest component specs from rendered Capybara/browser verification across widths",
+      "fail": "claims keyboard traversal and responsive layout passed from unit component specs alone"
+    }
+  ],
+  "negativeControls": [
+    {
+      "name": "view component unit test only",
+      "input": "bundle exec rspec spec/components passes",
+      "mustNot": "claim Turbo Frame focus restoration or 390px layout is rendered-verified"
+    }
+  ],
+  "baseline": {
+    "withoutSkill": "adds client-side fetch/SPA glue over Rails, breaks URL back-button state, and loses keyboard focus on partial DOM replacement",
+    "withSkill": "delivers crisp HTML-first ViewComponent/Phlex + Hotwire Turbo Frames with URL sync, 422 error handling, Stimulus focus management, and honest evidence"
+  }
+}

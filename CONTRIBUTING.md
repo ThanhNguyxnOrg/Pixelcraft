@@ -33,13 +33,26 @@ Do not add YAML features here unless the Agent Skills spec requires them; quote 
 2. Link every reference from `SKILL.md` with a one-line “read when” trigger.
 3. Before changing a rule, read [`docs/DESIGN-RATIONALE.md`](docs/DESIGN-RATIONALE.md) and update the rationale when the trade-off changes.
 4. Add or update fixtures/examples when behavior changes.
-5. Run:
+5. Run the validation and test suites:
    ```sh
-   npm run validate
+   npm test
+   npm run eval:offline
    node bin/pixelcraft.mjs add all --agent all --dry-run
+   ```
+   When editing `website/` or `skills/` metadata surfaced on the showcase site, also run:
+   ```sh
+   npm --prefix website run sync
+   npm --prefix website run check
+   npm --prefix website run build
+   npm --prefix website test
    ```
 6. Commit in focused logical commits. Do not commit generated install copies or `.pixelcraft/` project state.
 
 ## Design content standard
 
 A rule is useful only if it changes an agent decision. Prefer “Use a 65–75ch measure for long-form Latin text” over “use readable typography.” Include transferability notes when a rule depends on platform, script, input modality, locale, or rendering surface.
+
+## Community & security
+
+Participation is governed by [`CODE_OF_CONDUCT.md`](CODE_OF_CONDUCT.md). To report a security issue, follow [`SECURITY.md`](SECURITY.md).
+

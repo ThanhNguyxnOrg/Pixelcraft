@@ -1,12 +1,12 @@
 # pixelcraft-plan evaluation cases
 
-## Case — resolved versions before choosing an API
+## Case 1 — resolved versions before choosing an API
 
 Ask for a filter UI in a locked brownfield app; the available docs MCP returns a new-major API that conflicts with the lockfile. Repeat for a greenfield app with the MCP rate-limited, then with both version sources offline.
 
 Pass: preserve the brownfield lock, locate matching official API docs and record the version/source/date/result before building. Fall back to official docs and the registry without requiring MCP. Offline, document the assumption and affected check without claiming a latest version. Reuse matching evidence instead of looking up the same API again.
 
-## Case 1 — greenfield plan
+## Case 2 — greenfield plan
 
 **Prompt**
 
@@ -35,7 +35,7 @@ Pass: preserve the brownfield lock, locate matching official API docs and record
 | Constraint fidelity | Relies on common defaults or stale APIs | Uses the exact surface constraints, state model, and platform idioms in the expected behaviors |
 | Verification | Reports code/text output only | Provides appropriate rendered/static/model evidence and labels unavailable checks |
 
-## Case 2 — brownfield mapping
+## Case 3 — brownfield mapping
 
 **Prompt**
 
@@ -65,7 +65,7 @@ Pass: preserve the brownfield lock, locate matching official API docs and record
 | Verification | Reports code/text output only | Provides appropriate rendered/static/model evidence and labels unavailable checks |
 
 
-## Case 3 — optional discovery for a rough product idea
+## Case 4 — optional discovery for a rough product idea
 
 **Prompt**
 
@@ -87,7 +87,7 @@ Pass: preserve the brownfield lock, locate matching official API docs and record
 - keeps asking low-impact questions after the plan is actionable.
 - treats the agent's recommendation as user approval.
 
-## Case 4 — complete brief does not trigger a grill
+## Case 5 — complete brief does not trigger a grill
 
 **Prompt**
 
@@ -106,7 +106,7 @@ Pass: preserve the brownfield lock, locate matching official API docs and record
 - asks generic questions already answered by the prompt or repository.
 - treats every unknown detail as a reason to stop.
 
-## Case 5 — brownfield feature discovery after repository inspection
+## Case 6 — brownfield feature discovery after repository inspection
 
 **Prompt**
 

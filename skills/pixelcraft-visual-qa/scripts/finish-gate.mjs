@@ -5,13 +5,28 @@ import { fileURLToPath } from 'node:url';
 
 const optional = ['error', 'empty', 'loading', 'theme', 'reduced-motion', 'reflow-320'];
 const extendedOptional = ['i18n', 'locale', 'forced-colors', 'text-scale-200'];
-const interfaces = ['responsive-web', 'other'];
+const coreFloorOptional = new Set(['error', 'reduced-motion', 'theme']);
+const lazyReasonPattern = /^(?:n\/?a|none|skip|skipped|todo|tbd|ignored|-)$/i;
+const interfaces = ['responsive-web', 'mobile', 'desktop', 'tui', 'email', 'document', 'game', 'spatial', 'other'];
 const shortHeightLayout = 'layout-short-height';
 const shortHeightLimit = 600;
 const webLayoutClasses = ['layout-landscape', shortHeightLayout];
 const present = (value) => typeof value === 'string' && Boolean(value.trim());
 const record = (value) => value && typeof value === 'object' && !Array.isArray(value);
 const dimension = (value) => Number.isSafeInteger(value) && value > 0;
+const isGeometryCheck = (id) => /^width-[1-9]\d*$/.test(id)
+  || id === 'reflow-320'
+  || /^layout-[a-z0-9]+(?:-[a-z0-9]+)*$/.test(id);
+const normalizeArtifact = (value) => path.normalize(value).replace(/\\/g, '/').replace(/^\.\//, '');
+
+function isValidExclusionReason(id, reason) {
+  if (!present(reason)) return false;
+  const trimmed = reason.trim();
+  if (coreFloorOptional.has(id) && (trimmed.length < 8 || lazyReasonPattern.test(trimmed))) {
+    return false;
+  }
+  return true;
+}
 
 export function evaluateEvidence(manifest, hasArtifact) {
   if (!record(manifest) || manifest.schemaVersion !== 1 || !interfaces.includes(manifest.surface)
@@ -27,8 +42,14 @@ export function evaluateEvidence(manifest, hasArtifact) {
   const applyOptionalDecision = (id) => {
     const applicability = manifest.applicability[id];
     if (applicability === true) required.push(id);
-    else if (record(applicability) && applicability.applies === false && present(applicability.reason)) {
-      skipped.set(id, applicability.reason);
+    else if (record(applicability) && applicability.applies === false) {
+      if (isValidExclusionReason(id, applicability.reason)) {
+        skipped.set(id, applicability.reason);
+      } else if (coreFloorOptional.has(id) && present(applicability.reason)) {
+        notChecked.set(id, 'Non-applicability reason for core floor check must be concrete (>= 8 chars and not a placeholder like n/a or skip).');
+      } else {
+        notChecked.set(id, 'Applicability must be decided before verification.');
+      }
     } else notChecked.set(id, 'Applicability must be decided before verification.');
   };
   for (const id of optional) {
@@ -38,6 +59,9 @@ export function evaluateEvidence(manifest, hasArtifact) {
   for (const id of extendedOptional) {
     if (!Object.hasOwn(manifest.applicability, id)) continue;
     applyOptionalDecision(id);
+  }
+  if (manifest.surface === 'email' && Object.hasOwn(manifest.applicability, 'plaintext')) {
+    applyOptionalDecision('plaintext');
   }
 
   const layouts = record(manifest.layoutMatrix) ? manifest.layoutMatrix : {};
@@ -72,7 +96,7 @@ export function evaluateEvidence(manifest, hasArtifact) {
     skipped.delete(round.failure);
   }
 
-  const desktopArtifact = manifest.checks['width-1440']?.artifact;
+  const geometryArtifacts = new Map();
   for (const id of new Set([...required, ...repaired, ...Object.keys(manifest.checks)])) {
     const entry = Object.hasOwn(manifest.checks, id) ? manifest.checks[id] : undefined;
     if (skipped.has(id) && entry?.result !== 'fail') continue;
@@ -80,11 +104,6 @@ export function evaluateEvidence(manifest, hasArtifact) {
     const layout = expectedLayouts.get(id);
     if (id.startsWith('width-') && !Number.isSafeInteger(width)) {
       notChecked.set(id, 'Invalid width check ID; use width-<px> or width-<px>-<defect>.');
-      continue;
-    }
-    if (web && layout && id === shortHeightLayout && present(entry?.artifact) && present(desktopArtifact)
-        && path.normalize(entry.artifact) === path.normalize(desktopArtifact)) {
-      notChecked.set(id, 'Short-height evidence must use a separate artifact from width-1440.');
       continue;
     }
     if (!record(entry) || !['pass', 'fail'].includes(entry.result) || entry.label !== 'rendered'
@@ -96,8 +115,20 @@ export function evaluateEvidence(manifest, hasArtifact) {
         || (layout && (entry.width !== layout.width || entry.height !== layout.height))) {
       notChecked.set(id, present(entry?.reason) ? entry.reason : 'Missing required rendered evidence or assertion.');
     } else if (entry.result === 'fail') {
+      if (isGeometryCheck(id) && !notChecked.has(id)) {
+        const norm = normalizeArtifact(entry.artifact);
+        if (!geometryArtifacts.has(norm)) geometryArtifacts.set(norm, id);
+      }
       skipped.delete(id);
       failures.set(id, { expected: entry.expected, observed: entry.observed, artifact: entry.artifact });
+    } else if (isGeometryCheck(id) && !notChecked.has(id)) {
+      const norm = normalizeArtifact(entry.artifact);
+      const existingOwner = geometryArtifacts.get(norm);
+      if (existingOwner) {
+        notChecked.set(id, `Duplicate artifact '${entry.artifact}' already used by '${existingOwner}'; each viewport/layout check must use a separate artifact.`);
+      } else {
+        geometryArtifacts.set(norm, id);
+      }
     }
   }
 

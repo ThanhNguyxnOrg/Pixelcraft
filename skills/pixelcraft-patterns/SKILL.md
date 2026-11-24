@@ -57,13 +57,19 @@ Patterns are starting hypotheses, not layouts to copy. Choose one from the user'
 | navigation | Back/escape/deep links/refresh must restore understandable state. |
 | truthfulness | No fake metrics, activity, reviews, presence, screenshots, or personalization. |
 
+## Sub-Stack Library Escalation
+
+Patterns define interaction contracts, never permission to hand-roll fragile widgets from scratch. Whenever a selected pattern requires a complex interactive primitive—**command palette (`Cmd+K`), search/faceting, toast queue, drawer/bottom sheet, rich-text or code editor, >500-row virtualized table, drag-and-drop, calendar/date picker, carousel, chart, map, or node graph**—escalate to a vetted, accessible, purpose-built library via the active surface skill (`pixelcraft-web`, `pixelcraft-mobile`, `pixelcraft-desktop`, `pixelcraft-tui`, `pixelcraft-data-apps`) and record it in `.pixelcraft/plan.md`. Never substitute raw `<div>` modals, `contenteditable` hacks, mouse-only DnD, unvirtualized massive tables, or hardcoded inline SVG charts.
+
 ## Pre-submit checklist
 
 - [ ] correct primary pattern selected and hybrid boundaries explicit;
+- [ ] complex primitives (command palettes, search/faceting, toasts, drawers, editors, large tables, DnD, calendars, charts) routed to vetted platform libraries—zero DIY hacks;
 - [ ] first-use, returning-use, empty, error, loading, permission, conflict, and long-content states designed;
 - [ ] destructive/irreversible actions use consequence-appropriate friction;
 - [ ] keyboard/controller/touch path and focus restoration match the platform;
 - [ ] copy names concrete user/domain objects rather than generic "items" or "data";
+- [ ] anti-slop check: zero default template cloning (centered hero + 3 tinted-icon cards), fake KPI/activity/review proof, or AI marketing clichés;
 - [ ] adaptation and localization stress cases use real or realistic content;
 - [ ] visual distinctiveness supports rather than overrides task completion;
 - [ ] evidence labels distinguish `rendered` behavior from `static` inspection or `model-judgment`.

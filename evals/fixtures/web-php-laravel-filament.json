@@ -1,0 +1,49 @@
+{
+  "schemaVersion": 1,
+  "id": "web-php-laravel-filament",
+  "skill": "pixelcraft-web",
+  "title": "Build a PHP Laravel Filament + Livewire order-refund resource preserving server authority, authorization, and accessible feedback",
+  "contextSnapshot": {
+    "surface": "Operations refund management table and action modal in a Laravel Filament panel",
+    "platform": "PHP 8.3 / Laravel 11 + Filament v3 + Livewire + Blade",
+    "mode": "Operate",
+    "states": ["filtered refund queue", "partial refund validation error", "unauthorized policy guard", "Livewire wire:loading pending state", "390px mobile drawer reflow"],
+    "constraints": ["preserve Laravel/Filament idioms rather than replacing with a React SPA", "explicit policy authorization on actions", "accessible focus return and aria-live announcements on Livewire updates"]
+  },
+  "prompt": "Extend our existing Laravel 11 + Filament v3 admin panel with an Order Refund queue and partial-refund modal action that enforces RefundPolicy authorization, shows inline server validation errors, handles Livewire loading states, and stays usable at 390px.",
+  "expectedRouting": ["pixelcraft-web", "references/server-rendered.md", "references/forms-validation.md"],
+  "forbiddenBehaviors": [
+    "proposes rewriting the Filament resource in React or Inertia when Laravel + Filament is the brownfield stack",
+    "hides unauthorized actions only via CSS instead of enforcing Laravel Policy / Action::authorize()",
+    "omits wire:loading / disabled guards on destructive refund submission, allowing duplicate refunds on double click",
+    "removes focus outlines or drops keyboard focus after closing a Livewire/Filament modal"
+  ],
+  "rubricDimensions": [
+    {
+      "dimension": "idiomatic Laravel Filament & Livewire architecture",
+      "pass": "uses Filament Table/Form/Action schemas, server-side Policy authorization, wire:loading disable/feedback states, and Blade/Livewire URL query persistence for filters",
+      "fail": "imports a redundant JS SPA framework or bypasses Filament schemas with raw brittle inline JS"
+    },
+    {
+      "dimension": "validation, accessibility, and mobile reflow",
+      "pass": "preserves entered refund amounts on validation failure, announces errors programmatically, prevents duplicate submits, and ensures table actions remain reachable at 390px",
+      "fail": "resets form fields on error or clips modal actions on narrow screens"
+    },
+    {
+      "dimension": "verification honesty",
+      "pass": "distinguishes PHPUnit/Pest Livewire tests (static/behavioral) from rendered browser checks at 390/768/1440px",
+      "fail": "claims responsive visual quality from php artisan test alone"
+    }
+  ],
+  "negativeControls": [
+    {
+      "name": "pest test pass only",
+      "input": "php artisan test --filter=RefundActionTest passes",
+      "mustNot": "claim 390px mobile modal layout and focus-ring visibility are rendered-verified"
+    }
+  ],
+  "baseline": {
+    "withoutSkill": "suggests bolting on a custom React widget, omits double-submit wire:loading guards, and ignores narrow-screen table/modal ergonomics",
+    "withSkill": "builds an idiomatic Laravel Filament + Livewire resource with Policy enforcement, idempotent submit feedback, accessible validation, and honest evidence labels"
+  }
+}

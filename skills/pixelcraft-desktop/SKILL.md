@@ -1,6 +1,6 @@
 ---
 name: pixelcraft-desktop
-description: Translates Pixelcraft direction, tokens, UX, and floor requirements into desktop applications across Tauri, Electron, Electrobun, Qt 6/PySide6/QML, WinUI 3/WPF, AppKit, SwiftUI macOS, GTK4/libadwaita, Avalonia, Rust GUI (GPUI, Dioxus, Iced, Slint, egui, AccessKit), JavaFX/Swing, C++/C/Zig GUI (FLTK, wxWidgets, Dear ImGui), Go GUI (Wails v3, Fyne, Gio), and Uno Platform. Use for window/menu design, keyboard shortcuts, resizing, multi-monitor restore, high-DPI, native/custom chrome, platform accessibility, and desktop verification.
+description: Translates Pixelcraft direction, tokens, UX, and floor requirements into desktop applications across Tauri, Electron, Electrobun, Qt 6/PySide6/PyQt6/QML, WinUI 3/WPF, AppKit, SwiftUI macOS, GTK4/libadwaita, Avalonia, Rust GUI (GPUI, Dioxus, Iced, libcosmic, Vizia, Slint, egui, AccessKit), JavaFX/Swing, C++/C/Zig GUI (JUCE, GTKmm, FLTK, wxWidgets, Dear ImGui, Nuklear, Ultralight), Go GUI (Wails v3, Fyne, Gio), and Uno Platform. Use for window/menu design, keyboard shortcuts, resizing, multi-monitor restore, high-DPI, native/custom chrome, platform accessibility, and desktop verification.
 license: MIT
 metadata:
   version: 0.1.0
@@ -16,7 +16,7 @@ Organize persistent navigation, working content and one contextual inspector aro
 
 ## Detection signals
 
-`src-tauri/tauri.conf.json`, Electron main/preload configs, `electrobun.config.*`, Qt 6 `.pro`/CMake/PySide6/QML/Kirigami imports, `.csproj` WinUI 3/WPF/Avalonia/Uno (`Uno.Sdk`) references, Xcode AppKit or SwiftUI macOS scenes (`WindowGroup`/`DocumentGroup`/`MenuBarExtra`), GTK4/libadwaita/Blueprint (`.blp`) definitions, Rust `gpui`/`egui`/`slint`/`dioxus`/`iced`/`floem`/`relm4`/`xilem` dependencies, Go `wails3`/`wails`/`fyne`/`gio` modules, JavaFX/Swing/FlatLaf, C++/C/Zig `FLTK`/`wxWidgets`/`imgui`/`dvui`/`clay`, installers/bundles, menu/shortcut registration, multi-window architecture.
+`src-tauri/tauri.conf.json`, Electron main/preload configs, `electrobun.config.*`, Qt 6 `.pro`/CMake/PySide6/PyQt6/`.ui`/QML/Kirigami imports, `.csproj` WinUI 3/WPF/Avalonia/Uno (`Uno.Sdk`) references, Xcode AppKit or SwiftUI macOS scenes (`WindowGroup`/`DocumentGroup`/`MenuBarExtra`), GTK4/libadwaita/GTKmm/Blueprint (`.blp`) definitions, Rust `gpui`/`egui`/`slint`/`dioxus`/`iced`/`libcosmic`/`vizia`/`floem`/`relm4`/`xilem` dependencies, Go `wails3`/`wails`/`fyne`/`gio` modules, JavaFX/Swing/FlatLaf, C++/C/Zig `JUCE`/`FLTK`/`wxWidgets`/`imgui`/`nuklear`/`ultralight`/`dvui`/`clay`, installers/bundles, menu/shortcut registration, multi-window architecture.
 
 ## Translate direction to desktop idioms
 
@@ -36,6 +36,12 @@ Organize persistent navigation, working content and one contextual inspector aro
 - High-DPI scaling must keep icons/type sharp; do not hard-code pixel screenshots as the only UI.
 - Honor reduced motion, reduced transparency, high contrast, screen readers, platform accessibility APIs, keyboard navigation, and system theme.
 
+## Anti-lazy-default & anti-slop guard
+
+- **Never default to plain `Tkinter` on greenfield Python desktop apps**: choose **PySide6 / Qt Quick**, **Flet**, **NiceGUI**, **Tauri** (Python sidecar), or **Textual** instead; apply strict DPI/threading/theme hygiene when inheriting brownfield `CustomTkinter` or `Dear PyGui`.
+- **Reject unjustified ~200 MB Electron web-SPA wrappers**: when targeting a single OS, prefer native **SwiftUI/AppKit** (macOS), **WinUI 3** (Windows), or **GTK4 + libadwaita** (Linux); when cross-platform efficiency matters, evaluate **Tauri v2**, **Qt 6**, **Avalonia**, **Slint**, or **GPUI** before bundling Chromium.
+- **Reject web-page chrome masquerading as a desktop app**: never paste an unadapted browser SPA into a desktop window without native menus, discoverable keyboard shortcuts, dirty-document close confirmation, and multi-monitor restore.
+
 ## Common desktop failures
 
 - browser SPA pasted into Electron/Tauri/Wails shell with no menus/shortcuts/native behavior;
@@ -52,19 +58,28 @@ Organize persistent navigation, working content and one contextual inspector aro
 
 Rendered verification requires running the actual app/windowing stack or platform-specific UI tests. Webview DOM inspection only covers inner content, not menus/titlebar/window integration. `Avalonia.Headless`, Qt test tools, XCUITest, Accessibility Insights for Windows (UIA), VoiceOver/Narrator/Orca, screenshot/golden tests, and manual resize/multi-monitor checks provide distinct evidence. Label untested OS/window-manager combinations `not-checked`.
 
+## Pre-submit checklist
+
+- [ ] zero `TODO`s, placeholder stubs, invented copy, or dead menu/toolbar/shortcut handlers;
+- [ ] native or properly wired hybrid chrome preserves drag, resize, minimize, maximize/Snap Layouts, and minimum bounds;
+- [ ] window geometry and pane splits restore safely and clamp on-screen when monitors disconnect;
+- [ ] every primary workflow completes by keyboard (`Tab`, `F6` pane focus, shortcuts, `Escape`), with background I/O off the UI thread and dirty-close protection;
+- [ ] fractional HiDPI scaling, system Light/Dark/High Contrast, Reduce Transparency/Motion, and platform screen readers (VoiceOver/Narrator/Orca or AccessKit) checked or honestly labeled `not-checked`;
+- [ ] rendered desktop verification distinguishes live window runs (`rendered`) from compile/unit checks (`static`).
+
 ## Framework routing
 
 - Read [references/working-context.md](references/working-context.md) when designing editors, debuggers, inspectors, linked source/canvas panes, `F6` focus traversal, workspace persistence, or multi-monitor bounds clamping.
 - Read [references/tauri.md](references/tauri.md) when building Tauri v2 desktop apps, Rust IPC/`Channel`/`Response`, capability ACLs, v2 plugins, or macOS Overlay chrome.
 - Read [references/electron.md](references/electron.md) when building Electron (`WebContentsView`, `safeStorage`, `@electron/fuses`, `titleBarOverlay`, Mica) or evaluating **Electrobun** (Bun + Zig + OS WebView).
-- Read [references/qt-pyside-qml.md](references/qt-pyside-qml.md) when building Qt 6 Widgets, PySide6, Qt Quick/QML (`FluentWinUI3`/`macOS`, `qmltc`), or Kirigami apps.
+- Read [references/qt-pyside-qml.md](references/qt-pyside-qml.md) when building Qt 6 Widgets, PySide6, PyQt6 / Qt Designer (`.ui`), Qt Quick/QML (`FluentWinUI3`/`macOS`, `qmltc`), Kirigami, or maintaining brownfield CustomTkinter/Dear PyGui apps.
 - Read [references/winui-wpf.md](references/winui-wpf.md) when building WinUI 3 (Windows App SDK, `x:Bind`, `MicaBackdrop`) or .NET 9/10 WPF (`ThemeMode="System"` Fluent Theme) Windows apps.
 - Read [references/appkit.md](references/appkit.md) when building **AppKit** (`NSDocument`, `NSStatusItem`, `NSGlassEffectView`) or **SwiftUI for macOS** (`WindowGroup`, `DocumentGroup`, `MenuBarExtra`, `Settings`, macOS 26 Tahoe Liquid Glass).
 - Read [references/gtk.md](references/gtk.md) when building GTK4 / libadwaita 1.4–1.8 Linux UI, Blueprint (`.blp`), XDG Desktop Portals/Flatpak, and Wayland windows.
 - Read [references/avalonia.md](references/avalonia.md) when building Avalonia 11+ apps with `ControlTheme`, `ThemeVariant`, `x:CompileBindings`, `TopLevel` services, and `Avalonia.Headless`.
-- Read [references/rust-gui.md](references/rust-gui.md) when building Rust desktop UIs across **GPUI**, **Dioxus** (Subsecond/Blitz), **Iced**, **Slint**, **egui**, **Floem**, **Makepad**, **Xilem**, **Freya**, **Relm4**, and **AccessKit**.
+- Read [references/rust-gui.md](references/rust-gui.md) when building Rust desktop UIs across **GPUI**, **Dioxus** (Subsecond/Blitz), **Iced**, **`libcosmic`**, **Vizia**, **Slint**, **egui**, **Floem**, **Makepad**, **Xilem**, **Freya**, **Relm4**, and **AccessKit**.
 - Read [references/javafx-swing.md](references/javafx-swing.md) when building JavaFX 22+ (`Platform.Preferences`, AtlantaFX, `jpackage`) or Swing (**FlatLaf**) desktop apps.
-- Read [references/cpp-gui.md](references/cpp-gui.md) when building C++/C/Zig desktop UIs across Qt C++, wxWidgets, **FLTK 1.4**, Dear ImGui, **DVUI**, **Clay**, and **raygui**.
+- Read [references/cpp-gui.md](references/cpp-gui.md) when building C++/C/Zig desktop UIs across Qt C++, **JUCE** (VST3/AU/CLAP audio plugins), **GTKmm**, wxWidgets, **FLTK 1.4**, Dear ImGui, **Nuklear**, **Ultralight**, **DVUI**, **Clay**, and **raygui**.
 - Read [references/go-gui.md](references/go-gui.md) when building Go desktop apps with **Wails v3**/v2, **Fyne**, or **Gio**.
 - Read [references/uno-platform.md](references/uno-platform.md) when building Uno Platform 5/6 (`Uno.Sdk` Single Project, Skia Desktop, MVUX, Uno Toolkit) desktop apps.
 

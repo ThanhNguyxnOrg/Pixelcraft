@@ -7,7 +7,17 @@ Use this compact artifact as the bridge between divergence and implementation.
 
 **Concept:** <one sentence tying subject/material to visual behavior>
 **Mode/surface:** <mode, platform, input modality, density>
-**Probability class:** <high/medium/low conventional-model probability>
+**Ambition tier & probability class:** <Pragmatic High-Craft / Editorial Domain-Object / Bold Experimental; high/medium/low conventional-model probability>
+
+## Structural skeleton (ASCII)
+```text
+<compact region wireframe showing focal anchor, navigation shape, signature element placement, and narrow/mobile adaptation note — required so implementation cannot collapse to default hero+3-cards>
+```
+
+## Real-copy lead draft
+- Primary headline / screen title: <concrete domain-language draft — zero AI clichés or lorem ipsum>
+- Supporting lead / summary: <1 concrete factual line grounded in brief material>
+- Primary action(s): <exact consequence-naming verb labels, e.g. "Log core sample", "Compare 2025 filings">
 
 ## Composition
 - Grid/structure: <columns, asymmetry, alignment, measure, spatial logic>

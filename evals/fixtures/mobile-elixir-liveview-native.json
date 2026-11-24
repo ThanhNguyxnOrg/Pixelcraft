@@ -1,0 +1,49 @@
+{
+  "schemaVersion": 1,
+  "id": "mobile-elixir-liveview-native",
+  "skill": "pixelcraft-mobile",
+  "title": "Build an Elixir Phoenix LiveView Native SwiftUI format screen with disconnect recovery and native iOS navigation",
+  "contextSnapshot": {
+    "surface": "iOS real-time warehouse pick-list screen powered by Phoenix LiveView Native",
+    "platform": "Elixir / Phoenix LiveView Native (SwiftUI client format)",
+    "mode": "Operate",
+    "states": ["connected live pick queue", "socket disconnected / reconnecting banner", "optimistic scan confirmation", "scan mismatch error", "Dynamic Type large text"],
+    "constraints": ["idiomatic SwiftUI format templates (.swiftui.heex) rather than HTML tags", "explicit network disconnect/reconnect resilience", "VoiceOver labels and >= 44pt tap targets"]
+  },
+  "prompt": "Implement a warehouse pick-list screen in our Elixir Phoenix LiveView Native app targeting iOS SwiftUI (.swiftui.heex), handling live item-claim updates, temporary WebSocket disconnects in warehouse dead zones, and Dynamic Type legibility.",
+  "expectedRouting": ["pixelcraft-mobile", "references/harmonyos-and-emerging-mobile.md", "references/swiftui.md"],
+  "forbiddenBehaviors": [
+    "renders HTML <div>/<table> markup inside a LiveView Native SwiftUI template instead of native SwiftUI elements (<List>, <VStack>, <Button>)",
+    "assumes continuous WebSocket connectivity without an explicit offline/reconnecting banner and pending-action guard",
+    "triggers server round-trips on every text-field keystroke without phx-debounce or local buffering",
+    "claims Xcode Simulator rendering passed from mix test alone"
+  ],
+  "rubricDimensions": [
+    {
+      "dimension": "LiveView Native SwiftUI idioms",
+      "pass": "uses clean .swiftui.heex templates with native SwiftUI views/modifiers, Dynamic Type text styles, and shared Elixir LiveView state without leaking HTML idioms",
+      "fail": "copies web HEEx HTML tags or hardcodes pixel frame sizes"
+    },
+    {
+      "dimension": "connectivity resilience and ergonomics",
+      "pass": "exposes clear reconnecting/stale-data feedback in dead zones, disables conflicting mutations during disconnect, debounces search/scan input, and maintains >= 44pt targets",
+      "fail": "silently drops taps while disconnected or spams server events per keystroke"
+    },
+    {
+      "dimension": "verification honesty",
+      "pass": "distinguishes mix test LiveView state tests from rendered Xcode Simulator / iOS device checks",
+      "fail": "equates Elixir unit tests with rendered iOS SwiftUI verification"
+    }
+  ],
+  "negativeControls": [
+    {
+      "name": "mix test pass only",
+      "input": "mix test passes all LiveView controller assertions",
+      "mustNot": "claim iOS SwiftUI layout, VoiceOver focus, or Dynamic Type scaling is rendered-verified"
+    }
+  ],
+  "baseline": {
+    "withoutSkill": "leaks HTML/Tailwind markup into LiveView Native templates, ignores dead-zone reconnect states, and omits Dynamic Type and VoiceOver considerations",
+    "withSkill": "builds idiomatic Phoenix LiveView Native SwiftUI templates with disconnect resilience, debounced events, native accessibility, and explicit evidence labels"
+  }
+}

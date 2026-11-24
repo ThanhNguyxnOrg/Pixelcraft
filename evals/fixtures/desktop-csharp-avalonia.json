@@ -1,0 +1,49 @@
+{
+  "schemaVersion": 1,
+  "id": "desktop-csharp-avalonia",
+  "skill": "pixelcraft-desktop",
+  "title": "Build a C# Avalonia UI (.axaml) cross-platform ledger desktop window with compiled bindings, theme dictionaries, and AutomationProperties",
+  "contextSnapshot": {
+    "surface": "Cross-platform desktop accounting ledger and reconciliation window",
+    "platform": "C# / .NET 9 / Avalonia UI 11 (.axaml)",
+    "mode": "Operate",
+    "states": ["empty ledger", "unreconciled discrepancy error", "async import loading", "Fluent Light/Dark ThemeVariant", "keyboard-only DataGrid traversal"],
+    "constraints": ["x:CompileBindings=\"True\" MVVM with CommunityToolkit.Mvvm", "ThemeDictionaries resource tokens", "AutomationProperties.Name and keyboard AccessKey/HotKey support"]
+  },
+  "prompt": "Build a cross-platform C# Avalonia UI (.axaml) ledger reconciliation desktop view supporting Light/Dark ThemeVariant switching, keyboard-first DataGrid and toolbar navigation, async CSV import without blocking the UI thread, and screen-reader AutomationProperties.",
+  "expectedRouting": ["pixelcraft-desktop", "references/avalonia.md", "references/working-context.md"],
+  "forbiddenBehaviors": [
+    "hardcodes static hex colors inside AXAML templates instead of ThemeDictionaries / DynamicResource semantic tokens",
+    "blocks the Avalonia UI thread with synchronous file I/O instead of async ICommand/Task execution",
+    "omits AutomationProperties.Name on icon-only buttons or breaks Tab/keyboard traversal in DataGrid",
+    "copies WPF-only APIs that do not exist in Avalonia 11"
+  ],
+  "rubricDimensions": [
+    {
+      "dimension": "Avalonia 11 idioms and token theming",
+      "pass": "uses AXAML Styles/ControlThemes, ThemeDictionaries for Light/Dark/HighContrast variants, x:CompileBindings=\"True\", and async MVVM commands with cancellation",
+      "fail": "hardcodes RGB brushes in AXAML or uses nonexistent WPF-only triggers"
+    },
+    {
+      "dimension": "desktop accessibility and state coverage",
+      "pass": "sets AutomationProperties.Name/HelpText on controls, wires NativeMenu/HotKey shortcuts, and covers empty/loading/discrepancy-error/dirty-close states",
+      "fail": "leaves icon buttons unnamed or drops unsaved edits on close"
+    },
+    {
+      "dimension": "verification honesty",
+      "pass": "labels dotnet build/headless Avalonia tests separately from native Windows/macOS/Linux rendered inspection",
+      "fail": "claims cross-OS desktop rendering passed from dotnet build alone"
+    }
+  ],
+  "negativeControls": [
+    {
+      "name": "dotnet build only",
+      "input": "dotnet build succeeds cleanly",
+      "mustNot": "claim Light/Dark theme contrast or Windows/macOS screen-reader support is rendered-verified"
+    }
+  ],
+  "baseline": {
+    "withoutSkill": "hardcodes light-mode hex brushes in AXAML, mixes WPF syntax, blocks UI thread during CSV import, and omits AutomationProperties",
+    "withSkill": "delivers idiomatic Avalonia 11 AXAML with compiled bindings, ThemeDictionaries, async cancellable commands, keyboard/AutomationProperties support, and honest evidence"
+  }
+}

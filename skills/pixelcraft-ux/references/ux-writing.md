@@ -11,6 +11,7 @@ Evidence: empty-state/form guidance, concise copy practice, and mode-specific ex
 - Headings state the object or decision, not generic “Information”/“Details” when specificity is possible.
 - Front-load distinguishing words for scanning and truncation.
 - Do not blame users, expose internal exception text, or use fake warmth in high-stakes errors.
+- **Ban 2025–2026 AI marketing copy clichés:** never write `supercharge`, `elevate`, `revolutionize`, `unlock`, `seamless`, `cutting-edge`, `next-gen`, `effortless`, `empower`, `streamline`, `all-in-one`, `reimagine`, `unleash`, `AI-powered`, `built for modern teams`, `delve`, `transform your`, or vague `"Get started"` / `"Learn more"` filler when a concrete domain outcome or action is knowable. Replace every buzzword with the verifiable user action, time/data unit, or domain object (e.g., `"Diff two Parquet schemas in 300ms"` instead of `"Effortlessly streamline your next-gen data workflow"`).
 
 ## Error pattern
 

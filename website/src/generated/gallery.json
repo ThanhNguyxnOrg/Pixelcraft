@@ -7,7 +7,7 @@
   "items": {
     "coffee": {
       "before": {
-        "score": 26,
+        "score": 28,
         "findings": [
           {
             "rule": "outline-removed",
@@ -17,7 +17,7 @@
             "fix": "Restore a visible keyboard focus indicator.",
             "pin": {
               "x": 44.4,
-              "y": 71.4
+              "y": 61.6
             }
           },
           {
@@ -31,19 +31,30 @@
             "rule": "transition-all",
             "severity": "P2",
             "line": 20,
-            "snippet": ".card { background: #fff; border-radius: 24px; padding: 28px; box-shadow: 0 10px 25px rgba(0,0,0",
-            "fix": "Animate only intentional properties with semantic durations/easing."
+            "snippet": ".card { background: #fff; border-radius: 24px; padding: 26px; box-shadow: 0 10px 25px rgba(0,0,0",
+            "fix": "Animate only intentional properties with semantic durations/easing.",
+            "pin": {
+              "x": 14,
+              "y": 80
+            }
+          },
+          {
+            "rule": "generic-copy",
+            "severity": "P2",
+            "line": 27,
+            "snippet": "<span class=\"badge\" data-slop=\"purple-blue-gradient\">New · AI-powered</span>",
+            "fix": "Replace template copy with concrete user/domain language.",
+            "pin": {
+              "x": 38.8,
+              "y": 21.2
+            }
           },
           {
             "rule": "generic-copy",
             "severity": "P2",
             "line": 28,
             "snippet": "<h1 data-slop=\"generic-copy\">Elevate your coffee experience seamlessly</h1>",
-            "fix": "Replace template copy with concrete user/domain language.",
-            "pin": {
-              "x": 38.3,
-              "y": 26.2
-            }
+            "fix": "Replace template copy with concrete user/domain language."
           },
           {
             "rule": "generic-copy",
@@ -56,7 +67,7 @@
             "rule": "generic-copy",
             "severity": "P2",
             "line": 31,
-            "snippet": "<button class=\"btn primary\" data-slop=\"outline-removed\">Get started</button>",
+            "snippet": "<button type=\"button\" class=\"btn primary\" data-slop=\"outline-removed\">Get started</button>",
             "fix": "Replace template copy with concrete user/domain language."
           },
           {
@@ -66,26 +77,26 @@
             "snippet": "<div class=\"card\"><h3 data-slop=\"emoji-as-icon\">☕ Fresh</h3><p>Roasted with care for the perfect",
             "fix": "Use a coherent icon system or text instead of structural emoji.",
             "pin": {
-              "x": 19.3,
-              "y": 101.4
+              "x": 19.2,
+              "y": 85.4
             }
           },
           {
             "rule": "purple-blue-gradient",
             "severity": "P2",
             "line": 10,
-            "snippet": ".hero { min-height: 640px; display: flex; flex-direction: column; align-items: center; justify-c",
+            "snippet": ".hero { min-height: 540px; display: flex; flex-direction: column; align-items: center; justify-c",
             "fix": "Use a color posture derived from subject/material rather than the default AI gradient.",
             "pin": {
               "x": 49.4,
-              "y": 17.9
+              "y": 13.4
             }
           },
           {
             "rule": "missing-reduced-motion",
             "severity": "P1",
             "line": 20,
-            "snippet": ".card { background: #fff; border-radius: 24px; padding: 28px; box-shadow: 0 10px 25px rgba(0,0,0",
+            "snippet": ".card { background: #fff; border-radius: 24px; padding: 26px; box-shadow: 0 10px 25px rgba(0,0,0",
             "fix": "Provide a reduced-motion path when animation or transitions exist."
           },
           {
@@ -99,11 +110,11 @@
             "rule": "centered-hero-two-ctas",
             "severity": "P3",
             "line": 10,
-            "snippet": ".hero { min-height: 640px; display: flex; flex-direction: column; align-items: center; justify-c",
+            "snippet": ".hero { min-height: 540px; display: flex; flex-direction: column; align-items: center; justify-c",
             "fix": "Question the centered hero/two-CTA template; choose composition from the user decision.",
             "pin": {
               "x": 45.1,
-              "y": 71.4
+              "y": 61.6
             }
           }
         ]
@@ -286,6 +297,290 @@
             "severity": "P2",
             "line": 8,
             "snippet": ":root { --violet: #7c3aed; --blue: #3b82f6; }",
+            "fix": "Move recurring colors into semantic tokens and verify contrast roles."
+          }
+        ]
+      },
+      "after": {
+        "score": 0,
+        "findings": []
+      }
+    },
+    "tui": {
+      "before": {
+        "score": 22,
+        "findings": [
+          {
+            "rule": "gradient-text-treatment",
+            "severity": "P3",
+            "line": 12,
+            "snippet": ".ascii { color: #a855f7; font-family: monospace; font-size: 13px; line-height: 1.15; white-space",
+            "fix": "Check that decorative gradient text fits the direction and remains legible.",
+            "pin": {
+              "x": 11.2,
+              "y": 15.4
+            }
+          },
+          {
+            "rule": "outline-removed",
+            "severity": "P0",
+            "line": 21,
+            "snippet": "input:focus, button:focus { outline: none; }",
+            "fix": "Restore a visible keyboard focus indicator.",
+            "pin": {
+              "x": 92.2,
+              "y": 59
+            }
+          },
+          {
+            "rule": "placeholder-as-label",
+            "severity": "P1",
+            "line": 46,
+            "snippet": "<input placeholder=\"Type command...\" data-slop=\"placeholder-as-label\">",
+            "fix": "Use a persistent programmatic label; placeholder is only a hint.",
+            "pin": {
+              "x": 11.2,
+              "y": 59
+            }
+          },
+          {
+            "rule": "transition-all",
+            "severity": "P2",
+            "line": 20,
+            "snippet": "input { flex: 1; background: #18181b; color: #f4f4f5; border: 1px solid #3f3f46; border-radius: ",
+            "fix": "Animate only intentional properties with semantic durations/easing."
+          },
+          {
+            "rule": "generic-copy",
+            "severity": "P2",
+            "line": 35,
+            "snippet": "<p class=\"headline\" data-slop=\"generic-copy\">Supercharge your deployment workflow seamlessly wit",
+            "fix": "Replace template copy with concrete user/domain language.",
+            "pin": {
+              "x": 11.2,
+              "y": 26.4
+            }
+          },
+          {
+            "rule": "purple-blue-gradient",
+            "severity": "P2",
+            "line": 12,
+            "snippet": ".ascii { color: #a855f7; font-family: monospace; font-size: 13px; line-height: 1.15; white-space",
+            "fix": "Use a color posture derived from subject/material rather than the default AI gradient.",
+            "pin": {
+              "x": 11.2,
+              "y": 33.5
+            }
+          },
+          {
+            "rule": "missing-reduced-motion",
+            "severity": "P1",
+            "line": 20,
+            "snippet": "input { flex: 1; background: #18181b; color: #f4f4f5; border: 1px solid #3f3f46; border-radius: ",
+            "fix": "Provide a reduced-motion path when animation or transitions exist."
+          },
+          {
+            "rule": "hardcoded-color-literals",
+            "severity": "P2",
+            "line": 8,
+            "snippet": "body { margin: 0; background: #09090b; color: #e4e4e7; font-family: Inter, monospace; padding: 3",
+            "fix": "Move recurring colors into semantic tokens and verify contrast roles."
+          }
+        ]
+      },
+      "after": {
+        "score": 0,
+        "findings": []
+      }
+    },
+    "mobile": {
+      "before": {
+        "score": 30,
+        "findings": [
+          {
+            "rule": "outline-removed",
+            "severity": "P0",
+            "line": 20,
+            "snippet": ".tiny-btn:focus, .bottom-cta:focus { outline: none; }",
+            "fix": "Restore a visible keyboard focus indicator.",
+            "pin": {
+              "x": 44.7,
+              "y": 30.9
+            }
+          },
+          {
+            "rule": "default-font-only",
+            "severity": "P2",
+            "line": 8,
+            "snippet": "body { margin: 0; background: #0f172a; color: #f8fafc; font-family: Inter, sans-serif; padding: ",
+            "fix": "Choose type by voice/platform and provide deliberate fallbacks."
+          },
+          {
+            "rule": "transition-all",
+            "severity": "P2",
+            "line": 16,
+            "snippet": ".card { background: #fff; border-radius: 24px; padding: 14px 16px; margin-bottom: 12px; box-shad",
+            "fix": "Animate only intentional properties with semantic durations/easing.",
+            "pin": {
+              "x": 27.1,
+              "y": 26.9
+            }
+          },
+          {
+            "rule": "generic-copy",
+            "severity": "P2",
+            "line": 33,
+            "snippet": "<h1 data-slop=\"generic-copy\">Elevate your commute seamlessly</h1>",
+            "fix": "Replace template copy with concrete user/domain language.",
+            "pin": {
+              "x": 28.8,
+              "y": 13.8
+            }
+          },
+          {
+            "rule": "generic-copy",
+            "severity": "P2",
+            "line": 34,
+            "snippet": "<p>Unlock next-gen transit tracking today.</p>",
+            "fix": "Replace template copy with concrete user/domain language."
+          },
+          {
+            "rule": "generic-copy",
+            "severity": "P2",
+            "line": 41,
+            "snippet": "<button type=\"button\" class=\"bottom-cta\">Get started</button>",
+            "fix": "Replace template copy with concrete user/domain language."
+          },
+          {
+            "rule": "generic-copy",
+            "severity": "P2",
+            "line": 51,
+            "snippet": "<h1 style=\"font-size:32px\">Elevate your commute</h1>",
+            "fix": "Replace template copy with concrete user/domain language."
+          },
+          {
+            "rule": "generic-copy",
+            "severity": "P2",
+            "line": 52,
+            "snippet": "<p style=\"font-size:20px\">Unlock next-gen transit</p>",
+            "fix": "Replace template copy with concrete user/domain language."
+          },
+          {
+            "rule": "generic-copy",
+            "severity": "P2",
+            "line": 59,
+            "snippet": "<button type=\"button\" class=\"bottom-cta\">Get started</button>",
+            "fix": "Replace template copy with concrete user/domain language."
+          },
+          {
+            "rule": "purple-blue-gradient",
+            "severity": "P2",
+            "line": 11,
+            "snippet": ".status { padding: 12px 24px 6px; display: flex; justify-content: space-between; font-size: 12px",
+            "fix": "Use a color posture derived from subject/material rather than the default AI gradient.",
+            "pin": {
+              "x": 27.1,
+              "y": 10.8
+            }
+          },
+          {
+            "rule": "missing-reduced-motion",
+            "severity": "P1",
+            "line": 16,
+            "snippet": ".card { background: #fff; border-radius: 24px; padding: 14px 16px; margin-bottom: 12px; box-shad",
+            "fix": "Provide a reduced-motion path when animation or transitions exist."
+          },
+          {
+            "rule": "hardcoded-color-literals",
+            "severity": "P2",
+            "line": 8,
+            "snippet": "body { margin: 0; background: #0f172a; color: #f8fafc; font-family: Inter, sans-serif; padding: ",
+            "fix": "Move recurring colors into semantic tokens and verify contrast roles."
+          },
+          {
+            "rule": "centered-hero-two-ctas",
+            "severity": "P3",
+            "line": 12,
+            "snippet": ".hero { background: linear-gradient(135deg, #7c3aed, #3b82f6); color: #fff; padding: 18px 24px 2",
+            "fix": "Question the centered hero/two-CTA template; choose composition from the user decision."
+          }
+        ]
+      },
+      "after": {
+        "score": 0,
+        "findings": []
+      }
+    },
+    "document": {
+      "before": {
+        "score": 20,
+        "findings": [
+          {
+            "rule": "empty-event-handler",
+            "severity": "P1",
+            "line": 52,
+            "snippet": "<a class=\"mail-cta\" href=\"#\" data-slop=\"outline-removed\">View invoice in browser</a>",
+            "fix": "Replace dead href=\"#\" links with a real destination or a <button type=\"button\"> handler."
+          },
+          {
+            "rule": "default-font-only",
+            "severity": "P2",
+            "line": 8,
+            "snippet": "body { margin: 0; background: #1e293b; color: #f8fafc; font-family: Inter, sans-serif; padding: ",
+            "fix": "Choose type by voice/platform and provide deliberate fallbacks."
+          },
+          {
+            "rule": "transition-all",
+            "severity": "P2",
+            "line": 19,
+            "snippet": ".mail-flex { display: flex; gap: 14px; background: #1c1c20; padding: 16px; border-radius: 16px; ",
+            "fix": "Animate only intentional properties with semantic durations/easing.",
+            "pin": {
+              "x": 58.8,
+              "y": 23.4
+            }
+          },
+          {
+            "rule": "generic-copy",
+            "severity": "P2",
+            "line": 29,
+            "snippet": "<h1 data-slop=\"generic-copy\">Invoice · Seamless Cloud Billing</h1>",
+            "fix": "Replace template copy with concrete user/domain language.",
+            "pin": {
+              "x": 13.3,
+              "y": 14.6
+            }
+          },
+          {
+            "rule": "generic-copy",
+            "severity": "P2",
+            "line": 46,
+            "snippet": "<p style=\"color:#cbd5e1;font-size:15px\">Unlock effortless billing updates! Your invoice is ready",
+            "fix": "Replace template copy with concrete user/domain language."
+          },
+          {
+            "rule": "purple-blue-gradient",
+            "severity": "P2",
+            "line": 12,
+            "snippet": ".sheet-head { background: linear-gradient(135deg, #7c3aed, #3b82f6); color: #fff; padding: 18px ",
+            "fix": "Use a color posture derived from subject/material rather than the default AI gradient.",
+            "pin": {
+              "x": 11.9,
+              "y": 14.4
+            }
+          },
+          {
+            "rule": "missing-reduced-motion",
+            "severity": "P1",
+            "line": 19,
+            "snippet": ".mail-flex { display: flex; gap: 14px; background: #1c1c20; padding: 16px; border-radius: 16px; ",
+            "fix": "Provide a reduced-motion path when animation or transitions exist."
+          },
+          {
+            "rule": "hardcoded-color-literals",
+            "severity": "P2",
+            "line": 8,
+            "snippet": "body { margin: 0; background: #1e293b; color: #f8fafc; font-family: Inter, sans-serif; padding: ",
             "fix": "Move recurring colors into semantic tokens and verify contrast roles."
           }
         ]

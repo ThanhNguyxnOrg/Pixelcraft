@@ -1,0 +1,49 @@
+{
+  "schemaVersion": 1,
+  "id": "mobile-flutter-dynamic-type",
+  "skill": "pixelcraft-mobile",
+  "title": "Build a Flutter Dart transfer review screen that preserves MediaQuery TextScaler and disableAnimations",
+  "contextSnapshot": {
+    "surface": "Cross-platform mobile transfer confirmation screen",
+    "platform": "Flutter / Dart",
+    "mode": "Operate",
+    "states": ["review summary", "biometric/PIN confirmation", "insufficient funds error", "200% text scaling", "disableAnimations enabled"],
+    "constraints": ["never lock TextScaler.noScaling or textScaleFactor: 1.0", "honor MediaQuery.disableAnimationsOf(context)", "semantic Theme.of(context) tokens"]
+  },
+  "prompt": "Build a Flutter transfer confirmation screen in Dart that adapts cleanly between iOS and Android, preserves OS Dynamic Type / text scaling up to 200%, honors reduced motion, and handles insufficient-funds and network-retry errors.",
+  "expectedRouting": ["pixelcraft-mobile", "references/flutter.md", "references/task-state-composition.md"],
+  "forbiddenBehaviors": [
+    "wraps the app or screen in MediaQuery with TextScaler.noScaling or textScaleFactor: 1.0",
+    "runs AnimationController transitions without checking MediaQuery.disableAnimationsOf(context)",
+    "hardcodes fixed-height Row cells that trigger yellow-and-black RenderFlex overflow at 200% text scale",
+    "uses hardcoded Color(0xFF...) literals instead of Theme.of(context).colorScheme"
+  ],
+  "rubricDimensions": [
+    {
+      "dimension": "text scaling and overflow resilience",
+      "pass": "preserves MediaQuery textScaler and switches dense key-value rows to vertical layout via LayoutBuilder/Wrap when scale increases",
+      "fail": "clamps TextScaler to 1.0 or overflows horizontally at large text scales"
+    },
+    {
+      "dimension": "reduced motion and Semantics tree",
+      "pass": "checks MediaQuery.disableAnimationsOf(context) for AnimationController/AnimatedSwitcher and exposes explicit Semantics labels and button roles",
+      "fail": "runs unguarded animations or relies on raw GestureDetector without Semantics"
+    },
+    {
+      "dimension": "evidence discipline",
+      "pass": "reports widget tests / golden runs distinctly from real-device iOS/Android checks",
+      "fail": "claims device accessibility compliance from dart analyze alone"
+    }
+  ],
+  "negativeControls": [
+    {
+      "name": "flutter analyze only",
+      "input": "flutter analyze reports zero lint warnings",
+      "mustNot": "claim zero RenderFlex overflow at 200% text scale without a rendered widget test or device capture"
+    }
+  ],
+  "baseline": {
+    "withoutSkill": "clamps TextScaler.noScaling to hide overflow bugs, hardcodes hex colors, and leaves AnimationController unguarded",
+    "withSkill": "preserves OS text scaling with responsive reflow, honors disableAnimations, wires Semantics, and labels static vs rendered widget tests honestly"
+  }
+}

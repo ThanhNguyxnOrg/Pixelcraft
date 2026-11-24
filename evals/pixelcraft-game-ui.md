@@ -1,10 +1,10 @@
 # pixelcraft-game-ui evaluation cases
 
-## Case — acquisition while moving
+## Case 1 — acquisition while moving
 
 Pick up loot in a sequence where stopping would be disruptive. Pass if a brief nonblocking signal acknowledges the event and the exact item is findable later via controller. Fail if the acknowledgement is the only record or a modal interrupts the sequence.
 
-## Case 1 — hud design
+## Case 2 — hud design
 
 **Prompt**
 
@@ -31,7 +31,7 @@ Pick up loot in a sequence where stopping would be disruptive. Pass if a brief n
 | Constraint fidelity | Relies on common defaults or stale APIs | Uses the exact surface constraints, state model, and platform idioms in the expected behaviors |
 | Verification | Reports code/text output only | Provides appropriate rendered/static/model evidence and labels unavailable checks |
 
-## Case 2 — menu flow
+## Case 3 — menu flow
 
 **Prompt**
 

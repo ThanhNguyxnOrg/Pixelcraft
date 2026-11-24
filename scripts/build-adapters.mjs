@@ -92,7 +92,7 @@ ${skillList(skills, '.github/skills')}
 
 function copilotPathInstructions() {
   return `---
-applyTo: "**/*.{html,css,scss,js,jsx,ts,tsx,vue,svelte,astro,mdx,razor,heex,erb,templ,mjml,typ,tex,py,rb,php,cs,java,kt,swift,dart,rs,go,lua,ex,exs,clj,cljs,elm,fs,scala,cpp,h,glsl,wgsl,qml,xaml,uxml,uss,gd,tscn,tcss,qss,r,jl}"
+applyTo: "**/*.{html,css,scss,less,pcss,js,jsx,ts,tsx,vue,svelte,astro,mdx,razor,heex,erb,templ,twig,mjml,typ,tex,qmd,py,rb,php,cs,java,kt,swift,dart,rs,go,zig,lua,ex,exs,clj,cljs,elm,fs,scala,cpp,h,glsl,wgsl,qml,xaml,axaml,fxml,blp,slint,ets,uxml,uss,gd,tscn,tcss,qss,r,jl}"
 ---
 
 When editing interface, styling, navigation, interaction, or user-facing copy in these files, follow the Pixelcraft routing instructions in \`.github/copilot-instructions.md\` and read the matching skill under \`.github/skills/\` before implementation or review.

@@ -1,6 +1,6 @@
 import { useId, useRef, type KeyboardEvent, type ReactNode } from "react";
 
-/** APG tabs pattern: roving tabindex, arrow/Home/End keys, automatic activation. */
+/** APG horizontal tabs pattern: roving tabindex, Left/Right/Home/End keys (never traps Up/Down page scroll). */
 export function Tabs<T extends { id: string }>({
   items,
   value,
@@ -29,9 +29,8 @@ export function Tabs<T extends { id: string }>({
 
   function onKeyDown(e: KeyboardEvent) {
     let next = index;
-    if (e.key === "ArrowRight" || e.key === "ArrowDown")
-      next = (index + 1) % items.length;
-    else if (e.key === "ArrowLeft" || e.key === "ArrowUp")
+    if (e.key === "ArrowRight") next = (index + 1) % items.length;
+    else if (e.key === "ArrowLeft")
       next = (index - 1 + items.length) % items.length;
     else if (e.key === "Home") next = 0;
     else if (e.key === "End") next = items.length - 1;
@@ -48,6 +47,7 @@ export function Tabs<T extends { id: string }>({
       <div
         role="tablist"
         aria-label={label}
+        aria-orientation="horizontal"
         className={listClassName}
         onKeyDown={onKeyDown}
       >

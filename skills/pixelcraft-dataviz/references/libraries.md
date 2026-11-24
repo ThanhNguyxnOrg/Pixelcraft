@@ -64,6 +64,100 @@ export function computeBarLayout(
 }
 ```
 
+## Apache ECharts, Observable Plot, & Vega-Lite idioms
+
+### Apache ECharts (`echarts/core` tree-shaking + `ResizeObserver` + `aria.decal`)
+
+Never import the full `echarts` barrel (~1 MB+) in app bundles. Register only used charts/components from `echarts/core`, enable `aria: { enabled: true, decal: { show: true } }` for descriptions and colorblind-safe patterns, observe container resizes, and **always call `chart.dispose()` on unmount**:
+
+```ts
+import * as echarts from 'echarts/core';
+import { BarChart } from 'echarts/charts';
+import { AriaComponent, GridComponent, TooltipComponent } from 'echarts/components';
+import { CanvasRenderer } from 'echarts/renderers';
+
+echarts.use([BarChart, AriaComponent, GridComponent, TooltipComponent, CanvasRenderer]);
+
+export function mountRevenueChart(el: HTMLElement, labels: string[], values: number[]) {
+  const chart = echarts.init(el);
+  chart.setOption({
+    aria: { enabled: true, decal: { show: true } },
+    tooltip: { trigger: 'axis' },
+    xAxis: { type: 'category', data: labels },
+    yAxis: { type: 'value' },
+    series: [{ name: 'Revenue (EUR)', type: 'bar', data: values }],
+  });
+
+  const ro = new ResizeObserver(() => chart.resize());
+  ro.observe(el);
+  return () => {
+    ro.disconnect();
+    chart.dispose();
+  };
+}
+```
+
+### Observable Plot (declarative marks, facets, `ariaLabel`, & resize)
+
+Set `ariaLabel` / `ariaDescription` directly on `Plot.plot(...)`, use `fx`/`fy` facets for small multiples instead of spaghetti overlays, measure container width with `ResizeObserver` (or Observable Framework's `resize()`), and remove previous SVG elements before re-appending:
+
+```ts
+import * as Plot from '@observablehq/plot';
+
+export function mountFacetPlot(el: HTMLElement, rows: { region: string; month: string; latencyMs: number }[]) {
+  const render = () => {
+    const chart = Plot.plot({
+      width: Math.max(320, el.clientWidth),
+      height: 260,
+      ariaLabel: 'Median latency by month faceted by region',
+      fx: { label: null },
+      y: { label: 'Latency (ms)', grid: true },
+      marks: [Plot.lineY(rows, { x: 'month', y: 'latencyMs', fx: 'region', tip: true }), Plot.ruleY([0])],
+    });
+    el.replaceChildren(chart);
+  };
+  render();
+  const ro = new ResizeObserver(render);
+  ro.observe(el);
+  return () => {
+    ro.disconnect();
+    el.replaceChildren();
+  };
+}
+```
+
+### Vega-Lite (`vega-embed`, `"width": "container"`, signals, & fallback)
+
+- Set `"width": "container"` inside single-view specs backed by a sized parent container; **trap**: Vega-Lite's `"width": "container"` does **not** apply to faceted/concatenated multi-view specs—compute explicit child widths on resize instead.
+- Use `params` (interactive signals/selections) for brushing/filtering, call `result.finalize()` on unmount to clean up listeners/Canvas contexts, and pair with a collapsible summary table + keyboard filter controls because Vega canvases are not keyboard-navigable by default.
+
+```ts
+import embed from 'vega-embed';
+
+const res = await embed(el, {
+  $schema: 'https://vega.github.io/schema/vega-lite/v5.json',
+  description: 'Monthly error rate with interactive threshold slider',
+  width: 'container',
+  height: 240,
+  params: [{ name: 'maxErr', value: 5, bind: { input: 'range', min: 1, max: 10, step: 0.5, name: 'Threshold % ' } }],
+  data: { values: rows },
+  mark: 'bar',
+  encoding: {
+    x: { field: 'month', type: 'ordinal' },
+    y: { field: 'errorPct', type: 'quantitative', title: 'Error rate (%)' },
+    color: { condition: { test: 'datum.errorPct > maxErr', value: '#c92a2a' }, value: '#1971c2' },
+  },
+}, { actions: { export: true, source: false, editor: false } });
+// On unmount: res.finalize();
+```
+
+## BI & observability plugin UI
+
+- **Grafana Plugin UI (`@grafana/ui`, `@grafana/data`, & Grafana Scenes)**: read live host light/dark/high-contrast tokens through **`useTheme2()`** (`theme.colors.background.primary`, `theme.colors.text.primary`, `theme.spacing(2)`)—never hardcode colors that break when users toggle Grafana themes. Compose native panel/app UIs with `@grafana/ui` (`PanelChrome`, `Table`, `TimeSeries`) and build multi-panel dynamic observability apps using **Grafana Scenes** (`EmbeddedScene`, `SceneFlexLayout`, `SceneQueryRunner`, `SceneVariableSet`) so time ranges, template variables, query cancellation, and error/no-data states stay synchronized with Grafana.
+- **Apache Superset & Metabase embedding boundaries**:
+  - Use official SDKs (**`@superset-ui/embedded-sdk`** with short-lived server-issued guest tokens, or **Metabase Embedding SDK** `@metabase/embedding-sdk-react` / signed JWT embeds) instead of fragile session-cookie `<iframe>` hacks.
+  - Enforce server-side **row-level security (RLS)** predicates inside the guest/JWT token so tenants can never tamper with client filter URLs; lock CSP `frame-ancestors`, handle token refresh/expiry cleanly, align theme tokens where supported, and never expose unauthenticated BI admin chrome inside customer products.
+
 ## Cross-ecosystem implementation rules
 
 - **Data contract**: Keep parsing, unit conversion, timezone normalization, null policy, and aggregation outside chart render components. Never let missing fields silently coerce to zero.
@@ -76,7 +170,7 @@ export function computeBarLayout(
 
 - Choose **D3 v7 (modular) / visx / standalone Vega** for bespoke interactive encodings when the team can own accessibility and layout.
 - Choose **Observable Plot / Vega-Lite / Altair / Seaborn (`seaborn.objects`) / ggplot2** for reproducible statistical grammar.
-- Choose **Highcharts / ECharts / Chart.js / Recharts / Nivo / Tremor** for standard product dashboards (prefer Highcharts when turnkey chart accessibility and sonification are priorities and licensing fits).
-- Choose **uPlot / TradingView Lightweight Charts** for high-frequency telemetry or financial time series.
+- Choose **Highcharts / ECharts (`echarts/core`) / Chart.js / Recharts / Nivo / Tremor** for standard product dashboards (prefer Highcharts when turnkey chart accessibility and sonification are priorities and licensing fits).
+- Choose **uPlot / TradingView Lightweight Charts** for high-frequency telemetry or financial time series, and **Grafana Scenes / `@grafana/ui`** for observability plugins inside Grafana.
 - Choose **Datashader / FINOS Perspective / UW IDL Mosaic (DuckDB-Wasm)** when raw point counts or streaming rates exceed ordinary DOM/Canvas limits.
 - Choose **matplotlib / CairoMakie** for print/publication vector precision, and **Swift Charts / Vico** for native mobile craft.

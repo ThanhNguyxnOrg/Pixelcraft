@@ -1,0 +1,49 @@
+{
+  "schemaVersion": 1,
+  "id": "game-godot-gdscript",
+  "skill": "pixelcraft-game-ui",
+  "title": "Build a Godot 4 GDScript inventory and crafting screen using Control Containers, Theme tokens, and joypad focus neighbors",
+  "contextSnapshot": {
+    "surface": "Godot 4 inventory grid, item inspector, and crafting action screen",
+    "platform": "Godot 4 / GDScript (.gd, .tscn, .tres)",
+    "mode": "Play",
+    "states": ["empty inventory", "selected item comparison", "insufficient materials error", "controller focus navigation", "16:9 vs 16:10 handheld scaling"],
+    "constraints": ["Control containers and anchors over absolute pixel placement", "explicit grab_focus() and focus_neighbor_* wiring", "centralized Godot Theme resource (.tres)"]
+  },
+  "prompt": "Build a Godot 4 inventory and crafting UI in GDScript (.gd) and scene hierarchy (.tscn) using Control containers, a shared Theme resource, deterministic controller focus traversal with grab_focus(), and clear disabled/insufficient-resource feedback.",
+  "expectedRouting": ["pixelcraft-game-ui", "references/godot.md", "references/hud-principles.md"],
+  "forbiddenBehaviors": [
+    "positions Control nodes with raw hardcoded offsets instead of MarginContainer/HBoxContainer/GridContainer and anchors",
+    "leaves joypad focus stranded when opening or closing the inventory modal or removing the last stack of an item",
+    "duplicates inline StyleBox overrides across every button instead of defining a shared Godot Theme (.tres)",
+    "relies on hover tooltips alone to inspect item stats or crafting costs"
+  ],
+  "rubricDimensions": [
+    {
+      "dimension": "Godot Control layout and Theme discipline",
+      "pass": "uses nested Control containers, stretch mode canvas_items with expand aspect handling, and a centralized Theme (.tres) for fonts/StyleBoxes/colors",
+      "fail": "hardcodes node coordinates or duplicates per-button inline overrides"
+    },
+    {
+      "dimension": "controller focus lifecycle and state clarity",
+      "pass": "calls grab_focus() on open, restores focus when an item stack depletes, maps ui_accept/ui_cancel cleanly, and shows item stats on focus as well as hover",
+      "fail": "drops focus to null when crafting consumes an item or requires a mouse to read stats"
+    },
+    {
+      "dimension": "verification honesty",
+      "pass": "separates static GDScript/scene checks from live Godot runtime captures across 16:9 and handheld viewports",
+      "fail": "claims controller ergonomics passed without running the Godot scene"
+    }
+  ],
+  "negativeControls": [
+    {
+      "name": "gdscript parse only",
+      "input": "godot --headless --check-only exits 0",
+      "mustNot": "claim controller focus navigation or safe-area scaling is rendered-verified"
+    }
+  ],
+  "baseline": {
+    "withoutSkill": "places Control nodes at fixed coordinates, omits grab_focus() and focus recovery, and depends on mouse hover for item stats",
+    "withSkill": "builds responsive Godot 4 Control containers with Theme tokens, deterministic joypad focus recovery, focus-accessible inspection, and explicit evidence labels"
+  }
+}

@@ -1,0 +1,49 @@
+{
+  "schemaVersion": 1,
+  "id": "mobile-swiftui-ios",
+  "skill": "pixelcraft-mobile",
+  "title": "Build an iOS SwiftUI medication schedule screen with Dynamic Type, VoiceOver, and Reduce Motion",
+  "contextSnapshot": {
+    "surface": "iOS SwiftUI daily schedule and dose-confirmation screen",
+    "platform": "iOS 18 Swift / SwiftUI",
+    "mode": "Operate",
+    "states": ["due dose", "confirmed with undo", "missed dose", "Dynamic Type AX3", "Reduce Motion enabled"],
+    "constraints": ["native NavigationStack and Sheet idioms", "44x44pt minimum touch targets", "semantic Color asset tokens"]
+  },
+  "prompt": "Build an iOS SwiftUI medication schedule screen where a user can confirm or undo a dose, inspect upcoming reminders, and remain fully legible at Accessibility Extra Large (AX3) text sizes with VoiceOver and Reduce Motion enabled.",
+  "expectedRouting": ["pixelcraft-mobile", "references/swiftui.md", "references/tactile-interactions.md", "references/task-state-composition.md"],
+  "forbiddenBehaviors": [
+    "hardcodes fixed font point sizes instead of semantic Font text styles or @ScaledMetric",
+    "animates state transitions with withAnimation without reading @Environment(\\.accessibilityReduceMotion)",
+    "uses raw Color.blue or Color.red literals instead of semantic asset catalog or system colors",
+    "claims iOS Simulator rendering passed from swift build alone"
+  ],
+  "rubricDimensions": [
+    {
+      "dimension": "SwiftUI platform idioms and state clarity",
+      "pass": "uses NavigationStack, semantic text styles, @ScaledMetric layout switching at AX sizes, and reversible dose confirmation with clear non-color status cues",
+      "fail": "recreates web-style card chrome with fixed heights that clip at AX3"
+    },
+    {
+      "dimension": "accessibility and motion discipline",
+      "pass": "gates withAnimation on accessibilityReduceMotion, groups VoiceOver rows with combined labels/actions, and keeps >= 44pt tap targets",
+      "fail": "leaves unlabeled icon buttons or forces spring motion regardless of Reduce Motion"
+    },
+    {
+      "dimension": "honest verification labeling",
+      "pass": "labels source checks static and marks Simulator/VoiceOver/Dynamic Type checks rendered only when executed or not-checked otherwise",
+      "fail": "treats Xcode/Swift compilation as visual or VoiceOver proof"
+    }
+  ],
+  "negativeControls": [
+    {
+      "name": "compile-only pass",
+      "input": "swift build exits 0 on macOS",
+      "mustNot": "claim AX3 Dynamic Type layout or VoiceOver navigation is rendered-verified"
+    }
+  ],
+  "baseline": {
+    "withoutSkill": "hardcodes fixed frame heights, raw hex colors, unguarded withAnimation springs, and omits AX3 reflow and undo state",
+    "withSkill": "builds idiomatic SwiftUI with Dynamic Type reflow, Reduce Motion gating, VoiceOver grouping, tactile confirmation with undo, and honest evidence labels"
+  }
+}

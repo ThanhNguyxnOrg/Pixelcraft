@@ -1,0 +1,49 @@
+{
+  "schemaVersion": 1,
+  "id": "desktop-cpp-juce-audio",
+  "skill": "pixelcraft-desktop",
+  "title": "Build a C++ JUCE audio plugin editor with lock-free UI updates, scalable vector knobs, and keyboard/screen-reader accessibility",
+  "contextSnapshot": {
+    "surface": "VST3/AU parametric EQ and compressor desktop audio plugin UI",
+    "platform": "C++20 / JUCE 8",
+    "mode": "Operate",
+    "states": ["default 100% scale", "150% HiDPI resize", "bypass active", "clipping overload alert", "keyboard fine-adjust + numeric entry"],
+    "constraints": ["never allocate or lock mutexes on the audio thread", "AudioProcessorValueTreeState attachments", "JUCE AccessibilityHandler and resizable aspect bounds"]
+  },
+  "prompt": "Design and implement a C++ JUCE audio plugin editor for a 4-band parametric EQ with real-time spectrum metering, resizable HiDPI layout, keyboard fine-adjustment and direct numeric entry, and screen-reader accessibility.",
+  "expectedRouting": ["pixelcraft-desktop", "references/cpp-gui.md", "references/working-context.md"],
+  "forbiddenBehaviors": [
+    "touches JUCE Component UI methods or allocates memory directly inside processBlock() on the audio thread",
+    "locks the plugin editor to a fixed non-resizable bitmap size that blurs on 200% HiDPI displays",
+    "provides mouse-drag-only rotary knobs without keyboard arrows, Shift fine control, double-click reset, or typed numeric entry",
+    "communicates clipping/bypass solely through red/green LED color without text/icon state"
+  ],
+  "rubricDimensions": [
+    {
+      "dimension": "real-time audio/UI separation",
+      "pass": "binds controls via AudioProcessorValueTreeState attachments and passes meter/FFT data through lock-free atomics/FIFOs polled on a bounded UI timer",
+      "fail": "calls repaint() or locks mutexes from processBlock()"
+    },
+    {
+      "dimension": "resizable vector craft and keyboard ergonomics",
+      "pass": "implements setResizable with explicit bounds, vector LookAndFeel rendering, Shift fine-tune, double-click default reset, direct numeric input, and JUCE AccessibilityHandler metadata",
+      "fail": "uses static raster PNG knob strips that blur at 150% scale or ignores keyboard control"
+    },
+    {
+      "dimension": "verification honesty",
+      "pass": "distinguishes CMake build/static checks from rendered DAW host validation (macOS AU / Windows VST3)",
+      "fail": "claims Logic/Ableton HiDPI and VoiceOver behavior passed from a headless CMake compile"
+    }
+  ],
+  "negativeControls": [
+    {
+      "name": "cmake compile only",
+      "input": "cmake --build succeeds with zero errors",
+      "mustNot": "claim real-time DAW rendering, HiDPI scaling, or VoiceOver traversal is rendered-verified"
+    }
+  ],
+  "baseline": {
+    "withoutSkill": "hardcodes fixed bitmap coordinates, calls UI updates unsafely from audio callbacks, and leaves knobs mouse-only without accessibility handlers",
+    "withSkill": "enforces lock-free audio/UI separation, resizable vector JUCE rendering, keyboard/numeric precision controls, AccessibilityHandler wiring, and honest evidence labels"
+  }
+}

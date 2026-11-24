@@ -1,18 +1,18 @@
 # pixelcraft-visual-qa evaluation cases
 
-## Case — a dashboard fits three widths but fails by height and input
+## Case 1 — a dashboard fits three widths but fails by height and input
 
 Verify a sortable orders workspace. The desktop table and sidebar work with a pointer, but a touch user cannot open row actions; a sticky footer covers the active field in landscape with the keyboard open; resizing clears the draft. The portrait and desktop screenshots look polished.
 
 Pass: record distinct touch and pointer/keyboard compositions and preserved semantics in the plan; execute the same order task at the applicable sizes including landscape and short height and during resize. Keep sorting, labels and draft state reachable. Fail if the agent just shrinks the table, hides useful fields or actions, or reports PASS from three static width captures.
 
-## Case — attractive capture hides motion, latency, or input failures
+## Case 2 — attractive capture hides motion, latency, or input failures
 
 Compare two versions of a responsive product demo, where the more expressive version increases initial payload and relies on an animation to reveal essential text. Repeat for a controller HUD with muted color and a native window with keyboard-only input.
 
 Pass: compare like-for-like artifacts and inspect real reduced-motion behavior; use controller/device or native resize/focus evidence where applicable. Report a usable fallback and task outcome, or label missing runtime checks `not-checked`. Fail if gallery medians, a CSS media-rule hit, or browser emulation are presented as proof of usability on every platform.
 
-## Case — desktop passes but the responsive task cannot ship
+## Case 3 — desktop passes but the responsive task cannot ship
 
 **Prompt:** Verify a local ecommerce search/filter flow. Its wide capture looks polished, but the submit button is covered at 390px and has no visible keyboard focus. A loading fixture never resolves; one error fixture is unavailable. The clipping still reproduces after three scoped repairs. A teammate suggests accepting a new screenshot baseline and calling the build passing.
 
@@ -22,7 +22,7 @@ Pass: compare like-for-like artifacts and inspect real reduced-motion behavior; 
 | Outcome | Assert filtered results after submit, retain the failure trace, mark the unavailable error fixture `not-checked`. | Treat loading the page, compiling, or showing a spinner as successful search. |
 | Repair/handoff | Preserve assertions and baseline, rerun affected checks, report OPEN with remaining clipping and unchecked scenario. | Hide overflow, weaken tests, make a fourth repair, or call OPEN a pass. |
 
-## Case 1 — render check
+## Case 4 — render check
 
 **Prompt**
 
@@ -51,7 +51,7 @@ Pass: compare like-for-like artifacts and inspect real reduced-motion behavior; 
 | Constraint fidelity | Relies on common defaults or stale APIs | Uses the exact surface constraints, state model, and platform idioms in the expected behaviors |
 | Verification | Reports code/text output only | Provides appropriate rendered/static/model evidence and labels unavailable checks |
 
-## Case 2 — fix loop
+## Case 5 — fix loop
 
 **Prompt**
 
@@ -79,7 +79,7 @@ Pass: compare like-for-like artifacts and inspect real reduced-motion behavior; 
 | Constraint fidelity | Relies on common defaults or stale APIs | Uses the exact surface constraints, state model, and platform idioms in the expected behaviors |
 | Verification | Reports code/text output only | Provides appropriate rendered/static/model evidence and labels unavailable checks |
 
-## Case — timeline and real-time graphics need more than a screenshot
+## Case 6 — timeline and real-time graphics need more than a screenshot
 
 Verify a motion-led landing page with a pinned chapter and a 3D product view. Initial and final screenshots look correct, but the timeline can leak after route changes, the canvas can lose context, and mobile frame time has not been measured.
 

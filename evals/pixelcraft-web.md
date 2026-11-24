@@ -1,6 +1,6 @@
 # pixelcraft-web evaluation cases
 
-## Case — compact campaign shell with a costly hero
+## Case 1 — compact campaign shell with a costly hero
 
 **Prompt**
 
@@ -16,7 +16,7 @@
 
 - Shrinks wide navigation without testing a touch action; classifies a hidden but eagerly loaded scene as a lightweight fallback; reports reduced-motion support from a media query alone.
 
-## Case 1 — react app
+## Case 2 — react app
 
 **Prompt**
 
@@ -43,7 +43,7 @@
 | Constraint fidelity | Relies on common defaults or stale APIs | Uses the exact surface constraints, state model, and platform idioms in the expected behaviors |
 | Verification | Reports code/text output only | Provides appropriate rendered/static/model evidence and labels unavailable checks |
 
-## Case 2 — pwa request
+## Case 3 — pwa request
 
 **Prompt**
 
@@ -70,7 +70,7 @@
 | Constraint fidelity | Relies on common defaults or stale APIs | Uses the exact surface constraints, state model, and platform idioms in the expected behaviors |
 | Verification | Reports code/text output only | Provides appropriate rendered/static/model evidence and labels unavailable checks |
 
-## Case 3 — combine a timeline, product scene, and GPU effect in a brownfield app
+## Case 4 — combine a timeline, product scene, and GPU effect in a brownfield app
 
 **Prompt**
 

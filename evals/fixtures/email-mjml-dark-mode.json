@@ -1,0 +1,49 @@
+{
+  "schemaVersion": 1,
+  "id": "email-mjml-dark-mode",
+  "skill": "pixelcraft-email",
+  "title": "Build an MJML transactional security-alert email safe for Outlook Word engine, Gmail 102 KB clip limit, dark mode, and plaintext parity",
+  "contextSnapshot": {
+    "surface": "Transactional account security alert HTML + plaintext email",
+    "platform": "MJML (.mjml -> compiled HTML email + text/plain alternative)",
+    "mode": "Communicate",
+    "states": ["Apple Mail dark mode", "Outlook Desktop Windows (Word engine)", "Gmail mobile/web under 102 KB", "images blocked by default", "text/plain multipart fallback"],
+    "constraints": ["zero display:flex/grid or var(--) in compiled email CSS", "compiled HTML strictly under 102 KB", "explicit color-scheme meta, transparent PNG/alt safety, and complete plaintext companion"]
+  },
+  "prompt": "Design and build an MJML transactional login-alert email with a companion plaintext template that renders legibly in Apple Mail dark mode and Outlook Desktop, stays well under Gmail's 102 KB clip limit, and keeps critical alert details readable when images are blocked.",
+  "expectedRouting": ["pixelcraft-email", "references/mjml.md", "references/client-quirks.md"],
+  "forbiddenBehaviors": [
+    "uses display: flex, display: grid, position: fixed, or CSS var(--...) custom properties in compiled email styles",
+    "puts critical alert text or the primary action solely inside images without meaningful alt text and HTML fallback",
+    "exceeds Gmail's 102 KB HTML byte limit or omits role=\"presentation\" on layout tables and lang/title metadata",
+    "omits the companion plaintext alternative or claims Outlook/Gmail rendering passed from browser preview alone"
+  ],
+  "rubricDimensions": [
+    {
+      "dimension": "cross-client MJML and Outlook/Gmail resilience",
+      "pass": "uses clean MJML section/column primitives producing table-based HTML under 102 KB, bulletproof CTA buttons, role=\"presentation\", lang/title, and zero Outlook-unsafe CSS",
+      "fail": "injects flexbox/CSS variables or bloats compiled HTML past 102 KB"
+    },
+    {
+      "dimension": "dark mode, blocked images, and plaintext parity",
+      "pass": "declares color-scheme/supported-color-schemes, maintains readable dark-mode contrast without transparent dark-logo disappearance, provides alt text, and ships a complete plaintext companion with full URLs",
+      "fail": "breaks contrast in Apple Mail dark mode or leaves plaintext empty/missing action links"
+    },
+    {
+      "dimension": "honest verification labeling",
+      "pass": "runs check-email.mjs (static) and explicitly labels real Outlook/Gmail/Apple Mail client renders as rendered or not-checked",
+      "fail": "presents a local Chrome tab screenshot as proof of Outlook Windows compatibility"
+    }
+  ],
+  "negativeControls": [
+    {
+      "name": "Chrome browser tab only",
+      "input": "compiled email HTML looks good in desktop Chrome",
+      "mustNot": "claim Outlook Desktop Word-engine rendering or Gmail dark-mode color inversion is rendered-verified"
+    }
+  ],
+  "baseline": {
+    "withoutSkill": "writes flexbox/CSS-variable web markup inside email HTML, skips plaintext companion, breaks dark mode logos, and treats Chrome preview as email-client proof",
+    "withSkill": "builds resilient MJML + plaintext templates verified statically via check-email.mjs with dark-mode/blocked-image guards and honest client-render labeling"
+  }
+}

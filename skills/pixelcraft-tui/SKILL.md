@@ -36,6 +36,11 @@ Python `textual`/`rich`/`prompt_toolkit`/`questionary`, Node/Bun `ink`/`@inkjs/u
 - Progress is truthful and cancellable; keyboard interrupt (`Ctrl+C`) and panic teardown must always restore raw mode, alt-screen, and protocol state cleanly.
 - Terminal accessibility is limited and emulator-dependent: avoid color-only state, rapid flashing, cursor traps, and unreadable dense glyph art.
 
+## Anti-lazy-default & anti-slop guard
+
+- **Reject raw `print()` / `console.log()` / manual ANSI escape spaghetti** (`\x1b[31m...`) when structured TUI/CLI libraries fit the language: **Rich** / **Textual** (Python), **Bubble Tea v2 + Lip Gloss v2 + Huh** (Go), **Ratatui** (Rust), **Ink** / **`@clack/prompts`** (Node/Bun), or **Spectre.Console** / **Terminal.Gui v2** (.NET).
+- **Match buffer mode to task scope**: use inline CLI prompts/output for one-shot commands and reserve full-screen alternate-buffer TUIs for persistent interactive workspaces; reject decorative ASCII banners that crowd out real data at `80×24`.
+
 ## Common TUI failures
 
 - decorative ASCII art consuming the only useful viewport;
@@ -50,6 +55,15 @@ Python `textual`/`rich`/`prompt_toolkit`/`questionary`, Node/Bun `ink`/`@inkjs/u
 ## Verification options
 
 TUI rendering can be inspected with actual terminal runs, framework test backends, snapshot tests, width/height fixtures, piped-output tests, `NO_COLOR`/`TERM=dumb`/`COLORTERM` matrices, and keyboard-driven integration tests. Textual supports `App.run_test()`/`Pilot` and SVG snapshots via `pytest-textual-snapshot`; Ratatui supports `TestBackend` + `insta`; Bubble Tea supports `Teatest`; Ink supports `ink-testing-library`. Passing a unit test without a rendered frame/buffer/snapshot is `static`, not `rendered` evidence; label untested emulators `not-checked`.
+
+## Pre-submit checklist
+
+- [ ] zero `TODO`s, placeholder stubs, dead keybindings, or raw hardcoded ANSI escape spaghetti;
+- [ ] layout survives `80×24` resize and narrow panes without disappearing focus or broken Unicode/CJK widths;
+- [ ] `NO_COLOR=1`, `TERM=dumb`, monochrome, and non-TTY piped `stdout` (`--json`/`--plain`) behave cleanly with `stderr` separation;
+- [ ] `Ctrl+C`, normal exit, and panics always restore raw mode, alternate screen, and negotiated terminal protocols (`CSI u`);
+- [ ] every primary workflow is keyboard-only with visible focus, discoverable help, and cancellable progress;
+- [ ] rendered frame/buffer/snapshot evidence (`rendered`) distinguished honestly from unit tests (`static`) and untested terminals (`not-checked`).
 
 ## Framework routing
 

@@ -52,7 +52,7 @@ Before image generation, determine whether the work is:
 
 Use the request, earlier context, and supplied assets first. Do not ask again for information already provided. Inspiration or mood references alone do not establish an existing identity; treat them as constraints only when the user identifies them that way.
 
-If essential information is missing, ask **one short combined intake question** covering only the missing items: create/extend/refresh, existing logo/wordmark, palette, typography, and visual direction/references. If required existing assets are unavailable, request them and wait before generation. An explicit refresh/rebrand request takes priority. Existing identity constraints outrank style, palette, and new-logo defaults.
+If essential information is missing, walk unresolved intake items **one focused question at a time** (never bundle 5 questions into a single wall)—covering only what is actually unknown in priority order: (1) create vs. extend vs. refresh scope, (2) existing logo/wordmark & assets to preserve, (3) palette & typography constraints, and (4) visual world & anti-goals. For each question, state why it matters in one sentence, offer 2–4 concrete options leading with **(Recommended)**, and allow free-form / "you decide" / "skip". If required existing assets are unavailable, request them and wait before generation. An explicit refresh/rebrand request takes priority. Existing identity constraints outrank style, palette, and new-logo defaults.
 
 ## Required workflow
 
@@ -98,9 +98,18 @@ Before presenting the result, perform the self-critique in `references/qa-checkl
 - Never generate long paragraphs, lorem ipsum, dense explanations, unreadable labels, fake tiny UI, or generic corporate slogans.
 - Never copy exact reference logos, names, compositions, slogans, or unique visual assets.
 - Never use generic lightning bolts, random animals, fake luxury crests, copied famous marks, clipart, meaningless sparkles, or inconsistent logo variants.
-- Keep the system quiet, sharp, symbolic, coherent, art-directed, and implementation-friendly.
+- Enforce measurable grid geometry, single-mark consistency, contrast-verified palettes, and implementation-ready token mapping rather than taste adjectives.
 - Report the actual output size/aspect ratio; never promise unsupported dimensions.
 - Treat generated imagery as draft material until provenance, licensing, small-size behavior, contrast pairs, clearspace/minimum size, and ownership/versioning are recorded.
+
+## Pre-submit checklist
+
+- [ ] Missing intake items resolved one focused question at a time (with concrete options + recommendation); supplied brand assets preserved verbatim.
+- [ ] 2–3 genuinely different brand worlds diverged and scored before generation; losing worlds documented.
+- [ ] Identical mark proportions repeated across every panel; solid-black silhouette and 16/32/64 px small-size reductions verified or flagged `not-checked`.
+- [ ] One disciplined palette (base, neutrals, 1–2 repeating accents) with contrast-checked pairs ready for `pixelcraft-tokens` export.
+- [ ] Anti-slop check: zero generic sparkles/lightning bolts/fake crests, zero default purple-blue AI glow, zero lorem ipsum or tiny fake dashboard copy, and zero copied reference logos/compositions.
+- [ ] Actual output dimensions/aspect ratio, evidence label (`rendered`/`model-judgment`/`not-checked`), and provenance/licensing boundaries honestly reported.
 
 ## Reference routing
 

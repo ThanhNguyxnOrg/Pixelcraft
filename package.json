@@ -2,6 +2,11 @@
   "name": "@thanhnguyxn/pixelcraft",
   "version": "0.1.0",
   "description": "Portable Agent Skills pack for distinctive UI and rigorous UX across frontend stacks",
+  "homepage": "https://thanhnguyxnorg.github.io/Pixelcraft/",
+  "bugs": {
+    "url": "https://github.com/ThanhNguyxnOrg/Pixelcraft/issues"
+  },
+  "author": "ThanhNguyxnOrg",
   "license": "MIT",
   "repository": {
     "type": "git",
@@ -17,7 +22,14 @@
     "pi-package",
     "frontend",
     "ui",
-    "ux"
+    "ux",
+    "accessibility",
+    "design-tokens",
+    "dtcg",
+    "multi-platform",
+    "tui",
+    "mobile",
+    "desktop"
   ],
   "pi": {
     "skills": [
@@ -31,9 +43,10 @@
     "node": ">=18"
   },
   "scripts": {
-    "test": "npm run validate && npm run test:distribution && npm run test:installers && npm run test:adapters && npm run test:tokens && npm run test:validator && npm run test:finish-gate && npm run test:slop-scan",
+    "test": "npm run validate && npm run test:distribution && npm run test:installers && npm run test:adapters && npm run test:tokens && npm run test:validator && npm run test:finish-gate && npm run test:slop-scan && npm run test:cross-platform-qa && npm run eval:offline",
     "test:browser": "npm run test:shoot && npm run test:style-inventory",
     "validate": "node scripts/validate-skills.mjs",
+    "eval:offline": "node scripts/run-evals.mjs",
     "build:adapters": "node scripts/build-adapters.mjs",
     "build:skill-zips": "node scripts/build-skill-zips.mjs",
     "test:adapters": "node scripts/test-build-adapters.mjs",
@@ -44,6 +57,7 @@
     "test:style-inventory": "node scripts/test-style-inventory.mjs",
     "test:finish-gate": "node scripts/test-finish-gate.mjs",
     "test:slop-scan": "node scripts/test-slop-scan.mjs",
+    "test:cross-platform-qa": "node scripts/test-cross-platform-qa.mjs",
     "test:shoot": "node scripts/test-shoot.mjs",
     "test:release-archives": "node scripts/test-release-archives.mjs"
   },
@@ -58,8 +72,10 @@
     "skills/",
     "evals/",
     "docs/",
+    "CHANGELOG.md",
     "LICENSE",
     "README.md",
+    "SECURITY.md",
     "install.sh",
     "install.ps1"
   ]

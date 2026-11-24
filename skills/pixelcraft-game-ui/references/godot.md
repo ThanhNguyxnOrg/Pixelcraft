@@ -64,6 +64,47 @@ Store the previously focused `Control` (`get_viewport().gui_get_focus_owner()`) 
 - **Godot 4.5 native AccessKit**: Godot 4.5 integrates AccessKit for native screen-reader trees on supported desktop/mobile platforms. Set **`accessibility_name`**, **`accessibility_description`**, and semantic control types (`Button`, `CheckBox`, `HSlider`, `Label`) especially on icon-only buttons and custom-drawn `Control` nodes, and test on actual assistive technology (label untested platforms `not-checked`).
 - Configure `focus_mode` (`FOCUS_ALL` for interactive controls, `FOCUS_NONE` for decorative nodes), explicit `focus_neighbor_*` overrides where spatial focus jumps erratically, visible `:focus` `StyleBox` states, `ui_accept`/`ui_cancel` InputMap parity, subtitles/scale/colorblind/reduced-motion settings, and conflict-aware remapping.
 
+## Godot C# UI bindings
+
+Godot C# (`Godot.NET.Sdk`) shares the exact same `Control`, `Theme`, `DisplayServer`, `ProcessMode`, `MouseFilter`, and Godot 4.5 AccessKit runtime as GDScript—enforce idiomatic C# binding hygiene:
+
+- Prefer typed **`[Export]`** node properties over brittle string `GetNode<Button>("...")` paths.
+- Subscribe with C# event delegates (`ResumeButton.Pressed += OnResumePressed;`) and unsubscribe in **`_ExitTree()`** when listening to longer-lived autoloads/viewports so freed UI nodes never leak or throw `ObjectDisposedException`; use **`Callable.From(...)`** when connecting dynamic/custom Godot signals.
+- Maintain exact parity with GDScript for localization (`Tr("UI_RESUME_GAME")`), safe areas (`DisplayServer.GetDisplaySafeArea()`), `AddThemeConstantOverride(...)`, `ProcessModeEnum.WhenPaused`, and `MouseFilterEnum.Ignore`.
+
+```csharp
+using Godot;
+
+public partial class HudController : CanvasLayer
+{
+    [Export] public Control PauseOverlay { get; set; } = null!;
+    [Export] public Button ResumeButton { get; set; } = null!;
+
+    private Callable _resizeCallable;
+
+    public override void _Ready()
+    {
+        PauseOverlay.ProcessMode = ProcessModeEnum.WhenPaused;
+        ResumeButton.Text = Tr("UI_RESUME_GAME");
+        ResumeButton.Pressed += OnResumePressed;
+
+        _resizeCallable = Callable.From(ApplySafeArea);
+        GetViewport().Connect(Viewport.SignalName.SizeChanged, _resizeCallable);
+        ApplySafeArea();
+    }
+
+    public override void _ExitTree()
+    {
+        ResumeButton.Pressed -= OnResumePressed;
+        if (GetViewport().IsConnected(Viewport.SignalName.SizeChanged, _resizeCallable))
+            GetViewport().Disconnect(Viewport.SignalName.SizeChanged, _resizeCallable);
+    }
+
+    private void OnResumePressed() => GetTree().Paused = false;
+    private void ApplySafeArea() { /* apply DisplayServer.GetDisplaySafeArea() */ }
+}
+```
+
 ## Do/don't pairs
 
 | Do | Don't |

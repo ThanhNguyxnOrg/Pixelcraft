@@ -21,12 +21,13 @@
 |  |  |  |  |
 
 ## Discovery status
-- Planning path: direct / discovery interview / brownfield discovery / hybrid
-- Interview trigger or reason it was unnecessary:
+- Adaptive discovery mode: Grill-Me / Deep Shaping | Fast Confirm | Direct Execution
+- Trigger or reason deep discovery was unnecessary:
+- Anti-goals & hate-list (rejected competitor tropes / visual or UX patterns):
 - Material decisions resolved (user-selected / recommendation accepted / repository-constrained):
 - Assumptions and their consequences:
 - Unresolved decisions, owner, and next check:
-- Approval boundary/status:
+- Approval boundary/status (including Design Approval `<HARD-GATE>` status):
 
 ## Stack decision
 - Chosen stack:
@@ -34,11 +35,20 @@
 - Framework reference: `references/…` inside that skill
 - Runner-up:
 - Why runner-up lost:
+- Rejected lazy default(s) & rationale (see `references/stack-selection.md`):
 - Hard constraints/gates:
 - Reversal conditions:
 - Confidence:
 - Runtime, package manager, and lockfile:
 - Update ownership and opt-in dependency automation:
+- Creative Direction → Plan feedback loop updates (if a winning direction upgraded the renderer/runtime):
+
+### Sub-Stack Capability → Purpose-Built Library Gate
+List every complex UI capability in scope (rich text, code editor, node graph, map, >500-row table, command palette, drawer/sheet, toast, carousel, search UI, drag-and-drop, date/calendar picker, media player, PDF, charts, complex forms). Do not hand-roll DIY substitutes.
+
+| Capability in scope | Chosen library / native primitive | Rejected lazy default / DIY substitute | A11y / license / version note |
+|---|---|---|---|
+|  |  |  |  |
 
 | Package/runtime + resolved version | Version-sensitive API or compatibility question | Version source and matching API docs (date) | Compatibility / verification command + outcome | Evidence (`static` / `not-checked`) |
 |---|---|---|---|---|

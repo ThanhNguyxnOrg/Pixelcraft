@@ -260,7 +260,7 @@ try {
   assert.match(richRust.stdout, /pub const SPACE_GUTTER: f32 = 24\.0;/);
   assert.match(richRust.stdout, /pub const MOTION_DURATION_FAST: u64 = 150;/);
 
-  // Example asset files: no broken HTML $schema and all formats export cleanly
+  // Example asset files: no broken HTML $schema and all 19 formats export cleanly
   for (const asset of ['tokens.example.json', 'tokens.modes.example.json']) {
     const assetPath = path.join(root, 'skills/pixelcraft-tokens/assets', asset);
     const parsedAsset = JSON.parse(fs.readFileSync(assetPath, 'utf8'));
@@ -270,7 +270,92 @@ try {
   }
   console.log('ok 8 - ts, scss, xaml, android-xml, rust formats and example assets export cleanly');
 
+  // 6 new non-JS formats: go-lipgloss, godot, unity-uss, slint, gtk4, typst (19 total)
+  const goOut = run(['--format', 'go-lipgloss', rich]);
+  assert.equal(goOut.status, 0, goOut.stderr);
+  assert.match(goOut.stdout, /package tokens/);
+  assert.match(goOut.stdout, /import "github\.com\/charmbracelet\/lipgloss"/);
+  assert.match(goOut.stdout, /ColorInk = lipgloss\.Color\("#112233"\)/);
+
+  const godotOut = run(['--format', 'godot', rich]);
+  assert.equal(godotOut.status, 0, godotOut.stderr);
+  assert.match(godotOut.stdout, /class_name DesignTokens/);
+  assert.match(godotOut.stdout, /const COLOR_INK: Color = Color\.html\("#112233"\)/);
+  assert.match(godotOut.stdout, /const SPACE_GUTTER: float = 24\.0/);
+
+  const ussOut = run(['--format', 'unity-uss', '--preserve-references', fixture]);
+  assert.equal(ussOut.status, 0, ussOut.stderr);
+  assert.match(ussOut.stdout, /:root \{/);
+  assert.match(ussOut.stdout, /--color-surface: #ffffff;/);
+  assert.match(ussOut.stdout, /--semantic-background: var\(--color-surface\);/);
+
+  const slintOut = run(['--format', 'slint', rich]);
+  assert.equal(slintOut.status, 0, slintOut.stderr);
+  assert.match(slintOut.stdout, /export global DesignTokens \{/);
+  assert.match(slintOut.stdout, /out property <color> color-ink: #112233;/);
+  assert.match(slintOut.stdout, /out property <length> space-gutter: 24px;/);
+  assert.match(slintOut.stdout, /out property <duration> motion-duration-fast: 150ms;/);
+
+  const gtk4Out = run(['--format', 'gtk4', rich]);
+  assert.equal(gtk4Out.status, 0, gtk4Out.stderr);
+  assert.match(gtk4Out.stdout, /@define-color color_ink #112233;/);
+  assert.match(gtk4Out.stdout, /@define-color color_p3 rgba\(232, 51, 26, 0\.9\);/);
+
+  const typstOut = run(['--format', 'typst', rich]);
+  assert.equal(typstOut.status, 0, typstOut.stderr);
+  assert.match(typstOut.stdout, /#let tokens = \(/);
+  assert.match(typstOut.stdout, /color-ink: rgb\("#112233"\),/);
+  assert.match(typstOut.stdout, /space-gutter: 1\.5em,/);
+
+  // Verify --out-dir writes all 19 expected files including tokens-gtk4.css
+  const allDir = path.join(tmp, 'all-19');
+  const allWrite = run(['--format', 'all', '--out-dir', allDir, rich]);
+  assert.equal(allWrite.status, 0, allWrite.stderr);
+  const expectedFiles = [
+    'tokens.css', 'tokens.tailwind.css', 'tokens.swift', 'tokens.kt', 'tokens.dart',
+    'tokens.py', 'tokens.qt', 'tokens.textual', 'tokens.ts', 'tokens.scss',
+    'tokens.xaml', 'tokens.xml', 'tokens.rs', 'tokens.go', 'tokens.gd',
+    'tokens.uss', 'tokens.slint', 'tokens-gtk4.css', 'tokens.typ',
+  ];
+  for (const name of expectedFiles) {
+    assert.ok(fs.existsSync(path.join(allDir, name)), `missing output file ${name}`);
+  }
+  assert.equal(fs.readdirSync(allDir).length, 19);
+  for (const typedFmt of ['go-lipgloss', 'godot', 'unity-uss', 'slint', 'gtk4', 'typst']) {
+    const failed = run([namedColor, '--format', typedFmt]);
+    assert.notEqual(failed.status, 0, `${typedFmt} should reject non-hex string color`);
+  }
+  console.log('ok 9 - all 19 formats (including go-lipgloss, godot, unity-uss, slint, gtk4, typst) emit idiomatic output and filenames');
+
+  // DTCG 2025.10 $root and $deprecated support
+  const dtcg2025 = path.join(tmp, 'dtcg-2025.json');
+  fs.writeFileSync(dtcg2025, JSON.stringify({
+    color: {
+      $type: 'color',
+      brand: {
+        $root: { $value: '#0055cc' },
+        hover: { $value: '#003d99' },
+        legacy: { $value: '#002266', $deprecated: 'Use color.brand instead' },
+      },
+    },
+    semantic: {
+      $type: 'color',
+      action: { $value: '{color.brand}' },
+      'action-explicit-root': { $value: '{color.brand.$root}' },
+    },
+  }, null, 2));
+  const dtcgCss = run(['--format', 'css', '--preserve-references', dtcg2025]);
+  assert.equal(dtcgCss.status, 0, dtcgCss.stderr);
+  assert.match(dtcgCss.stdout, /--color-brand: #0055cc;/);
+  assert.match(dtcgCss.stdout, /--color-brand-hover: #003d99;/);
+  assert.match(dtcgCss.stdout, /--semantic-action: var\(--color-brand\);/);
+  assert.match(dtcgCss.stdout, /--semantic-action-explicit-root: var\(--color-brand\);/);
+  assert.doesNotMatch(dtcgCss.stdout, /warning:/i, 'deprecation warnings must not pollute stdout');
+  assert.match(dtcgCss.stderr, /warning: deprecated token 'color\.brand\.legacy' \(Use color\.brand instead\)/);
+  console.log('ok 10 - DTCG 2025.10 $root group tokens and $deprecated stderr warnings work cleanly');
+
   console.log('token exporter tests passed');
 } finally {
   fs.rmSync(tmp, { recursive: true, force: true });
 }
+

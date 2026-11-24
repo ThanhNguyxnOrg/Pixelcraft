@@ -38,6 +38,20 @@ Audit every LLM, copilot, or autonomous workflow against these five criteria:
 | **Provenance & grounding** | Every citation, file reference, or data claim links to an inspectable real source or explicitly marks `unverified` / `no source` | Dead/hallucinated URLs, unlinked footnote numbers, or hidden tool queries |
 | **Side-effect approval & undo** | External writes, sends, deletes, or spending require explicit human-in-the-loop preview/approval OR verifiable one-click undo | Agent silently mutates state or fires external requests behind a single ambiguous “Continue” click |
 
+## Architectural / DIY Slop audit checks
+
+Actively inspect the codebase and rendered flows for structural laziness—even when visual screenshots appear tidy:
+
+| Defect category | Concrete evidence to hunt | Default severity | Concrete fix |
+|---|---|---|---|
+| **Stubs & omitted implementation** | `// TODO`, `// FIXME`, `// ... rest`, unimplemented branches in active components/routes | **P0–P1** | Implement the in-scope behavior completely or surface an explicit blocker before delivery |
+| **Dead handlers & fake links** | `onClick={() => {}}`, `onSubmit={() => {}}`, `console.log`-only buttons, `href="#"` / `javascript:void(0)` nav links | **P0–P1** | Wire real state/navigation transitions or remove unbacked affordances |
+| **Unwired mobile navigation** | Hamburger/menu toggle without open/close state, missing focus trap/Escape, or silently dropped desktop routes | **P1** | Wire complete accessible drawer/sheet navigation preserving task parity across breakpoints |
+| **Unapproved mock data as live truth** | Hardcoded 3-item arrays, fake `+24.5%` KPI deltas, invented testimonials/logos presented without user request or demo labeling | **P0** | Bind real data source, render truthful empty/loading states, or visibly label user-requested fixtures |
+| **Lazy DIY complex widgets** | Hand-rolled `<div>` modals/drawers, `contenteditable` rich text, `<textarea>`-over-`<pre>` code editors, inline SVG fake charts, unvirtualized >500-row tables, custom mouse-only DnD, `setTimeout` toast divs without `aria-live`, hand-rolled calendar math | **P1** | Replace with the vetted purpose-built library or native platform primitive mapped in `.pixelcraft/plan.md` |
+| **Lazy platform defaults** | Unwaived Tkinter for greenfield Python desktop, unjustified Electron shell, raw Flexbox HTML email, `window.print()` publication PDF, bare `print()` TUI | **P1–P2** | Upgrade to the appropriate surface craft stack or record an explicit user waiver with trade-offs |
+| **Untouched starter / arbitrary-value sprawl** | Unmodified `shadcn/ui` default zinc `:root` tokens on greenfield/redesign work; scattered Tailwind `bg-[#...]`, `p-[13px]` literals | **P2** | Author semantic DTCG/CSS tokens from the committed direction card and replace scattered literals |
+
 ## Multi-surface defect pairs (vague vs. actionable)
 
 | Surface | Reject (vague taste prose) | Require (concrete evidence-backed finding) |

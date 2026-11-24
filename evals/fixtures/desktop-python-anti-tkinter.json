@@ -1,0 +1,49 @@
+{
+  "schemaVersion": 1,
+  "id": "desktop-python-anti-tkinter",
+  "skill": "pixelcraft-desktop",
+  "title": "Select a modern Python desktop stack instead of defaulting lazily to Tkinter and build a crisp PySide6/Qt workspace",
+  "contextSnapshot": {
+    "surface": "Cross-platform Python scientific instrument controller and batch-export desktop app",
+    "platform": "Python desktop (greenfield stack selection -> PySide6 / Qt 6)",
+    "mode": "Operate",
+    "states": ["connected live telemetry", "device disconnected error", "export running non-blocking", "high-DPI 200% scaling", "system dark/light palette"],
+    "constraints": ["no lazy Tkinter default when polish, HiDPI, and accessibility are required", "non-blocking QThread/worker I/O", "native menu bar, keyboard shortcuts, and QAccessible labels"]
+  },
+  "prompt": "We want to build a polished cross-platform desktop app in Python for controlling a lab sensor and exporting CSV batches. Recommend the right desktop UI framework with trade-offs and design the main window architecture.",
+  "expectedRouting": ["pixelcraft-plan", "references/stack-selection.md", "pixelcraft-desktop", "references/qt-pyside-qml.md", "references/working-context.md"],
+  "forbiddenBehaviors": [
+    "defaults lazily to import tkinter / ttk because it is in the Python standard library despite polish, HiDPI, and accessibility requirements",
+    "blocks the Qt main GUI thread with synchronous serial/network reads or CSV writes",
+    "hardcodes light-only QSS colors that break dark mode or omits native menu shortcuts and dirty-close guards",
+    "claims cross-OS HiDPI polish without rendered verification"
+  ],
+  "rubricDimensions": [
+    {
+      "dimension": "evidence-based stack selection (anti-Tkinter discipline)",
+      "pass": "explicitly evaluates PySide6/Qt6 (and alternatives like GTK4/Tauri) against HiDPI, native menus, accessibility, packaging, and license constraints instead of defaulting to Tkinter",
+      "fail": "starts writing tkinter code automatically without justifying toolkit trade-offs"
+    },
+    {
+      "dimension": "PySide6 desktop ergonomics and responsiveness",
+      "pass": "uses QMainWindow with native menus/shortcuts, Qt layouts (no fixed pixel geometry), worker threads/signals for sensor I/O, QPalette/system theme adaptation, and accessible names",
+      "fail": "freezes the UI thread during export or hardcodes fixed widget pixel positions"
+    },
+    {
+      "dimension": "honest verification labeling",
+      "pass": "labels static Python/Qt structure checks separately from rendered Windows/macOS/Linux HiDPI runs",
+      "fail": "claims macOS and Windows HiDPI behavior passed from headless Linux pytest alone"
+    }
+  ],
+  "negativeControls": [
+    {
+      "name": "user explicitly mandates zero-dependency stdlib Tkinter",
+      "input": "user brief explicitly requires Python standard library only with no third-party wheels allowed",
+      "mustNot": "override the explicit user brief (authority order puts explicit user brief first; document Tkinter limits clearly instead)"
+    }
+  ],
+  "baseline": {
+    "withoutSkill": "immediately generates a dated fixed-size Tkinter window with blocking callbacks and broken HiDPI rendering",
+    "withSkill": "justifies PySide6/Qt6 over Tkinter with concrete criteria, designs a non-blocking accessible native workspace, and respects explicit user constraints"
+  }
+}

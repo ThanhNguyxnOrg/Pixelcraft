@@ -5,6 +5,7 @@ import path from 'node:path';
 const formats = [
   'css', 'tailwind', 'swift', 'kotlin', 'dart', 'python', 'qt', 'textual',
   'ts', 'scss', 'xaml', 'android-xml', 'rust',
+  'go-lipgloss', 'godot', 'unity-uss', 'slint', 'gtk4', 'typst',
 ];
 
 const extensions = {
@@ -21,7 +22,19 @@ const extensions = {
   xaml: 'xaml',
   'android-xml': 'xml',
   rust: 'rs',
+  'go-lipgloss': 'go',
+  godot: 'gd',
+  'unity-uss': 'uss',
+  slint: 'slint',
+  gtk4: 'css',
+  typst: 'typ',
 };
+
+function outputFileName(format, mode) {
+  const modePart = mode ? `.${mode}` : '';
+  if (format === 'gtk4') return `tokens${modePart}-gtk4.css`;
+  return `tokens${modePart}.${extensions[format]}`;
+}
 
 const genericFontFamilies = new Set([
   'serif', 'sans-serif', 'monospace', 'cursive', 'fantasy', 'system-ui',
@@ -31,7 +44,8 @@ const genericFontFamilies = new Set([
 function help() {
   return `Usage: node export-tokens.mjs <tokens.json> --format <${formats.join('|')}|all> [--mode NAME] [--selector SEL] [--preserve-references] [--out-dir DIR]
 
-Zero-dependency exporter for the common DTCG 2025.10 subset used by Pixelcraft.
+Zero-dependency exporter for the common DTCG 2025.10 subset used by Pixelcraft
+(including $root group base tokens and non-fatal $deprecated warnings to stderr).
 Without --out-dir, generated text is written to stdout. Advanced DTCG features
 such as advanced tool-specific extensions should be handled by a dedicated compiler.
 Pixelcraft token-level mode overrides use $extensions.pixelcraft.modes.
@@ -40,7 +54,7 @@ Options:
   --format NAME          Output format (${formats.join(', ')}, or all; default: all)
   --mode NAME            Apply mode overrides from $extensions.pixelcraft.modes
   --selector SEL         CSS selector wrapper for --format css (default: :root)
-  --preserve-references  Emit var(--...) / $... aliases for direct token references in CSS/Tailwind/SCSS
+  --preserve-references  Emit var(--...) / $... aliases for direct token references in CSS/Tailwind/SCSS/USS
   --out-dir DIR          Write generated files to DIR instead of stdout
   --help                 Show this help`;
 }
@@ -64,13 +78,23 @@ const xmlEscape = (text) => String(text)
   .replace(/>/g, '&gt;')
   .replace(/"/g, '&quot;');
 
-function flatten(node, parts = [], inheritedType = '', out = []) {
+function flatten(node, parts = [], inheritedType = '', out = [], inheritedDeprecated = false) {
   const type = node.$type || inheritedType;
+  const groupDeprecated = node.$deprecated !== undefined ? node.$deprecated : inheritedDeprecated;
+  if (parts.length > 0 && Object.hasOwn(node, '$root') && typeof node.$root === 'object' && node.$root !== null
+      && !Array.isArray(node.$root) && Object.hasOwn(node.$root, '$value')) {
+    const rootDeprecated = node.$root.$deprecated !== undefined ? node.$root.$deprecated : groupDeprecated;
+    out.push({ path: parts, type: node.$root.$type || type, token: node.$root, isRoot: true, deprecated: rootDeprecated });
+  }
   for (const [key, value] of Object.entries(node)) {
     if (key.startsWith('$') || typeof value !== 'object' || value === null || Array.isArray(value)) continue;
     const next = [...parts, key];
-    if (Object.hasOwn(value, '$value')) out.push({ path: next, type: value.$type || type, token: value });
-    else flatten(value, next, type, out);
+    if (Object.hasOwn(value, '$value')) {
+      const tokDeprecated = value.$deprecated !== undefined ? value.$deprecated : groupDeprecated;
+      out.push({ path: next, type: value.$type || type, token: value, deprecated: tokDeprecated });
+    } else {
+      flatten(value, next, type, out, groupDeprecated);
+    }
   }
   return out;
 }
@@ -323,7 +347,12 @@ function applyMode(token, mode) {
 }
 
 function createResolver(tokens) {
-  const byPath = new Map(tokens.map((t) => [t.path.join('.'), t]));
+  const byPath = new Map();
+  for (const t of tokens) {
+    const key = t.path.join('.');
+    byPath.set(key, t);
+    if (t.isRoot) byPath.set(`${key}.$root`, t);
+  }
   const resolving = new Set();
 
   function resolveValue(val) {
@@ -445,10 +474,14 @@ function render(format, list, options = {}) {
   const selector = options.selector || ':root';
   const preserveReferences = Boolean(options.preserveReferences);
   const byPathKey = new Map(list.map((t) => [t.pathKey, t]));
+  const lookupRef = (refKey) => {
+    if (!preserveReferences || !refKey) return null;
+    return byPathKey.get(refKey) || byPathKey.get(refKey.replace(/\.\$root$/, '')) || null;
+  };
 
   if (format === 'css' || format === 'tailwind') {
     const body = list.map((t) => {
-      const target = preserveReferences && t.refKey ? byPathKey.get(t.refKey) : null;
+      const target = lookupRef(t.refKey);
       const varName = format === 'tailwind' ? t.twVarName : t.varName;
       const val = target
         ? `var(--${format === 'tailwind' ? target.twVarName : target.varName})`
@@ -459,7 +492,7 @@ function render(format, list, options = {}) {
   }
   if (format === 'scss') {
     return `${list.map((t) => {
-      const target = preserveReferences && t.refKey ? byPathKey.get(t.refKey) : null;
+      const target = lookupRef(t.refKey);
       const val = target ? `$${target.varName}` : (typeof t.value === 'object' ? t.value.css : t.value);
       return `$${t.varName}: ${val};`;
     }).join('\n')}\n`;
@@ -593,6 +626,131 @@ function render(format, list, options = {}) {
     });
     return `// Generated by Pixelcraft export-tokens.mjs\n${lines.join('\n')}\n`;
   }
+  if (format === 'go-lipgloss') {
+    const hasColors = list.some((t) => t.type === 'color');
+    const lines = list.map((t) => {
+      const base = pascal(t.name);
+      const id = /^\d/.test(base) ? `Token${base}` : base;
+      if (t.type === 'color') {
+        const col = requireTypedColor(t, 'go-lipgloss');
+        return `\t${id} = lipgloss.Color(${JSON.stringify(col.hex)})`;
+      }
+      if (t.type === 'duration' && typeof t.token.$value === 'object') {
+        return `\t${id} = ${Math.round(durationMs(t.token.$value))} // ms`;
+      }
+      if (typeof t.token.$value === 'object' && 'value' in (t.token.$value || {})) {
+        const dim = nativeDimension(t.token.$value);
+        return `\t${id} = ${fmtNumber(dim.value)} // ${dim.comment}`;
+      }
+      return `\t${id} = ${JSON.stringify(String(t.value))}`;
+    });
+    const imp = hasColors ? '\nimport "github.com/charmbracelet/lipgloss"\n' : '';
+    return `// Code generated by Pixelcraft export-tokens.mjs. DO NOT EDIT.\npackage tokens\n${imp}\nconst (\n${lines.join('\n')}\n)\n`;
+  }
+  if (format === 'godot') {
+    const lines = list.map((t) => {
+      const id = rustConst(t.varName);
+      if (t.type === 'color') {
+        const col = requireTypedColor(t, 'godot');
+        return `const ${id}: Color = Color.html(${JSON.stringify(col.hex)})`;
+      }
+      if (t.type === 'duration' && typeof t.token.$value === 'object') {
+        return `const ${id}: float = ${fmtFloat(durationMs(t.token.$value) / 1000)} # seconds`;
+      }
+      if (typeof t.token.$value === 'object' && 'value' in (t.token.$value || {})) {
+        const dim = nativeDimension(t.token.$value);
+        return `const ${id}: float = ${fmtFloat(dim.value)} # ${dim.comment}`;
+      }
+      if (typeof t.token.$value === 'number') {
+        return `const ${id}: float = ${fmtFloat(t.token.$value)}`;
+      }
+      return `const ${id}: String = ${JSON.stringify(String(t.value))}`;
+    });
+    return `# Generated by Pixelcraft export-tokens.mjs\nclass_name DesignTokens\n\n${lines.join('\n')}\n`;
+  }
+  if (format === 'unity-uss') {
+    const body = list.map((t) => {
+      const target = lookupRef(t.refKey);
+      if (target) return `  --${t.varName}: var(--${target.varName});`;
+      if (t.type === 'color') {
+        const col = requireTypedColor(t, 'unity-uss');
+        return `  --${t.varName}: ${col.hex};`;
+      }
+      if (typeof t.token.$value === 'object' && 'value' in (t.token.$value || {}) && t.token.$value.unit === 'rem') {
+        const dim = nativeDimension(t.token.$value);
+        return `  --${t.varName}: ${fmtNumber(dim.value)}px; /* ${dim.comment} */`;
+      }
+      return `  --${t.varName}: ${typeof t.value === 'object' ? t.value.css : t.value};`;
+    }).join('\n');
+    return `/* Generated by Pixelcraft export-tokens.mjs (Unity UI Toolkit USS) */\n:root {\n${body}\n}\n`;
+  }
+  if (format === 'slint') {
+    const lines = list.map((t) => {
+      const id = /^\d/.test(t.varName) ? `_${t.varName}` : t.varName;
+      if (t.type === 'color') {
+        const col = requireTypedColor(t, 'slint');
+        return `    out property <color> ${id}: ${col.hex};`;
+      }
+      if (t.type === 'duration' && typeof t.token.$value === 'object') {
+        return `    out property <duration> ${id}: ${Math.round(durationMs(t.token.$value))}ms;`;
+      }
+      if (typeof t.token.$value === 'object' && 'value' in (t.token.$value || {})) {
+        const dim = nativeDimension(t.token.$value);
+        return `    out property <length> ${id}: ${fmtNumber(dim.value)}px;${dim.converted ? ` // ${dim.comment}` : ''}`;
+      }
+      if (typeof t.token.$value === 'number') {
+        return `    out property <float> ${id}: ${fmtNumber(t.token.$value)};`;
+      }
+      return `    out property <string> ${id}: ${JSON.stringify(String(t.value))};`;
+    });
+    return `// Generated by Pixelcraft export-tokens.mjs\nexport global DesignTokens {\n${lines.join('\n')}\n}\n`;
+  }
+  if (format === 'gtk4') {
+    const colorLines = [];
+    const propLines = [];
+    for (const t of list) {
+      if (t.type === 'color') {
+        const col = requireTypedColor(t, 'gtk4');
+        const key = snake(t.varName);
+        if ((col.alpha ?? 1) < 1) {
+          const [r, g, b] = col.rgb.map((v) => Math.round(Math.max(0, Math.min(1, v)) * 255));
+          colorLines.push(`@define-color ${key} rgba(${r}, ${g}, ${b}, ${fmtNumber(col.alpha)});`);
+        } else {
+          colorLines.push(`@define-color ${key} ${col.hex};`);
+        }
+      } else {
+        propLines.push(`  --${t.varName}: ${t.value};`);
+      }
+    }
+    const sections = ['/* Generated by Pixelcraft export-tokens.mjs (GTK4 CSS) */'];
+    if (colorLines.length) sections.push(colorLines.join('\n'));
+    if (propLines.length) sections.push(`:root {\n${propLines.join('\n')}\n}`);
+    return `${sections.join('\n\n')}\n`;
+  }
+  if (format === 'typst') {
+    const typstUnits = new Set(['pt', 'mm', 'cm', 'in', 'em']);
+    const lines = list.map((t) => {
+      const key = /^[a-zA-Z_][a-zA-Z0-9_-]*$/.test(t.varName) ? t.varName : JSON.stringify(t.varName);
+      if (t.type === 'color') {
+        const col = requireTypedColor(t, 'typst');
+        return `  ${key}: rgb(${JSON.stringify(col.hex)}),`;
+      }
+      if (typeof t.token.$value === 'object' && 'value' in (t.token.$value || {}) && t.type !== 'duration') {
+        const amount = Number(t.token.$value.value);
+        const unit = t.token.$value.unit;
+        if (typstUnits.has(unit)) return `  ${key}: ${fmtNumber(amount)}${unit},`;
+        if (unit === 'rem') return `  ${key}: ${fmtNumber(amount)}em, // ${amount}rem`;
+        if (unit === 'px') return `  ${key}: ${fmtNumber(amount * 0.75)}pt, // ${amount}px @ 96dpi`;
+        const dim = nativeDimension(t.token.$value);
+        return `  ${key}: ${fmtNumber(dim.value)}pt, // ${dim.comment}`;
+      }
+      if (typeof t.token.$value === 'number') {
+        return `  ${key}: ${fmtNumber(t.token.$value)},`;
+      }
+      return `  ${key}: ${JSON.stringify(String(t.value))},`;
+    });
+    return `// Generated by Pixelcraft export-tokens.mjs\n#let tokens = (\n${lines.join('\n')}\n)\n`;
+  }
   throw new Error(`unknown format ${format}`);
 }
 
@@ -666,11 +824,17 @@ try {
   if (![...formats, 'all'].includes(cli.format)) throw new Error(`unknown --format ${cli.format}`);
   const selected = cli.format === 'all' ? formats : [cli.format];
   const list = entries(collect(cli.input, cli.mode));
+  for (const t of list) {
+    if (t.deprecated) {
+      const detail = typeof t.deprecated === 'string' && t.deprecated.trim() ? ` (${t.deprecated.trim()})` : '';
+      console.error(`export-tokens: warning: deprecated token '${t.pathKey}'${detail}`);
+    }
+  }
   const renderOpts = { selector: cli.selector, preserveReferences: cli.preserveReferences };
   if (cli.outDir) {
     fs.mkdirSync(cli.outDir, { recursive: true });
     for (const f of selected) {
-      const file = path.join(cli.outDir, `tokens${cli.mode ? `.${cli.mode}` : ''}.${extensions[f]}`);
+      const file = path.join(cli.outDir, outputFileName(f, cli.mode));
       fs.writeFileSync(file, render(f, list, renderOpts));
       console.log(`wrote ${file}`);
     }

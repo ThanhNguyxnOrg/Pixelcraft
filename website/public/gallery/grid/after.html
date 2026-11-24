@@ -7,33 +7,42 @@
 <link rel="stylesheet" href="../../fonts/gallery.css">
 <style>
   :root {
-    --bg: #0b1114; --panel: #11191d; --rule: #22303a; --ink: #e8eef0; --ink-2: #93a5ad;
-    --demand: #5ec8f2; --forecast: #93a5ad; --peak: #f2b84b; --ok: #6fd3a3; --warn: #f2b84b; --bad: #ff7a70;
+    --bg: #0b1114; --panel: #11191d; --rule: #22303a; --ink: #e8eef0; --ink-2: #9ab0ba;
+    --demand: #5ec8f2; --forecast: #9ab0ba; --peak: #f2b84b; --ok: #6fd3a3; --warn: #f2b84b; --bad: #ff7a70;
     --sans: Archivo, system-ui, sans-serif; --mono: "IBM Plex Mono", ui-monospace, monospace;
   }
   * { box-sizing: border-box; }
   body { margin: 0; background: var(--bg); color: var(--ink); font-family: var(--sans); }
-  header { display: flex; justify-content: space-between; padding: 18px 40px; border-bottom: 1px solid var(--rule); font-family: var(--mono); font-size: 13px; color: var(--ink-2); }
+  header { display: flex; justify-content: space-between; align-items: center; padding: 18px 40px; border-bottom: 1px solid var(--rule); font-family: var(--mono); font-size: 13px; color: var(--ink-2); gap: 16px; }
   header b { color: var(--ink); font-family: var(--sans); font-size: 16px; font-weight: 700; letter-spacing: .02em; }
-  main { display: grid; grid-template-columns: 1.55fr 1fr; gap: 0; min-height: calc(100vh - 54px); }
+  main { display: grid; grid-template-columns: 1.5fr 1fr; gap: 0; min-height: calc(100vh - 56px); }
   .lead { padding: 32px 40px 24px; border-inline-end: 1px solid var(--rule); }
   .eyebrow { font-family: var(--mono); font-size: 13px; color: var(--ink-2); margin: 0; }
   .read { display: flex; align-items: baseline; gap: 18px; margin: 10px 0 4px; }
-  .read b { font-size: 112px; line-height: .9; font-weight: 800; font-stretch: 112%; letter-spacing: -.03em; font-variant-numeric: tabular-nums; }
+  .read b { font-size: clamp(64px, 7.6vw, 108px); line-height: .9; font-weight: 800; font-stretch: 112%; letter-spacing: -.03em; font-variant-numeric: tabular-nums; }
   .read span { font-size: 28px; color: var(--ink-2); }
-  .delta { font-size: 19px; margin: 0 0 18px; color: var(--ok); font-weight: 600; }
+  .delta { font-size: 18px; margin: 0 0 18px; color: var(--ok); font-weight: 600; }
   svg { width: 100%; height: auto; display: block; }
-  .cap { font-family: var(--mono); font-size: 12px; color: var(--ink-2); margin: 8px 0 0; }
+  .cap { font-family: var(--mono); font-size: 12px; color: var(--ink-2); margin: 10px 0 0; }
   .side { padding: 32px 40px; }
   h2 { font: 500 13px var(--mono); color: var(--ink-2); margin: 0 0 14px; }
   table { width: 100%; border-collapse: collapse; font-variant-numeric: tabular-nums; }
   th { text-align: start; font: 500 12px var(--mono); color: var(--ink-2); padding: 0 0 8px; border-bottom: 1px solid var(--rule); }
-  th:not(:first-child), td:not(:first-child) { text-align: end; }
-  td { padding: 13px 0; border-bottom: 1px solid var(--rule); font-size: 16px; }
-  td:first-child { font-weight: 600; }
+  td { padding: 13px 0; border-bottom: 1px solid var(--rule); font-size: 15px; }
+  table.regions th:not(:first-child), table.regions td:not(:first-child) { text-align: end; }
+  table.regions td:first-child { font-weight: 600; }
+  table.events th:last-child, table.events td:last-child { text-align: end; font-family: var(--mono); }
+  table.events td:first-child { width: 68px; font-family: var(--mono); font-weight: 600; color: var(--ink); }
+  table.events td:nth-child(2) { text-align: start; color: var(--ink-2); }
   .st { font: 500 12px var(--mono); }
   .st.ok { color: var(--ok); } .st.warn { color: var(--warn); } .st.bad { color: var(--bad); }
   .note { font-family: var(--mono); font-size: 12px; color: var(--ink-2); margin-top: 22px; line-height: 1.6; }
+  @media (max-width: 960px) {
+    header { padding: 16px 20px; flex-direction: column; align-items: flex-start; }
+    main { grid-template-columns: 1fr; }
+    .lead { border-inline-end: 0; border-bottom: 1px solid var(--rule); padding: 24px 20px; }
+    .side { padding: 24px 20px; }
+  }
 </style>
 </head>
 <body>
@@ -43,24 +52,38 @@
       <p class="eyebrow" id="now">Demand right now</p>
       <div class="read"><b>38.4</b><span>GW</span></div>
       <p class="delta">2.3 GW under forecast. Evening peak expected 18:10.</p>
-      <svg viewBox="0 0 640 330" role="img" aria-labelledby="c-t c-d">
+      <!-- Linear scale: Y 30..45 GW => y = 250 - (gw - 30) * 14 (45=>40, 40=>110, 35=>180, 30=>250).
+           X 00:00..24:00 => x = 44 + hours * 23.33 (00=>44, 06=>184, 12=>324, 14:40=>386, 18:10=>468, 24=>604). -->
+      <svg viewBox="0 0 640 316" role="img" aria-labelledby="c-t c-d">
         <title id="c-t">Demand against forecast over 24 hours</title>
-        <desc id="c-d">Demand tracks just below forecast through the day, rising from 28 gigawatts overnight to 38.4 now, with a forecast evening peak of 44.2 gigawatts at 18:10.</desc>
-        <g stroke="#22303a"><line x1="40" x2="630" y1="40" y2="40"/><line x1="40" x2="630" y1="110" y2="110"/><line x1="40" x2="630" y1="180" y2="180"/><line x1="40" x2="630" y1="250" y2="250"/></g>
-        <g font-family="IBM Plex Mono, monospace" font-size="11" fill="#93a5ad"><text x="0" y="44">45</text><text x="0" y="114">40</text><text x="0" y="184">35</text><text x="0" y="254">30</text>
-          <text x="40" y="282">00:00</text><text x="238" y="282">06:00</text><text x="435" y="282">12:00</text><text x="590" y="282">18:00</text></g>
-        <path d="M40 250 C 120 240, 180 232, 250 214 S 380 120, 440 98 S 560 40, 590 30 S 620 40, 630 58" fill="none" stroke="#93a5ad" stroke-width="2" stroke-dasharray="5 5"/>
-        <path d="M40 252 C 120 244, 180 236, 250 220 S 400 150, 462 108" fill="none" stroke="#5ec8f2" stroke-width="4"/>
-        <rect x="456" y="102" width="12" height="12" fill="#5ec8f2"/>
-        <rect x="584" y="24" width="12" height="12" fill="#f2b84b"/>
-        <g font-family="IBM Plex Mono, monospace" font-size="12"><text x="450" y="132" text-anchor="middle" fill="#5ec8f2">now 38.4</text>
-          <text x="590" y="16" text-anchor="end" fill="#f2b84b">forecast peak 44.2 · 18:10</text><text x="170" y="214" fill="#93a5ad">forecast</text><text x="150" y="268" fill="#5ec8f2">actual</text></g>
+        <desc id="c-d">Actual demand rises from 29.8 gigawatts at 00:00 to 38.4 gigawatts at 14:40, 2.3 gigawatts below the 40.7 gigawatt forecast. Forecast peaks at 44.2 gigawatts at 18:10 before easing to 36.5 gigawatts by 24:00.</desc>
+        <g stroke="#22303a" stroke-width="1">
+          <line x1="44" x2="604" y1="40" y2="40"/><line x1="44" x2="604" y1="110" y2="110"/><line x1="44" x2="604" y1="180" y2="180"/><line x1="44" x2="604" y1="250" y2="250"/>
+        </g>
+        <g font-family="IBM Plex Mono, monospace" font-size="11" fill="#9ab0ba">
+          <text x="6" y="44">45</text><text x="6" y="114">40</text><text x="6" y="184">35</text><text x="6" y="254">30</text>
+          <text x="44" y="280">00:00</text><text x="168" y="280">06:00</text><text x="308" y="280">12:00</text><text x="448" y="280">18:00</text><text x="576" y="280">24:00</text>
+        </g>
+        <!-- Forecast: 00:00=30.0(250), 06:00=32.4(216), 12:00=38.2(135), 14:40=40.7(100), 18:10=44.2(51), 24:00=36.5(159) -->
+        <path d="M44 250 C 96 244, 140 232, 184 216 C 242 194, 282 162, 324 135 C 348 120, 368 110, 386 100 C 420 82, 446 58, 468 51 C 504 42, 548 104, 604 159" fill="none" stroke="#9ab0ba" stroke-width="2" stroke-dasharray="5 5"/>
+        <!-- Actual: 00:00=29.8(253), 06:00=31.8(225), 12:00=36.4(160), 14:40=38.4(132) -->
+        <path d="M44 253 C 96 248, 140 238, 184 225 C 242 206, 284 182, 324 160 C 348 148, 368 140, 386 132" fill="none" stroke="#5ec8f2" stroke-width="4"/>
+        <!-- Vertical guide at 14:40 showing exact 2.3 GW delta -->
+        <line x1="386" y1="100" x2="386" y2="132" stroke="#6fd3a3" stroke-width="1.5" stroke-dasharray="2 2"/>
+        <rect x="380" y="126" width="12" height="12" fill="#5ec8f2"/>
+        <rect x="462" y="45" width="12" height="12" fill="#f2b84b"/>
+        <g font-family="IBM Plex Mono, monospace" font-size="12">
+          <text x="402" y="148" fill="#5ec8f2">now 38.4 GW</text>
+          <text x="468" y="24" text-anchor="middle" fill="#f2b84b">forecast peak 44.2 GW · 18:10</text>
+          <text x="174" y="190" fill="#9ab0ba">forecast</text>
+          <text x="206" y="242" fill="#5ec8f2">actual</text>
+        </g>
       </svg>
-      <p class="cap">Gigawatts, 24 hours. Solid is actual, dashed is forecast. Lines are labelled directly; no legend.</p>
+      <p class="cap">Gigawatts, 24 hours (linear scale). Solid is actual, dashed is forecast. Direct labels; no legend.</p>
     </section>
     <section class="side" aria-labelledby="reg">
       <h2 id="reg">REGIONS · SORTED BY MARGIN, THINNEST FIRST</h2>
-      <table>
+      <table class="regions">
         <thead><tr><th scope="col">Region</th><th scope="col">Load GW</th><th scope="col">Margin</th><th scope="col">Status</th></tr></thead>
         <tbody>
           <tr><td>South coast</td><td>6.8</td><td>3%</td><td class="st bad">▲ Tight</td></tr>
@@ -70,12 +93,13 @@
           <tr><td>Scotland</td><td>6.3</td><td>31%</td><td class="st ok">● Normal</td></tr>
         </tbody>
       </table>
-      <h2 style="margin-top:36px">NEXT 6 HOURS</h2>
-      <table>
+      <h2 style="margin-top:34px">NEXT 6 HOURS</h2>
+      <table class="events">
+        <thead><tr><th scope="col">Time</th><th scope="col">Event</th><th scope="col">Delta</th></tr></thead>
         <tbody>
-          <tr><td>16:30</td><td style="font-weight:400;text-align:start">Interconnector import</td><td>+1.2 GW</td></tr>
-          <tr><td>18:10</td><td style="font-weight:400">Forecast peak</td><td>44.2 GW</td></tr>
-          <tr><td>21:00</td><td style="font-weight:400">Wind ramp-down</td><td>−2.1 GW</td></tr>
+          <tr><td>16:30</td><td>Interconnector import</td><td>+1.2 GW</td></tr>
+          <tr><td>18:10</td><td>Forecast peak</td><td>44.2 GW</td></tr>
+          <tr><td>21:00</td><td>Wind ramp-down</td><td>−2.1 GW</td></tr>
         </tbody>
       </table>
       <p class="note">Status uses a symbol and a word as well as colour. Margin is spare capacity over current load. Values are illustrative.</p>

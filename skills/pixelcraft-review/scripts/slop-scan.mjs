@@ -6,6 +6,9 @@ const exts = new Set([
   '.css', '.scss', '.pcss', '.less', '.html', '.jsx', '.tsx', '.vue', '.svelte', '.astro', '.mdx',
   '.razor', '.heex', '.php', '.erb', '.templ', '.mjml', '.qml', '.xaml', '.uss', '.uxml',
   '.dart', '.swift', '.kt', '.py', '.rs', '.slint', '.go', '.qss', '.tcss', '.js', '.ts',
+  '.gd', '.tscn', '.tres', '.typ', '.tex', '.cs', '.axaml', '.cpp', '.hpp', '.h', '.c',
+  '.lua', '.java', '.fxml', '.rb', '.ex', '.exs', '.zig', '.ets', '.blp', '.r', '.jl',
+  '.elm', '.cljs', '.fs', '.scala', '.twig',
 ]);
 const cssExts = new Set(['.css', '.scss', '.pcss', '.less', '.qss', '.tcss', '.uss']);
 const markupExts = new Set(['.html', '.vue', '.svelte', '.astro']);
@@ -23,7 +26,7 @@ const brandRules = new Set(['default-font-only', 'purple-blue-gradient', 'rounde
   'uniform-shadow', 'centered-hero-two-ctas', 'gradient-text-treatment', 'rounded-accent-rail']);
 
 function help() {
-  return `Usage: node slop-scan.mjs <file-or-directory> [--json] [--waivers FILE]\n\nScan source files for recurring AI-slop fingerprints. Output includes file:line,\nseverity, score contribution, and a suggested fix. ${disclaimer}`;
+  return `Usage: node slop-scan.mjs <file-or-directory> [--json] [--waivers FILE] [--fail-on p0|p1|p2|any]\n\nScan source files for recurring AI-slop fingerprints and floor defects.\nOutput includes file:line, severity, score contribution, and a suggested fix.\nWhen --fail-on is passed, exits 1 if any active finding meets or exceeds that severity.\n${disclaimer}`;
 }
 function partsOf(file) { return file.split(/[\\/]/); }
 function isInstalledPixelcraftSkill(file) {
@@ -512,7 +515,14 @@ function scanRules(segment, baseOffset, sourceText, visit) {
 
 const aiDefaultFonts = new Set(['inter', 'roboto', 'geist', 'arial']);
 const defaultOnlyFontStack = new Set(['inter', 'roboto', 'geist', 'arial', 'sans-serif', 'system-ui']);
-const slashCommentExts = new Set(['.js', '.jsx', '.ts', '.tsx', '.scss', '.less', '.pcss', '.dart', '.swift', '.kt', '.rs', '.slint', '.go', '.qml', '.php']);
+const slashCommentExts = new Set([
+  '.js', '.jsx', '.ts', '.tsx', '.scss', '.less', '.pcss', '.dart', '.swift', '.kt', '.rs', '.slint', '.go', '.qml', '.php',
+  '.cs', '.cpp', '.hpp', '.h', '.c', '.java', '.zig', '.ets', '.blp', '.fs', '.scala', '.typ',
+]);
+const hashCommentExts = new Set(['.py', '.rb', '.gd', '.r', '.jl', '.ex', '.exs']);
+const dashCommentExts = new Set(['.lua', '.elm']);
+const semiCommentExts = new Set(['.cljs']);
+const doubleQuoteOnlyExts = new Set(['.cljs', '.elm', '.rs', '.fs', '.jl']);
 const twOutlineRemoveRe = /^(?:[a-z0-9-[\]()]+:)*focus(?:-visible)?:!?outline-(?:none|0)$/i;
 const twFocusReplaceRe = /^(?:[a-z0-9-[\]()]+:)*focus(?:-visible)?:!?(?:ring(?!-(?:0(?=$|\/|-)|offset(?:$|-)|transparent(?=$|\/)))(?:$|-[a-z0-9[\]#%./()-]+)|outline(?:$|-(?!none$|0$|offset(?:$|-)|transparent$)[a-z0-9[\]#%./()-]+)|border(?:$|-(?!0$|none$|transparent$)[a-z0-9[\]#%./()-]+)|shadow(?:$|-(?!none$)[a-z0-9[\]#%./()-]+)|underline)$/i;
 const twTransitionAllRe = /^(?:[a-z0-9-[\]()]+:)*!?transition-all$/i;
@@ -531,9 +541,14 @@ function isDefaultFontOnly(value) {
 function maskSourceComments(text, ext) {
   const chars = text.split('');
   const allowSlash = slashCommentExts.has(ext);
+  const allowHash = hashCommentExts.has(ext);
+  const allowDash = dashCommentExts.has(ext);
+  const allowSemi = semiCommentExts.has(ext);
   const allowHtml = !cssExts.has(ext);
+  const allowBlockSlash = cssExts.has(ext) || allowSlash || markupExts.has(ext)
+    || ['.mdx', '.razor', '.heex', '.erb', '.templ', '.mjml', '.twig'].includes(ext);
   for (let i = 0; i < text.length; i += 1) {
-    if (text[i] === '/' && text[i + 1] === '*') {
+    if (allowBlockSlash && text[i] === '/' && text[i + 1] === '*') {
       const end = text.indexOf('*/', i + 2);
       const stop = end < 0 ? text.length - 1 : end + 1;
       blankRange(chars, i, stop);
@@ -545,7 +560,8 @@ function maskSourceComments(text, ext) {
       i = stop;
     }
   }
-  if (!allowSlash) return chars.join('');
+  if (!allowSlash && !allowHash && !allowDash && !allowSemi) return chars.join('');
+  const doubleOnly = doubleQuoteOnlyExts.has(ext);
   const outLines = chars.join('').split('\n').map((line) => {
     let quote = '';
     for (let i = 0; i < line.length; i += 1) {
@@ -553,9 +569,15 @@ function maskSourceComments(text, ext) {
       if (quote) {
         if (c === '\\') i += 1;
         else if (c === quote) quote = '';
-      } else if (c === '"' || c === "'" || c === '`') {
+      } else if (c === '"' || (!doubleOnly && (c === "'" || c === '`'))) {
         quote = c;
-      } else if (c === '/' && line[i + 1] === '/' && (i === 0 || line[i - 1] !== ':')) {
+      } else if (allowSlash && c === '/' && line[i + 1] === '/' && (i === 0 || line[i - 1] !== ':')) {
+        return line.slice(0, i) + ' '.repeat(line.length - i);
+      } else if (allowHash && c === '#' && !/^#(?:[0-9a-fA-F]{3}|[0-9a-fA-F]{4}|[0-9a-fA-F]{6}|[0-9a-fA-F]{8})(?![0-9a-fA-F_])/.test(line.slice(i))) {
+        return line.slice(0, i) + ' '.repeat(line.length - i);
+      } else if (allowDash && c === '-' && line[i + 1] === '-') {
+        return line.slice(0, i) + ' '.repeat(line.length - i);
+      } else if (allowSemi && c === ';') {
         return line.slice(0, i) + ' '.repeat(line.length - i);
       }
     }
@@ -778,7 +800,7 @@ function scanPlaceholderLabels(text, add) {
 
 function hasGenericCopy(line) {
   if (/lorem ipsum/i.test(line)) return true;
-  const re = /(?<![a-zA-Z0-9_$.-])(?:get started|seamless|unlock|revolutionize|elevate|supercharge|cutting-edge)(?![a-zA-Z0-9_-])/gi;
+  const re = /(?<![a-zA-Z0-9_$.-])(?:get started|seamless|unlock|revolutionize|elevate|supercharge|cutting-edge|next-gen|effortless|empower|streamline|all-in-one|reimagine|unleash|ai-powered|game-changing|built for modern teams|delve)(?![a-zA-Z0-9_-])/gi;
   let m;
   while ((m = re.exec(line))) {
     const before = line.slice(0, m.index);
@@ -788,6 +810,58 @@ function hasGenericCopy(line) {
     return true;
   }
   return false;
+}
+
+function scanEmptyHandlers(masked, text, add) {
+  const emptyFnRe = /\bon[A-Z][a-zA-Z0-9]*\s*=\s*\{\s*(?:(?:\([^)]*\)|[a-zA-Z_$][a-zA-Z0-9_$]*)\s*=>\s*(?:\{\s*\}|undefined|null)|function\s*\([^)]*\)\s*\{\s*\})\s*\}/g;
+  let m;
+  while ((m = emptyFnRe.exec(masked))) {
+    add('empty-event-handler', 'P1', 4, lineOf(text, m.index), m[0].replace(/\s+/g, ' '),
+      'Implement real handler logic or disable/remove the stub control.');
+  }
+  const preventOnlyRe = /\bon[A-Z][a-zA-Z0-9]*\s*=\s*\{\s*(?:(?:\([^)]*\)|[a-zA-Z_$][a-zA-Z0-9_$]*)\s*=>|function\s*\([^)]*\))\s*\{\s*(?:return\s+)?[a-zA-Z_$][a-zA-Z0-9_$]*\.preventDefault\(\s*\)\s*;?\s*\}\s*\}/g;
+  while ((m = preventOnlyRe.exec(masked))) {
+    add('empty-event-handler', 'P1', 4, lineOf(text, m.index), m[0].replace(/\s+/g, ' '),
+      'Complete the submit/event handler instead of calling only preventDefault().');
+  }
+  const anchorRe = /<a(?=[\s/>])/gi;
+  while ((m = anchorRe.exec(masked))) {
+    const end = findTagEnd(masked, m.index + m[0].length);
+    if (end < 0) continue;
+    const raw = masked.slice(m.index, end + 1);
+    anchorRe.lastIndex = end + 1;
+    if (!/\bhref\s*=\s*(?:["']\s*#\s*["']|\{\s*["']\s*#\s*["']\s*\})/i.test(raw)) continue;
+    if (/\brole\s*=/i.test(raw)) continue;
+    if (/\b(?:onClick|onclick|@click|v-on:click|on:click|x-on:click|hx-get|hx-post|hx-put|hx-delete|hx-patch|phx-click|wire:click)\s*=/i.test(raw)) continue;
+    add('empty-event-handler', 'P1', 4, lineOf(text, m.index), raw.replace(/\s+/g, ' '),
+      'Replace dead href="#" links with a real destination or a <button type="button"> handler.');
+  }
+}
+
+function scanTodoStubs(lines, ext, add) {
+  const slashOrHtmlTodoRe = /(?:(?:^|[^:])\/\/|\/\*|<!--)\s*(?:TODO|FIXME)\b/i;
+  const slashOrHtmlEllipsisRe = /(?:(?:^|[^:])\/\/|\/\*|<!--)\s*\.\.\.\s*(?:rest\s+of|more\b|remaining|add\s+more|implement|placeholder|omitted|other\b|similar\b|etc\b)/i;
+  const isHash = hashCommentExts.has(ext);
+  const isDash = dashCommentExts.has(ext);
+  const isSemi = semiCommentExts.has(ext);
+  const hashTodoRe = /(?:^|\s)#\s*(?:TODO|FIXME)\b/i;
+  const hashEllipsisRe = /(?:^|\s)#\s*\.\.\.\s*(?:rest\s+of|more\b|remaining|add\s+more|implement|placeholder|omitted|other\b|similar\b|etc\b)/i;
+  const dashTodoRe = /--\s*(?:TODO|FIXME)\b/i;
+  const dashEllipsisRe = /--\s*\.\.\.\s*(?:rest\s+of|more\b|remaining|add\s+more|implement|placeholder|omitted|other\b|similar\b|etc\b)/i;
+  const semiTodoRe = /;\s*(?:TODO|FIXME)\b/i;
+  const semiEllipsisRe = /;\s*\.\.\.\s*(?:rest\s+of|more\b|remaining|add\s+more|implement|placeholder|omitted|other\b|similar\b|etc\b)/i;
+
+  lines.forEach((line, i) => {
+    const matched = slashOrHtmlTodoRe.test(line)
+      || slashOrHtmlEllipsisRe.test(line)
+      || (isHash && (hashTodoRe.test(line) || hashEllipsisRe.test(line)))
+      || (isDash && (dashTodoRe.test(line) || dashEllipsisRe.test(line)))
+      || (isSemi && (semiTodoRe.test(line) || semiEllipsisRe.test(line)));
+    if (matched) {
+      add('todo-stub-in-ui', 'P1', 4, i + 1, line,
+        'Finish the implementation or remove unfinished TODO/FIXME/ellipsis stub comments before shipping.');
+    }
+  });
 }
 
 function scanFile(file, root) {
@@ -804,6 +878,9 @@ function scanFile(file, root) {
     seenRules.add(key);
     findings.push({ rule, severity, weight, file: path.relative(root, file), line, match: match.trim().slice(0, 160), fix });
   };
+
+  // Pre-comment-mask anti-laziness check for unfinished TODO/FIXME/ellipsis stubs.
+  scanTodoStubs(lines, ext, add);
 
   // Focus scan is heuristic; live keyboard testing remains authoritative.
   let cssMotionMatch = null;
@@ -898,7 +975,10 @@ function scanFile(file, root) {
     }
 
     scanPlaceholderLabels(masked, add);
+    scanEmptyHandlers(masked, text, add);
   }
+
+  const hasThrottledRepaint = ext === '.rs' && /\brequest_repaint_after\b/.test(masked);
 
   lines.forEach((line, i) => {
     const n = i + 1;
@@ -912,6 +992,21 @@ function scanFile(file, root) {
     if (!cssExts.has(ext) && hasGenericCopy(maskedLine)) add('generic-copy','P2',2,n,line,'Replace template copy with concrete user/domain language.');
     if (/rounded-2xl/.test(maskedLine)) add('rounded-2xl-repetition','P3',1,n,line,'Use semantic radius variation rather than uniform rounded-2xl.');
     if (/shadow-(lg|xl|2xl)/.test(maskedLine)) add('uniform-shadow','P3',1,n,line,'Use elevation/shadow only where material semantics require it.');
+    if (/\bdocument\.execCommand\s*\(/.test(maskedLine)) {
+      add('lazy-diy-antipattern', 'P2', 2, n, line, 'Replace deprecated document.execCommand() with a maintained rich-text editor or explicit selection/clipboard API.');
+    }
+    if (ext === '.py' && /\b(?:import\s+tkinter\b|from\s+tkinter\s+import\b)/.test(maskedLine)) {
+      add('lazy-diy-antipattern', 'P2', 2, n, line, 'Avoid defaulting to Tkinter for polished desktop UI; prefer PySide6/Qt, GTK4, or a modern native toolkit unless Tkinter is an explicit constraint.');
+    }
+    if (ext === '.kt' && /\bfontSize\s*=\s*\d+(?:\.\d+)?\.dp\b/.test(maskedLine)) {
+      add('compose-dp-font-size', 'P1', 4, n, line, 'Use .sp instead of .dp for Compose fontSize so Android system font scaling applies.');
+    }
+    if (ext === '.dart' && /\b(?:TextScaler\.noScaling|textScaleFactor\s*:\s*1(?:\.0)?)\b/.test(maskedLine)) {
+      add('flutter-text-scaling-locked', 'P0', 5, n, line, 'Do not lock Flutter text scaling; preserve MediaQuery textScaler for accessibility.');
+    }
+    if (ext === '.rs' && !hasThrottledRepaint && /\.request_repaint\s*\(\s*\)/.test(maskedLine)) {
+      add('egui-unconditional-repaint', 'P2', 2, n, line, 'Use request_repaint_after(...) or event-driven updates instead of unconditional request_repaint() to avoid pegging CPU/GPU.');
+    }
   });
 
   const rounded = (masked.match(/rounded-2xl/g) || []).length;
@@ -927,12 +1022,34 @@ function scanFile(file, root) {
     const inlineMotion = /@keyframes\b|(?<![a-zA-Z0-9_-])(?:animation(?:-name)?|transition(?:-property)?)\s*:\s*(?!none\b|['"]none['"]|string\b|boolean\b|number\b)/i.exec(masked);
     if (inlineMotion) motion = { index: inlineMotion.index, text: inlineMotion[0].replace(/:\s*$/, '') };
   }
-  if (motion && !/prefers-reduced-motion|reduceMotion|accessibilityReduceMotion|motion-reduce:/i.test(masked)) {
+  if (!motion && !cssExts.has(ext)) {
+    const jsMotion = /\bgsap\.(?:to|from|fromTo)\s*\(|\bwhileInView\s*=|<motion\.[a-zA-Z0-9_]+/.exec(masked);
+    if (jsMotion) motion = { index: jsMotion.index, text: jsMotion[0] };
+  }
+  if (!motion && ext === '.swift') {
+    const swiftMotion = /\.animation\s*\(|\bwithAnimation\b/.exec(masked);
+    if (swiftMotion) motion = { index: swiftMotion.index, text: swiftMotion[0] };
+  }
+  if (!motion && ext === '.kt') {
+    const ktMotion = /\banimate(?:Float|Color|Dp)AsState\s*\(/.exec(masked);
+    if (ktMotion) motion = { index: ktMotion.index, text: ktMotion[0] };
+  }
+  if (!motion && ext === '.dart') {
+    const dartMotion = /\bAnimationController\s*\(/.exec(masked);
+    if (dartMotion) motion = { index: dartMotion.index, text: dartMotion[0] };
+  }
+  if (motion && !/prefers-reduced-motion|reduceMotion|accessibilityReduceMotion|motion-reduce:|useReducedMotion|disableAnimations|ANIMATOR_DURATION_SCALE/i.test(masked)) {
     add('missing-reduced-motion','P1',4,lineOf(text,motion.index),motion.text,'Provide a reduced-motion path when animation or transitions exist.');
   }
-  const hexes = [...masked.matchAll(/#[0-9a-fA-F]{3,8}\b/g)];
-  const tokenRefs = (masked.match(/var\(|token|theme\.|Color\.|semantic/gi) || []).length;
-  if (hexes.length >= 6 && hexes.length > tokenRefs * 2) add('hardcoded-color-literals','P2',2,lineOf(text,hexes[0].index),`${hexes.length} hardcoded color literals`,'Move recurring colors into semantic tokens and verify contrast roles.');
+  const colorLiterals = [
+    ...masked.matchAll(/#[0-9a-fA-F]{3,8}\b|\bColor\(\s*0x[0-9a-fA-F]{6,8}\s*\)|\bColor32::from_rgb(?:a_(?:unmultiplied|premultiplied))?\s*\(|\bColor\.FromA?Rgb\s*\(/g),
+  ];
+  const tokenRefs = (
+    masked.match(/var\(|token|theme\.|Theme\.of\b|MaterialTheme\.colorScheme|Color\(\s*["']|Color\.accentColor\b|semantic/gi) || []
+  ).length;
+  if (colorLiterals.length >= 6 && colorLiterals.length > tokenRefs * 2) {
+    add('hardcoded-color-literals', 'P2', 2, lineOf(text, colorLiterals[0].index), `${colorLiterals.length} hardcoded color literals`, 'Move recurring colors into semantic tokens and verify contrast roles.');
+  }
   const heroIndex = masked.search(/hero|text-center|items-center|justify-center|mx-auto/i);
   const ctaCount = (masked.match(/<button|<a\b|get started|learn more/gi) || []).length;
   if (heroIndex >= 0 && ctaCount >= 2 && /(hero|text-center)/i.test(masked)) add('centered-hero-two-ctas','P3',1,lineOf(text,heroIndex),'centered hero with repeated calls to action','Question the centered hero/two-CTA template; choose composition from the user decision.');
@@ -964,17 +1081,25 @@ function applyWaivers(findings, file) {
   return { active, waived, unusedWaivers: Array.from(byFinding.values()) };
 }
 
+const severityRank = { P0: 0, P1: 1, P2: 2, P3: 3 };
+const failOnThreshold = { p0: 0, p1: 1, p2: 2, any: 3 };
+
 try {
   const args = process.argv.slice(2);
   if (args.includes('--help') || args.includes('-h')) { console.log(help()); process.exit(0); }
   const json = args.includes('--json');
-  let dir, waivers;
+  let dir, waivers, failOn;
   for (let index = 0; index < args.length; index += 1) {
     const argument = args[index];
     if (argument === '--json') continue;
     if (argument === '--waivers' && !waivers && args[index + 1] && !args[index + 1].startsWith('-')) waivers = args[++index];
+    else if (argument === '--fail-on' && !failOn && args[index + 1] && !args[index + 1].startsWith('-')) failOn = args[++index].toLowerCase();
+    else if (argument.startsWith('--fail-on=') && !failOn) failOn = argument.slice('--fail-on='.length).toLowerCase();
     else if (!dir && !argument.startsWith('-')) dir = argument;
     else throw new Error(`unexpected argument: ${argument}`);
+  }
+  if (failOn !== undefined && !Object.hasOwn(failOnThreshold, failOn)) {
+    throw new Error(`invalid --fail-on value '${failOn}'; expected one of p0, p1, p2, any`);
   }
   if (!dir || !fs.existsSync(dir)) throw new Error('provide an existing file or directory to scan');
   const input = path.resolve(dir);
@@ -992,6 +1117,12 @@ try {
     for (const f of waiverReport.waived ?? []) console.log(`waived ${f.file}:${f.line} ${f.rule} — ${f.reason}`);
     for (const f of waiverReport.unusedWaivers ?? []) console.log(`unused waiver ${f.file}:${f.line} ${f.rule}`);
     console.log(`disclaimer: ${disclaimer}`);
+  }
+  if (failOn !== undefined) {
+    const threshold = failOnThreshold[failOn];
+    if (findings.some((f) => (severityRank[f.severity] ?? 3) <= threshold)) {
+      process.exitCode = 1;
+    }
   }
 } catch (error) {
   console.error(`slop-scan: ${error.message}`);

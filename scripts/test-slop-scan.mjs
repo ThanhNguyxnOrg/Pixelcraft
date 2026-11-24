@@ -146,11 +146,207 @@ export function unlockAccount(getStartedUrl: string) {
   fs.writeFileSync(path.join(walkDir, '.next', 'ignored.css'), 'button:focus { outline: none; }\n');
   fs.writeFileSync(path.join(walkDir, '.windsurf/skills/pixelcraft-review', 'ignored.css'), 'button:focus { outline: none; }\n');
   fs.writeFileSync(path.join(walkDir, 'src', 'app.pcss'), 'button:focus-visible { outline-width: 0; }\n');
+  fs.writeFileSync(path.join(walkDir, 'src', 'hud.gd'), '# TODO: wire stamina bar\nvar color = "#ffffff"\n');
   const walkRes = runPath(walkDir);
-  assert.equal(walkRes.findings.length, 1);
-  assert.equal(walkRes.findings[0].file.replace(/\\/g, '/'), 'src/app.pcss');
-  console.log('ok 6 - directory scan includes expanded extensions and skips build directories and installed skill hosts');
+  assert.equal(walkRes.findings.length, 2);
+  assert.deepEqual(walkRes.findings.map((f) => [f.file.replace(/\\/g, '/'), f.rule]).sort(), [
+    ['src/app.pcss', 'outline-removed'],
+    ['src/hud.gd', 'todo-stub-in-ui'],
+  ]);
+  console.log('ok 6 - directory scan includes expanded extensions (including .gd/.pcss) and skips build directories and installed skill hosts');
+
+  // Anti-laziness detectors: TODO/FIXME/ellipsis stubs, empty event handlers, lazy DIY antipatterns, and 2025-2026 generic copy
+  const lazyTsx = path.join(tmp, 'LazyView.tsx');
+  fs.writeFileSync(lazyTsx, `export function LazyView() {
+  // TODO: implement pagination
+  const runFormat = () => document.execCommand('bold');
+  const empower = (x: string) => x;
+  return (
+    <form onSubmit={(e) => { e.preventDefault(); }}>
+      <p>Built for modern teams with an ai-powered, effortless, next-gen workspace.</p>
+      {/* ... more items */}
+      <button onClick={() => {}}>Submit</button>
+      <a href="#">Dead anchor</a>
+      <a href="#" onClick={runFormat}>Handled anchor</a>
+      <a href="#" role="button">Role anchor</a>
+      <span>{empower('ok')}</span>
+    </form>
+  );
+}
+`);
+  const lazyRes = runPath(lazyTsx);
+  const lazyRules = lazyRes.findings.map(({ rule, line }) => `${rule}:${line}`);
+  assert.ok(lazyRules.includes('todo-stub-in-ui:2'), `expected TODO stub: ${lazyRules}`);
+  assert.ok(lazyRules.includes('lazy-diy-antipattern:3'), `expected execCommand: ${lazyRules}`);
+  assert.ok(lazyRules.includes('empty-event-handler:6'), `expected preventDefault-only onSubmit: ${lazyRules}`);
+  assert.ok(lazyRules.includes('generic-copy:7'), `expected 2025-2026 AI clichés: ${lazyRules}`);
+  assert.ok(lazyRules.includes('todo-stub-in-ui:8'), `expected ellipsis stub: ${lazyRules}`);
+  assert.ok(lazyRules.includes('empty-event-handler:9'), `expected empty onClick: ${lazyRules}`);
+  assert.ok(lazyRules.includes('empty-event-handler:10'), `expected dead href="#": ${lazyRules}`);
+  assert.ok(!lazyRules.includes('empty-event-handler:11'), `handled href="#" false positive: ${lazyRules}`);
+  assert.ok(!lazyRules.includes('empty-event-handler:12'), `role="button" href="#" false positive: ${lazyRules}`);
+  assert.ok(!lazyRules.includes('generic-copy:4'), `identifier empower false positive: ${lazyRules}`);
+  assert.ok(!lazyRules.includes('generic-copy:13'), `call empower() false positive: ${lazyRules}`);
+  console.log('ok 7 - anti-laziness detectors (TODO/ellipsis stubs, empty handlers, execCommand) and 2025-2026 AI copy work with zero false positives on valid code');
+
+  // Python # comment masking, hex preservation, tkinter detection, Lua -- & ClojureScript ; comment masking
+  const pyFile = path.join(tmp, 'desktop_app.py');
+  fs.writeFileSync(pyFile, `# Seamless effortless dashboard comment that should be masked
+import tkinter as tk
+# TODO: replace placeholder dialog
+PALETTE = """
+  background: #fff;
+  color: #111111;
+"""
+label = "Revenue ledger"  # unleash next-gen
+`);
+  const pyRes = runPath(pyFile);
+  assert.deepEqual(pyRes.findings.map(({ rule, line }) => [rule, line]), [
+    ['todo-stub-in-ui', 3],
+    ['lazy-diy-antipattern', 2],
+  ]);
+
+  const cleanPy = path.join(tmp, 'clean_app.py');
+  fs.writeFileSync(cleanPy, `# Effortless next-gen comment is masked and ignored
+PRIMARY = "#fff"  # delve into notes
+SECONDARY = '#1a2b3c'
+`);
+  assert.deepEqual(runPath(cleanPy).findings, [], 'clean Python file with # comments and hex strings should produce zero findings');
+
+  const luaFile = path.join(tmp, 'hud.lua');
+  fs.writeFileSync(luaFile, `-- Seamless effortless next-gen comment\nlocal title = "Inventory"\n`);
+  assert.deepEqual(runPath(luaFile).findings, [], 'Lua -- comment should be masked');
+
+  const cljsFile = path.join(tmp, 'view.cljs');
+  fs.writeFileSync(cljsFile, `; Seamless next-gen comment\n(def label "Ledger 'ok")\n`);
+  assert.deepEqual(runPath(cljsFile).findings, [], 'ClojureScript ; comment should be masked');
+
+  const cssHash = path.join(tmp, 'todo.css');
+  fs.writeFileSync(cssHash, `#todo { color: var(--ink); }\n`);
+  assert.deepEqual(runPath(cssHash).findings, [], 'CSS #todo ID selector must not trigger todo-stub-in-ui');
+  console.log('ok 8 - Python #, Lua --, and ClojureScript ; comment masking preserve hex strings and avoid CSS #todo false positives');
+
+  // Native non-JS floor rules + native reduced-motion + hardcoded-color-literals fix
+  const ktBad = path.join(tmp, 'BadScreen.kt');
+  fs.writeFileSync(ktBad, `import androidx.compose.ui.graphics.Color
+val c1 = Color(0xFF112233)
+val c2 = Color(0xFF223344)
+val c3 = Color(0xFF334455)
+val c4 = Color(0xFF445566)
+val c5 = Color(0xFF556677)
+val c6 = Color(0xFF667788)
+val raw = Color.Red
+val raw2 = Color.Blue
+val alpha by animateFloatAsState(targetValue = 1f)
+Text("Total", fontSize = 14.dp)
+`);
+  const ktRes = runPath(ktBad);
+  const ktRules = ktRes.findings.map((f) => f.rule);
+  assert.ok(ktRules.includes('compose-dp-font-size'), `expected compose-dp-font-size: ${ktRules}`);
+  assert.ok(ktRules.includes('missing-reduced-motion'), `expected Compose reduced-motion: ${ktRules}`);
+  assert.ok(ktRules.includes('hardcoded-color-literals'), `expected hardcoded-color-literals despite Color.Red/Blue: ${ktRules}`);
+
+  const ktGood = path.join(tmp, 'GoodScreen.kt');
+  fs.writeFileSync(ktGood, `val scale = Settings.Global.ANIMATOR_DURATION_SCALE
+val tint = MaterialTheme.colorScheme.primary
+val alpha by animateFloatAsState(targetValue = if (scale == 0f) 1f else 0.5f)
+Text("Total", fontSize = 14.sp, color = tint)
+`);
+  assert.deepEqual(runPath(ktGood).findings, [], 'clean Compose file with .sp, MaterialTheme.colorScheme, and ANIMATOR_DURATION_SCALE passes');
+
+  const dartBad = path.join(tmp, 'bad_widget.dart');
+  fs.writeFileSync(dartBad, `final ctrl = AnimationController(vsync: this);
+final child = MediaQuery(data: data.copyWith(textScaler: TextScaler.noScaling), child: Text("Hi"));
+`);
+  const dartRes = runPath(dartBad);
+  assert.deepEqual(dartRes.findings.map((f) => f.rule).sort(), ['flutter-text-scaling-locked', 'missing-reduced-motion']);
+
+  const dartGood = path.join(tmp, 'good_widget.dart');
+  fs.writeFileSync(dartGood, `final reduce = MediaQuery.disableAnimationsOf(context);
+final ctrl = AnimationController(vsync: this, duration: reduce ? Duration.zero : Duration(milliseconds: 200));
+final themeColor = Theme.of(context).colorScheme.primary;
+`);
+  assert.deepEqual(runPath(dartGood).findings, [], 'clean Flutter file with disableAnimations and Theme.of passes');
+
+  const swiftBad = path.join(tmp, 'BadView.swift');
+  fs.writeFileSync(swiftBad, `struct BadView: View {
+  var body: some View {
+    Button("Save") { withAnimation { expanded.toggle() } }
+  }
+}
+`);
+  assert.deepEqual(runPath(swiftBad).findings.map((f) => f.rule), ['missing-reduced-motion']);
+
+  const swiftGood = path.join(tmp, 'GoodView.swift');
+  fs.writeFileSync(swiftGood, `struct GoodView: View {
+  @Environment(\\.accessibilityReduceMotion) var reduceMotion
+  var body: some View {
+    Button("Save") { withAnimation(reduceMotion ? nil : .default) { expanded.toggle() } }
+      .foregroundStyle(Color("SurfaceInk"))
+  }
+}
+`);
+  assert.deepEqual(runPath(swiftGood).findings, [], 'clean SwiftUI file with accessibilityReduceMotion passes');
+
+  const rsBad = path.join(tmp, 'bad_egui.rs');
+  fs.writeFileSync(rsBad, `fn update(ctx: &egui::Context) {
+  let _a = [Color32::from_rgb(1,2,3), Color32::from_rgb(2,3,4), Color32::from_rgb(3,4,5),
+            Color32::from_rgb(4,5,6), Color32::from_rgb(5,6,7), Color32::from_rgb(6,7,8)];
+  ctx.request_repaint();
+}
+`);
+  assert.deepEqual(runPath(rsBad).findings.map((f) => f.rule).sort(), ['egui-unconditional-repaint', 'hardcoded-color-literals']);
+
+  const rsGood = path.join(tmp, 'good_egui.rs');
+  fs.writeFileSync(rsGood, `fn update(ctx: &egui::Context) {
+  ctx.request_repaint_after(std::time::Duration::from_millis(250));
+}
+`);
+  assert.deepEqual(runPath(rsGood).findings, [], 'egui using request_repaint_after passes');
+
+  const gsapBad = path.join(tmp, 'MotionCard.tsx');
+  fs.writeFileSync(gsapBad, `export function MotionCard() {
+  gsap.to('.box', { x: 100 });
+  return <motion.div whileInView={{ opacity: 1 }}>Content</motion.div>;
+}
+`);
+  assert.deepEqual(runPath(gsapBad).findings.map((f) => f.rule), ['missing-reduced-motion']);
+
+  const gsapGood = path.join(tmp, 'MotionCardSafe.tsx');
+  fs.writeFileSync(gsapGood, `export function MotionCardSafe() {
+  const prefersReduced = useReducedMotion();
+  return <motion.div whileInView={{ opacity: 1 }}>{String(prefersReduced)}</motion.div>;
+}
+`);
+  assert.deepEqual(runPath(gsapGood).findings, [], 'Motion with useReducedMotion passes');
+  console.log('ok 9 - native floor rules (Compose .dp, Flutter TextScaler.noScaling, egui request_repaint), SwiftUI/Compose/Flutter/GSAP/Motion reduced-motion, and color literal rules work');
+
+  // --fail-on threshold behavior and --help documentation
+  const helpOut = spawnSync(process.execPath, [local('slop-scan.mjs'), '--help'], { encoding: 'utf8' });
+  assert.equal(helpOut.status, 0);
+  assert.match(helpOut.stdout, /--fail-on/);
+
+  const p0Fail = spawnSync(process.execPath, [local('slop-scan.mjs'), dartBad, '--json', '--fail-on', 'p0'], { encoding: 'utf8' });
+  assert.equal(p0Fail.status, 1, 'P0 finding must fail under --fail-on p0');
+  assert.equal(JSON.parse(p0Fail.stdout).findings.some((f) => f.severity === 'P0'), true);
+
+  const p0PassOnP1Only = spawnSync(process.execPath, [local('slop-scan.mjs'), swiftBad, '--json', '--fail-on', 'p0'], { encoding: 'utf8' });
+  assert.equal(p0PassOnP1Only.status, 0, 'P1-only finding should exit 0 under --fail-on p0');
+
+  const p1FailOnP1 = spawnSync(process.execPath, [local('slop-scan.mjs'), swiftBad, '--json', '--fail-on=p1'], { encoding: 'utf8' });
+  assert.equal(p1FailOnP1.status, 1, 'P1 finding must fail under --fail-on=p1');
+
+  const anyFailOnP3 = spawnSync(process.execPath, [local('slop-scan.mjs'), local('fixtures/brand-critique.css'), '--fail-on', 'any'], { encoding: 'utf8' });
+  assert.equal(anyFailOnP3.status, 1, 'P3 finding must fail under --fail-on any');
+
+  const cleanAny = spawnSync(process.execPath, [local('slop-scan.mjs'), local('fixtures/clean.html'), '--fail-on', 'any'], { encoding: 'utf8' });
+  assert.equal(cleanAny.status, 0, 'clean file must exit 0 under --fail-on any');
+
+  const invalidFailOn = spawnSync(process.execPath, [local('slop-scan.mjs'), local('fixtures/clean.html'), '--fail-on', 'p9'], { encoding: 'utf8' });
+  assert.equal(invalidFailOn.status, 1);
+  console.log('ok 10 - --fail-on p0|p1|p2|any enforces severity exit gates while preserving default exit 0');
 } finally {
   fs.rmSync(tmp, { recursive: true, force: true });
 }
+
 

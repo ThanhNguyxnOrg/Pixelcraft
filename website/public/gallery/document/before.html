@@ -1,0 +1,58 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Invoice PDF & Email (default agent output)</title>
+<style>
+  body { margin: 0; background: #1e293b; color: #f8fafc; font-family: Inter, sans-serif; padding: 34px 48px; }
+  .grid { max-width: 1320px; margin: 0 auto; display: grid; grid-template-columns: 1fr 1fr; gap: 36px; }
+  .panel-label { font-size: 13px; color: #94a3b8; margin: 0 0 10px; }
+  .sheet { background: #fff; color: #1e293b; padding: 28px 32px; border-radius: 6px; box-shadow: 0 20px 40px rgba(0,0,0,.35); height: 760px; overflow: hidden; }
+  .sheet-head { background: linear-gradient(135deg, #7c3aed, #3b82f6); color: #fff; padding: 18px 20px; border-radius: 12px; margin-bottom: 18px; }
+  .sheet-head h1 { margin: 0; font-size: 24px; }
+  .cut-line { border-top: 2px dashed #ef4444; color: #ef4444; font-size: 12px; font-weight: 700; padding-top: 6px; margin: 18px 0; }
+  table.bad { width: 100%; border-collapse: collapse; font-size: 14px; }
+  table.bad td { padding: 10px 6px; border-bottom: 1px solid #e2e8f0; }
+  .mail { background: #121212; color: #222; border-radius: 16px; border: 1px solid #334155; padding: 28px; height: 760px; overflow: hidden; }
+  .mail-logo { color: #18181b; font-size: 22px; font-weight: 800; margin-bottom: 16px; }
+  .mail-flex { display: flex; gap: 14px; background: #1c1c20; padding: 16px; border-radius: 16px; margin: 18px 0; color: #e2e8f0; transition: all .3s; }
+  .mail-cta { display: inline-block; padding: 14px 28px; border-radius: 14px; background: linear-gradient(135deg, #7c3aed, #3b82f6); color: #fff; text-decoration: none; font-weight: 600; outline: none; }
+</style>
+</head>
+<body>
+  <div class="grid">
+    <div>
+      <p class="panel-label">Browser window.print() PDF — orphan heading, split table, clipped total</p>
+      <div class="sheet">
+        <div class="sheet-head" data-slop="purple-blue-gradient">
+          <h1 data-slop="generic-copy">Invoice · Seamless Cloud Billing</h1>
+        </div>
+        <table class="bad">
+          <tr><td>Platform seats (42 × $29)</td><td>$1,218.00</td></tr>
+          <tr><td>EU data residency</td><td>$350.00</td></tr>
+          <tr><td>Audit log retention (365d)</td><td>$240.00</td></tr>
+          <tr><td>Priority support SLA</td><td>$400.00</td></tr>
+        </table>
+        <div class="cut-line">✂ Page 1 breaks mid-table — no repeated thead, orphan heading below</div>
+        <h3 style="margin:260px 0 0">Payment & Bank Remittance</h3>
+      </div>
+    </div>
+
+    <div>
+      <p class="panel-label">Raw Flexbox HTML Email in Outlook Dark Mode — invisible logo, broken layout</p>
+      <div class="mail">
+        <div class="mail-logo">ACME CLOUD (dark logo invisible on dark bg)</div>
+        <p style="color:#cbd5e1;font-size:15px">Unlock effortless billing updates! Your invoice is ready.</p>
+        <div class="mail-flex" data-slop="transition-all">
+          <div>Invoice #4091</div>
+          <div>Due Oct 31</div>
+          <div>$2,208.00</div>
+        </div>
+        <a class="mail-cta" href="#" data-slop="outline-removed">View invoice in browser</a>
+        <p style="color:#64748b;font-size:12px;margin-top:24px">No plaintext companion · 138 KB HTML clipped by Gmail · Flexbox ignored by Classic Outlook</p>
+      </div>
+    </div>
+  </div>
+</body>
+</html>

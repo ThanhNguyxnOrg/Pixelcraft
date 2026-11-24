@@ -51,7 +51,7 @@ try {
   assert.ok(manifest.agents.includes('agents'));
   assert.ok(fs.existsSync(path.join(empty, 'agents/.agents/skills/pixelcraft/SKILL.md')));
   const copilotPath = fs.readFileSync(path.join(empty, 'copilot/.github/instructions/pixelcraft.instructions.md'), 'utf8');
-  for (const ext of ['mjml', 'typ', 'tex', 'uxml', 'uss', 'gd', 'tscn', 'qml', 'xaml', 'cpp', 'h', 'glsl', 'wgsl', 'mdx', 'razor', 'heex', 'erb', 'templ', 'tcss', 'qss', 'r', 'jl']) {
+  for (const ext of ['mjml', 'typ', 'tex', 'qmd', 'uxml', 'uss', 'gd', 'tscn', 'qml', 'xaml', 'axaml', 'fxml', 'blp', 'slint', 'ets', 'zig', 'less', 'pcss', 'twig', 'cpp', 'h', 'glsl', 'wgsl', 'mdx', 'razor', 'heex', 'erb', 'templ', 'tcss', 'qss', 'r', 'jl']) {
     assert.ok(copilotPath.includes(ext), `missing ${ext} in Copilot applyTo glob`);
   }
   console.log('ok 3 - accepts an empty output directory and builds all 14 canonical fragments with expanded Copilot applyTo glob');

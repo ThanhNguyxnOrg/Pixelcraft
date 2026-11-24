@@ -1,0 +1,49 @@
+{
+  "schemaVersion": 1,
+  "id": "data-app-python-marimo",
+  "skill": "pixelcraft-data-apps",
+  "title": "Build a reactive Python Marimo cohort explorer without stale hidden cell state or unthrottled expensive recomputation",
+  "contextSnapshot": {
+    "surface": "Interactive Python Marimo analytical data app for cohort retention exploration",
+    "platform": "Python / Marimo (marimo.ui + Altair/Polars)",
+    "mode": "Operate",
+    "states": ["initial default dataset", "filtered empty cohort", "expensive query guarded by mo.ui.form/run button", "data-load error", "narrow viewport stacking"],
+    "constraints": ["DAG-pure reactive cells with no hidden mutable global state", "explicit form/batch trigger for heavy queries", "direct-labeled accessible charts with tabular data fallback"]
+  },
+  "prompt": "Build an interactive Python Marimo data app for exploring customer retention cohorts by region and acquisition channel, ensuring heavy aggregations do not re-run on every keystroke and showing clear empty/error states plus downloadable summary tables.",
+  "expectedRouting": ["pixelcraft-data-apps", "references/reactive-data-apps.md", "references/evidence.md"],
+  "forbiddenBehaviors": [
+    "mutates shared global DataFrames across cells, breaking Marimo's reactive DAG invariants",
+    "triggers multi-second queries on every slider tick instead of batching via mo.ui.form() or mo.ui.run_button()",
+    "presents unlabeled charts or omits empty-cohort and load-error feedback",
+    "treats python syntax check as rendered browser verification of the Marimo app"
+  ],
+  "rubricDimensions": [
+    {
+      "dimension": "Marimo reactive DAG hygiene and latency discipline",
+      "pass": "uses pure cell dependencies, mo.ui.form() / batch submission for expensive recomputation, and mo.stop() guards for missing or invalid inputs",
+      "fail": "creates circular/mutating globals or freezes the app on every slider drag"
+    },
+    {
+      "dimension": "analytical clarity and state coverage",
+      "pass": "direct-labels retention curves with exact denominators/date range, pairs charts with an inspectable summary table, and handles empty/error states gracefully",
+      "fail": "shows raw Python tracebacks to analysts or relies on legend-only color decoding"
+    },
+    {
+      "dimension": "honest verification labeling",
+      "pass": "distinguishes marimo check / pytest static checks from rendered browser inspection of the running Marimo app",
+      "fail": "claims responsive chart readability without running or inspecting the app"
+    }
+  ],
+  "negativeControls": [
+    {
+      "name": "marimo check only",
+      "input": "marimo check app.py passes with no DAG errors",
+      "mustNot": "claim chart contrast, narrow-screen layout, or interactive filtering is rendered-verified"
+    }
+  ],
+  "baseline": {
+    "withoutSkill": "dumps raw unthrottled widgets that re-query on every tick, leaks tracebacks on empty filters, and leaves charts unlabeled",
+    "withSkill": "builds a clean DAG-pure Marimo app with mo.ui.form batching, mo.stop guards, direct-labeled charts + summary table, and honest static vs rendered evidence"
+  }
+}

@@ -141,7 +141,55 @@ try {
   fs.rmSync(path.join(tmp, 'evals/fixtures/case-bad-route.json'));
   console.log('ok 12 - expectedRouting file targets are verified');
 
+  // Duplicate consecutive headings and duplicate Domain/Platform routing headings
+  expectFailure(
+    'name: case\ndescription: Handles YAML\nlicense: MIT',
+    /duplicate consecutive heading: ## Details/,
+    'duplicate consecutive heading',
+    '# Case\n\n## Details\n\nText.\n\n## Details\n\nMore text.\n',
+  );
+  expectFailure(
+    'name: case\ndescription: Handles YAML\nlicense: MIT',
+    /duplicate '## Domain routing' heading/,
+    'duplicate Domain routing heading',
+    '# Case\n\n## Domain routing\n\nA.\n\n## Notes\n\nB.\n\n## Domain routing\n\nC.\n',
+  );
+  expectFailure(
+    'name: case\ndescription: Handles YAML\nlicense: MIT',
+    /duplicate '## Platform routing' heading/,
+    'duplicate Platform routing heading',
+    '# Case\n\n## Platform routing\n\nA.\n\n## Notes\n\nB.\n\n## Platform routing\n\nC.\n',
+  );
+  console.log('ok 13 - duplicate consecutive headings and duplicate Domain/Platform routing headings are rejected');
+
+  // Platform routing table sync enforcement on skills/pixelcraft/SKILL.md
+  const orchDir = path.join(tmp, 'skills/pixelcraft');
+  const surfDir = path.join(tmp, 'skills/pixelcraft-demo');
+  const surfRefsDir = path.join(surfDir, 'references');
+  fs.mkdirSync(orchDir, { recursive: true });
+  fs.mkdirSync(surfRefsDir, { recursive: true });
+  fs.writeFileSync(path.join(tmp, 'evals/pixelcraft.md'), '# Eval\n\n## Case 1 — demo\n');
+  fs.writeFileSync(path.join(tmp, 'evals/pixelcraft-demo.md'), '# Eval\n\n## Case 1 — demo\n');
+  fs.writeFileSync(path.join(surfRefsDir, 'alpha.md'), '# Alpha\n');
+  fs.writeFileSync(path.join(surfRefsDir, 'beta.md'), '# Beta\n');
+  fs.writeFileSync(path.join(surfDir, 'SKILL.md'), '---\nname: pixelcraft-demo\ndescription: Demo platform skill.\nlicense: MIT\n---\n\n# Demo\n\n- Read [references/alpha.md](references/alpha.md) when alpha.\n- Read [references/beta.md](references/beta.md) when beta.\n');
+
+  // Missing reference ('beta') in Platform routing table -> fails
+  fs.writeFileSync(path.join(orchDir, 'SKILL.md'), '---\nname: pixelcraft\ndescription: Orchestrator.\nlicense: MIT\n---\n\n# Orchestrator\n\n## Platform routing\n\n| Platform skill | Framework and surface references |\n|---|---|\n| `pixelcraft-demo` | `alpha` |\n');
+  expectFailure('name: case\ndescription: Handles YAML\nlicense: MIT', /Platform routing table for pixelcraft-demo is missing reference 'beta'/, 'missing platform routing ref');
+
+  // Nonexistent reference ('ghost') in Platform routing table -> fails
+  fs.writeFileSync(path.join(orchDir, 'SKILL.md'), '---\nname: pixelcraft\ndescription: Orchestrator.\nlicense: MIT\n---\n\n# Orchestrator\n\n## Platform routing\n\n| Platform skill | Framework and surface references |\n|---|---|\n| `pixelcraft-demo` | `alpha`, `beta`, `ghost` |\n');
+  expectFailure('name: case\ndescription: Handles YAML\nlicense: MIT', /Platform routing table for pixelcraft-demo lists nonexistent reference 'ghost'/, 'nonexistent platform routing ref');
+
+  // Exact match -> passes
+  fs.writeFileSync(path.join(orchDir, 'SKILL.md'), '---\nname: pixelcraft\ndescription: Orchestrator.\nlicense: MIT\n---\n\n# Orchestrator\n\n## Platform routing\n\n| Platform skill | Framework and surface references |\n|---|---|\n| `pixelcraft-demo` | `alpha`, `beta` |\n');
+  const syncedRun = runValidator('name: case\ndescription: Handles YAML\nlicense: MIT');
+  assert.equal(syncedRun.status, 0, syncedRun.stderr);
+  console.log('ok 14 - Platform routing table reference sync enforces both missing and nonexistent references');
+
   console.log('validator YAML tests passed');
 } finally {
   fs.rmSync(tmp, { recursive: true, force: true });
 }
+
