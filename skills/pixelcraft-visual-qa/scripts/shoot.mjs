@@ -271,14 +271,15 @@ const auditSource = `() => {
       return withinDocument && !clippedByAncestor(parent, rect);
     });
   };
-  const modalOpen = Boolean(document.querySelector('dialog:modal, [aria-modal="true"]'));
   const coveringElement = (owner, rect) => {
     if (rect.left < 0 || rect.right > vw || rect.top < 0 || rect.bottom > innerHeight
-        || rect.width < 8 || rect.height < 8 || modalOpen) return null;
+        || rect.width < 8 || rect.height < 8) return null;
     const y = rect.top + rect.height / 2;
     const hits = [0.25, 0.5, 0.75].map((frac) => document.elementFromPoint(rect.left + rect.width * frac, y));
     const cover = hits[0];
     if (!cover || !hits.every((hit) => hit === cover) || cover.contains(owner) || owner.contains(cover)) return null;
+    const modal = cover.closest('dialog:modal, [aria-modal="true"]');
+    if (modal && !modal.contains(owner)) return null;
     let current = cover;
     while (current && !current.contains(owner)) {
       const style = getComputedStyle(current);

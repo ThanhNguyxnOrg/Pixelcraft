@@ -13,11 +13,12 @@ if (process.argv.includes('--help')) {
 const dir = fs.mkdtempSync(path.join(os.tmpdir(), 'pixelcraft-shoot-test-'));
 try {
   const local = (file) => fileURLToPath(new URL(`../skills/pixelcraft-visual-qa/scripts/${file}`, import.meta.url));
-  const result = spawnSync(process.execPath, [
-    local('shoot.mjs'), local('fixtures/shoot-audit.html'), '--out', dir, '--project',
+  const run = (fixture, ...options) => spawnSync(process.execPath, [
+    local('shoot.mjs'), local(`fixtures/${fixture}`), '--out', dir, '--project',
     process.env.PIXELCRAFT_TEST_PLAYWRIGHT_PROJECT ?? process.cwd(), '--breakpoints=390x844,768x1024',
-    '--light-only', '--no-reduced-motion', '--wait-ms=100', '--keyboard',
+    '--light-only', '--no-reduced-motion', '--wait-ms=100', ...options,
   ], { encoding: 'utf8', timeout: 30000 });
+  const result = run('shoot-audit.html', '--keyboard');
   if (result.status === 2 && /Playwright is not installed/.test(result.stderr) && !process.env.PIXELCRAFT_TEST_PLAYWRIGHT_PROJECT) {
     console.log('SKIP - Playwright not installed; set PIXELCRAFT_TEST_PLAYWRIGHT_PROJECT to verify browser diagnostics');
   } else {
@@ -43,6 +44,13 @@ try {
       { element: 'button#focus-ring', indicator: 'style-change' },
     ]);
     console.log('ok 1 - actual browser distinguishes broken images, hidden content, occlusion, overflow, contrast and focus controls');
+    const modal = run('shoot-modal.html', '--breakpoints=768x1024');
+    assert.equal(modal.status, 0, `${modal.error ?? ''}\n${modal.stdout}\n${modal.stderr}`);
+    const [dialog] = JSON.parse(fs.readFileSync(path.join(dir, 'report.json'), 'utf8')).captures;
+    assert.ok(has(dialog, 'text-occlusion', 'occluded-modal'), 'expected occlusion inside a visible modal');
+    assert.ok(!has(dialog, 'text-occlusion', 'readable-modal'));
+    assert.ok(!has(dialog, 'text-occlusion', 'behind-modal'));
+    console.log('ok 2 - visible modal detects internal occlusion without flagging its intentional background coverage');
   }
 } finally {
   fs.rmSync(dir, { recursive: true, force: true });
