@@ -11,40 +11,10 @@
       "name": "pixelcraft",
       "description": "Portable Agent Skills for distinctive UI and rigorous UX across frontend stacks",
       "version": "0.1.0",
-      "source": 
-        {
-          "source": "github",
-          "repo": "ThanhNguyxnOrg/Pixelcraft"
-        },
-      "strict": false,
-      "skills": [
-        "./skills/pixelcraft",
-        "./skills/pixelcraft-accessibility",
-        "./skills/pixelcraft-brandkit",
-        "./skills/pixelcraft-chat-ui",
-        "./skills/pixelcraft-constrained",
-        "./skills/pixelcraft-craft",
-        "./skills/pixelcraft-data-apps",
-        "./skills/pixelcraft-dataviz",
-        "./skills/pixelcraft-desktop",
-        "./skills/pixelcraft-direction",
-        "./skills/pixelcraft-document",
-        "./skills/pixelcraft-email",
-        "./skills/pixelcraft-extensions",
-        "./skills/pixelcraft-game-ui",
-        "./skills/pixelcraft-handoff",
-        "./skills/pixelcraft-media",
-        "./skills/pixelcraft-mobile",
-        "./skills/pixelcraft-patterns",
-        "./skills/pixelcraft-plan",
-        "./skills/pixelcraft-review",
-        "./skills/pixelcraft-spatial",
-        "./skills/pixelcraft-tokens",
-        "./skills/pixelcraft-tui",
-        "./skills/pixelcraft-ux",
-        "./skills/pixelcraft-visual-qa",
-        "./skills/pixelcraft-web"
-      ]
+      "source": {
+        "source": "github",
+        "repo": "ThanhNguyxnOrg/Pixelcraft"
+      }
     }
   ]
 }
