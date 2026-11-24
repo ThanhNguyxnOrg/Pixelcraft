@@ -179,8 +179,8 @@ function LoopBackdrop() {
       aria-hidden="true"
       tabIndex={-1}
     >
-      <source src="/media/pixelcraft-loop.webm" type="video/webm" />
       <source src="/media/pixelcraft-loop.mp4" type="video/mp4" />
+      <source src="/media/pixelcraft-loop.webm" type="video/webm" />
     </video>
   );
 }

@@ -30,13 +30,31 @@ export function Loop() {
           .toArray<HTMLElement>('[data-loop="card"]')
           .forEach((card, i) => {
             gsap.from(card, {
-              y: 28,
+              y: 48,
+              x: i % 2 ? 18 : -18,
+              rotation: i % 2 ? 1.4 : -1.4,
+              scale: 0.97,
               opacity: 0.25,
-              duration: 0.85,
-              delay: (i % 4) * 0.075,
-              ease: "power3.out",
+              duration: 1.1,
+              delay: (i % 4) * 0.09,
+              ease: "expo.out",
+              clearProps: "transform",
               scrollTrigger: { trigger: card, start: "top 92%", once: true },
             });
+            gsap.fromTo(
+              card.querySelector('[data-loop="index"]'),
+              { y: 18 },
+              {
+                y: -18,
+                ease: "none",
+                scrollTrigger: {
+                  trigger: card,
+                  start: "top bottom",
+                  end: "bottom top",
+                  scrub: 0.7,
+                },
+              },
+            );
             ScrollTrigger.create({
               trigger: card,
               start: "top 72%",
@@ -103,6 +121,7 @@ export function Loop() {
             >
               <span
                 aria-hidden="true"
+                data-loop="index"
                 className="pointer-events-none absolute -end-3 -top-4 font-pixel text-[7rem] leading-none text-white/[0.035] group-[.is-active]:text-action/[0.07]"
               >
                 {String(i).padStart(2, "0")}

@@ -1,5 +1,5 @@
 import { AnimatePresence, motion } from "motion/react";
-import { useMemo, useRef, useState } from "react";
+import { useMemo, useRef, useState, type CSSProperties } from "react";
 import {
   GALLERY,
   GALLERY_QUEUE,
@@ -36,11 +36,31 @@ function grouped(findings: ScanFinding[]) {
 
 function Stage({ item }: { item: GalleryItem }) {
   const [view, setView] = useState<View>("compare");
-  const [pos, setPos] = useState(50);
+  const pos = useRef(50);
   const [pins, setPins] = useState(false);
   const stage = useRef<HTMLDivElement>(null);
   const touched = useRef(false);
+  const sweep = useRef<gsap.core.Timeline | null>(null);
   const { paused } = useMotionPause();
+
+  // Paint the comparison directly: an automatic sweep must not re-render the
+  // entire exhibit (images, findings and controls) on every animation frame.
+  const paintDivider = (value: number) => {
+    pos.current = value;
+    stage.current?.style.setProperty("--comparison-position", `${value}%`);
+    const input = stage.current?.querySelector("input");
+    if (input) {
+      input.value = String(value);
+      input.setAttribute(
+        "aria-valuetext",
+        `${Math.round(value)}% default agent`,
+      );
+    }
+  };
+  const stopSweep = () => {
+    touched.current = true;
+    sweep.current?.kill();
+  };
 
   // Once per exhibit: the divider sweeps from the default page to the crafted one, then rests at the middle.
   // It stops the moment the visitor takes the handle.
@@ -51,7 +71,7 @@ function Stage({ item }: { item: GalleryItem }) {
       mm.add(MOTION_OK, () => {
         if (touched.current || view !== "compare") return;
         const o = { v: 50 };
-        gsap
+        sweep.current = gsap
           .timeline({
             scrollTrigger: {
               trigger: stage.current,
@@ -64,7 +84,7 @@ function Stage({ item }: { item: GalleryItem }) {
             duration: 0.65,
             ease: "power2.inOut",
             onUpdate: () => {
-              if (!touched.current) setPos(Math.round(o.v));
+              if (!touched.current) paintDivider(Math.round(o.v));
             },
           })
           .to(o, {
@@ -72,7 +92,7 @@ function Stage({ item }: { item: GalleryItem }) {
             duration: 1.25,
             ease: "power3.inOut",
             onUpdate: () => {
-              if (!touched.current) setPos(Math.round(o.v));
+              if (!touched.current) paintDivider(Math.round(o.v));
             },
           })
           .to(
@@ -82,7 +102,7 @@ function Stage({ item }: { item: GalleryItem }) {
               duration: 0.8,
               ease: "expo.out",
               onUpdate: () => {
-                if (!touched.current) setPos(Math.round(o.v));
+                if (!touched.current) paintDivider(Math.round(o.v));
               },
             },
             "+=0.15",
@@ -101,7 +121,8 @@ function Stage({ item }: { item: GalleryItem }) {
   const h = galleryMeta.viewport.h;
 
   const showBefore = view !== "after";
-  const clip = view === "before" ? 0 : view === "after" ? 100 : 100 - pos;
+  const clip =
+    view === "before" ? "0%" : "calc(100% - var(--comparison-position))";
 
   return (
     <div className="min-w-0">
@@ -150,7 +171,12 @@ function Stage({ item }: { item: GalleryItem }) {
         <div
           ref={stage}
           className="relative overflow-hidden rounded-[calc(var(--radius-card)-1px)] select-none"
-          style={{ aspectRatio: `${w} / ${h}` }}
+          style={
+            {
+              aspectRatio: `${w} / ${h}`,
+              "--comparison-position": `${pos.current}%`,
+            } as CSSProperties
+          }
         >
           <img
             src={item.after}
@@ -162,7 +188,7 @@ function Stage({ item }: { item: GalleryItem }) {
           {showBefore ? (
             <div
               className="absolute inset-0"
-              style={{ clipPath: `inset(0 ${clip}% 0 0)` }}
+              style={{ clipPath: `inset(0 ${clip} 0 0)` }}
             >
               <img
                 src={item.before}
@@ -180,18 +206,20 @@ function Stage({ item }: { item: GalleryItem }) {
                 type="range"
                 min={0}
                 max={100}
-                value={pos}
+                defaultValue={pos.current}
+                onPointerDown={stopSweep}
+                onFocus={stopSweep}
                 onChange={(e) => {
-                  touched.current = true;
-                  setPos(Number(e.target.value));
+                  stopSweep();
+                  paintDivider(Number(e.target.value));
                 }}
                 aria-label="Comparison divider. Left shows the default agent, right shows Pixelcraft."
-                aria-valuetext={`${pos}% default agent`}
+                aria-valuetext={`${pos.current}% default agent`}
                 className="peer absolute inset-0 h-full w-full cursor-ew-resize opacity-0"
               />
               <div
                 className="pointer-events-none absolute inset-y-0 w-0.5 bg-action shadow-[0_0_0_1px_var(--color-paper-ink)]"
-                style={{ left: `${pos}%` }}
+                style={{ left: "var(--comparison-position)" }}
               >
                 <span className="absolute top-1/2 left-1/2 grid size-12 -translate-x-1/2 -translate-y-1/2 place-items-center rounded-full border-2 border-paper-ink bg-action text-on-action shadow-[0_10px_30px_-8px_rgba(11,18,64,0.7)]">
                   <PixelIcon name="drag" size={16} />

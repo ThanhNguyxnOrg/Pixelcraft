@@ -6,7 +6,7 @@ import { fileURLToPath } from "node:url";
 
 if (process.argv.includes("--help")) {
   console.log(
-    "Usage: node website/scripts/normalize-film.mjs --input /path/to/owner-supplied-film.mp4 [--font /path/to/mono.ttf]\nPreserve the supplied 16-second film; correct its two baked-in install labels to the root npm package. Requires FFmpeg with drawtext, H.264 and VP9 support. Writes public/media/pixelcraft-film.{mp4,webm,jpg}. Input must be outside the output path.",
+    "Usage: node website/scripts/normalize-film.mjs --input /path/to/owner-supplied-film.mp4 [--font /path/to/mono.ttf]\nPreserve the supplied 16-second film; correct its two baked-in install labels to the root npm package. Requires FFmpeg with drawtext, H.264 and VP9 support. Writes public/media/pixelcraft-film.{mp4,webm,jpg} and pixelcraft-film-720.mp4 for smaller screens. Input must be outside the output path.",
   );
   process.exit(0);
 }
@@ -60,6 +60,26 @@ ffmpeg([
   "-movflags",
   "+faststart",
   output,
+]);
+ffmpeg([
+  "-i",
+  output,
+  "-vf",
+  "scale=1280:-2",
+  "-an",
+  "-c:v",
+  "libx264",
+  "-preset",
+  "fast",
+  "-crf",
+  "22",
+  "-profile:v",
+  "main",
+  "-level",
+  "3.1",
+  "-movflags",
+  "+faststart",
+  resolve(root, "public/media/pixelcraft-film-720.mp4"),
 ]);
 ffmpeg([
   "-i",

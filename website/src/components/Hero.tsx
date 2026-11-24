@@ -171,6 +171,47 @@ export function Hero() {
           duration: 0.8,
           delay: 1.2,
         });
+        // Light travels along the mark's existing pixel-grid routes. These are
+        // small SVG strokes / composited gradients, not extra canvas renderers.
+        gsap.set('[data-hero="signal"]', { opacity: 0.75 });
+        const signals = gsap.to('[data-hero="signal"]', {
+          strokeDashoffset: -2,
+          duration: 10,
+          ease: "none",
+          stagger: 0.8,
+          repeat: -1,
+          paused: true,
+        });
+        const light = gsap.to('[data-hero="light"]', {
+          xPercent: 12,
+          yPercent: -6,
+          scale: 1.08,
+          duration: 8,
+          stagger: 1.5,
+          ease: "sine.inOut",
+          yoyo: true,
+          repeat: -1,
+          paused: true,
+        });
+        let onscreen = false;
+        const sync = () => {
+          const stop = !onscreen || document.hidden;
+          signals.paused(stop);
+          light.paused(stop);
+        };
+        const visibility = ScrollTrigger.create({
+          trigger: root.current,
+          start: "top bottom",
+          end: "bottom top",
+          onToggle: (self) => {
+            onscreen = self.isActive;
+            sync();
+          },
+        });
+        onscreen = visibility.isActive;
+        document.addEventListener("visibilitychange", sync);
+        sync();
+        return () => document.removeEventListener("visibilitychange", sync);
       });
       return () => {
         mm.revert();
@@ -192,8 +233,14 @@ export function Hero() {
     >
       {/* Brand light: diagonal streaks from assets/originals/pixelcraft-theme.png, plus the live mark. */}
       <div aria-hidden="true" className="absolute inset-0 -z-10">
-        <div className="absolute -start-[24%] -top-[34%] h-[170%] w-[34%] -skew-x-[24deg] opacity-25 blur-[90px] [background:linear-gradient(180deg,var(--color-glow-cyan),var(--color-glow-blue)_45%,transparent)]" />
-        <div className="absolute -end-[16%] top-[10%] h-[150%] w-[44%] -skew-x-[24deg] opacity-30 blur-[100px] [background:linear-gradient(0deg,var(--color-glow-magenta),var(--color-glow-violet)_55%,transparent)]" />
+        <div
+          data-hero="light"
+          className="absolute -start-[30%] -top-[25%] h-[140%] w-[85%] opacity-35 [background:radial-gradient(ellipse_at_center,var(--color-glow-cyan),transparent_64%)]"
+        />
+        <div
+          data-hero="light"
+          className="absolute -end-[18%] top-[8%] h-[110%] w-[82%] opacity-40 [background:radial-gradient(ellipse_at_center,var(--color-glow-violet),transparent_65%)]"
+        />
         <div className="absolute inset-0 opacity-35 pixel-field [mask-image:radial-gradient(ellipse_at_70%_45%,black,transparent_70%)]" />
       </div>
       <PixelLogo className="absolute inset-0 -z-10" />
@@ -222,6 +269,23 @@ export function Hero() {
             strokeDasharray="1"
             d="M1290 270V560H1200"
           />
+        </g>
+        <g fill="none" stroke="var(--color-action)" strokeWidth="2">
+          {[
+            "M800 160H1180V240H1270",
+            "M830 640H1000V720H1270",
+            "M1290 270V560H1200",
+          ].map((d) => (
+            <path
+              key={d}
+              data-hero="signal"
+              pathLength="1"
+              strokeDasharray="0.08 0.92"
+              strokeDashoffset="1"
+              opacity="0"
+              d={d}
+            />
+          ))}
         </g>
         <g data-hero="coordinates" fill="currentColor">
           <rect x="795" y="155" width="9" height="9" />
@@ -260,7 +324,8 @@ export function Hero() {
               data-hero="claim"
               className="display-wide mt-2 block text-ink"
             >
-              Pixelcraft makes them diverge.
+              Pixelcraft makes them{" "}
+              <span className="text-action">diverge.</span>
             </span>
           </h1>
 

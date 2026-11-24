@@ -79,7 +79,6 @@ function sample(img: HTMLImageElement): {
 export function PixelLogo({ className = "" }: { className?: string }) {
   const wrap = useRef<HTMLDivElement>(null);
   const canvasRef = useRef<HTMLCanvasElement>(null);
-  const glowRef = useRef<HTMLCanvasElement>(null);
   const [model, setModel] = useState<ReturnType<typeof sample> | null>(null);
   const { paused } = useMotionPause();
   const [ready, setReady] = useState(false);
@@ -103,10 +102,8 @@ export function PixelLogo({ className = "" }: { className?: string }) {
     () => {
       if (!model) return;
       const canvas = canvasRef.current!;
-      const glow = glowRef.current!;
       const ctx = canvas.getContext("2d")!;
-      const gctx = glow.getContext("2d")!;
-      if (!ctx || !gctx) return;
+      if (!ctx) return;
       const { cells, avg } = model;
       const state = { assemble: 0, scatter: 0, time: 0 };
       const pointer = { x: -9999, y: -9999, on: false };
@@ -120,13 +117,13 @@ export function PixelLogo({ className = "" }: { className?: string }) {
 
       const layout = () => {
         const r = wrap.current!.getBoundingClientRect();
-        dpr = Math.min(1.5, window.devicePixelRatio || 1);
+        // Cells have deliberately discrete edges: a retina-sized full-hero buffer
+        // adds fill cost, not useful detail. Keep one canvas and no live blur copy.
+        dpr = Math.min(1, window.devicePixelRatio || 1);
         W = r.width;
         H = r.height;
         canvas.width = Math.round(W * dpr);
         canvas.height = Math.round(H * dpr);
-        glow.width = Math.round(W / 4);
-        glow.height = Math.round(H / 4);
         const wide = W >= 1024;
         // On narrow screens the mark sits in the first screenful, above the copy.
         const vh = Math.min(H, window.innerHeight);
@@ -182,8 +179,6 @@ export function PixelLogo({ className = "" }: { className?: string }) {
           ctx.fillStyle = `rgb(${r | 0},${g | 0},${b | 0})`;
           ctx.fillRect(x, y, s, s);
         }
-        gctx.clearRect(0, 0, glow.width, glow.height);
-        gctx.drawImage(canvas, 0, 0, glow.width, glow.height);
       };
 
       const ro = new ResizeObserver(() => {
@@ -216,11 +211,12 @@ export function PixelLogo({ className = "" }: { className?: string }) {
             scrub: 0.6,
           },
         });
-        let lastDraw = 0;
+        let lastFrame = -1;
         const tick = (time: number, delta: number) => {
           state.time += delta / 1000;
-          if (time - lastDraw < 1 / 40) return;
-          lastDraw = time;
+          const frame = Math.floor(time * 30);
+          if (frame === lastFrame) return;
+          lastFrame = frame;
           draw();
         };
         let running = false;
@@ -246,16 +242,17 @@ export function PixelLogo({ className = "" }: { className?: string }) {
           pointer.on = true;
         };
         const leave = () => (pointer.on = false);
+        const surface = wrap.current!.parentElement!;
         if (fine) {
-          window.addEventListener("pointermove", move, { passive: true });
-          document.addEventListener("pointerleave", leave);
+          surface.addEventListener("pointermove", move, { passive: true });
+          surface.addEventListener("pointerleave", leave);
         }
         return () => {
           run(false);
           document.removeEventListener("visibilitychange", sync);
           st.kill();
-          window.removeEventListener("pointermove", move);
-          document.removeEventListener("pointerleave", leave);
+          surface.removeEventListener("pointermove", move);
+          surface.removeEventListener("pointerleave", leave);
         };
       });
       mm.add(
@@ -289,10 +286,6 @@ export function PixelLogo({ className = "" }: { className?: string }) {
           className="pixel-logo-fallback absolute"
         />
       )}
-      <canvas
-        ref={glowRef}
-        className="absolute inset-0 h-full w-full scale-110 opacity-45 blur-[30px]"
-      />
       <canvas ref={canvasRef} className="absolute inset-0 h-full w-full" />
     </div>
   );

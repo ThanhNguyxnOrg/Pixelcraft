@@ -1,7 +1,7 @@
-import { useEffect, useRef, useState } from "react";
+import { useRef } from "react";
 import { gsap, MOTION_OK, useGSAP } from "../lib/gsap";
 import { useMediaPlayback } from "../lib/useMediaPlayback";
-import { PixelIcon, PixelLabel, useMotionPause } from "./pixel";
+import { PixelLabel, useMotionPause } from "./pixel";
 
 const TRANSCRIPT: [string, string][] = [
   [
@@ -24,14 +24,7 @@ export function FilmPin() {
   const root = useRef<HTMLElement>(null);
   const video = useRef<HTMLVideoElement>(null);
   const { paused } = useMotionPause();
-  const [playing, setPlaying] = useState(false);
-  const [intent, setIntent] = useState<"auto" | "play" | "pause">("auto");
-  // A new page-wide pause stops even explicitly started media. A later film
-  // gesture may play just the film without resuming decorative page motion.
-  useEffect(() => {
-    if (paused) setIntent((value) => (value === "pause" ? value : "auto"));
-  }, [paused]);
-  useMediaPlayback(video, paused || intent === "pause", intent === "play");
+  useMediaPlayback(video, paused);
 
   useGSAP(
     () => {
@@ -50,6 +43,20 @@ export function FilmPin() {
               start: "top 88%",
               end: "center 60%",
               scrub: 0.6,
+            },
+          },
+        );
+        gsap.fromTo(
+          '[data-film="light"]',
+          { xPercent: -180, opacity: 1 },
+          {
+            xPercent: 280,
+            duration: 1.8,
+            ease: "power2.inOut",
+            scrollTrigger: {
+              trigger: root.current,
+              start: "top 70%",
+              once: true,
             },
           },
         );
@@ -96,52 +103,27 @@ export function FilmPin() {
             muted
             loop
             playsInline
-            preload="metadata"
-            aria-label="Pixelcraft demo, 16 seconds, no audio. A text transcript follows."
-            onPlay={() => setPlaying(true)}
-            onPause={() => setPlaying(false)}
+            preload="none"
+            aria-label="Pixelcraft demo, 16 seconds, no audio."
+            aria-describedby="film-transcript"
           >
-            <source src="/media/pixelcraft-film.webm" type="video/webm" />
+            <source
+              src="/media/pixelcraft-film-720.mp4"
+              media="(max-width: 800px)"
+              type="video/mp4"
+            />
             <source src="/media/pixelcraft-film.mp4" type="video/mp4" />
+            <source src="/media/pixelcraft-film.webm" type="video/webm" />
           </video>
+          <div
+            aria-hidden="true"
+            data-film="light"
+            className="pointer-events-none absolute inset-y-0 left-0 w-1/2 -skew-x-12 bg-[linear-gradient(90deg,transparent,rgba(185,239,210,0.1),transparent)] opacity-0 motion-reduce:hidden"
+          />
         </div>
-        <div className="mt-6 flex flex-wrap items-start justify-between gap-x-8 gap-y-4">
-          <div className="flex flex-wrap items-center gap-4">
-            <button
-              type="button"
-              onClick={() => setIntent(playing ? "pause" : "play")}
-              className="surface inline-flex min-h-11 items-center gap-2.5 rounded-full px-5 font-mono text-[0.8125rem] text-ink transition-colors hover:bg-white/10 motion-reduce:transition-none"
-            >
-              <PixelIcon name={playing ? "pause" : "play"} size={12} />
-              {playing ? "Pause film" : "Play film"}
-            </button>
-            <a
-              href="/media/pixelcraft-film.mp4"
-              download="pixelcraft-film.mp4"
-              className="inline-flex min-h-11 items-center gap-2 font-mono text-[0.8125rem] text-ink-muted underline underline-offset-4 hover:text-ink"
-            >
-              Download film <PixelIcon name="external" size={10} />
-            </a>
-          </div>
-          <details className="max-w-[44rem] text-[0.875rem] text-ink-muted">
-            <summary className="inline-flex min-h-11 cursor-pointer items-center gap-2 font-mono text-[0.8125rem] text-ink underline decoration-line-strong underline-offset-4 hover:decoration-action">
-              Read the film as text
-            </summary>
-            <ol className="mt-3 grid gap-2.5">
-              {TRANSCRIPT.map(([t, line]) => (
-                <li
-                  key={t}
-                  className="grid grid-cols-[3rem_1fr] gap-3 leading-snug"
-                >
-                  <span className="font-mono text-[0.75rem] text-ink-faint tabular">
-                    {t}
-                  </span>
-                  {line}
-                </li>
-              ))}
-            </ol>
-          </details>
-        </div>
+        <p id="film-transcript" className="sr-only">
+          {TRANSCRIPT.map(([time, line]) => `${time}: ${line}`).join(" ")}
+        </p>
       </div>
     </section>
   );

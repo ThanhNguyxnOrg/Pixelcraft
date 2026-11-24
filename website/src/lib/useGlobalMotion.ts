@@ -85,15 +85,17 @@ export function useGlobalMotion(
       });
 
       // Disclosures, filters and font reflow change section positions without a viewport resize.
-      let frame = 0;
+      let refreshTimer = 0;
       const ro = new ResizeObserver(() => {
-        cancelAnimationFrame(frame);
-        frame = requestAnimationFrame(() => ScrollTrigger.refresh());
+        // Text wrapping and disclosures can resize on consecutive frames. Wait
+        // for layout to settle instead of measuring every trigger on each frame.
+        window.clearTimeout(refreshTimer);
+        refreshTimer = window.setTimeout(() => ScrollTrigger.refresh(), 160);
       });
       if (scope.current) ro.observe(scope.current);
       return () => {
         ro.disconnect();
-        cancelAnimationFrame(frame);
+        window.clearTimeout(refreshTimer);
         mm.revert();
       };
     },
