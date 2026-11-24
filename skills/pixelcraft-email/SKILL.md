@@ -35,6 +35,12 @@ Make the subject and opening live text state who sent the message, why it matter
 - Respect accessibility: semantic-ish heading order where clients permit, readable contrast, target spacing, descriptive links, no image-only content.
 - Account for clipping, forwarding, threading, preview text/preheader, localization expansion, RTL, and plain-text clients.
 
+## Anti-lazy-default & anti-slop guard
+
+- **Never paste modern-CSS web layouts into email**: raw `display: flex`, CSS Grid, `position: fixed`, CSS custom properties, and uninlined utility sheets shatter in Classic Outlook (Word engine), strip `<style>` blocks in strict clients, and bloat past Gmail's 102 KB clip threshold.
+- **Pick an explicit email pipeline first**: commit to **MJML**, **React Email**, **Maizzle**, or hand-authored **HTML tables** (with MSO conditional comments) before writing markup.
+- **Reject image-only hero blasts**: never hide headlines, dates, prices, or CTAs inside a raster banner that vanishes when images are blocked or in plain-text clients.
+
 ## Common email failures
 
 - beautiful hero image containing all essential copy;
@@ -49,6 +55,16 @@ Make the subject and opening live text state who sent the message, why it matter
 ## Verification options
 
 Email can be inspected only by rendering across real clients or preview services. Local HTML render is necessary but insufficient. Validate plaintext, image-off behavior, dark mode, narrow/wide rendering, clipping, forwarding, and accessibility manually or through ESP/client testing tools. Label untested clients explicitly; never claim universal compatibility.
+
+## Pre-submit checklist
+
+- [ ] zero `TODO`s, placeholder copy, broken merge variables, or dead CTA/unsubscribe/preference URLs;
+- [ ] explicit email pipeline used (MJML, React Email, Maizzle, or tested HTML tables)—no fragile Flexbox/Grid web markup;
+- [ ] compiled HTML stays under Gmail's 102 KB clipping budget with meaningful preheader text;
+- [ ] primary message and CTA survive images off (`alt` text + live HTML text) and forced dark-mode inversion;
+- [ ] full plaintext MIME alternative preserves copy order, links, dates, and legal/unsubscribe details;
+- [ ] layout tables carry `role="presentation"`, semantic headings, readable contrast, and tappable targets;
+- [ ] tested clients labeled `rendered` and untested clients (Classic/New Outlook, Gmail, Apple Mail) labeled `not-checked`.
 
 ## Framework routing
 

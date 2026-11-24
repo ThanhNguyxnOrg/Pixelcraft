@@ -1,6 +1,6 @@
 ---
 name: pixelcraft-web
-description: Translates Pixelcraft direction, tokens, UX, and floor requirements into idiomatic web UI across HTML/CSS, React, Next.js, React Router, TanStack Start, Vue, Nuxt, SvelteKit, SolidStart, Angular, Astro, Qwik, Preact, Fresh, Hono, htmx, Alpine, Datastar, Lit, Rails/Hotwire, Laravel/Livewire/Inertia, Django/FastHTML, Phoenix LiveView, Blazor, Go templ, Rust Leptos/Dioxus/Yew, Kotlin, Java Vaadin/Hilla, Elm, ClojureScript, F# Fable, and Scala Laminar. Use when building or reviewing browser UI, Tailwind v4, Panda/StyleX/Lightning CSS, Base UI/Radix/shadcn/ui, state/sync engines (TanStack Query/DB, Zero, Electric, Yjs), forms/Zod, AG Grid/tables, Tiptap/CodeMirror/Monaco, XYFlow/tldraw/dnd-kit, Passkeys/auth/checkout, uploads, i18n, PWA, Vite/Vitest/Playwright/Storybook, GSAP, Motion, Lenis, Rive/dotLottie, Three.js, R3F, Babylon, Threlte/TresJS, PixiJS, WebGPU/GLSL/WGSL shaders, or Vidstack/hls.js/Tone.js media.
+description: Translates Pixelcraft direction, tokens, UX, and floor requirements into idiomatic web UI across HTML/CSS, React, Next.js, Vue, Nuxt, SvelteKit, SolidStart, Angular, Astro, Qwik, Preact, Fresh, Hono, htmx, Alpine, Lit, Rails/Hotwire, Laravel/Livewire/Filament/Inertia, Symfony UX, WordPress, Django/FastAPI/FastHTML, Phoenix LiveView, Blazor, Go templ/Gomponents, Rust Leptos/Dioxus, Kotlin, Java, Dart Jaspr, Elm, ClojureScript, F#, and Scala. Use for browser UI, Tailwind v4, headless/styled kits, cmdk/vaul/sonner/Embla, search/icons/fonts/images, forms/tables/editors, sync/auth/i18n/PWA, GSAP/Motion/Lenis/Rive, Three.js/R3F/Babylon/Spline/Theatre.js, WebGPU/shaders, or audio/video players.
 license: MIT
 metadata:
   version: 0.1.0
@@ -16,7 +16,7 @@ Use one memorable device when the brief warrants it: a real product as the spati
 
 ## Detection signals
 
-Inspect `package.json`, `Cargo.toml`, `go.mod`, `Gemfile`, `composer.json`, `pyproject.toml`, `mix.exs`, `*.csproj`, `build.gradle*`, `pom.xml`, `deps.edn`, `elm.json`, framework configs, template extensions, routes/controllers, CSS entry files, and island/hydration markers. Multiple web stacks can coexist; scope each decision to the active route or component surface.
+Inspect `package.json`, `Cargo.toml`, `go.mod`, `Gemfile`, `composer.json`, `pyproject.toml`, `mix.exs`, `*.csproj`, `pubspec.yaml`, `build.gradle*`, `pom.xml`, `deps.edn`, `elm.json`, `block.json`, `theme.json`, framework configs, template extensions, routes/controllers, CSS entry files, and island/hydration markers. Multiple web stacks can coexist; scope each decision to the active route or component surface.
 
 ## Translate direction to web idioms
 
@@ -35,6 +35,16 @@ Inspect `package.json`, `Cargo.toml`, `go.mod`, `Gemfile`, `composer.json`, `pyp
 - Measure actual rendering (CLS, INP, hydration blocking, font loading, image priority, route transitions), not only bundle size.
 - Avoid global resets or token overrides that destroy inherited project or design-system behavior.
 
+## Anti-lazy / do-not-hand-roll guard
+
+| Never do this | Use instead |
+|---|---|
+| Build a rich-text or code editor on raw `contenteditable` / `document.execCommand`, or bundle Monaco for static code snippets | ProseMirror, Tiptap, BlockNote, Lexical, CodeMirror 6 (editable), or **Shiki** (zero-JS read-only highlighting) |
+| Render 5,000+ DOM table rows or write DIY scroll virtualization | TanStack Table + TanStack Virtual, AG Grid, MUI X Data Grid, or Glide Data Grid |
+| Hand-roll modals, comboboxes, command palettes, touch drawers, toast stacks, carousels, date grids, split panes, or ad-hoc client search | Native `<dialog>` / `[popover]` / `<input type="date">` first; otherwise `@base-ui/react`, `radix-ui`, React Aria, Ariakit, Zag.js, Melt UI, `cmdk`/`kbar`, `vaul`, `sonner`, Embla/Splide, `react-day-picker`, `react-resizable-panels`, and Pagefind/Orama/Fuse.js/InstantSearch |
+| Ship untouched `shadcn/ui` default zinc neutrals, `0.5rem` radius, and hairline card grids | Author project semantic tokens (`pixelcraft-tokens`) and direction (`pixelcraft-direction`) before building views |
+| Hydrate a full SPA or spin up Three.js just for static content or a single GLB orbit preview | Static/SSR/islands rendering, `<model-viewer>` with `poster` and `alt`, and lazy-loaded heavy chunks |
+
 ## Common web-specific slop/UX failures
 
 - centered hero + eyebrow + two CTAs + three cards regardless of content;
@@ -51,6 +61,15 @@ Inspect `package.json`, `Cargo.toml`, `go.mod`, `Gemfile`, `composer.json`, `pyp
 
 Be explicit with evidence labels (`rendered`, `static`, `model-judgment`, `not-checked`, `waived`). Browser rendering, screenshots, DOM/accessibility trees, axe scans, Playwright/Vitest Browser Mode/Storybook tests, Lighthouse, responsive emulation, and network throttling provide `rendered` evidence; builds, typechecks, and `jsdom` tests are `static` (or DOM-unit) evidence only and cannot prove visual quality.
 
+## Pre-submit checklist
+
+- [ ] zero `TODO`s, placeholder stubs, invented copy/metrics, or dead click/form handlers;
+- [ ] all state-matrix rows wired (loading, empty, error, offline/stale, validation preserving posted input);
+- [ ] native HTML semantics, keyboard-only traversal, focus restoration on overlays, logical properties, and WCAG 2.2 AA contrast verified;
+- [ ] `prefers-reduced-motion`, `prefers-color-scheme`, forced-colors, and mobile/narrow-viewport reflow checked;
+- [ ] no untouched component-kit defaults or hand-rolled fragile widgets where vetted primitives belong;
+- [ ] `slop-scan` (`pixelcraft-review`) and rendered browser QA (`pixelcraft-visual-qa`) run with honest evidence labels (`rendered`, `static`, `not-checked`).
+
 ## Framework and stack routing
 
 - Read [references/html-css.md](references/html-css.md) when working directly in HTML/CSS, native `<dialog>`/`[popover]`/Anchor Positioning, Invoker Commands, customizable `<select>`, or browser-native primitives.
@@ -65,7 +84,7 @@ Be explicit with evidence labels (`rendered`, `static`, `model-judgment`, `not-c
 - Read [references/preact-fresh-hono.md](references/preact-fresh-hono.md) when building with Preact (`@preact/signals`), Deno Fresh 2.0, Hono JSX/RPC (`hc`), RedwoodSDK, or Waku.
 - Read [references/htmx-alpine.md](references/htmx-alpine.md) when building hypermedia interfaces with htmx 2.x, Alpine.js plugins, Datastar, or Unpoly.
 - Read [references/lit-web-components.md](references/lit-web-components.md) when building Lit or standards-based Web Components with Shadow DOM and `ElementInternals`.
-- Read [references/server-rendered.md](references/server-rendered.md) when building Rails 8/Hotwire, Laravel Livewire, Inertia.js v2, Django/`django-htmx`/Cotton, FastHTML, Phoenix LiveView, Blazor, or Go `templ` surfaces.
+- Read [references/server-rendered.md](references/server-rendered.md) when building Rails 8/Hotwire (ViewComponent/Phlex), Laravel (Livewire/Filament/Flux/Inertia), Symfony UX, WordPress Gutenberg/Interactivity API, Django (Cotton/Ninja/Unfold/Wagtail), FastAPI+Jinja2, FastHTML, Phoenix LiveView, Blazor (FluentUI/MudBlazor/Radzen), Go `templ`/Gomponents, or Dart Jaspr.
 - Read [references/leptos-yew.md](references/leptos-yew.md) when building Rust web apps in Leptos 0.7/0.8, Dioxus Web, Yew, or Axum + Askama/Maud + htmx.
 - Read [references/kotlin-web.md](references/kotlin-web.md) when building Kotlin web apps in Compose Multiplatform Web (`wasmJs`/`js`) or Kobweb.
 - Read [references/java-web.md](references/java-web.md) when building Java web UIs with Vaadin Flow, Vaadin Hilla, Spring + Thymeleaf + htmx, JTE, or Quarkus Qute.
@@ -78,7 +97,8 @@ Be explicit with evidence labels (`rendered`, `static`, `model-judgment`, `not-c
 
 - Read [references/adaptive-layout.md](references/adaptive-layout.md) when a web surface must adapt across phone, tablet, desktop, split window, shallow viewports, or mixed input modes.
 - Read [references/styling-ecosystem.md](references/styling-ecosystem.md) when choosing CSS Modules, Lightning CSS, Sass, Panda CSS, vanilla-extract, Pigment CSS, StyleX, Tamagui Web, UnoCSS, Linaria, Open Props, CVA, or Tailwind Variants.
-- Read [references/component-systems.md](references/component-systems.md) when selecting headless primitives (`@base-ui/react`, `radix-ui`, React Aria, Ark UI, Kobalte, Corvu, Reka UI, Bits UI), source-first kits (`shadcn/ui`, Park UI), enterprise suites, or Floating UI vs native popover.
+- Read [references/component-systems.md](references/component-systems.md) when selecting headless primitives (`@base-ui/react`, `radix-ui`, React Aria, Ark UI, Zag.js, Melt UI, Ariakit, Kobalte, Corvu, Reka UI, Bits UI), source-first kits (`shadcn/ui`, Park UI), enterprise suites, or Floating UI vs native popover.
+- Read [references/interaction-and-search-primitives.md](references/interaction-and-search-primitives.md) when wiring command palettes (`cmdk`, `kbar`), drawers (`vaul`), toasts (`sonner`), carousels (Embla/Splide/Swiper), date pickers (`react-day-picker`), split panes (`react-resizable-panels`), search UIs (Pagefind, Orama, Fuse.js, InstantSearch, Meilisearch, Typesense), icons (Lucide, Phosphor, Tabler, Iconify), Fontsource fonts, or Unpic/ThumbHash images.
 - Read [references/state-architecture.md](references/state-architecture.md) when designing URL state (`nuqs`), server caches (TanStack Query/DB, tRPC v11, oRPC, Apollo), client stores (Zustand, Pinia, NgRx SignalStore, Legend-State), XState v5, or IndexedDB (`Dexie`, `idb`).
 - Read [references/forms-validation.md](references/forms-validation.md) when implementing TanStack Form, React Hook Form, Conform, SvelteKit Superforms, Modular Forms, VeeValidate, or Zod v4/Valibot/ArkType Standard Schema validation.
 - Read [references/build-and-architecture.md](references/build-and-architecture.md) when configuring Vite 8/Rolldown/Environment API, Rsbuild/Rspack, Turbopack, `tsdown`, Bun, Biome/Oxlint, React Compiler, rendering modes, microfrontends, Web Workers, WASM, or Serwist/Workbox.
@@ -100,7 +120,7 @@ Be explicit with evidence labels (`rendered`, `static`, `model-judgment`, `not-c
 - Read [references/smooth-scroll.md](references/smooth-scroll.md) before adding Lenis (`lenis/react`, `data-lenis-prevent`, `autoRaf: false`) or GSAP `ScrollSmoother`.
 - Read [references/motion-recipes.md](references/motion-recipes.md) when implementing CSS scroll-driven animations, View Transition Types / `view-transition-class`, or interactive motion recipes.
 - Read [references/rive-lottie.md](references/rive-lottie.md) when choosing or wiring Rive state machines/Data Binding or dotLottie (`.lottie`) vector animations.
-- Read [references/scene-architecture.md](references/scene-architecture.md) when architecting Three.js scenes, `WebGPURenderer` (`three/webgpu`), or TSL (`three/tsl`) node materials.
+- Read [references/scene-architecture.md](references/scene-architecture.md) when architecting Three.js scenes, `WebGPURenderer` (`three/webgpu`), TSL (`three/tsl`) node materials, Theatre.js choreography, Spline, or Unicorn Studio embeds.
 - Read [references/r3f-integration.md](references/r3f-integration.md) when integrating React Three Fiber v9, `@react-three/postprocessing`, `@react-three/rapier`, and demand rendering (`invalidate`).
 - Read [references/web-3d-engines.md](references/web-3d-engines.md) when choosing or implementing `<model-viewer>`, Babylon.js, PlayCanvas, Threlte v8, TresJS v5, luma.gl v9, or `regl`.
 - Read [references/assets-pipeline.md](references/assets-pipeline.md) when optimizing GLB/glTF pipelines with `gltf-transform`, Meshopt, Draco, KTX2/Basis textures, and LODs.

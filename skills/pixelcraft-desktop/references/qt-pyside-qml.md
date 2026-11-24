@@ -45,24 +45,40 @@ Use standard Qt/QML controls first (they implement `QAccessible` / platform UIA 
 
 Never block the Qt GUI event loop (`QApplication.exec()`) with synchronous network or disk I/O—use `QThreadPool` + `QRunnable` / `QObject` worker signals (or Python `QtAsyncio` / `QProcess`) with cancellation and progress states. Intercept `closeEvent` to protect dirty documents. In forms, pair `QFormLayout` / labeled `TextField` controls with `QValidator` / post-edit validation text (not red borders alone) and preserve input on failed submits.
 
+## PyQt6 & Qt Designer (`.ui` / `uic`)
+
+- **PyQt6 vs PySide6**: both wrap Qt 6 with identical layout, palette, and `QAccessible` mechanics, but differ in licensing (PyQt6 is GPLv3/commercial; PySide6 is LGPLv3) and bindings (`pyqtSignal`/`pyqtSlot` + strict scoped enums like `Qt.AlignmentFlag.AlignCenter` in PyQt6 vs `Signal`/`Slot` in PySide6). Match whichever binding the repo already declares.
+- **Qt Designer `.ui` workflow**: compile `.ui` forms ahead of time (`pyside6-uic form.ui -o ui_form.py` or `pyuic6`) for static typing and fast startup rather than runtime `QUiLoader` loading in packaged apps. **Never hand-edit generated `ui_*.py` files**—compose or subclass them (`self.ui = Ui_MainWindow(); self.ui.setupUi(self)`) so re-running `uic` never overwrites behavior. Inside Designer, always attach layout managers (`QVBoxLayout`/`QGridLayout`) and avoid pasting global QSS into root dialogs.
+
+## Python desktop anti-lazy guard (`Tkinter` / `CustomTkinter` / `Dear PyGui`)
+
+- **Do not default to plain `Tkinter` / `ttk` on greenfield Python desktop apps**: plain `Tkinter` ships dated widget chrome, inconsistent fractional HiDPI scaling, weak dark/high-contrast OS synchronization, and thin accessibility tooling. On greenfield projects, choose **PySide6 / Qt Quick**, **Flet**, **NiceGUI** (native mode), **Tauri** (with a Python sidecar), or **Textual** (for keyboard-first terminal utilities) instead.
+- **Brownfield maintenance rules (`CustomTkinter` & `Dear PyGui`)**: when maintaining an existing app that already depends on `CustomTkinter` or `Dear PyGui`:
+  - **DPI & fonts**: enable OS DPI awareness on Windows, scale cleanly (`ctk.set_widget_scaling` / Dear PyGui `set_global_font_scale` + `dpg.add_font(...)` with a real TTF font instead of the default blurry bitmap font).
+  - **Non-blocking worker threads**: never perform HTTP, SQL, or ML work inside button callbacks or the Dear PyGui render loop—run work in a background `threading.Thread` / `ThreadPoolExecutor` and marshal UI updates safely back to the main thread (`queue.Queue` polled via `root.after(...)` in CustomTkinter, or thread-safe `dpg.set_value(...)` in Dear PyGui).
+  - **Theme sync & tokens**: sync `ctk.set_appearance_mode("System")` and centralize semantic `(light, dark)` color tuples or Dear PyGui `dpg.theme()` bindings rather than scattering raw hex values.
+  - **Keyboard focus & accessibility honesty**: wire explicit `Tab` order and shortcuts, and label screen-reader testing honestly (`not-checked` / `waived` on GPU-drawn `Dear PyGui` viewports rather than claiming native UIA/VoiceOver parity).
+
 ## Do/don't pairs
 
 | Do | Don't |
 |---|---|
 | Use `QPalette` / `styleHints().colorScheme()` or Qt Quick Controls 2 (`FluentWinUI3`/`macOS`) | Apply massive global QSS that disables native platform styling and High Contrast |
+| Compile `.ui` files via `pyside6-uic`/`pyuic6` and compose them in a separate controller class | Hand-edit generated `ui_*.py` files or hard-code pixel positions inside Qt Designer |
+| Choose PySide6/QML, Flet, NiceGUI, Tauri, or Textual for greenfield Python apps | Default to plain `Tkinter` on greenfield Python desktop projects |
+| Marshal worker results via `queue.Queue` + `after(...)` and load real TTF fonts in brownfield CustomTkinter/Dear PyGui | Block the Tkinter/Dear PyGui main loop with network calls or ship blurry bitmap defaults |
 | Run `qmllint` / `qmltc` and QML singleton semantic tokens | Scatter raw hex strings and untyped dynamic JS lookups across QML files |
 | Offload I/O to worker threads/async tasks and guard `closeEvent` on dirty docs | Block the Qt main event loop and freeze window repainting |
-| Use `QFormLayout`, `QSplitter`, `QtQuick.Layouts`, and `Kirigami` where fitting | Hard-code pixel `setGeometry` coordinates for one monitor DPI |
 | Set `Accessible.name`/`role` and verify VoiceOver, Narrator, and Orca | Custom-paint interactive `QWidget` or `Item` surfaces with zero accessibility |
 
 ## Known traps
 
-Global QSS breaking native Windows 11/macOS chrome and High Contrast, PySide6 Python GC prematurely collecting unparented `QObject`/worker references, GUI-thread blocking, missing `qmllint` hiding runtime QML reference errors, fractional DPI blur on raster icons (use SVG/high-DPI pixmaps), custom `QPainter` widgets invisible to screen readers.
+Global QSS breaking native Windows 11/macOS chrome and High Contrast, PySide6 Python GC prematurely collecting unparented `QObject`/worker references, GUI-thread blocking, missing `qmllint` hiding runtime QML reference errors, fractional DPI blur on raster icons (use SVG/high-DPI pixmaps), custom `QPainter` widgets invisible to screen readers, and unmarshaled Tkinter calls from background threads crashing the interpreter.
 
 ## Verification commands
 
 ```sh
-# Run the test & build commands matching your project (PySide6 vs C++/QML):
+# Run the test & build commands matching your project (PySide6/PyQt6 vs C++/QML):
 python -m pytest
 qmllint qml/
 qmltestrunner -input tests/qml

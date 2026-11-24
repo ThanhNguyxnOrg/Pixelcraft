@@ -35,6 +35,15 @@ Python imports/entry points (`st.*`, `gr.*`, `rx.*`, NiceGUI `ui.*`, Dash callba
 - Session state is explicit: inspect keys, initialization, stale cache, concurrency, multi-user leakage, query invalidation, and static snapshot age.
 - Secrets, uploaded files, generated files, credentials, warehouse results, and user data must not leak across sessions/users or into client bundles/static WASM output.
 
+## Anti-lazy-default & anti-slop guard
+
+- **Do not reflexively default every Python/data workload to Streamlit or Gradio**: Streamlit's top-to-bottom script rerun model and Gradio's single-model demo layout excel at quick prototypes and ML inference demos, but **escalate** when the workload outgrows them:
+  - **Reactive notebooks & zero-hidden-state DAGs / WASM**: choose **marimo** (`@app.cell`, DuckDB `mo.sql`).
+  - **Concurrent multi-user reactive apps & long-running tasks**: choose **Shiny** (`ExtendedTask`), **Panel** (HoloViz / Datashader million-point streaming), or **Dash** (enterprise AG Grid + clientside/background callbacks).
+  - **Custom stateful web UI / full layout & auth control in Python**: choose **Reflex** or **NiceGUI**.
+  - **Fast read-heavy BI reports & scheduled SQL publications**: choose **Observable Framework** or **Evidence** (static/pre-built SQL snapshots with instant loads).
+- **Reject untouched template slop**: do not ship default sidebar-filter dumps, unattributed KPI numbers without units/freshness timestamps, or raw multi-million-row tables pushed eagerly to the browser without Polars/DuckDB/SQL aggregation.
+
 ## Common data-app failures
 
 - uncontrolled reruns or rebuilds wiping input and triggering expensive work;
@@ -51,6 +60,16 @@ Python imports/entry points (`st.*`, `gr.*`, `rx.*`, NiceGUI `ui.*`, Dash callba
 
 DOM-backed frameworks can often be inspected in browser when the app runs, but visual verification requires actually launching them. Unit tests (`AppTest`, `nicegui.testing.User`, `testthat`, `pytest`) validate callbacks, SQL, loaders, or state (`static`) without proving rendering. Notebook widgets depend on kernel/frontend context. Static data apps (Evidence, Observable, Shinylive, marimo/Panel WASM) need build inspection plus browser rendering (`rendered`). Label absence honestly; do not imply rendering happened because Python/R/Julia/JS code compiled or SQL succeeded.
 
+## Pre-submit checklist
+
+- [ ] zero `TODO`s, placeholder stubs, fabricated KPIs, or dead widget callbacks;
+- [ ] framework choice matches concurrency, rerun/DAG, and publishing needs (not a lazy Streamlit/Gradio default);
+- [ ] loading, empty, error, timeout/cancellation, and data-freshness timestamp states are wired;
+- [ ] heavy filtering/aggregation runs server-side or lazily (SQL/DuckDB/Polars) before pushing bounded rows to UI;
+- [ ] session state, uploads, and credentials stay strictly isolated per user/session with no client leakage;
+- [ ] charts/tables include units, accessible text summaries, non-color encodings, and narrow-viewport usability;
+- [ ] live browser rendering (`rendered`) distinguished honestly from `AppTest`/`pytest`/build checks (`static`).
+
 ## Framework routing
 
 - Read [references/streamlit.md](references/streamlit.md) when building or auditing Streamlit apps (`.streamlit/config.toml`, `@st.fragment`, `st.navigation`, `AppTest`).
@@ -60,7 +79,7 @@ DOM-backed frameworks can often be inspected in browser when the app runs, but v
 - Read [references/dash.md](references/dash.md) when building or auditing Plotly Dash 3 apps (`Patch`, clientside/background callbacks, Dash Pages, Mantine/AG Grid).
 - Read [references/panel.md](references/panel.md) when building or auditing Panel/HoloViz apps (`pn.rx`, `panel-material-ui`, `ChatInterface`, Pyodide export).
 - Read [references/shiny.md](references/shiny.md) when building or auditing Shiny for Python apps (`ui.Theme`, Express vs Core, `ExtendedTask`, `ui.Chat`, Shinylive).
-- Read [references/reactive-data-apps.md](references/reactive-data-apps.md) when building or auditing reactive Python data apps and notebooks (`marimo`, `Solara`, `Mesop`, `Taipy`).
+- Read [references/reactive-data-apps.md](references/reactive-data-apps.md) when building or auditing reactive Python data apps and notebooks (`marimo`, `Solara`, `Mesop`, `Taipy`) or lazy **Polars / Narwhals** dataframe pipelines.
 - Read [references/jupyter-widgets.md](references/jupyter-widgets.md) when building or auditing `ipywidgets`, `AnyWidget` ESM widgets, or `Voilá` standalone dashboards.
 - Read [references/r-shiny.md](references/r-shiny.md) when building or auditing R Shiny apps (`bslib`, `ExtendedTask`+`mirai`, `bindCache`, `shinychat`/`ellmer`, modules).
 - Read [references/julia-genie.md](references/julia-genie.md) when building or auditing Julia Genie/Stipple reactive data apps (`@app`, `@in`/`@out`/`@onchange`).

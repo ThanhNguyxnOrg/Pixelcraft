@@ -40,6 +40,11 @@ Use the host's smallest appropriate native surface: command or QuickPick for a q
 - Never use transient popup lifetime, ephemeral MV3 service-worker memory, or `null`-origin `localStorage` as durable storage.
 - Never fake native launcher/editor UI with unconstrained web overlays when the host provides structured components.
 
+## Anti-lazy-default & anti-slop guard
+
+- **Smallest native host primitive first**: never reach for a heavy Webview, JCEF browser, or custom iframe when a host-native command, QuickPick, status-bar item, TreeView, Raycast `List`/`Detail`/`Form`, Atlassian Forge UI Kit 2 component, or Polaris/Fluent primitive solves the workflow cleanly.
+- **Reject standalone SaaS shell slop**: never cram a full marketing hero, multi-level marketing nav bar, or brand-takeover theme into a 320 px browser popup, IDE side panel, Office task pane, or Figma plugin frame.
+
 ## Pre-submit checklist
 
 - [ ] smallest appropriate native host surface chosen before falling back to Webview/iframe;

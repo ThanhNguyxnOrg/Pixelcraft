@@ -90,6 +90,39 @@ map.fitBounds([[minX, minY], [maxX, maxY]], { padding: 32 });
 
 Import individual `@turf/*` modules instead of the full `@turf/turf` umbrella package to avoid bloating bundles. For >50k complex polygons, offload spatial indexing to PostGIS, DuckDB Spatial, or a Web Worker.
 
+## Leaflet & Mapbox GL JS idioms and traps
+
+### Leaflet (`preferCanvas: true`, clustering, & StrictMode cleanup)
+
+- **Vector & marker scale**: pass **`preferCanvas: true`** to `L.map(...)` whenever rendering hundreds of `L.circleMarker` / GeoJSON polygons so Leaflet renders on Canvas 2D instead of saturating the DOM with thousands of SVG nodes; use **`leaflet.markercluster`** (or `supercluster`) once pin counts exceed ~200 so overlapping pins remain tappable and readable.
+- **Lifecycle & accessibility**: ensure the map container has an explicit CSS height (zero height renders a blank tile grid), call **`map.remove()`** on unmount (prevents React StrictMode `Map container is already initialized` crashes), provide explicit keyboard pan/zoom controls, and pair markers with a synchronized searchable/sortable location list so keyboard and screen-reader users can inspect every site.
+
+```ts
+import L from 'leaflet';
+import 'leaflet/dist/leaflet.css';
+
+export function mountLeafletMap(el: HTMLElement, sites: { name: string; lat: number; lng: number }[]) {
+  const map = L.map(el, { preferCanvas: true }).setView([37.78, -122.4], 11);
+  L.tileLayer('https://tile.openstreetmap.org/{z}/{x}/{y}.png', {
+    attribution: '© OpenStreetMap contributors',
+    maxZoom: 19,
+  }).addTo(map);
+
+  for (const site of sites) {
+    L.circleMarker([site.lat, site.lng], { radius: 6, color: '#0f4c81' })
+      .bindPopup(site.name)
+      .addTo(map);
+  }
+  return () => map.remove();
+}
+```
+
+### Mapbox GL JS (scoped public tokens, contrast, & MapLibre parity)
+
+- **Scoped public token only**: restrict browser access tokens (`pk.*`) by HTTP referrer / allowed URLs and public read scopes only—**never** bundle secret `sk.*` tokens into frontend code. Call `map.remove()` on unmount to avoid leaking WebGL contexts and triggering redundant metered map loads.
+- **Projection & style contrast**: test data-overlay contrast across both light and dark Studio styles, `globe` vs `mercator` projections, and 3D terrain/fog settings—low-contrast basemap roads or atmospheric fog easily wash out thematic data layers.
+- **MapLibre GL JS parity**: Mapbox GL JS and MapLibre GL JS share Style Spec roots (`addSource`, `addLayer`, expressions), but diverge on Mapbox v3 proprietary features (Standard Style `import` slots, Mapbox-hosted 3D lighting/config APIs, and commercial telemetry/billing). Keep custom data layers in standard GeoJSON/vector Style Spec expressions whenever preserving a future migration path to open-source MapLibre matters.
+
 ## CesiumJS 3D Tiles & lifecycle
 
 Load 3D Tiles asynchronously via `await Cesium.Cesium3DTileset.fromUrl(url, { skipLevelOfDetail: true })` (never deprecated synchronous constructors) and call `viewer.destroy()` on unmount.
@@ -107,7 +140,9 @@ Load 3D Tiles asynchronously via `await Cesium.Cesium3DTileset.fromUrl(url, { sk
 
 | Do | Don't |
 |---|---|
-| Call `map.remove()` / `viewer.destroy()` on unmount | Leak WebGL contexts across route transitions (browsers cap ~8–16) |
+| Call `map.remove()` / `viewer.destroy()` on unmount | Leak WebGL contexts (browsers cap ~8–16), double-init Leaflet, or inflate metered Mapbox loads |
+| Set `preferCanvas: true` + marker clustering in Leaflet for >200 features | Mount 2,000 DOM/SVG markers in Leaflet without clustering or a list fallback |
+| Restrict Mapbox GL JS `pk.*` tokens by referrer and verify style/projection contrast | Ship unrestricted/secret `sk.*` tokens or assume dark basemap labels stay legible under 3D fog |
 | Keep deck.gl on WebGL2 when using `MapLibreOverlay({ interleaved: true })` | Assume WebGPU deck.gl layers can interleave into MapLibre's WebGL2 context |
 | Self-host PMTiles with explicit `glyphs` and `sprite` URLs | Omit `glyphs` in style JSON and ship a map with missing labels |
 | Give missing choropleth regions a distinct neutral/hatched treatment | Color missing regions identically to `0` |

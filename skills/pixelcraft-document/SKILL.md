@@ -31,6 +31,11 @@ Build a reading sequence around repeated headers, explicit units and page bounda
 5. **Use physical typography.** Set real type sizes/leading/measure in pt/mm; verify script/font fallback, embedding/licensing, hyphenation, widows/orphans, and color contrast on paper/projector.
 6. **Verify the final artifact.** Inspect the actual PDF/print preview/slides at 100% and final size. Screen HTML is not evidence of correct pagination.
 
+## Anti-lazy-default & anti-slop guard
+
+- **Never default to `window.print()`, raw browser screenshots, or unpaginated screen HTML** for paginated invoices, reports, contracts, books, or regulatory PDFs merely because HTML is familiar. Choose a dedicated pagination pipeline—**Typst**, **WeasyPrint**, **Quarto**, **React-PDF**, **PrinceXML / Vivliostyle**, **LaTeX**, or **Playwright PDF / Gotenberg** with explicit `@page` rules—that satisfies the required fragmentation, PDF/UA tagging, font embedding, and reproducibility contract.
+- **Reject decorative template slop**: never ship stock-photo report covers, fake placeholder charts, rasterized slide-as-image exports, or generic corporate-blue styling detached from real source data.
+
 ## Non-negotiable rules
 
 | Concern | Rule |

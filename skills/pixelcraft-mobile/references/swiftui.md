@@ -94,6 +94,77 @@ Model view state as an explicit enum (`loading`, `loaded`, `empty`, `error`, `of
 
 In forms, use `Form`, `LabeledContent`, `.keyboardType`, `.textContentType`, `.submitLabel`, `.autocorrectionDisabled`, and `.focused($field)` sequencing. Integrate system password autofill and Passkeys (`AuthenticationServices`) instead of blocking paste or custom-masking credentials.
 
+## The Composable Architecture (TCA)
+
+Adopt **TCA** (`ComposableArchitecture` 1.x+) when an Apple-platform app needs strict unidirectional state, cancellable async effect choreography, deep-linkable navigation trees, and deterministic unit test coverage—skip TCA for simple 1–2 screen utilities where SwiftUI `@Observable` suffices:
+
+- Annotate features with `@Reducer` and `@ObservableState struct State: Equatable`, and bind directly in views using **`@Bindable var store: StoreOf<Feature>`** (`$store.query`, `store.send(.saveTapped)`).
+- Drive modals and push stacks from state via **`@Presents var destination: Destination.State?`** (`@Reducer enum Destination`) or `StackState` / `NavigationStack(path:)` so deep links and state restoration stay deterministic.
+- Verify async race conditions, debouncing, error paths, and navigation dismissals deterministically with **`TestStore`** and injected `@Dependency(\.continuousClock)` / client dependencies before visual QA.
+
+```swift
+import ComposableArchitecture
+import SwiftUI
+
+@Reducer
+struct InvoiceFeature {
+  @ObservableState
+  struct State: Equatable {
+    var filter = ""
+    var isSaving = false
+    @Presents var destination: Destination.State?
+  }
+
+  enum Action: BindableAction {
+    case binding(BindingAction<State>)
+    case saveTapped
+    case saveCompleted(Result<Void, Error>)
+    case destination(PresentationAction<Destination.Action>)
+  }
+
+  @Reducer
+  enum Destination {
+    case editor(InvoiceEditorFeature)
+  }
+
+  @Dependency(\.invoiceClient) var invoiceClient
+
+  var body: some ReducerOf<Self> {
+    BindingReducer()
+    Reduce { state, action in
+      switch action {
+      case .saveTapped:
+        state.isSaving = true
+        return .run { [filter = state.filter] send in
+          await send(.saveCompleted(Result { try await invoiceClient.save(filter) }))
+        }
+      case .saveCompleted:
+        state.isSaving = false
+        return .none
+      case .binding, .destination:
+        return .none
+      }
+    }
+    .ifLet(\.$destination, action: \.destination)
+  }
+}
+
+struct InvoiceView: View {
+  @Bindable var store: StoreOf<InvoiceFeature>
+
+  var body: some View {
+    Form {
+      TextField("Filter", text: $store.filter)
+      Button("Save") { store.send(.saveTapped) }
+        .disabled(store.isSaving)
+    }
+    .sheet(item: $store.scope(state: \.destination?.editor, action: \.destination.editor)) { editorStore in
+      InvoiceEditorView(store: editorStore)
+    }
+  }
+}
+```
+
 ## Do/don't pairs
 
 | Do | Don't |

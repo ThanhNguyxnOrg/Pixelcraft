@@ -121,12 +121,42 @@ Gui(page=page).run(
 
 For multi-user scenario workflows (`tp.create_scenario`, `tp.submit`), attach `tgb.scenario_selector` / `tgb.scenario` / `tgb.job_selector` so job status and data node lineage stay inspectable.
 
+## Polars & Narwhals dataframe-agnostic integration
+
+Never serialize multi-million-row eager DataFrames into browser JSON, WebSockets, or widget props just to render a 12-bar chart or paginated table:
+
+- **Polars lazy & streaming queries**: read Parquet/CSV lazily with `pl.scan_parquet(...)` (or `.lazy()`), push filter predicates, column projections, and `group_by().agg(...)` reductions down into Polars, and call `.collect(engine="streaming")` only on the bounded UI result set (e.g., aggregated bins or top-N rows + total count).
+- **Narwhals (`narwhals`)**: wrap shared chart/table preparation helpers with `@nw.narwhalify` (or `nw.from_native(df)`) so one component accepts **Polars, Pandas, PyArrow, DuckDB, or Modin** natively without calling `.to_pandas()` copies that spike server RAM.
+
+```python
+import narwhals as nw
+import polars as pl
+from narwhals.typing import IntoFrameT
+
+# Push heavy filtering/aggregation into Polars streaming engine before touching UI
+def query_region_totals(path: str, min_score: float) -> pl.DataFrame:
+    return (
+        pl.scan_parquet(path)
+        .filter(pl.col("score") >= min_score)
+        .group_by("region")
+        .agg(pl.len().alias("rows"), pl.col("score").mean().alias("avg_score"))
+        .sort("avg_score", descending=True)
+        .collect(engine="streaming")
+    )
+
+# Dataframe-agnostic UI prep helper (works identically on Polars, Pandas, PyArrow, DuckDB)
+@nw.narwhalify
+def top_regions(df: IntoFrameT, limit: int = 10) -> IntoFrameT:
+    return df.sort("avg_score", descending=True).head(limit)
+```
+
 ## Do/don't pairs
 
 | Do | Don't |
 |---|---|
 | `debounce=True` on marimo sliders driving SQL or ML cells | Recompute heavy DAG branches on every pixel of a drag |
 | Keep marimo notebooks in Git as `.py` and run `marimo check` | Rely on hidden out-of-order execution state |
+| Push filters and aggregations into Polars LazyFrame/streaming or DuckDB and use Narwhals for library-agnostic helpers | Serialize raw million-row DataFrames over WebSockets or force `.to_pandas()` copies in every widget |
 | Offload slow Solara work to `solara.use_task` with error/pending UI | Block the Solara render function with synchronous network calls |
 | Keep Mesop session state serializable in `@me.stateclass` | Mutate module-level globals shared across concurrent Mesop users |
 | Style Taipy via `stylekit` and explicit `state.*` updates | Mutate global DataFrames without notifying `state` |

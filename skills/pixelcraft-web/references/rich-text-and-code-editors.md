@@ -17,6 +17,52 @@ Never build a rich-text or code editor on raw `contenteditable` with `document.e
 
 ## Rich-text implementation idioms
 
+### Standalone ProseMirror (`Schema` → `EditorState` → `Transaction` → `EditorView`)
+
+Choose standalone **ProseMirror** (`prosemirror-model`, `prosemirror-state`, `prosemirror-view`, `prosemirror-history`, `prosemirror-keymap`) over wrapper frameworks when you need tight bundle control, framework-agnostic state ownership, or strict custom document invariants:
+
+- Define a closed `Schema` (allowed nodes, marks, and content expressions) so invalid DOM structures cannot enter editor state.
+- Route every mutation through an immutable `Transaction` (`state.tr`) inside `dispatchTransaction(tr)`, apply it via `view.state.apply(tr)`, update the view with `view.updateState(nextState)`, and call `view.destroy()` on unmount.
+
+```ts
+import { Schema } from 'prosemirror-model';
+import { EditorState, Transaction } from 'prosemirror-state';
+import { EditorView } from 'prosemirror-view';
+import { history, undo, redo } from 'prosemirror-history';
+import { keymap } from 'prosemirror-keymap';
+import { baseKeymap } from 'prosemirror-commands';
+
+const schema = new Schema({
+  nodes: {
+    doc: { content: 'paragraph+' },
+    paragraph: { content: 'text*', toDOM: () => ['p', 0], parseDOM: [{ tag: 'p' }] },
+    text: { group: 'inline' },
+  },
+  marks: {
+    strong: { toDOM: () => ['strong', 0], parseDOM: [{ tag: 'strong' }] },
+  },
+});
+
+export function mountProseMirror(parent: HTMLElement, onDocChange: (json: unknown) => void) {
+  const state = EditorState.create({
+    schema,
+    plugins: [history(), keymap({ 'Mod-z': undo, 'Mod-Shift-z': redo }), keymap(baseKeymap)],
+  });
+
+  const view = new EditorView(parent, {
+    state,
+    attributes: { role: 'textbox', 'aria-multiline': 'true', 'aria-label': 'Document body' },
+    dispatchTransaction(tr: Transaction) {
+      const next = view.state.apply(tr);
+      view.updateState(next);
+      if (tr.docChanged) onDocChange(next.doc.toJSON());
+    },
+  });
+
+  return () => view.destroy();
+}
+```
+
 ### Tiptap v3 (ProseMirror) & BlockNote
 
 - **SSR safety**: always set `immediatelyRender: false` in `useEditor()` inside Next.js/Remix/SSR apps so server and client HTML do not mismatch.
