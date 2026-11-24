@@ -39,5 +39,14 @@ export default defineConfig({
   build: {
     target: "es2022",
     cssMinify: "lightningcss",
+    rollupOptions: {
+      output: {
+        manualChunks(id) {
+          if (id.includes("node_modules/react")) return "vendor";
+          if (id.includes("src/generated/") || id.includes("src/data.ts"))
+            return "showcase-data";
+        },
+      },
+    },
   },
 });

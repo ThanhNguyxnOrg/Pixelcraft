@@ -1,0 +1,563 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=1, user-scalable=no">
+  <title>Folio AI Cloud Notes (Default Bloated Electron Output)</title>
+  <style>
+    * {
+      box-sizing: border-box;
+    }
+    html, body {
+      margin: 0;
+      padding: 0;
+      width: 1440px;
+      height: 900px;
+      overflow: hidden;
+      font-family: Inter, Roboto, sans-serif;
+      background: linear-gradient(135deg, indigo, blue, violet);
+      color: #0f172a;
+    }
+    input, button, textarea {
+      font-family: Inter, sans-serif;
+    }
+    input:focus {
+      outline: none;
+    }
+    button:focus {
+      outline: none;
+    }
+    textarea:focus {
+      outline: none;
+    }
+    a:focus {
+      outline: none;
+    }
+
+    .electron-shell {
+      width: 1408px;
+      height: 868px;
+      margin: 16px auto;
+      background: #f8fafc;
+      border-radius: 22px;
+      box-shadow: 0 28px 60px rgba(15, 23, 42, 0.38);
+      display: flex;
+      flex-direction: column;
+      overflow: hidden;
+      border: 1px solid rgba(255, 255, 255, 0.45);
+    }
+
+    /* Fake Web-Style Top Bar With No Drag Clearance Or Native Menus */
+    .fake-titlebar {
+      background: linear-gradient(135deg, indigo, blue, violet);
+      color: #ffffff;
+      padding: 12px 22px;
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      transition: all 0.3s;
+    }
+    .fake-brand {
+      display: flex;
+      align-items: center;
+      gap: 10px;
+      font-weight: 800;
+      font-size: 16px;
+    }
+    .fake-logo {
+      width: 32px;
+      height: 32px;
+      border-radius: 10px;
+      background: rgba(255, 255, 255, 0.22);
+      display: inline-flex;
+      align-items: center;
+      justify-content: center;
+      font-size: 18px;
+    }
+    .fake-top-right {
+      display: flex;
+      align-items: center;
+      gap: 12px;
+    }
+    .ram-pill {
+      font-size: 12px;
+      padding: 5px 12px;
+      border-radius: 999px;
+      background: rgba(15, 23, 42, 0.28);
+      color: #e0e7ff;
+    }
+    .top-input {
+      width: 220px;
+      padding: 7px 12px;
+      border-radius: 999px;
+      border: 1px solid rgba(255, 255, 255, 0.4);
+      background: rgba(255, 255, 255, 0.18);
+      color: #ffffff;
+      font-size: 12px;
+      transition: all 0.3s;
+    }
+    .top-input::placeholder {
+      color: #e0e7ff;
+    }
+    .upgrade-pill {
+      border: none;
+      border-radius: 999px;
+      padding: 7px 16px;
+      background: #ffffff;
+      color: #4f46e5;
+      font-weight: 800;
+      font-size: 12px;
+      cursor: pointer;
+      transition: all 0.3s;
+    }
+
+    .app-body {
+      flex: 1;
+      display: grid;
+      grid-template-columns: 270px 1fr;
+      min-height: 0;
+    }
+
+    /* Cluttered Emoji Sidebar */
+    .sidebar {
+      background: #ffffff;
+      border-right: 1px solid #e2e8f0;
+      padding: 18px 16px;
+      display: flex;
+      flex-direction: column;
+      justify-content: space-between;
+    }
+    .vault-search {
+      width: 100%;
+      padding: 10px 14px;
+      border-radius: 12px;
+      border: 1px solid #cbd5e1;
+      background: #f1f5f9;
+      font-size: 13px;
+      color: #0f172a;
+      margin-bottom: 14px;
+      transition: all 0.3s;
+    }
+    .folder-heading {
+      font-size: 11px;
+      font-weight: 700;
+      text-transform: uppercase;
+      letter-spacing: 0.08em;
+      color: #94a3b8;
+      margin: 6px 6px 8px;
+    }
+    .folder-tree {
+      display: flex;
+      flex-direction: column;
+      gap: 6px;
+    }
+    .tree-item {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      padding: 10px 12px;
+      border-radius: 12px;
+      background: #f8fafc;
+      color: #334155;
+      font-size: 13px;
+      font-weight: 600;
+      cursor: pointer;
+      transition: all 0.3s;
+    }
+    .tree-item.active {
+      background: linear-gradient(90deg, #eef2ff, #dbeafe);
+      color: #4f46e5;
+      border: 1px solid #c7d2fe;
+    }
+    .tree-badge {
+      font-size: 11px;
+      padding: 2px 8px;
+      border-radius: 999px;
+      background: #ede9fe;
+      color: #6d28d9;
+      font-weight: 700;
+    }
+    .quota-panel {
+      border-left: 4px solid #6366f1;
+      border-radius: 12px;
+      background: linear-gradient(135deg, #eef2ff, #f5f3ff);
+      padding: 14px;
+      margin-top: 12px;
+    }
+    .quota-panel h4 {
+      margin: 0 0 6px;
+      font-size: 13px;
+      color: #312e81;
+    }
+    .quota-panel p {
+      margin: 0 0 10px;
+      font-size: 12px;
+      color: #475569;
+      line-height: 1.4;
+    }
+    .quota-bar {
+      height: 8px;
+      border-radius: 999px;
+      background: #cbd5e1;
+      overflow: hidden;
+      margin-bottom: 10px;
+    }
+    .quota-fill {
+      width: 92%;
+      height: 100%;
+      background: linear-gradient(90deg, #6366f1, #ec4899);
+    }
+    .license-input {
+      width: 100%;
+      padding: 8px 10px;
+      border-radius: 8px;
+      border: 1px solid #c7d2fe;
+      font-size: 12px;
+      background: #ffffff;
+      margin-bottom: 8px;
+    }
+    .quota-btn {
+      width: 100%;
+      padding: 8px 12px;
+      border: none;
+      border-radius: 10px;
+      background: linear-gradient(135deg, #6366f1, #3b82f6);
+      color: #ffffff;
+      font-size: 12px;
+      font-weight: 700;
+      cursor: pointer;
+      transition: all 0.3s;
+    }
+
+    /* Main Workspace Dominated By Marketing Hero & Upsells */
+    .main-stage {
+      padding: 20px 26px;
+      display: flex;
+      flex-direction: column;
+      gap: 16px;
+      overflow: hidden;
+    }
+
+    .hero.text-center {
+      text-align: center;
+      padding: 24px 32px;
+      border-radius: 20px;
+      background: linear-gradient(135deg, #ffffff, #eef2ff, #f5f3ff);
+      border: 1px solid #e0e7ff;
+      box-shadow: 0 14px 32px rgba(99, 102, 241, 0.12);
+    }
+    .hero-pill {
+      display: inline-block;
+      padding: 4px 12px;
+      border-radius: 999px;
+      background: #e0e7ff;
+      color: #4338ca;
+      font-size: 11px;
+      font-weight: 800;
+      letter-spacing: 0.06em;
+      text-transform: uppercase;
+      margin-bottom: 8px;
+    }
+    .hero-title {
+      margin: 0 0 8px;
+      font-size: 30px;
+      font-weight: 900;
+      background: linear-gradient(90deg, #4f46e5, #2563eb, #9333ea);
+      -webkit-background-clip: text;
+      background-clip: text;
+      color: transparent;
+    }
+    .hero-sub {
+      margin: 0 auto 16px;
+      max-width: 680px;
+      font-size: 14px;
+      color: #475569;
+      line-height: 1.45;
+    }
+    .hero-ctas {
+      display: inline-flex;
+      align-items: center;
+      gap: 12px;
+    }
+    .btn-primary {
+      padding: 10px 22px;
+      border: none;
+      border-radius: 999px;
+      background: linear-gradient(135deg, #6366f1, #3b82f6);
+      color: #ffffff;
+      font-weight: 700;
+      font-size: 14px;
+      cursor: pointer;
+      box-shadow: 0 8px 20px rgba(79, 70, 229, 0.32);
+      transition: all 0.3s;
+    }
+    .btn-secondary {
+      padding: 10px 22px;
+      border: 1px solid #c7d2fe;
+      border-radius: 999px;
+      background: #ffffff;
+      color: #4f46e5;
+      font-weight: 700;
+      font-size: 14px;
+      cursor: pointer;
+      transition: all 0.3s;
+    }
+
+    /* Cramped Note Rails */
+    .note-rails {
+      display: grid;
+      grid-template-columns: 1.25fr 1fr;
+      gap: 16px;
+    }
+    .note-card {
+      background: #ffffff;
+      border-left: 4px solid #6366f1;
+      border-radius: 12px;
+      padding: 16px 18px;
+      box-shadow: 0 8px 22px rgba(15, 23, 42, 0.06);
+      transition: all 0.3s;
+    }
+    .note-card h3 {
+      margin: 0 0 6px;
+      font-size: 15px;
+      color: #1e1b4b;
+    }
+    .note-card p {
+      margin: 0 0 10px;
+      font-size: 13px;
+      color: #64748b;
+      line-height: 1.5;
+    }
+    .ai-draft-box {
+      width: 100%;
+      height: 58px;
+      border-radius: 10px;
+      border: 1px solid #cbd5e1;
+      background: #f8fafc;
+      padding: 8px 12px;
+      font-size: 12px;
+      resize: none;
+      transition: all 0.3s;
+    }
+    .ai-panel {
+      background: #ffffff;
+      border-left: 4px solid #6366f1;
+      border-radius: 12px;
+      padding: 16px 18px;
+      box-shadow: 0 8px 22px rgba(15, 23, 42, 0.06);
+      display: flex;
+      flex-direction: column;
+      justify-content: space-between;
+    }
+    .ai-panel h3 {
+      margin: 0 0 6px;
+      font-size: 15px;
+      color: #1e1b4b;
+    }
+    .ai-panel p {
+      margin: 0 0 10px;
+      font-size: 13px;
+      color: #64748b;
+      line-height: 1.45;
+    }
+    .ai-chip-row {
+      display: flex;
+      flex-wrap: wrap;
+      gap: 8px;
+    }
+    .ai-chip {
+      padding: 5px 10px;
+      border-radius: 999px;
+      background: #eef2ff;
+      color: #4338ca;
+      font-size: 11px;
+      font-weight: 700;
+    }
+
+    /* 4 Identical Upsell Cards */
+    .rounded-2xl {
+      border-radius: 20px;
+    }
+    .shadow-xl {
+      box-shadow: 0 18px 36px rgba(79, 70, 229, 0.14);
+    }
+    .upsell-grid {
+      display: grid;
+      grid-template-columns: repeat(4, 1fr);
+      gap: 14px;
+    }
+    .upsell-card {
+      background: #ffffff;
+      border: 1px solid #e0e7ff;
+      padding: 16px;
+      display: flex;
+      flex-direction: column;
+      justify-content: space-between;
+      transition: all 0.3s;
+    }
+    .upsell-icon {
+      width: 36px;
+      height: 36px;
+      border-radius: 12px;
+      background: linear-gradient(135deg, #6366f1, #8b5cf6);
+      color: #ffffff;
+      display: inline-flex;
+      align-items: center;
+      justify-content: center;
+      font-size: 18px;
+      margin-bottom: 10px;
+    }
+    .upsell-card h4 {
+      margin: 0 0 6px;
+      font-size: 14px;
+      font-weight: 800;
+      color: #0f172a;
+    }
+    .upsell-card p {
+      margin: 0 0 12px;
+      font-size: 12px;
+      color: #64748b;
+      line-height: 1.4;
+    }
+    .upsell-btn {
+      width: 100%;
+      padding: 8px 10px;
+      border: none;
+      border-radius: 10px;
+      background: #eef2ff;
+      color: #4f46e5;
+      font-size: 12px;
+      font-weight: 700;
+      cursor: pointer;
+      transition: all 0.3s;
+    }
+  </style>
+</head>
+<body>
+  <div class="electron-shell">
+    <header class="fake-titlebar" data-slop="purple-blue-gradient">
+      <div class="fake-brand">
+        <span class="fake-logo">🧠</span>
+        <span>Folio Cloud AI Desktop · Electron Wrapper</span>
+      </div>
+      <div class="fake-top-right">
+        <span class="ram-pill">⚡ Cloud Syncing... · 612 MB Helper RAM</span>
+        <input class="top-input" placeholder="Ask AI Brain anything..." style="outline: none;">
+        <button class="upgrade-pill" tabindex="1">✨ Upgrade Pro $29/mo</button>
+      </div>
+    </header>
+
+    <div class="app-body">
+      <aside class="sidebar">
+        <div>
+          <input class="vault-search" data-slop="placeholder-as-label" placeholder="Search vault" style="outline: none;">
+          <div class="folder-heading">Cloud Workspace</div>
+          <nav class="folder-tree">
+            <div class="tree-item active" data-slop="emoji-as-icon">
+              <span>📁 Vault Root</span>
+              <span class="tree-badge">New</span>
+            </div>
+            <div class="tree-item">
+              <span>🚀 Launch Prompts</span>
+              <span class="tree-badge">14</span>
+            </div>
+            <div class="tree-item">
+              <span>💡 AI Brainstorms</span>
+              <span class="tree-badge">8</span>
+            </div>
+            <div class="tree-item">
+              <span>🔥 Viral Hooks</span>
+              <span class="tree-badge">Hot</span>
+            </div>
+            <div class="tree-item">
+              <span>🧠 Second Brain Hub</span>
+              <span class="tree-badge">Pro</span>
+            </div>
+          </nav>
+        </div>
+
+        <div class="quota-panel">
+          <h4>☁️ 92% Cloud Notes Used</h4>
+          <p>Unlock unlimited seamless cloud storage and supercharge your AI tokens today.</p>
+          <div class="quota-bar"><div class="quota-fill"></div></div>
+          <input class="license-input" placeholder="Paste Pro license key..." onpaste="event.preventDefault()">
+          <button class="quota-btn" tabindex="4">Unlock Unlimited Cloud</button>
+        </div>
+      </aside>
+
+      <main class="main-stage">
+        <section class="hero text-center" data-slop="centered-hero-two-ctas">
+          <span class="hero-pill">✨ Cutting-Edge AI Workspace 2.0</span>
+          <h1 class="hero-title" data-slop="gradient-text-treatment">Elevate Your Seamless AI Second Brain ✨🚀</h1>
+          <p class="hero-sub" data-slop="generic-copy">
+            Revolutionize and supercharge every note with cutting-edge cloud magic. Unlock effortless auto-summaries while Lorem ipsum dolor sit amet keeps your workspace buzzing.
+          </p>
+          <div class="hero-ctas">
+            <button class="btn-primary" data-slop="positive-tabindex" tabindex="2">Get Started</button>
+            <button class="btn-secondary" data-slop="outline-removed" tabindex="3" style="outline: none;">Learn More</button>
+          </div>
+        </section>
+
+        <section class="note-rails">
+          <div class="note-card" data-slop="rounded-accent-rail">
+            <h3>📝 Untitled AI Note — Draft #42</h3>
+            <p>Lorem ipsum dolor sit amet, consectetur adipiscing elit. Elevate your seamless workflow by letting cloud agents rewrite your research notes automatically.</p>
+            <textarea class="ai-draft-box" placeholder="Type / to unlock seamless AI magic..."></textarea>
+          </div>
+
+          <div class="ai-panel">
+            <div>
+              <h3>🤖 AI Copilot Suggestions</h3>
+              <p>Supercharge this note with instant cloud embeddings and cutting-edge magic tags. Upgrade to view citation links.</p>
+            </div>
+            <div class="ai-chip-row">
+              <span class="ai-chip">✨ Auto-Summarize</span>
+              <span class="ai-chip">🚀 Make Viral</span>
+              <span class="ai-chip">🔥 Boost Tone</span>
+              <span class="ai-chip">💎 Pro Graph ($29)</span>
+            </div>
+          </div>
+        </section>
+
+        <section class="upsell-grid">
+          <div class="upsell-card rounded-2xl shadow-xl" data-slop="rounded-2xl-repetition">
+            <div>
+              <span class="upsell-icon">🚀</span>
+              <h4>AI Auto-Writer</h4>
+              <p>Revolutionize rough thoughts into seamless blog threads in one click.</p>
+            </div>
+            <button class="upsell-btn">Get Started</button>
+          </div>
+
+          <div class="upsell-card rounded-2xl shadow-xl">
+            <div>
+              <span class="upsell-icon">💡</span>
+              <h4>Cloud Graph Pro</h4>
+              <p>Unlock cloud-hosted 3D brain orbs synced to our remote AI cluster.</p>
+            </div>
+            <button class="upsell-btn">Unlock Pro</button>
+          </div>
+
+          <div class="upsell-card rounded-2xl shadow-xl">
+            <div>
+              <span class="upsell-icon">🔥</span>
+              <h4>Viral Team Links</h4>
+              <p>Supercharge sharing with public gradient pages and magic reactions.</p>
+            </div>
+            <button class="upsell-btn">Elevate Team</button>
+          </div>
+
+          <div class="upsell-card rounded-2xl shadow-xl">
+            <div>
+              <span class="upsell-icon">🧠</span>
+              <h4>Unlimited Tokens</h4>
+              <p>Cutting-edge GPT-Max chat inside every folder with zero limits.</p>
+            </div>
+            <button class="upsell-btn">Learn More</button>
+          </div>
+        </section>
+      </main>
+    </div>
+  </div>
+</body>
+</html>

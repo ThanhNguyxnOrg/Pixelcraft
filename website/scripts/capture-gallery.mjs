@@ -37,7 +37,30 @@ const BROWSER =
     : "/usr/bin/chromium");
 const W = 1440;
 const H = 900;
-const IDS = ["coffee", "clinic", "grid", "tui", "mobile", "document"];
+const IDS = [
+  "swiftui",
+  "compose",
+  "flutter",
+  "mobile",
+  "kubetrace",
+  "tui",
+  "desktop",
+  "python",
+  "dashboard",
+  "grid",
+  "liveview",
+  "saas",
+  "store",
+  "booking",
+  "learning",
+  "magazine",
+  "coffee",
+  "clinic",
+  "email",
+  "proposal",
+  "document",
+  "gamehud",
+];
 
 if (!existsSync(SCAN))
   throw new Error(`slop-scan.mjs not found at ${SCAN}. Pass --scan <path>.`);

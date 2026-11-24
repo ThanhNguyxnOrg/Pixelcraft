@@ -1,0 +1,2552 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
+  <title>Veritas Eval · Python marimo RAG Faithfulness Workbench (with Pixelcraft)</title>
+  <link rel="stylesheet" href="../../fonts/gallery.css" />
+  <style>
+    :root {
+      --paper-bg: #F6F5EF;
+      --paper-recess: #ECE9DF;
+      --paper-tint: #FAF9F5;
+      --specimen-bg: #FFFFFF;
+      --ink-slate: #111827;
+      --ink-secondary: #4B5563;
+      --ink-muted: #5C6573;
+      --ink-on-accent: #FFFFFF;
+      --botanical-teal: #0F766E;
+      --botanical-teal-wash: rgba(15, 118, 110, 0.09);
+      --botanical-teal-mid: rgba(15, 118, 110, 0.18);
+      --botanical-teal-line: rgba(15, 118, 110, 0.36);
+      --citation-ochre: #B45309;
+      --citation-ochre-wash: rgba(180, 83, 9, 0.10);
+      --citation-ochre-strong: rgba(180, 83, 9, 0.20);
+      --citation-ochre-line: rgba(180, 83, 9, 0.40);
+      --claim-crimson: #BE123C;
+      --claim-crimson-wash: rgba(190, 18, 60, 0.09);
+      --claim-crimson-line: rgba(190, 18, 60, 0.36);
+      --hairline: #D8D5CA;
+      --hairline-strong: #BCB7A7;
+      --graticule: rgba(17, 24, 39, 0.09);
+      --graticule-axis: rgba(17, 24, 39, 0.28);
+      --radius-sm: 4px;
+      --radius-md: 6px;
+      --font-sans: 'Public Sans', -apple-system, BlinkMacSystemFont, sans-serif;
+      --font-mono: 'IBM Plex Mono', ui-monospace, SFMono-Regular, monospace;
+      --font-serif: Georgia, 'Times New Roman', serif;
+    }
+
+    * {
+      box-sizing: border-box;
+    }
+
+    html,
+    body {
+      margin: 0;
+      padding: 0;
+      background-color: var(--paper-bg);
+      color: var(--ink-slate);
+      font-family: var(--font-sans);
+      font-size: 13px;
+      line-height: 1.4;
+      -webkit-font-smoothing: antialiased;
+    }
+
+    :focus-visible {
+      outline: 2px solid var(--botanical-teal);
+      outline-offset: 2px;
+    }
+
+    .skip-nav {
+      position: absolute;
+      left: 16px;
+      top: -48px;
+      z-index: 30;
+      padding: 6px 12px;
+      background-color: var(--botanical-teal);
+      color: var(--ink-on-accent);
+      font-family: var(--font-mono);
+      font-size: 12px;
+      border-radius: var(--radius-sm);
+      text-decoration: none;
+    }
+
+    .skip-nav:focus {
+      top: 10px;
+    }
+
+    .tabular {
+      font-variant-numeric: tabular-nums;
+    }
+
+    .sr-only {
+      position: absolute;
+      width: 1px;
+      height: 1px;
+      padding: 0;
+      margin: -1px;
+      overflow: hidden;
+      clip: rect(0, 0, 0, 0);
+      white-space: nowrap;
+      border: 0;
+    }
+
+    /* Top Reactive marimo DAG Bar */
+    .dag-header {
+      background-color: var(--specimen-bg);
+      border-bottom: 1px solid var(--hairline);
+    }
+
+    .dag-strip-top {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      gap: 8px;
+      padding: 7px 16px;
+      border-bottom: 1px solid var(--hairline);
+      background-color: var(--paper-tint);
+      flex-wrap: wrap;
+    }
+
+    .brand-cluster {
+      display: flex;
+      align-items: center;
+      gap: 8px;
+      flex-wrap: wrap;
+    }
+
+    .brand-mark {
+      width: 24px;
+      height: 24px;
+      border-radius: var(--radius-sm);
+      background-color: var(--botanical-teal-wash);
+      border: 1px solid var(--botanical-teal-line);
+      color: var(--botanical-teal);
+      display: inline-flex;
+      align-items: center;
+      justify-content: center;
+      flex-shrink: 0;
+    }
+
+    .brand-title {
+      margin: 0;
+      font-family: var(--font-serif);
+      font-size: 16.5px;
+      font-weight: 700;
+      letter-spacing: -0.01em;
+      color: var(--ink-slate);
+    }
+
+    .runtime-signature {
+      font-family: var(--font-mono);
+      font-size: 10.5px;
+      font-weight: 500;
+      color: var(--ink-slate);
+      background-color: var(--paper-recess);
+      border: 1px solid var(--hairline);
+      border-radius: var(--radius-sm);
+      padding: 2px 7px;
+    }
+
+    .suite-tag {
+      font-family: var(--font-mono);
+      font-size: 10.5px;
+      color: var(--ink-secondary);
+      padding: 2px 6px;
+      border: 1px dashed var(--hairline-strong);
+      border-radius: var(--radius-sm);
+      background-color: var(--specimen-bg);
+    }
+
+    .dag-lineage {
+      display: flex;
+      align-items: center;
+      gap: 4px;
+      font-family: var(--font-mono);
+      font-size: 10.5px;
+      color: var(--ink-secondary);
+      flex-wrap: wrap;
+    }
+
+    .cell-node {
+      display: inline-flex;
+      align-items: center;
+      padding: 2px 5px;
+      border-radius: var(--radius-sm);
+      background-color: var(--specimen-bg);
+      border: 1px solid var(--hairline);
+      color: var(--ink-slate);
+    }
+
+    .cell-node.is-synced {
+      border-color: var(--botanical-teal-line);
+      background-color: var(--botanical-teal-wash);
+      color: var(--botanical-teal);
+    }
+
+    .cell-arrow {
+      color: var(--ink-muted);
+    }
+
+    .dag-status-pill {
+      display: inline-flex;
+      align-items: center;
+      gap: 4px;
+      font-family: var(--font-mono);
+      font-size: 10.5px;
+      font-weight: 500;
+      color: var(--botanical-teal);
+      padding-left: 4px;
+    }
+
+    .dag-status-pill.is-debouncing {
+      color: var(--citation-ochre);
+    }
+
+    /* Row 2: Controls + Reactive Summary Metrics */
+    .dag-controls-bar {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      gap: 8px;
+      padding: 7px 16px;
+      flex-wrap: wrap;
+    }
+
+    .controls-cluster {
+      display: flex;
+      align-items: center;
+      gap: 10px;
+      flex-wrap: wrap;
+    }
+
+    .control-group {
+      display: flex;
+      align-items: center;
+      gap: 6px;
+      flex-wrap: wrap;
+    }
+
+    .control-label {
+      font-family: var(--font-mono);
+      font-size: 10.5px;
+      font-weight: 500;
+      color: var(--ink-secondary);
+      display: inline-flex;
+      align-items: center;
+      gap: 4px;
+    }
+
+    .code-badge {
+      font-family: var(--font-mono);
+      font-size: 9.5px;
+      color: var(--botanical-teal);
+      background-color: var(--botanical-teal-wash);
+      border: 1px solid var(--botanical-teal-line);
+      border-radius: var(--radius-sm);
+      padding: 1px 4px;
+    }
+
+    .retriever-segmented {
+      display: inline-flex;
+      background-color: var(--paper-bg);
+      border: 1px solid var(--hairline);
+      border-radius: var(--radius-md);
+      padding: 2px;
+      gap: 2px;
+    }
+
+    .retriever-btn {
+      appearance: none;
+      border: 1px solid transparent;
+      background-color: transparent;
+      color: var(--ink-secondary);
+      font-family: var(--font-sans);
+      font-size: 11.5px;
+      font-weight: 600;
+      padding: 4px 8px;
+      border-radius: var(--radius-sm);
+      cursor: pointer;
+      white-space: nowrap;
+      transition: background-color 140ms ease, border-color 140ms ease, color 140ms ease;
+    }
+
+    .retriever-btn:hover {
+      color: var(--ink-slate);
+      background-color: var(--specimen-bg);
+    }
+
+    .retriever-btn[aria-pressed="true"] {
+      background-color: var(--botanical-teal);
+      border-color: var(--botanical-teal);
+      color: var(--ink-on-accent);
+    }
+
+    .slider-control {
+      display: inline-flex;
+      align-items: center;
+      gap: 6px;
+      background-color: var(--paper-bg);
+      border: 1px solid var(--hairline);
+      border-radius: var(--radius-md);
+      padding: 3px 8px;
+    }
+
+    .threshold-range {
+      width: 78px;
+      accent-color: var(--botanical-teal);
+      cursor: pointer;
+      margin: 0;
+    }
+
+    .threshold-output {
+      font-family: var(--font-mono);
+      font-size: 11.5px;
+      font-weight: 500;
+      color: var(--ink-slate);
+      min-width: 52px;
+    }
+
+    /* Live Summary Readout Ledger */
+    .telemetry-strip {
+      display: flex;
+      align-items: stretch;
+      border: 1px solid var(--hairline);
+      border-radius: var(--radius-md);
+      background-color: var(--paper-tint);
+      overflow: hidden;
+    }
+
+    .metric-cell {
+      padding: 3px 10px;
+      display: flex;
+      flex-direction: column;
+      justify-content: center;
+      border-right: 1px solid var(--hairline);
+      white-space: nowrap;
+    }
+
+    .metric-cell:last-child {
+      border-right: none;
+    }
+
+    .metric-caption {
+      font-family: var(--font-mono);
+      font-size: 9.5px;
+      text-transform: uppercase;
+      letter-spacing: 0.04em;
+      color: var(--ink-muted);
+      line-height: 1.15;
+    }
+
+    .metric-val {
+      font-family: var(--font-mono);
+      font-size: 12.5px;
+      font-weight: 500;
+      color: var(--ink-slate);
+      line-height: 1.25;
+    }
+
+    .metric-val.tone-good {
+      color: var(--botanical-teal);
+    }
+
+    .metric-val.tone-warn {
+      color: var(--citation-ochre);
+    }
+
+    .metric-val.tone-bad {
+      color: var(--claim-crimson);
+    }
+
+    /* Main Two-Column Workbench */
+    .workbench-grid {
+      max-width: 1440px;
+      margin: 0 auto;
+      padding: 12px 20px 14px;
+      display: grid;
+      grid-template-columns: 444px minmax(0, 1fr);
+      gap: 14px;
+      align-items: start;
+    }
+
+    .left-column,
+    .right-column {
+      display: flex;
+      flex-direction: column;
+      gap: 12px;
+      min-width: 0;
+    }
+
+    .ledger-sheet {
+      background-color: var(--specimen-bg);
+      border: 1px solid var(--hairline);
+      border-radius: var(--radius-md);
+      overflow: hidden;
+    }
+
+    .sheet-head {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      gap: 8px;
+      min-height: 35px;
+      padding: 7px 12px;
+      background-color: var(--paper-tint);
+      border-bottom: 1px solid var(--hairline);
+    }
+
+    .sheet-title {
+      margin: 0;
+      font-family: var(--font-sans);
+      font-size: 11.5px;
+      font-weight: 700;
+      letter-spacing: 0.03em;
+      text-transform: uppercase;
+      color: var(--ink-slate);
+      white-space: nowrap;
+    }
+
+    .sheet-meta {
+      font-family: var(--font-mono);
+      font-size: 10.5px;
+      color: var(--ink-muted);
+      white-space: nowrap;
+    }
+
+    /* Left Column Top: 4 Clickable Evaluation Prompts */
+    .prompt-list {
+      display: flex;
+      flex-direction: column;
+    }
+
+    .prompt-item {
+      appearance: none;
+      width: 100%;
+      border: none;
+      border-bottom: 1px solid var(--hairline);
+      background-color: var(--specimen-bg);
+      padding: 9px 12px;
+      text-align: left;
+      cursor: pointer;
+      display: flex;
+      flex-direction: column;
+      gap: 4px;
+      transition: background-color 140ms ease, border-color 140ms ease;
+    }
+
+    .prompt-item:last-child {
+      border-bottom: none;
+    }
+
+    .prompt-item:hover {
+      background-color: var(--paper-tint);
+    }
+
+    .prompt-item[aria-pressed="true"] {
+      background-color: var(--botanical-teal-wash);
+      box-shadow: inset 3px 0 0 var(--botanical-teal);
+    }
+
+    .prompt-row-top {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      gap: 8px;
+    }
+
+    .prompt-id-group {
+      display: inline-flex;
+      align-items: center;
+      gap: 6px;
+      min-width: 0;
+    }
+
+    .prompt-code {
+      font-family: var(--font-mono);
+      font-size: 10px;
+      font-weight: 500;
+      padding: 1px 5px;
+      border-radius: var(--radius-sm);
+      background-color: var(--paper-recess);
+      border: 1px solid var(--hairline);
+      color: var(--ink-slate);
+      flex-shrink: 0;
+    }
+
+    .prompt-domain-title {
+      font-size: 12.5px;
+      font-weight: 700;
+      color: var(--ink-slate);
+      white-space: nowrap;
+      overflow: hidden;
+      text-overflow: ellipsis;
+    }
+
+    .prompt-score-tag {
+      font-family: var(--font-mono);
+      font-size: 11px;
+      font-weight: 500;
+      padding: 1px 6px;
+      border-radius: var(--radius-sm);
+      border: 1px solid var(--hairline);
+      flex-shrink: 0;
+    }
+
+    .prompt-score-tag.is-good {
+      color: var(--botanical-teal);
+      background-color: var(--specimen-bg);
+      border-color: var(--botanical-teal-line);
+    }
+
+    .prompt-score-tag.is-warn {
+      color: var(--citation-ochre);
+      background-color: var(--citation-ochre-wash);
+      border-color: var(--citation-ochre-line);
+    }
+
+    .prompt-score-tag.is-bad {
+      color: var(--claim-crimson);
+      background-color: var(--claim-crimson-wash);
+      border-color: var(--claim-crimson-line);
+    }
+
+    .prompt-excerpt {
+      margin: 0;
+      font-size: 11.5px;
+      color: var(--ink-secondary);
+      line-height: 1.35;
+      display: -webkit-box;
+      -webkit-line-clamp: 2;
+      -webkit-box-orient: vertical;
+      overflow: hidden;
+    }
+
+    /* Left Column Bottom: Pareto Scatter SVG */
+    .pareto-body {
+      padding: 8px 12px 10px;
+      display: flex;
+      flex-direction: column;
+      gap: 6px;
+    }
+
+    .pareto-svg {
+      width: 100%;
+      height: auto;
+      display: block;
+      background-color: var(--paper-tint);
+      border: 1px solid var(--hairline);
+      border-radius: var(--radius-sm);
+    }
+
+    .pareto-point-hit {
+      cursor: pointer;
+    }
+
+    .pareto-summary {
+      margin: 0;
+      font-family: var(--font-mono);
+      font-size: 11px;
+      color: var(--ink-secondary);
+      line-height: 1.38;
+    }
+
+    /* Right Column Top: Active Query + Collapsible Cell Trace */
+    .specimen-query-bar {
+      padding: 10px 14px;
+      display: flex;
+      flex-direction: column;
+      gap: 7px;
+    }
+
+    .query-meta-row {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      gap: 10px;
+      flex-wrap: wrap;
+    }
+
+    .query-kicker {
+      display: inline-flex;
+      align-items: center;
+      gap: 8px;
+      font-family: var(--font-mono);
+      font-size: 11px;
+      color: var(--ink-secondary);
+    }
+
+    .query-text {
+      margin: 0;
+      font-size: 13.5px;
+      font-weight: 600;
+      color: var(--ink-slate);
+      line-height: 1.4;
+    }
+
+    .trace-details {
+      border-top: 1px dashed var(--hairline);
+      padding-top: 6px;
+    }
+
+    .trace-summary {
+      cursor: pointer;
+      font-family: var(--font-mono);
+      font-size: 11px;
+      color: var(--botanical-teal);
+      list-style: none;
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      gap: 8px;
+    }
+
+    .trace-summary::-webkit-details-marker {
+      display: none;
+    }
+
+    .trace-code {
+      margin: 6px 0 0;
+      padding: 8px 10px;
+      background-color: var(--paper-bg);
+      border: 1px solid var(--hairline);
+      border-radius: var(--radius-sm);
+      font-family: var(--font-mono);
+      font-size: 11px;
+      line-height: 1.42;
+      color: var(--ink-slate);
+      overflow-x: auto;
+    }
+
+    /* Right Column Split: Response Audit + Retrieved Evidence Passages */
+    .audit-split {
+      display: grid;
+      grid-template-columns: minmax(0, 1.15fr) minmax(0, 0.95fr);
+      gap: 12px;
+      align-items: start;
+    }
+
+    .response-body {
+      padding: 12px 14px;
+      display: flex;
+      flex-direction: column;
+      gap: 10px;
+    }
+
+    .claim-block {
+      padding: 10px 12px;
+      border: 1px solid var(--hairline);
+      border-radius: var(--radius-sm);
+      background-color: var(--paper-tint);
+      display: flex;
+      flex-direction: column;
+      gap: 7px;
+      transition: background-color 140ms ease, border-color 140ms ease;
+    }
+
+    .claim-block.is-supported {
+      border-left: 3px solid var(--botanical-teal);
+      background-color: var(--specimen-bg);
+    }
+
+    .claim-block.is-below-tau {
+      border-left: 3px solid var(--citation-ochre);
+      background-color: var(--citation-ochre-wash);
+    }
+
+    .claim-block.is-extrapolated {
+      border-left: 3px solid var(--claim-crimson);
+      background-color: var(--claim-crimson-wash);
+    }
+
+    .claim-block.is-pinned {
+      border-color: var(--citation-ochre);
+    }
+
+    .claim-prose {
+      margin: 0;
+      font-family: var(--font-serif);
+      font-size: 14px;
+      line-height: 1.52;
+      color: var(--ink-slate);
+    }
+
+    .cite-btn {
+      appearance: none;
+      display: inline-flex;
+      align-items: center;
+      padding: 0 5px;
+      margin: 0 2px;
+      border-radius: var(--radius-sm);
+      border: 1px solid var(--citation-ochre-line);
+      background-color: var(--citation-ochre-wash);
+      color: var(--citation-ochre);
+      font-family: var(--font-mono);
+      font-size: 11px;
+      font-weight: 500;
+      line-height: 1.35;
+      cursor: pointer;
+      vertical-align: baseline;
+      transition: background-color 140ms ease, border-color 140ms ease, color 140ms ease;
+    }
+
+    .cite-btn:hover,
+    .cite-btn[aria-pressed="true"] {
+      background-color: var(--citation-ochre);
+      border-color: var(--citation-ochre);
+      color: var(--ink-on-accent);
+    }
+
+    .claim-footer {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      gap: 8px;
+      flex-wrap: wrap;
+    }
+
+    .verdict-badge {
+      display: inline-flex;
+      align-items: center;
+      gap: 5px;
+      font-family: var(--font-mono);
+      font-size: 11px;
+      font-weight: 500;
+      padding: 2px 7px;
+      border-radius: var(--radius-sm);
+      border: 1px solid transparent;
+    }
+
+    .verdict-badge.verdict-supported {
+      color: var(--botanical-teal);
+      background-color: var(--botanical-teal-wash);
+      border-color: var(--botanical-teal-line);
+    }
+
+    .verdict-badge.verdict-below {
+      color: var(--citation-ochre);
+      background-color: var(--specimen-bg);
+      border-color: var(--citation-ochre-line);
+    }
+
+    .verdict-badge.verdict-extrapolated {
+      color: var(--claim-crimson);
+      background-color: var(--specimen-bg);
+      border-color: var(--claim-crimson-line);
+    }
+
+    .claim-step-tag {
+      font-family: var(--font-mono);
+      font-size: 10px;
+      color: var(--ink-muted);
+    }
+
+    /* Idempotent Evaluation Gate Footer */
+    .audit-gate-footer {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      gap: 8px;
+      padding-top: 6px;
+      border-top: 1px solid var(--hairline);
+      flex-wrap: wrap;
+    }
+
+    .audit-actions {
+      display: inline-flex;
+      align-items: center;
+      gap: 6px;
+      flex-wrap: wrap;
+    }
+
+    .action-btn {
+      appearance: none;
+      border: 1px solid var(--hairline-strong);
+      background-color: var(--paper-bg);
+      color: var(--ink-slate);
+      font-family: var(--font-sans);
+      font-size: 11.5px;
+      font-weight: 600;
+      padding: 4px 9px;
+      border-radius: var(--radius-sm);
+      cursor: pointer;
+      transition: background-color 140ms ease, border-color 140ms ease, color 140ms ease;
+    }
+
+    .action-btn:hover {
+      background-color: var(--specimen-bg);
+      border-color: var(--ink-slate);
+    }
+
+    .action-btn.is-recorded {
+      background-color: var(--botanical-teal-wash);
+      border-color: var(--botanical-teal-line);
+      color: var(--botanical-teal);
+    }
+
+    .action-btn.is-flagged {
+      background-color: var(--claim-crimson-wash);
+      border-color: var(--claim-crimson-line);
+      color: var(--claim-crimson);
+    }
+
+    .audit-provenance {
+      font-family: var(--font-mono);
+      font-size: 10.5px;
+      color: var(--ink-muted);
+    }
+
+    /* Retrieved Evidence Passages Column */
+    .passages-list {
+      padding: 10px 12px;
+      display: flex;
+      flex-direction: column;
+      gap: 9px;
+    }
+
+    .passage-entry {
+      border: 1px solid var(--hairline);
+      border-radius: var(--radius-sm);
+      background-color: var(--paper-tint);
+      padding: 9px 10px;
+      display: flex;
+      flex-direction: column;
+      gap: 6px;
+      transition: background-color 140ms ease, border-color 140ms ease;
+    }
+
+    .passage-entry.is-highlighted {
+      background-color: var(--specimen-bg);
+      border-color: var(--citation-ochre);
+      box-shadow: inset 3px 0 0 var(--citation-ochre);
+    }
+
+    .passage-head {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      gap: 6px;
+      flex-wrap: nowrap;
+    }
+
+    .passage-source-group {
+      display: inline-flex;
+      align-items: center;
+      gap: 6px;
+      min-width: 0;
+    }
+
+    .passage-cid {
+      font-family: var(--font-mono);
+      font-size: 11px;
+      font-weight: 500;
+      padding: 1px 6px;
+      border-radius: var(--radius-sm);
+      background-color: var(--citation-ochre-wash);
+      border: 1px solid var(--citation-ochre-line);
+      color: var(--citation-ochre);
+      flex-shrink: 0;
+    }
+
+    .passage-doc {
+      font-family: var(--font-mono);
+      font-size: 11px;
+      font-weight: 500;
+      color: var(--ink-slate);
+      white-space: nowrap;
+      overflow: hidden;
+      text-overflow: ellipsis;
+    }
+
+    .passage-span-tag {
+      font-family: var(--font-mono);
+      font-size: 10px;
+      color: var(--ink-muted);
+      flex-shrink: 0;
+    }
+
+    /* BM25 & Cross-Encoder Reranker Score Bars */
+    .score-bars {
+      display: grid;
+      grid-template-columns: 1fr 1fr;
+      gap: 8px;
+    }
+
+    .bar-row {
+      display: flex;
+      flex-direction: column;
+      gap: 2px;
+    }
+
+    .bar-label-line {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      font-family: var(--font-mono);
+      font-size: 10px;
+      color: var(--ink-secondary);
+    }
+
+    .bar-track {
+      height: 5px;
+      background-color: var(--paper-recess);
+      border-radius: 2px;
+      overflow: hidden;
+    }
+
+    .bar-fill {
+      height: 100%;
+      background-color: var(--botanical-teal);
+      transition: width 160ms ease, background-color 140ms ease;
+    }
+
+    .bar-fill.fill-ochre {
+      background-color: var(--citation-ochre);
+    }
+
+    .bar-fill.fill-crimson {
+      background-color: var(--claim-crimson);
+    }
+
+    .bar-fill.fill-muted {
+      background-color: var(--hairline-strong);
+    }
+
+    .passage-quote {
+      margin: 0;
+      font-size: 11.5px;
+      line-height: 1.42;
+      color: var(--ink-secondary);
+    }
+
+    .evidence-mark {
+      background-color: var(--citation-ochre-wash);
+      color: var(--ink-slate);
+      padding: 0 2px;
+      border-bottom: 1px solid var(--citation-ochre-line);
+    }
+
+    .passage-Entry-Highlight .evidence-mark,
+    .passage-entry.is-highlighted .evidence-mark {
+      background-color: var(--citation-ochre-strong);
+    }
+
+    .clear-cite-btn {
+      appearance: none;
+      border: 1px solid var(--citation-ochre-line);
+      background-color: var(--citation-ochre-wash);
+      color: var(--citation-ochre);
+      font-family: var(--font-mono);
+      font-size: 10.5px;
+      padding: 2px 7px;
+      border-radius: var(--radius-sm);
+      cursor: pointer;
+      transition: background-color 140ms ease, color 140ms ease;
+    }
+
+    .clear-cite-btn[hidden] {
+      display: none;
+    }
+
+    .clear-cite-btn:hover {
+      background-color: var(--citation-ochre);
+      color: var(--ink-on-accent);
+    }
+
+    @media (max-width: 1180px) {
+      .workbench-grid {
+        grid-template-columns: 1fr;
+      }
+
+      .audit-split {
+        grid-template-columns: 1fr;
+      }
+    }
+
+    @media (prefers-reduced-motion: reduce) {
+      *,
+      *::before,
+      *::after {
+        animation-duration: 0.01ms !important;
+        animation-iteration-count: 1 !important;
+        transition-duration: 0.01ms !important;
+        scroll-behavior: auto !important;
+      }
+    }
+  </style>
+</head>
+<body>
+  <a href="#workbench-main" class="skip-nav">Skip to evaluation workbench</a>
+  <div id="live-status" class="sr-only" aria-live="polite"></div>
+
+  <header class="dag-header">
+    <div class="dag-strip-top">
+      <div class="brand-cluster">
+        <span class="brand-mark" aria-hidden="true">
+          <svg width="16" height="16" viewBox="0 0 16 16" fill="none">
+            <circle cx="3.5" cy="4" r="1.75" stroke="currentColor" stroke-width="1.4" />
+            <circle cx="3.5" cy="12" r="1.75" stroke="currentColor" stroke-width="1.4" />
+            <circle cx="12.5" cy="8" r="2" fill="currentColor" />
+            <path d="M5.2 4.6L10.6 7.2M5.2 11.4L10.6 8.8" stroke="currentColor" stroke-width="1.3" />
+          </svg>
+        </span>
+        <h1 class="brand-title">Veritas Eval</h1>
+        <span class="runtime-signature">veritas_eval.py · Python 3.12 · marimo @app.cell DAG (0 hidden state)</span>
+        <span class="suite-tag">Veritas-Bench v2 · Illustrative</span>
+      </div>
+
+      <div class="dag-lineage" aria-label="Reactive marimo cell dependency graph">
+        <span class="cell-node is-synced">c1:retriever</span>
+        <span class="cell-arrow" aria-hidden="true">→</span>
+        <span class="cell-node is-synced">c2:threshold</span>
+        <span class="cell-arrow" aria-hidden="true">→</span>
+        <span class="cell-node is-synced">c3:nli_judge</span>
+        <span class="cell-arrow" aria-hidden="true">→</span>
+        <span class="cell-node is-synced">c4:pareto</span>
+        <span id="dag-sync-state" class="dag-status-pill">✓ 4/4 synced · DuckDB warm</span>
+      </div>
+    </div>
+
+    <div class="dag-controls-bar">
+      <div class="controls-cluster">
+        <div class="control-group" role="group" aria-labelledby="retriever-label">
+          <span id="retriever-label" class="control-label">
+            Retriever
+            <span class="code-badge">mo.ui.radio</span>
+          </span>
+          <div class="retriever-segmented">
+            <button type="button" class="retriever-btn" data-retriever="hybrid" aria-pressed="true">
+              Hybrid BM25 + Cross-Encoder
+            </button>
+            <button type="button" class="retriever-btn" data-retriever="dense" aria-pressed="false">
+              Dense Cosine Only
+            </button>
+            <button type="button" class="retriever-btn" data-retriever="naive" aria-pressed="false">
+              Naive 512-Token Chunk
+            </button>
+          </div>
+        </div>
+
+        <div class="control-group">
+          <label for="confidence-threshold" class="control-label">
+            Confidence Threshold
+            <span class="code-badge">debounce=True</span>
+          </label>
+          <div class="slider-control">
+            <input
+              id="confidence-threshold"
+              class="threshold-range"
+              type="range"
+              min="0.55"
+              max="0.95"
+              step="0.05"
+              value="0.80"
+            />
+            <output id="threshold-readout" for="confidence-threshold" class="threshold-output tabular">τ = 0.80</output>
+          </div>
+        </div>
+      </div>
+
+      <div class="telemetry-strip" aria-label="Active retriever benchmark summary">
+        <div class="metric-cell">
+          <span class="metric-caption">Faithfulness</span>
+          <span id="kpi-faithfulness" class="metric-val tabular tone-good">0.94</span>
+        </div>
+        <div class="metric-cell">
+          <span class="metric-caption">Grounded</span>
+          <span id="kpi-claims" class="metric-val tabular tone-good">3 / 3</span>
+        </div>
+        <div class="metric-cell">
+          <span class="metric-caption">P95 Latency</span>
+          <span id="kpi-latency" class="metric-val tabular">640 ms</span>
+        </div>
+        <div class="metric-cell">
+          <span class="metric-caption">Cost / 1k</span>
+          <span id="kpi-cost" class="metric-val tabular">$1.84</span>
+        </div>
+      </div>
+    </div>
+  </header>
+
+  <main id="workbench-main" class="workbench-grid">
+    <!-- Left Column: 4 Evaluation Prompts + Directly Labeled Pareto SVG -->
+    <aside class="left-column" aria-label="Benchmark prompt specimens and Pareto trade-off">
+      <section class="ledger-sheet">
+        <div class="sheet-head">
+          <h2 class="sheet-title">Evaluation Prompts</h2>
+          <span class="sheet-meta">mo.ui.table · N=4 pinned</span>
+        </div>
+        <div id="prompt-list" class="prompt-list" role="group" aria-label="Select evaluation specimen"></div>
+      </section>
+
+      <section class="ledger-sheet">
+        <div class="sheet-head">
+          <h2 class="sheet-title">Faithfulness vs. Latency Pareto</h2>
+          <span class="sheet-meta">Veritas-Bench v2 · N=240</span>
+        </div>
+        <div class="pareto-body">
+          <svg
+            id="pareto-svg"
+            class="pareto-svg"
+            viewBox="0 0 418 232"
+            role="img"
+            aria-labelledby="pareto-chart-title pareto-chart-desc"
+          >
+            <title id="pareto-chart-title">Faithfulness versus P95 latency Pareto frontier across retrieval strategies</title>
+            <desc id="pareto-chart-desc">Scatter plot showing Hybrid BM25 + Cross-Encoder at 640 milliseconds and 0.94 faithfulness, Dense Cosine Only at 390 milliseconds and 0.78 faithfulness, and Naive 512-Token Chunk at 245 milliseconds and 0.61 faithfulness.</desc>
+
+            <!-- Plot area: x=46..402 (150ms..950ms), y=18..196 (1.00..0.50) -->
+            <rect x="46" y="18" width="356" height="178" fill="var(--specimen-bg)" stroke="var(--hairline)" />
+
+            <!-- Dynamic below-threshold caution wash -->
+            <rect id="tau-zone-rect" x="46" y="89.2" width="356" height="106.8" fill="var(--claim-crimson-wash)" />
+
+            <!-- Horizontal graticules -->
+            <g stroke="var(--graticule)" stroke-width="1">
+              <line x1="46" y1="53.6" x2="402" y2="53.6" />
+              <line x1="46" y1="89.2" x2="402" y2="89.2" />
+              <line x1="46" y1="124.8" x2="402" y2="124.8" />
+              <line x1="46" y1="160.4" x2="402" y2="160.4" />
+            </g>
+
+            <!-- Vertical graticules -->
+            <g stroke="var(--graticule)" stroke-width="1">
+              <line x1="112.8" y1="18" x2="112.8" y2="196" />
+              <line x1="201.8" y1="18" x2="201.8" y2="196" />
+              <line x1="290.8" y1="18" x2="290.8" y2="196" />
+              <line x1="379.8" y1="18" x2="379.8" y2="196" />
+            </g>
+
+            <!-- Active Confidence Threshold tau line -->
+            <line
+              id="tau-line"
+              x1="46"
+              y1="89.2"
+              x2="402"
+              y2="89.2"
+              stroke="var(--citation-ochre)"
+              stroke-width="1.4"
+              stroke-dasharray="4 3"
+            />
+            <text
+              id="tau-line-label"
+              x="398"
+              y="85"
+              text-anchor="end"
+              fill="var(--citation-ochre)"
+              font-family="var(--font-mono)"
+              font-size="9.5"
+              font-weight="500"
+            >τ floor = 0.80</text>
+
+            <!-- Empirical Pareto frontier -->
+            <polyline
+              points="88.3,156.8 152.8,96.3 264.1,39.4 362.0,35.8"
+              fill="none"
+              stroke="var(--botanical-teal)"
+              stroke-width="1.5"
+              stroke-dasharray="2 2"
+            />
+
+            <!-- Dominated reference baselines (hollow squares) -->
+            <g fill="var(--specimen-bg)" stroke="var(--ink-muted)" stroke-width="1.3">
+              <rect x="107.5" y="121.8" width="6" height="6" />
+              <rect x="207.6" y="64.8" width="6" height="6" />
+              <rect x="359.0" y="32.8" width="6" height="6" />
+            </g>
+            <g fill="var(--ink-muted)" font-family="var(--font-mono)" font-size="9">
+              <text x="117" y="128">BM25 Lexical (0.70)</text>
+              <text x="217" y="71">ColBERTv2 (0.86)</text>
+              <text x="397" y="29" text-anchor="end">HyDE+Rerank (0.95)</text>
+            </g>
+
+            <!-- Active retriever selection reticle -->
+            <circle
+              id="pareto-reticle"
+              cx="264.1"
+              cy="39.4"
+              r="9.5"
+              fill="var(--botanical-teal-wash)"
+              stroke="var(--botanical-teal)"
+              stroke-width="1.5"
+            />
+
+            <!-- Interactive Point 1: Naive 512-Token Chunk (245ms, 0.61) triangle -->
+            <g class="pareto-point-hit" data-point-retriever="naive">
+              <polygon points="88.3,151.3 93.3,160.3 83.3,160.3" fill="var(--claim-crimson)" />
+              <text x="97" y="159" fill="var(--claim-crimson)" font-family="var(--font-sans)" font-size="10" font-weight="700">
+                Naive 512-Token (245ms, 0.61)
+              </text>
+            </g>
+
+            <!-- Interactive Point 2: Dense Cosine Only (390ms, 0.78) circle -->
+            <g class="pareto-point-hit" data-point-retriever="dense">
+              <circle cx="152.8" cy="96.3" r="4.6" fill="var(--citation-ochre)" />
+              <text x="161" y="100" fill="var(--citation-ochre)" font-family="var(--font-sans)" font-size="10" font-weight="700">
+                Dense Cosine (390ms, 0.78)
+              </text>
+            </g>
+
+            <!-- Interactive Point 3: Hybrid BM25 + Cross-Encoder (640ms, 0.94) diamond -->
+            <g class="pareto-point-hit" data-point-retriever="hybrid">
+              <polygon points="264.1,33.6 269.9,39.4 264.1,45.2 258.3,39.4" fill="var(--botanical-teal)" />
+              <text x="251" y="42" text-anchor="end" fill="var(--botanical-teal)" font-family="var(--font-sans)" font-size="10" font-weight="700">
+                Hybrid BM25 + Cross-Encoder (640ms, 0.94)
+              </text>
+            </g>
+
+            <!-- Y-axis labels -->
+            <g fill="var(--ink-muted)" font-family="var(--font-mono)" font-size="9.5" text-anchor="end">
+              <text x="41" y="22">1.00</text>
+              <text x="41" y="57">0.90</text>
+              <text x="41" y="92">0.80</text>
+              <text x="41" y="128">0.70</text>
+              <text x="41" y="164">0.60</text>
+              <text x="41" y="198">0.50</text>
+            </g>
+
+            <!-- X-axis labels -->
+            <g fill="var(--ink-muted)" font-family="var(--font-mono)" font-size="9.5" text-anchor="middle">
+              <text x="112.8" y="210">300ms</text>
+              <text x="201.8" y="210">500ms</text>
+              <text x="290.8" y="210">700ms</text>
+              <text x="379.8" y="210">900ms</text>
+            </g>
+            <text x="224" y="225" text-anchor="middle" fill="var(--ink-secondary)" font-family="var(--font-mono)" font-size="9.5">
+              P95 Retrieval + Rerank Latency (ms) →
+            </text>
+          </svg>
+          <p id="pareto-text-summary" class="pareto-summary tabular">
+            Selected: Hybrid BM25 + Cross-Encoder achieves 0.94 NLI faithfulness at 640 ms P95 (+0.33 over Naive 512-Token Chunk).
+          </p>
+        </div>
+      </section>
+    </aside>
+
+    <!-- Right Column: Active Specimen Header + Grounded Synthesis + Retrieved Passages -->
+    <section class="right-column" aria-label="Generated response verification and retrieved evidence">
+      <div class="ledger-sheet specimen-query-bar">
+        <div class="query-meta-row">
+          <div class="query-kicker">
+            <span id="active-specimen-code" class="prompt-code">MED-014</span>
+            <span id="active-specimen-domain">Nephrology PK/PD · KDIGO / ASHP Vancomycin Corpus</span>
+          </div>
+          <span id="active-trace-meta" class="sheet-meta tabular">
+            @app.cell nli_judge · DeBERTa-v3-large entailment · 3 chunks · 138 ms
+          </span>
+        </div>
+        <p id="active-query-text" class="query-text"></p>
+        <details class="trace-details">
+          <summary class="trace-summary">
+            <span>Inspect reactive Python cell · @app.cell def evaluate_claims(retriever, threshold, prompt_id)</span>
+            <span>toggle source</span>
+          </summary>
+          <pre class="trace-code"><code>@app.cell
+def evaluate_claims(retriever_ui, threshold_ui, selected_prompt, duckdb_conn):
+    tau = threshold_ui.value  # mo.ui.slider(..., debounce=True)
+    chunks = retrieve_passages(duckdb_conn, selected_prompt.id, mode=retriever_ui.value, top_k=3)
+    claims = judge_deberta_nli(selected_prompt.id, chunks, tau=tau, seed=42)
+    return claims, chunks</code></pre>
+        </details>
+      </div>
+
+      <div class="audit-split">
+        <!-- Generated Response & Atomic Claim Verification -->
+        <section class="ledger-sheet" aria-labelledby="response-heading">
+          <div class="sheet-head">
+            <h2 id="response-heading" class="sheet-title">Generated Response &amp; Claim Audit</h2>
+            <button id="clear-citation-btn" type="button" class="clear-cite-btn" hidden>
+              Clear pinned [C1]
+            </button>
+          </div>
+          <div class="response-body">
+            <div id="claims-container" style="display: flex; flex-direction: column; gap: 9px;"></div>
+
+            <div class="audit-gate-footer">
+              <div class="audit-actions">
+                <button id="btn-approve-golden" type="button" class="action-btn">
+                  Approve specimen to golden set
+                </button>
+                <button id="btn-flag-regression" type="button" class="action-btn">
+                  Log hallucination regression
+                </button>
+              </div>
+              <span id="audit-log-status" class="audit-provenance tabular">
+                Uncommitted · seed=42 · awaiting reviewer sign-off
+              </span>
+            </div>
+          </div>
+        </section>
+
+        <!-- Retrieved Evidence Passages with BM25 / Reranker Bars -->
+        <section class="ledger-sheet" aria-labelledby="passages-heading">
+          <div class="sheet-head">
+            <h2 id="passages-heading" class="sheet-title">Retrieved Evidence Passages</h2>
+            <span id="passages-mode-meta" class="sheet-meta tabular">top_k=3 · BM25 + Cross-Encoder</span>
+          </div>
+          <div id="passages-container" class="passages-list"></div>
+        </section>
+      </div>
+    </section>
+  </main>
+
+  <script>
+    (function () {
+      const RETRIEVER_PROFILES = {
+        hybrid: {
+          label: 'Hybrid BM25 + Cross-Encoder',
+          baseFaithfulness: 0.94,
+          latencyMs: 640,
+          costPer1k: '$1.84',
+          paretoCx: 264.1,
+          paretoCy: 39.4,
+          reticleFill: 'var(--botanical-teal-wash)',
+          reticleStroke: 'var(--botanical-teal)',
+          modeTag: 'top_k=3 · BM25 + Cross-Encoder',
+          traceMs: 138,
+          summaryNote: 'Hybrid BM25 + Cross-Encoder reaches 0.94 NLI faithfulness at 640 ms P95 (+0.33 over Naive 512-Token Chunk).'
+        },
+        dense: {
+          label: 'Dense Cosine Only',
+          baseFaithfulness: 0.78,
+          latencyMs: 390,
+          costPer1k: '$1.12',
+          paretoCx: 152.8,
+          paretoCy: 96.3,
+          reticleFill: 'var(--citation-ochre-wash)',
+          reticleStroke: 'var(--citation-ochre)',
+          modeTag: 'top_k=3 · Cosine only',
+          traceMs: 84,
+          summaryNote: 'Dense Cosine Only cuts P95 to 390 ms (-250 ms) but misses exact clause boundaries, dropping faithfulness to 0.78.'
+        },
+        naive: {
+          label: 'Naive 512-Token Chunk',
+          baseFaithfulness: 0.61,
+          latencyMs: 245,
+          costPer1k: '$0.74',
+          paretoCx: 88.3,
+          paretoCy: 156.8,
+          reticleFill: 'var(--claim-crimson-wash)',
+          reticleStroke: 'var(--claim-crimson)',
+          modeTag: 'top_k=3 · 512-tok split',
+          traceMs: 52,
+          summaryNote: 'Naive 512-Token Chunk runs in 245 ms P95 but splits tables mid-row, causing ungrounded model extrapolations (0.61).'
+        }
+      };
+
+      const SPECIMENS = [
+        {
+          id: 'MED-014',
+          shortTitle: 'Clinical Renal Dosing',
+          domain: 'Nephrology PK/PD · KDIGO / ASHP Vancomycin Corpus',
+          query: 'Adjust IV vancomycin maintenance dosing for a 68-year-old inpatient (74 kg) with eGFR 28 mL/min/1.73m² targeting 24-hour AUC/MIC of 400–600 mg·h/L.',
+          runs: {
+            hybrid: {
+              score: 0.94,
+              claims: [
+                {
+                  step: 'Claim 1 · Loading PK',
+                  text: 'Administer an initial weight-based IV loading dose of 20–25 mg/kg (1,500–1,850 mg actual body weight) infused over 90–120 minutes regardless of impaired renal clearance',
+                  cite: 'C1',
+                  entailment: 0.94,
+                  extrinsic: false
+                },
+                {
+                  step: 'Claim 2 · Renal Interval',
+                  text: 'Extend the maintenance schedule for eGFR 20–29 mL/min/1.73m² to 15 mg/kg (~1,000 mg) every 24 hours rather than standard q12h intervals',
+                  cite: 'C2',
+                  entailment: 0.91,
+                  extrinsic: false
+                },
+                {
+                  step: 'Claim 3 · Bayesian TDM',
+                  text: 'Collect two post-distribution serum concentrations within the initial 24–48 hours for Bayesian AUC24 estimation instead of waiting for fourth-dose trough equilibrium',
+                  cite: 'C3',
+                  entailment: 0.86,
+                  extrinsic: false
+                }
+              ],
+              passages: [
+                {
+                  cid: 'C1',
+                  doc: 'ashp_idsa_vancomycin_2024.pdf · §3.1',
+                  span: 'tok 310–442',
+                  bm25: 0.89,
+                  rerank: 0.94,
+                  rankLabel: 'Rerank',
+                  before: 'In seriously ill adults with renal dysfunction, ',
+                  highlight: 'an IV loading dose of 20–25 mg/kg actual body weight (infusion >=90 min) should not be reduced for eGFR <30',
+                  after: ' so early volume-of-distribution targets are achieved.'
+                },
+                {
+                  cid: 'C2',
+                  doc: 'kdigo_renal_antimicrobial_tbl3.parquet · r14',
+                  span: 'tok 518–612',
+                  bm25: 0.92,
+                  rerank: 0.91,
+                  rankLabel: 'Rerank',
+                  before: 'Table 3 (eGFR 20–29 mL/min/1.73m²): ',
+                  highlight: 'empiric maintenance 15 mg/kg IV q24h (~1,000 mg for 70–75 kg adults)',
+                  after: ' targeting AUC24/MIC 400–600 mg·h/L.'
+                },
+                {
+                  cid: 'C3',
+                  doc: 'ashp_idsa_vancomycin_2024.pdf · §4.4',
+                  span: 'tok 884–996',
+                  bm25: 0.81,
+                  rerank: 0.86,
+                  rankLabel: 'Rerank',
+                  before: 'When clearance is unstable or eGFR <35, ',
+                  highlight: 'obtain two post-distribution levels within 24–48 h using Bayesian software',
+                  after: ' rather than pre-fourth-dose trough-only monitoring.'
+                }
+              ]
+            },
+            dense: {
+              score: 0.78,
+              claims: [
+                {
+                  step: 'Claim 1 · Loading PK',
+                  text: 'Administer an initial IV loading dose of 20–25 mg/kg actual body weight infused slowly over 90–120 minutes to reach rapid distribution',
+                  cite: 'C1',
+                  entailment: 0.90,
+                  extrinsic: false
+                },
+                {
+                  step: 'Claim 2 · Renal Interval',
+                  text: 'Reduce maintenance vancomycin in moderate renal impairment to 15 mg/kg IV every 24 hours with close renal trend review',
+                  cite: 'C2',
+                  entailment: 0.82,
+                  extrinsic: false
+                },
+                {
+                  step: 'Claim 3 · Monitoring Protocol',
+                  text: 'Maintain routine pre-fourth-dose trough targets of 15–20 mg/L without early two-point Bayesian sampling unless continuous dialysis begins',
+                  cite: null,
+                  entailment: 0.29,
+                  extrinsic: true
+                }
+              ],
+              passages: [
+                {
+                  cid: 'C1',
+                  doc: 'ashp_idsa_vancomycin_2024.pdf · §3.1',
+                  span: 'tok 310–442',
+                  bm25: 0.0,
+                  rerank: 0.86,
+                  rankLabel: 'Cosine',
+                  before: 'Adults with impaired clearance still require ',
+                  highlight: '20–25 mg/kg actual body weight IV loading over >=90 minutes',
+                  after: ' prior to maintenance interval adjustment.'
+                },
+                {
+                  cid: 'C2',
+                  doc: 'ward_pk_handbook_v1.pdf · §2.8',
+                  span: 'tok 204–339',
+                  bm25: 0.0,
+                  rerank: 0.79,
+                  rankLabel: 'Cosine',
+                  before: 'General inpatient renal guide: ',
+                  highlight: 'for CrCl 25–35 mL/min, 15 mg/kg q24h is commonly initiated',
+                  after: ' pending laboratory pharmacist review.'
+                },
+                {
+                  cid: 'C3',
+                  doc: 'legacy_2009_adult_monograph.pdf · §1.2',
+                  span: 'tok 112–250',
+                  bm25: 0.0,
+                  rerank: 0.74,
+                  rankLabel: 'Cosine',
+                  before: 'Semantic neighbor (normal renal function): ',
+                  highlight: 'draw steady-state trough prior to the 4th q12h dose in normal clearance',
+                  after: ' [misses eGFR 28 Bayesian exception].'
+                }
+              ]
+            },
+            naive: {
+              score: 0.61,
+              claims: [
+                {
+                  step: 'Claim 1 · Loading PK',
+                  text: 'Initiate therapy with a 20–25 mg/kg IV loading dose based on actual body weight infused over 90 minutes',
+                  cite: 'C1',
+                  entailment: 0.83,
+                  extrinsic: false
+                },
+                {
+                  step: 'Claim 2 · Renal Interval',
+                  text: 'Continue maintenance dosing at 15 mg/kg IV every 12 hours because interval extension applies only once eGFR falls below 15 mL/min',
+                  cite: null,
+                  entailment: 0.18,
+                  extrinsic: true
+                },
+                {
+                  step: 'Claim 3 · Monitoring Protocol',
+                  text: 'Defer serum vancomycin concentration draws for the initial 72 hours in non-ICU medical ward admissions',
+                  cite: null,
+                  entailment: 0.22,
+                  extrinsic: true
+                }
+              ],
+              passages: [
+                {
+                  cid: 'C1',
+                  doc: 'ashp_idsa_vancomycin_2024.pdf · chunk_07',
+                  span: 'tok 0–512',
+                  bm25: 0.0,
+                  rerank: 0.72,
+                  rankLabel: 'Cosine',
+                  before: 'Section 3.1 Loading: ',
+                  highlight: '20–25 mg/kg actual body weight IV loading dose',
+                  after: ' … [chunk cut mid-sentence at 512 tokens]'
+                },
+                {
+                  cid: 'C2',
+                  doc: 'kdigo_renal_antimicrobial_tbl3.txt · chunk_12',
+                  span: 'tok 512–1024',
+                  bm25: 0.0,
+                  rerank: 0.61,
+                  rankLabel: 'Cosine',
+                  before: '[Header row lost in chunk_11] … | >60: 15 mg/kg q12h | ',
+                  highlight: '… [512-token boundary split dropped eGFR 20–29 q24h row]',
+                  after: ' | <15: dose by level.'
+                },
+                {
+                  cid: 'C3',
+                  doc: 'outpatient_cellulitis_faq.txt · chunk_03',
+                  span: 'tok 0–512',
+                  bm25: 0.0,
+                  rerank: 0.56,
+                  rankLabel: 'Cosine',
+                  before: 'Uncomplicated short-course skin regimens (<48 h): ',
+                  highlight: 'routine TDM is rarely required for healthy young adults',
+                  after: ' [wrong patient population].'
+                }
+              ]
+            }
+          }
+        },
+        {
+          id: 'FIN-089',
+          shortTitle: 'SEC 10-K Revenue Recognition',
+          domain: 'ASC 606 Audit · Meridian Cloud Corp FY2025 Form 10-K',
+          query: 'How does Meridian Cloud Corp recognize multi-year committed platform subscriptions versus metered API overage fees under FY2025 Form 10-K Note 3?',
+          runs: {
+            hybrid: {
+              score: 0.93,
+              claims: [
+                {
+                  step: 'Claim 1 · Stand-Ready SaaS',
+                  text: 'Committed multi-year platform subscriptions represent a single stand-ready series under ASC 606-10-25-14(b) and recognize ratably on a straight-line basis over the 36-month term',
+                  cite: 'C1',
+                  entailment: 0.94,
+                  extrinsic: false
+                },
+                {
+                  step: 'Claim 2 · Variable API Overage',
+                  text: 'Metered API calls exceeding committed tiers meet the ASC 606-10-32-40 variable-consideration allocation exception and recognize in the billing month actual usage occurs',
+                  cite: 'C2',
+                  entailment: 0.91,
+                  extrinsic: false
+                },
+                {
+                  step: 'Claim 3 · Setup Deferral',
+                  text: 'Upfront tenant provisioning fees lacking standalone value outside the hosted service are recorded as contract liabilities and amortized over the initial contract period',
+                  cite: 'C3',
+                  entailment: 0.85,
+                  extrinsic: false
+                }
+              ],
+              passages: [
+                {
+                  cid: 'C1',
+                  doc: 'meridian_fy25_10k_note3.htm · p.74',
+                  span: 'tok 118–264',
+                  bm25: 0.91,
+                  rerank: 0.94,
+                  rankLabel: 'Rerank',
+                  before: 'Note 3 (Subscriptions): Enterprise cloud access forms ',
+                  highlight: 'a stand-ready series under ASC 606-10-25-14(b) recognized ratably straight-line over 12–36 months',
+                  after: ' beginning on environment provisioning.'
+                },
+                {
+                  cid: 'C2',
+                  doc: 'meridian_fy25_10k_note3.htm · p.75',
+                  span: 'tok 265–408',
+                  bm25: 0.88,
+                  rerank: 0.91,
+                  rankLabel: 'Rerank',
+                  before: 'Consumption Overage: Per ASC 606-10-32-40, ',
+                  highlight: 'metered API overage fees allocate to the distinct month of usage and recognize as incurred',
+                  after: ' without upfront variable estimation.'
+                },
+                {
+                  cid: 'C3',
+                  doc: 'meridian_fy25_10k_note3.htm · p.76',
+                  span: 'tok 440–572',
+                  bm25: 0.83,
+                  rerank: 0.85,
+                  rankLabel: 'Rerank',
+                  before: 'Implementation & SSO setup fees are not distinct; ',
+                  highlight: 'upfront fees are deferred within Contract Liabilities and amortized ratably',
+                  after: ' over the stated subscription term.'
+                }
+              ]
+            },
+            dense: {
+              score: 0.77,
+              claims: [
+                {
+                  step: 'Claim 1 · Stand-Ready SaaS',
+                  text: 'Multi-year platform subscriptions recognize ratably on a straight-line schedule across the contract duration',
+                  cite: 'C1',
+                  entailment: 0.89,
+                  extrinsic: false
+                },
+                {
+                  step: 'Claim 2 · Variable API Overage',
+                  text: 'Usage-based API consumption above baseline tiers is invoiced monthly based on metered telemetry',
+                  cite: 'C2',
+                  entailment: 0.81,
+                  extrinsic: false
+                },
+                {
+                  step: 'Claim 3 · Upfront Estimation',
+                  text: 'Meridian estimates 3-year expected API overages at contract inception using probability-weighted buckets and books 40% upon signature',
+                  cite: null,
+                  entailment: 0.27,
+                  extrinsic: true
+                }
+              ],
+              passages: [
+                {
+                  cid: 'C1',
+                  doc: 'meridian_fy25_10k_note3.htm · p.74',
+                  span: 'tok 118–264',
+                  bm25: 0.0,
+                  rerank: 0.84,
+                  rankLabel: 'Cosine',
+                  before: 'Subscription SaaS access ',
+                  highlight: 'recognizes ratably on a straight-line basis over 12 to 36 months',
+                  after: ' as customers receive continuous hosting.'
+                },
+                {
+                  cid: 'C2',
+                  doc: 'meridian_investor_deck_q4.pdf · s.19',
+                  span: 'tok 80–194',
+                  bm25: 0.0,
+                  rerank: 0.78,
+                  rankLabel: 'Cosine',
+                  before: 'Commercial billing model: ',
+                  highlight: 'API overages bill monthly in arrears from gateway telemetry',
+                  after: ' [omits ASC 606-10-32-40 accounting rule].'
+                },
+                {
+                  cid: 'C3',
+                  doc: 'asc606_generic_primer.pdf · §5.2',
+                  span: 'tok 610–742',
+                  bm25: 0.0,
+                  rerank: 0.75,
+                  rankLabel: 'Cosine',
+                  before: 'Generic textbook note: variable consideration ',
+                  highlight: 'may use expected-value probability weighting at contract inception',
+                  after: ' [contradicts Meridian Note 3 allocation exception].'
+                }
+              ]
+            },
+            naive: {
+              score: 0.59,
+              claims: [
+                {
+                  step: 'Claim 1 · Stand-Ready SaaS',
+                  text: 'Committed cloud subscriptions span 12 to 36 months and recognize ratably over the term',
+                  cite: 'C1',
+                  entailment: 0.83,
+                  extrinsic: false
+                },
+                {
+                  step: 'Claim 2 · Credit Refund Liability',
+                  text: 'Unused quarterly API tier allowances roll forward indefinitely and carry a 15% cash refund obligation at fiscal year-end',
+                  cite: null,
+                  entailment: 0.21,
+                  extrinsic: true
+                },
+                {
+                  step: 'Claim 3 · Setup Recognition',
+                  text: 'Provisioning and onboarding fees recognize 100% upon SOW execution as a standalone consulting deliverable',
+                  cite: null,
+                  entailment: 0.19,
+                  extrinsic: true
+                }
+              ],
+              passages: [
+                {
+                  cid: 'C1',
+                  doc: 'meridian_fy25_10k_raw.txt · chunk_44',
+                  span: 'tok 0–512',
+                  bm25: 0.0,
+                  rerank: 0.70,
+                  rankLabel: 'Cosine',
+                  before: '…platform subscriptions ',
+                  highlight: 'recognize straight-line over 12–36 months',
+                  after: ' … [512-tok cut before overage & setup paragraphs]'
+                },
+                {
+                  cid: 'C2',
+                  doc: 'meridian_fy25_10k_raw.txt · chunk_91',
+                  span: 'tok 512–1024',
+                  bm25: 0.0,
+                  rerank: 0.59,
+                  rankLabel: 'Cosine',
+                  before: 'Note 11 SLA Service Credits: ',
+                  highlight: 'uptime breaches below 99.5% grant a 10–15% monthly bill credit',
+                  after: ' [unrelated SLA footnote, not API overage revenue].'
+                },
+                {
+                  cid: 'C3',
+                  doc: 'meridian_partner_reseller.txt · chunk_08',
+                  span: 'tok 0–512',
+                  bm25: 0.0,
+                  rerank: 0.54,
+                  rankLabel: 'Cosine',
+                  before: 'Third-party systems integrators ',
+                  highlight: 'contract directly with customers for custom migration SOWs',
+                  after: ' [not Meridian first-party setup fees].'
+                }
+              ]
+            }
+          }
+        },
+        {
+          id: 'SYS-203',
+          shortTitle: 'Rust Borrow Lifetime Rule',
+          domain: 'Systems / Rustc · RFC 2094 Non-Lexical Lifetimes',
+          query: 'Why does returning `&[u8]` from `fn active_frame(&mut self) -> &[u8]` keep `self` mutably borrowed for the slice lifetime even if `self.idx` is copied?',
+          runs: {
+            hybrid: {
+              score: 0.95,
+              claims: [
+                {
+                  step: 'Claim 1 · Signature Elision',
+                  text: 'Lifetime elision binds the output `&\'a [u8]` to the sole receiver lifetime `&\'a mut self`, requiring rustc to keep the exclusive borrow active while the slice remains live',
+                  cite: 'C1',
+                  entailment: 0.96,
+                  extrinsic: false
+                },
+                {
+                  step: 'Claim 2 · Interprocedural Boundary',
+                  text: 'Non-Lexical Lifetimes (RFC 2094) shorten borrows inside a function body, whereas `fn` signatures act as opaque contracts that hide field-level disjointness from callers',
+                  cite: 'C2',
+                  entailment: 0.93,
+                  extrinsic: false
+                },
+                {
+                  step: 'Claim 3 · Disjoint Refactor',
+                  text: 'Changing the read accessor to `&self` or factoring buffer storage and cursor state into separate sub-structs enables concurrent reads alongside sibling field mutation',
+                  cite: 'C3',
+                  entailment: 0.87,
+                  extrinsic: false
+                }
+              ],
+              passages: [
+                {
+                  cid: 'C1',
+                  doc: 'rust_reference_lifetimes.md · §6.4',
+                  span: 'tok 190–312',
+                  bm25: 0.93,
+                  rerank: 0.96,
+                  rankLabel: 'Rerank',
+                  before: 'Elision Rule 3: In `fn active_frame(&mut self) -> &[u8]`, ',
+                  highlight: 'the lifetime of `&mut self` is assigned to all output references, holding the mutable loan until the returned slice drops',
+                  after: '.'
+                },
+                {
+                  cid: 'C2',
+                  doc: 'rfc_2094_nll.md · §interprocedural',
+                  span: 'tok 640–788',
+                  bm25: 0.90,
+                  rerank: 0.93,
+                  rankLabel: 'Rerank',
+                  before: 'NLL operates intraprocedurally on MIR: ',
+                  highlight: 'borrowck checks callers strictly against declared `fn` signature lifetimes, never inspecting body field reads',
+                  after: ' across call boundaries.'
+                },
+                {
+                  cid: 'C3',
+                  doc: 'nomicon_split_borrows.md · §3.2',
+                  span: 'tok 402–530',
+                  bm25: 0.84,
+                  rerank: 0.87,
+                  rankLabel: 'Rerank',
+                  before: 'When a method only reads `buf`, ',
+                  highlight: 'accept `&self` or split struct fields into distinct owned sub-structs',
+                  after: ' so rustc proves disjoint borrows.'
+                }
+              ]
+            },
+            dense: {
+              score: 0.80,
+              claims: [
+                {
+                  step: 'Claim 1 · Signature Elision',
+                  text: 'Rust lifetime elision connects the returned `&[u8]` slice directly to the `&mut self` receiver lifetime',
+                  cite: 'C1',
+                  entailment: 0.91,
+                  extrinsic: false
+                },
+                {
+                  step: 'Claim 2 · Interprocedural Boundary',
+                  text: 'The borrow checker evaluates callers against the method signature rather than inspecting internal `self.idx` copies',
+                  cite: 'C2',
+                  entailment: 0.83,
+                  extrinsic: false
+                },
+                {
+                  step: 'Claim 3 · Compiler Attribute',
+                  text: 'Annotating the method with `#[inline(always)]` allows stable Rust 1.82 Polonius analysis to downgrade `&mut self` to a shared loan at call sites',
+                  cite: null,
+                  entailment: 0.33,
+                  extrinsic: true
+                }
+              ],
+              passages: [
+                {
+                  cid: 'C1',
+                  doc: 'rust_reference_lifetimes.md · §6.4',
+                  span: 'tok 190–312',
+                  bm25: 0.0,
+                  rerank: 0.88,
+                  rankLabel: 'Cosine',
+                  before: 'Method elision: ',
+                  highlight: '`&mut self` imparts its lifetime `\'a` to `&\'a [u8]`',
+                  after: ', extending the exclusive borrow.'
+                },
+                {
+                  cid: 'C2',
+                  doc: 'rustc_dev_guide_mir.md · §4.1',
+                  span: 'tok 510–635',
+                  bm25: 0.0,
+                  rerank: 0.80,
+                  rankLabel: 'Cosine',
+                  before: 'MIR borrowck ',
+                  highlight: 'treats function signatures as modular verification boundaries',
+                  after: ' for soundness.'
+                },
+                {
+                  cid: 'C3',
+                  doc: 'polonius_wg_blog_draft.md · §future',
+                  span: 'tok 210–340',
+                  bm25: 0.0,
+                  rerank: 0.76,
+                  rankLabel: 'Cosine',
+                  before: 'Research note: ',
+                  highlight: 'view-types proposals explore declaring per-field borrows in signatures',
+                  after: ' [nothing about #[inline(always)] downgrading borrows].'
+                }
+              ]
+            },
+            naive: {
+              score: 0.63,
+              claims: [
+                {
+                  step: 'Claim 1 · Signature Elision',
+                  text: 'Elided method signatures tie the output slice lifetime to the `&mut self` parameter',
+                  cite: 'C1',
+                  entailment: 0.85,
+                  extrinsic: false
+                },
+                {
+                  step: 'Claim 2 · Ownership Move',
+                  text: 'Reading `self.idx` inside an `&mut self` method moves the backing `Vec<u8>` buffer into a temporary stack slot',
+                  cite: null,
+                  entailment: 0.22,
+                  extrinsic: true
+                },
+                {
+                  step: 'Claim 3 · Zero-Alloc Cow',
+                  text: 'Returning `Cow<\'static, [u8]>` severs the `&mut self` lifetime tie without cloning bytes onto the heap',
+                  cite: null,
+                  entailment: 0.17,
+                  extrinsic: true
+                }
+              ],
+              passages: [
+                {
+                  cid: 'C1',
+                  doc: 'rust_book_ch10.txt · chunk_19',
+                  span: 'tok 0–512',
+                  bm25: 0.0,
+                  rerank: 0.73,
+                  rankLabel: 'Cosine',
+                  before: 'Third lifetime elision rule: ',
+                  highlight: 'if one parameter is `&self` or `&mut self`, its lifetime applies to outputs',
+                  after: ' … [512-tok boundary cut]'
+                },
+                {
+                  cid: 'C2',
+                  doc: 'rust_book_ch04.txt · chunk_06',
+                  span: 'tok 512–1024',
+                  bm25: 0.0,
+                  rerank: 0.60,
+                  rankLabel: 'Cosine',
+                  before: 'Move semantics: ',
+                  highlight: 'assigning a `Vec<u8>` variable transfers heap pointer ownership',
+                  after: ' [generic Ch.4 snippet, unrelated to `&mut self` indexing].'
+                },
+                {
+                  cid: 'C3',
+                  doc: 'std_borrow_cow.txt · chunk_02',
+                  span: 'tok 0–512',
+                  bm25: 0.0,
+                  rerank: 0.55,
+                  rankLabel: 'Cosine',
+                  before: '`enum Cow<\'a, B>` wraps borrowed or owned data; ',
+                  highlight: '`Cow::Owned` allocates an owned container when static lifetime is required',
+                  after: '.'
+                }
+              ]
+            }
+          }
+        },
+        {
+          id: 'REG-112',
+          shortTitle: 'EU AI Act Art. 14',
+          domain: 'Regulatory Compliance · Regulation (EU) 2024/1689',
+          query: 'What human-oversight capabilities must a high-risk clinical triage system provider build under EU AI Act Article 14(4) prior to conformity assessment?',
+          runs: {
+            hybrid: {
+              score: 0.93,
+              claims: [
+                {
+                  step: 'Claim 1 · Capability & Anomaly UI',
+                  text: 'Providers must build technical controls enabling assigned clinicians to understand system capacities, limits, and live anomaly or drift indicators during use',
+                  cite: 'C1',
+                  entailment: 0.95,
+                  extrinsic: false
+                },
+                {
+                  step: 'Claim 2 · Automation Bias Safeguard',
+                  text: 'Article 14(4)(b) explicitly requires interface measures countering automation bias so overseers remain aware of uncritical reliance on triage outputs',
+                  cite: 'C2',
+                  entailment: 0.92,
+                  extrinsic: false
+                },
+                {
+                  step: 'Claim 3 · Override & Safe Halt',
+                  text: 'Assigned staff must have operational authority and tooling to disregard, override, or reverse triage scores and interrupt execution safely via a stop button',
+                  cite: 'C3',
+                  entailment: 0.86,
+                  extrinsic: false
+                }
+              ],
+              passages: [
+                {
+                  cid: 'C1',
+                  doc: 'eu_ai_act_2024_1689.xml · Art.14(4)(a,c)',
+                  span: 'tok 210–355',
+                  bm25: 0.91,
+                  rerank: 0.95,
+                  rankLabel: 'Rerank',
+                  before: 'Article 14(4)(a): High-risk AI systems shall enable natural persons to ',
+                  highlight: 'properly understand the relevant capacities and limitations and duly monitor operation, including anomalies',
+                  after: ' and unexpected performance.'
+                },
+                {
+                  cid: 'C2',
+                  doc: 'eu_ai_act_2024_1689.xml · Art.14(4)(b)',
+                  span: 'tok 356–448',
+                  bm25: 0.90,
+                  rerank: 0.92,
+                  rankLabel: 'Rerank',
+                  before: 'Article 14(4)(b): Measures shall ensure overseers ',
+                  highlight: 'remain aware of the possible tendency of automatically relying or over-relying on output (automation bias)',
+                  after: ', especially for recommendation systems.'
+                },
+                {
+                  cid: 'C3',
+                  doc: 'eu_ai_act_2024_1689.xml · Art.14(4)(d,e)',
+                  span: 'tok 449–568',
+                  bm25: 0.85,
+                  rerank: 0.86,
+                  rankLabel: 'Rerank',
+                  before: 'Article 14(4)(d)–(e): Enable individuals to ',
+                  highlight: 'decide not to use the system, disregard, override or reverse output, and intervene or halt via a stop button',
+                  after: ' into a safe state.'
+                }
+              ]
+            },
+            dense: {
+              score: 0.77,
+              claims: [
+                {
+                  step: 'Claim 1 · Capability & Anomaly UI',
+                  text: 'High-risk triage providers must expose clear operational indicators of model limits and anomalous behavior to overseeing clinicians',
+                  cite: 'C1',
+                  entailment: 0.89,
+                  extrinsic: false
+                },
+                {
+                  step: 'Claim 2 · Automation Bias Safeguard',
+                  text: 'System interfaces must mitigate clinician over-reliance on automated prioritization scores (`automation bias`)',
+                  cite: 'C2',
+                  entailment: 0.80,
+                  extrinsic: false
+                },
+                {
+                  step: 'Claim 3 · Dual Biometric Sign-off',
+                  text: 'Article 14(5) mandates synchronous two-physician biometric co-verification on every emergency triage recommendation before nurse handoff',
+                  cite: null,
+                  entailment: 0.28,
+                  extrinsic: true
+                }
+              ],
+              passages: [
+                {
+                  cid: 'C1',
+                  doc: 'eu_ai_act_2024_1689.xml · Art.14(4)(a)',
+                  span: 'tok 210–355',
+                  bm25: 0.0,
+                  rerank: 0.85,
+                  rankLabel: 'Cosine',
+                  before: 'Oversight design must allow ',
+                  highlight: 'monitoring operation for signs of anomalies, dysfunctions and unexpected performance',
+                  after: '.'
+                },
+                {
+                  cid: 'C2',
+                  doc: 'eu_ai_act_2024_1689.xml · Art.14(4)(b)',
+                  span: 'tok 356–448',
+                  bm25: 0.0,
+                  rerank: 0.79,
+                  rankLabel: 'Cosine',
+                  before: 'Address ',
+                  highlight: 'automatic over-reliance on system outputs (automation bias)',
+                  after: ' in human-machine interfaces.'
+                },
+                {
+                  cid: 'C3',
+                  doc: 'eu_ai_act_2024_1689.xml · Art.14(5)',
+                  span: 'tok 569–692',
+                  bm25: 0.0,
+                  rerank: 0.77,
+                  rankLabel: 'Cosine',
+                  before: 'Annex III point 1(a) remote biometric identification: ',
+                  highlight: 'no action shall be taken unless verified separately by at least two natural persons',
+                  after: ' [applies to biometric ID, not clinical triage].'
+                }
+              ]
+            },
+            naive: {
+              score: 0.60,
+              claims: [
+                {
+                  step: 'Claim 1 · General Oversight',
+                  text: 'High-risk clinical AI tools must be designed so natural persons can oversee them during hospital deployment',
+                  cite: 'C1',
+                  entailment: 0.82,
+                  extrinsic: false
+                },
+                {
+                  step: 'Claim 2 · Contractual Waiver',
+                  text: 'Providers satisfy Article 14(4) solely by supplying a PDF hospital procurement disclaimer without building in-app override controls',
+                  cite: null,
+                  entailment: 0.20,
+                  extrinsic: true
+                },
+                {
+                  step: 'Claim 3 · Centralized Kill Switch',
+                  text: 'National market-surveillance authorities operate the real-time clinical stop switch from centralized EU cloud infrastructure',
+                  cite: null,
+                  entailment: 0.19,
+                  extrinsic: true
+                }
+              ],
+              passages: [
+                {
+                  cid: 'C1',
+                  doc: 'eu_ai_act_raw.txt · chunk_88',
+                  span: 'tok 0–512',
+                  bm25: 0.0,
+                  rerank: 0.71,
+                  rankLabel: 'Cosine',
+                  before: 'Article 14(1): High-risk AI systems shall be ',
+                  highlight: 'effectively overseen by natural persons during the period in which they are in use',
+                  after: ' … [512-tok split before Art. 14(4) sub-clauses]'
+                },
+                {
+                  cid: 'C2',
+                  doc: 'eu_ai_act_raw.txt · chunk_82',
+                  span: 'tok 512–1024',
+                  bm25: 0.0,
+                  rerank: 0.58,
+                  rankLabel: 'Cosine',
+                  before: 'Article 13 Instructions for use: ',
+                  highlight: 'providers shall supply concise documentation to deployers',
+                  after: ' [Article 13 manuals, missing Art. 14(4) technical UI mandate].'
+                },
+                {
+                  cid: 'C3',
+                  doc: 'eu_ai_act_raw.txt · chunk_214',
+                  span: 'tok 0–512',
+                  bm25: 0.0,
+                  rerank: 0.53,
+                  rankLabel: 'Cosine',
+                  before: 'Article 79 Market surveillance: ',
+                  highlight: 'national authorities may require corrective withdrawal of non-compliant systems',
+                  after: ' [post-market recall, not live clinical stop button].'
+                }
+              ]
+            }
+          }
+        }
+      ];
+
+      const state = {
+        specimenIndex: 0,
+        retriever: 'hybrid',
+        threshold: 0.80,
+        pinnedCite: null,
+        auditDecisions: {}
+      };
+
+      const promptListEl = document.getElementById('prompt-list');
+      const retrieverBtns = Array.from(document.querySelectorAll('.retriever-btn'));
+      const sliderEl = document.getElementById('confidence-threshold');
+      const thresholdOutEl = document.getElementById('threshold-readout');
+      const dagSyncEl = document.getElementById('dag-sync-state');
+      const liveStatusEl = document.getElementById('live-status');
+
+      const kpiFaithEl = document.getElementById('kpi-faithfulness');
+      const kpiClaimsEl = document.getElementById('kpi-claims');
+      const kpiLatEl = document.getElementById('kpi-latency');
+      const kpiCostEl = document.getElementById('kpi-cost');
+
+      const tauLineEl = document.getElementById('tau-line');
+      const tauLabelEl = document.getElementById('tau-line-label');
+      const tauZoneEl = document.getElementById('tau-zone-rect');
+      const paretoReticleEl = document.getElementById('pareto-reticle');
+      const paretoSummaryEl = document.getElementById('pareto-text-summary');
+
+      const activeCodeEl = document.getElementById('active-specimen-code');
+      const activeDomainEl = document.getElementById('active-specimen-domain');
+      const activeTraceEl = document.getElementById('active-trace-meta');
+      const activeQueryEl = document.getElementById('active-query-text');
+      const claimsContainerEl = document.getElementById('claims-container');
+      const passagesContainerEl = document.getElementById('passages-container');
+      const passagesModeEl = document.getElementById('passages-mode-meta');
+      const clearCiteBtnEl = document.getElementById('clear-citation-btn');
+
+      const approveBtnEl = document.getElementById('btn-approve-golden');
+      const flagBtnEl = document.getElementById('btn-flag-regression');
+      const auditStatusEl = document.getElementById('audit-log-status');
+
+      function yForScore(score) {
+        // Plot y spans 18 (1.00) to 196 (0.50) => 178px per 0.50
+        const clamped = Math.max(0.50, Math.min(1.00, score));
+        return 18 + (1.00 - clamped) * 356;
+      }
+
+      function setToneClass(el, tone) {
+        el.classList.remove('tone-good', 'tone-warn', 'tone-bad');
+        if (tone) el.classList.add(tone);
+      }
+
+      function renderPromptQueue() {
+        promptListEl.textContent = '';
+        SPECIMENS.forEach((spec, idx) => {
+          const run = spec.runs[state.retriever];
+          const btn = document.createElement('button');
+          btn.type = 'button';
+          btn.className = 'prompt-item';
+          btn.setAttribute('aria-pressed', idx === state.specimenIndex ? 'true' : 'false');
+
+          const top = document.createElement('div');
+          top.className = 'prompt-row-top';
+
+          const left = document.createElement('span');
+          left.className = 'prompt-id-group';
+
+          const code = document.createElement('span');
+          code.className = 'prompt-code';
+          code.textContent = spec.id;
+
+          const title = document.createElement('span');
+          title.className = 'prompt-domain-title';
+          title.textContent = spec.shortTitle;
+
+          left.appendChild(code);
+          left.appendChild(title);
+
+          const scoreTag = document.createElement('span');
+          scoreTag.className = 'prompt-score-tag tabular';
+          const anyExtrinsic = run.claims.some((c) => c.extrinsic);
+          const allPassTau = run.claims.every((c) => !c.extrinsic && c.entailment >= state.threshold);
+          if (anyExtrinsic) {
+            scoreTag.classList.add('is-bad');
+            scoreTag.textContent = '▲ ' + run.score.toFixed(2);
+          } else if (!allPassTau) {
+            scoreTag.classList.add('is-warn');
+            scoreTag.textContent = '◆ ' + run.score.toFixed(2);
+          } else {
+            scoreTag.classList.add('is-good');
+            scoreTag.textContent = '✓ ' + run.score.toFixed(2);
+          }
+
+          top.appendChild(left);
+          top.appendChild(scoreTag);
+
+          const excerpt = document.createElement('p');
+          excerpt.className = 'prompt-excerpt';
+          excerpt.textContent = spec.query;
+
+          btn.appendChild(top);
+          btn.appendChild(excerpt);
+
+          btn.addEventListener('click', () => {
+            state.specimenIndex = idx;
+            state.pinnedCite = null;
+            renderAll('Loaded specimen ' + spec.id + ' (' + spec.shortTitle + ')');
+          });
+
+          promptListEl.appendChild(btn);
+        });
+      }
+
+      function renderTopAndPareto(activeSpec, activeRun) {
+        const profile = RETRIEVER_PROFILES[state.retriever];
+        retrieverBtns.forEach((b) => {
+          b.setAttribute('aria-pressed', b.dataset.retriever === state.retriever ? 'true' : 'false');
+        });
+
+        thresholdOutEl.textContent = 'τ = ' + state.threshold.toFixed(2);
+
+        const groundedCount = activeRun.claims.filter((c) => !c.extrinsic && c.entailment >= state.threshold).length;
+        const extrinsicCount = activeRun.claims.filter((c) => c.extrinsic).length;
+        const totalClaims = activeRun.claims.length;
+
+        kpiFaithEl.textContent = activeRun.score.toFixed(2);
+        if (activeRun.score >= state.threshold && extrinsicCount === 0) {
+          setToneClass(kpiFaithEl, 'tone-good');
+        } else if (extrinsicCount > 0) {
+          setToneClass(kpiFaithEl, 'tone-bad');
+        } else {
+          setToneClass(kpiFaithEl, 'tone-warn');
+        }
+
+        if (extrinsicCount > 0) {
+          kpiClaimsEl.textContent = groundedCount + '/' + totalClaims + ' · ' + extrinsicCount + ' extrap';
+          setToneClass(kpiClaimsEl, 'tone-bad');
+        } else if (groundedCount < totalClaims) {
+          kpiClaimsEl.textContent = groundedCount + '/' + totalClaims + ' (< τ)';
+          setToneClass(kpiClaimsEl, 'tone-warn');
+        } else {
+          kpiClaimsEl.textContent = groundedCount + '/' + totalClaims + ' grounded';
+          setToneClass(kpiClaimsEl, 'tone-good');
+        }
+
+        kpiLatEl.textContent = profile.latencyMs + ' ms';
+        kpiCostEl.textContent = profile.costPer1k;
+
+        // Update SVG Pareto threshold line + reticle
+        const tauY = yForScore(state.threshold);
+        tauLineEl.setAttribute('y1', tauY.toFixed(1));
+        tauLineEl.setAttribute('y2', tauY.toFixed(1));
+        tauLabelEl.setAttribute('y', Math.max(28, tauY - 4).toFixed(1));
+        tauLabelEl.textContent = 'τ floor = ' + state.threshold.toFixed(2);
+
+        tauZoneEl.setAttribute('y', tauY.toFixed(1));
+        tauZoneEl.setAttribute('height', Math.max(0, 196 - tauY).toFixed(1));
+
+        paretoReticleEl.setAttribute('cx', String(profile.paretoCx));
+        paretoReticleEl.setAttribute('cy', String(profile.paretoCy));
+        paretoReticleEl.setAttribute('fill', profile.reticleFill);
+        paretoReticleEl.setAttribute('stroke', profile.reticleStroke);
+
+        paretoSummaryEl.textContent = profile.summaryNote + ' Active floor τ=' + state.threshold.toFixed(2) + '.';
+      }
+
+      function renderRightColumn(activeSpec, activeRun) {
+        const profile = RETRIEVER_PROFILES[state.retriever];
+        activeCodeEl.textContent = activeSpec.id;
+        activeDomainEl.textContent = activeSpec.domain;
+        activeTraceEl.textContent =
+          '@app.cell nli_judge · DeBERTa-v3-large entailment · 3 chunks · ' + profile.traceMs + ' ms';
+        activeQueryEl.textContent = activeSpec.query;
+        passagesModeEl.textContent = profile.modeTag;
+
+        if (state.pinnedCite) {
+          clearCiteBtnEl.hidden = false;
+          clearCiteBtnEl.textContent = 'Clear pinned [' + state.pinnedCite + ']';
+        } else {
+          clearCiteBtnEl.hidden = true;
+        }
+
+        // Claims
+        claimsContainerEl.textContent = '';
+        activeRun.claims.forEach((claim) => {
+          const card = document.createElement('article');
+          card.className = 'claim-block';
+
+          let statusKind = 'supported';
+          if (claim.extrinsic) statusKind = 'extrapolated';
+          else if (claim.entailment < state.threshold) statusKind = 'below';
+
+          if (statusKind === 'supported') card.classList.add('is-supported');
+          else if (statusKind === 'below') card.classList.add('is-below-tau');
+          else card.classList.add('is-extrapolated');
+
+          if (state.pinnedCite && claim.cite === state.pinnedCite) {
+            card.classList.add('is-pinned');
+          }
+
+          const p = document.createElement('p');
+          p.className = 'claim-prose';
+
+          if (claim.cite) {
+            p.appendChild(document.createTextNode(claim.text + ' '));
+            const citeBtn = document.createElement('button');
+            citeBtn.type = 'button';
+            citeBtn.className = 'cite-btn';
+            citeBtn.textContent = '[' + claim.cite + ']';
+            citeBtn.setAttribute('aria-pressed', state.pinnedCite === claim.cite ? 'true' : 'false');
+            citeBtn.setAttribute('aria-label', 'Inspect citation ' + claim.cite + ' in retrieved passages');
+            citeBtn.addEventListener('click', () => {
+              state.pinnedCite = state.pinnedCite === claim.cite ? null : claim.cite;
+              renderRightColumn(activeSpec, activeRun);
+              const target = document.getElementById('passage-' + claim.cite);
+              if (state.pinnedCite && target) {
+                target.scrollIntoView({ block: 'nearest' });
+              }
+            });
+            p.appendChild(citeBtn);
+            p.appendChild(document.createTextNode('.'));
+          } else {
+            p.appendChild(document.createTextNode(claim.text + '.'));
+          }
+
+          const footer = document.createElement('div');
+          footer.className = 'claim-footer';
+
+          const badge = document.createElement('span');
+          badge.className = 'verdict-badge tabular';
+          if (statusKind === 'supported') {
+            badge.classList.add('verdict-supported');
+            badge.textContent = '✓ Supported by ' + claim.cite + ' (' + claim.entailment.toFixed(2) + ')';
+          } else if (statusKind === 'below') {
+            badge.classList.add('verdict-below');
+            badge.textContent =
+              '◆ Below threshold τ=' +
+              state.threshold.toFixed(2) +
+              ' · ' +
+              claim.cite +
+              ' (' +
+              claim.entailment.toFixed(2) +
+              ')';
+          } else {
+            badge.classList.add('verdict-extrapolated');
+            badge.textContent =
+              '▲ Extrapolated claim — not in retrieved chunks (' + claim.entailment.toFixed(2) + ')';
+          }
+
+          const stepTag = document.createElement('span');
+          stepTag.className = 'claim-step-tag';
+          stepTag.textContent = claim.step;
+
+          footer.appendChild(badge);
+          footer.appendChild(stepTag);
+
+          card.appendChild(p);
+          card.appendChild(footer);
+          claimsContainerEl.appendChild(card);
+        });
+
+        // Passages
+        passagesContainerEl.textContent = '';
+        activeRun.passages.forEach((psg) => {
+          const entry = document.createElement('article');
+          entry.className = 'passage-entry';
+          entry.id = 'passage-' + psg.cid;
+          if (state.pinnedCite === psg.cid) {
+            entry.classList.add('is-highlighted');
+          }
+
+          const head = document.createElement('div');
+          head.className = 'passage-head';
+
+          const srcGroup = document.createElement('div');
+          srcGroup.className = 'passage-source-group';
+
+          const cid = document.createElement('span');
+          cid.className = 'passage-cid';
+          cid.textContent = '[' + psg.cid + ']';
+
+          const doc = document.createElement('span');
+          doc.className = 'passage-doc';
+          doc.textContent = psg.doc;
+
+          srcGroup.appendChild(cid);
+          srcGroup.appendChild(doc);
+
+          const spanTag = document.createElement('span');
+          spanTag.className = 'passage-span-tag tabular';
+          spanTag.textContent = psg.span;
+
+          head.appendChild(srcGroup);
+          head.appendChild(spanTag);
+
+          // Dual bars
+          const bars = document.createElement('div');
+          bars.className = 'score-bars';
+
+          // Bar 1: BM25
+          const b1 = document.createElement('div');
+          b1.className = 'bar-row';
+          const b1Top = document.createElement('div');
+          b1Top.className = 'bar-label-line tabular';
+          const b1Name = document.createElement('span');
+          b1Name.textContent = 'BM25 Lexical';
+          const b1Val = document.createElement('span');
+          b1Val.textContent = psg.bm25 > 0 ? psg.bm25.toFixed(2) : 'off (0.00)';
+          b1Top.appendChild(b1Name);
+          b1Top.appendChild(b1Val);
+          const b1Track = document.createElement('div');
+          b1Track.className = 'bar-track';
+          const b1Fill = document.createElement('div');
+          b1Fill.className = 'bar-fill' + (psg.bm25 > 0 ? '' : ' fill-muted');
+          b1Fill.style.width = Math.round(psg.bm25 * 100) + '%';
+          b1Track.appendChild(b1Fill);
+          b1.appendChild(b1Top);
+          b1.appendChild(b1Track);
+
+          // Bar 2: Cross-Encoder Rerank or Cosine
+          const b2 = document.createElement('div');
+          b2.className = 'bar-row';
+          const b2Top = document.createElement('div');
+          b2Top.className = 'bar-label-line tabular';
+          const b2Name = document.createElement('span');
+          b2Name.textContent = psg.rankLabel === 'Rerank' ? 'Cross-Encoder' : 'Dense Cosine';
+          const b2Val = document.createElement('span');
+          b2Val.textContent = psg.rerank.toFixed(2);
+          b2Top.appendChild(b2Name);
+          b2Top.appendChild(b2Val);
+          const b2Track = document.createElement('div');
+          b2Track.className = 'bar-track';
+          const b2Fill = document.createElement('div');
+          let fillClass = 'bar-fill';
+          if (state.retriever === 'dense') fillClass += ' fill-ochre';
+          else if (state.retriever === 'naive') fillClass += ' fill-crimson';
+          b2Fill.className = fillClass;
+          b2Fill.style.width = Math.round(psg.rerank * 100) + '%';
+          b2Track.appendChild(b2Fill);
+          b2.appendChild(b2Top);
+          b2.appendChild(b2Track);
+
+          bars.appendChild(b1);
+          bars.appendChild(b2);
+
+          // Verbatim excerpt
+          const quote = document.createElement('p');
+          quote.className = 'passage-quote';
+          quote.appendChild(document.createTextNode(psg.before));
+          const mark = document.createElement('mark');
+          mark.className = 'evidence-mark';
+          mark.textContent = psg.highlight;
+          quote.appendChild(mark);
+          quote.appendChild(document.createTextNode(psg.after));
+
+          entry.appendChild(head);
+          entry.appendChild(bars);
+          entry.appendChild(quote);
+          passagesContainerEl.appendChild(entry);
+        });
+
+        // Update idempotent audit decision state
+        const decisionKey = activeSpec.id + ':' + state.retriever;
+        const decision = state.auditDecisions[decisionKey];
+        approveBtnEl.classList.toggle('is-recorded', decision === 'approved');
+        flagBtnEl.classList.toggle('is-flagged', decision === 'flagged');
+        if (decision === 'approved') {
+          auditStatusEl.textContent = 'Approved to golden set · DuckDB eval_log committed (idempotent)';
+        } else if (decision === 'flagged') {
+          auditStatusEl.textContent = 'Regression logged · linked to ' + activeSpec.id + ' (' + state.retriever + ')';
+        } else {
+          auditStatusEl.textContent = 'Uncommitted · seed=42 · awaiting reviewer sign-off';
+        }
+      }
+
+      function renderAll(announcement) {
+        const activeSpec = SPECIMENS[state.specimenIndex];
+        const activeRun = activeSpec.runs[state.retriever];
+        renderPromptQueue();
+        renderTopAndPareto(activeSpec, activeRun);
+        renderRightColumn(activeSpec, activeRun);
+        if (announcement) {
+          liveStatusEl.textContent = announcement;
+        }
+      }
+
+      retrieverBtns.forEach((btn) => {
+        btn.addEventListener('click', () => {
+          const next = btn.dataset.retriever;
+          if (next && RETRIEVER_PROFILES[next]) {
+            state.retriever = next;
+            state.pinnedCite = null;
+            renderAll('Switched retriever to ' + RETRIEVER_PROFILES[next].label);
+          }
+        });
+      });
+
+      document.querySelectorAll('[data-point-retriever]').forEach((pt) => {
+        pt.addEventListener('click', () => {
+          const next = pt.getAttribute('data-point-retriever');
+          if (next && RETRIEVER_PROFILES[next]) {
+            state.retriever = next;
+            state.pinnedCite = null;
+            renderAll('Selected ' + RETRIEVER_PROFILES[next].label + ' from Pareto plot');
+          }
+        });
+      });
+
+      let debounceTimer = null;
+      sliderEl.addEventListener('input', () => {
+        const val = Number.parseFloat(sliderEl.value);
+        thresholdOutEl.textContent = 'τ = ' + val.toFixed(2);
+        dagSyncEl.textContent = '… debounce=True queued';
+        dagSyncEl.classList.add('is-debouncing');
+        if (debounceTimer) window.clearTimeout(debounceTimer);
+        debounceTimer = window.setTimeout(() => {
+          state.threshold = val;
+          dagSyncEl.textContent = '✓ 4/4 synced · DuckDB warm';
+          dagSyncEl.classList.remove('is-debouncing');
+          renderAll('Confidence threshold updated to ' + val.toFixed(2));
+        }, 90);
+      });
+
+      clearCiteBtnEl.addEventListener('click', () => {
+        state.pinnedCite = null;
+        const activeSpec = SPECIMENS[state.specimenIndex];
+        renderRightColumn(activeSpec, activeSpec.runs[state.retriever]);
+      });
+
+      approveBtnEl.addEventListener('click', () => {
+        const spec = SPECIMENS[state.specimenIndex];
+        const key = spec.id + ':' + state.retriever;
+        state.auditDecisions[key] = 'approved';
+        renderRightColumn(spec, spec.runs[state.retriever]);
+        liveStatusEl.textContent = 'Approved ' + spec.id + ' to golden set.';
+      });
+
+      flagBtnEl.addEventListener('click', () => {
+        const spec = SPECIMENS[state.specimenIndex];
+        const key = spec.id + ':' + state.retriever;
+        state.auditDecisions[key] = 'flagged';
+        renderRightColumn(spec, spec.runs[state.retriever]);
+        liveStatusEl.textContent = 'Flagged hallucination regression for ' + spec.id + '.';
+      });
+
+      renderAll('');
+    })();
+  </script>
+</body>
+</html>

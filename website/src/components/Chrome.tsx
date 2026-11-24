@@ -1,6 +1,6 @@
 import { useEffect, useRef, useState } from "react";
 import logoUrl from "../assets/pixelcraft-logo-256.png";
-import { REPO_URL, VERSION } from "../data";
+import { GALLERY, REPO_URL, VERSION } from "../data";
 import { EvidenceStamp, PixelIcon } from "./pixel";
 
 const NAV = [
@@ -209,9 +209,9 @@ export function Footer() {
               <li className="flex flex-wrap items-baseline gap-2.5">
                 <EvidenceStamp label="rendered" />
                 <span>
-                  All 6 multi-stack gallery exhibits were captured in Chromium
-                  at 1440 × 900. Fixtures are fictional reference specimens, not
-                  live production client screenshots.
+                  All {GALLERY.length} multi-stack gallery exhibits were
+                  captured in Chromium at 1440 × 900. Fixtures are fictional
+                  reference specimens, not live production client screenshots.
                 </span>
               </li>
               <li className="flex flex-wrap items-baseline gap-2.5">

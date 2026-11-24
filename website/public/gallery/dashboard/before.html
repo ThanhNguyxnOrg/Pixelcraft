@@ -1,0 +1,560 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Vektor / PulseMesh Admin Dashboard (default agent output)</title>
+<style>
+  * {
+    box-sizing: border-box;
+  }
+  body {
+    margin: 0;
+    font-family: Inter;
+    background: #f1f5f9;
+    color: #0f172a;
+    display: flex;
+    min-height: 900px;
+  }
+
+  /* Cluttered Admin Sidebar */
+  .sidebar {
+    width: 242px;
+    flex-shrink: 0;
+    background: #ffffff;
+    border-right: 1px solid #e2e8f0;
+    padding: 20px 16px;
+    display: flex;
+    flex-direction: column;
+    justify-content: space-between;
+  }
+  .brand-row {
+    display: flex;
+    align-items: center;
+    gap: 10px;
+    padding: 4px 8px 18px;
+    border-bottom: 1px solid #e2e8f0;
+    margin-bottom: 16px;
+  }
+  .brand-badge {
+    width: 36px;
+    height: 36px;
+    border-radius: 12px;
+    background: linear-gradient(135deg, #7c3aed, #3b82f6);
+    color: #ffffff;
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    font-size: 18px;
+    font-weight: 800;
+  }
+  .brand-name {
+    font-size: 16px;
+    font-weight: 800;
+    color: #0f172a;
+    line-height: 1.1;
+  }
+  .brand-sub {
+    font-size: 11px;
+    color: #64748b;
+  }
+  .nav-group-label {
+    font-size: 11px;
+    font-weight: 700;
+    text-transform: uppercase;
+    letter-spacing: 0.06em;
+    color: #94a3b8;
+    margin: 14px 10px 8px;
+  }
+  .sidebar nav {
+    display: flex;
+    flex-direction: column;
+    gap: 4px;
+  }
+  .nav-item {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    padding: 10px 12px;
+    border-radius: 12px;
+    text-decoration: none;
+    color: #475569;
+    font-size: 14px;
+    font-weight: 600;
+    transition: all .2s;
+  }
+  .nav-item.active {
+    background: #eef2ff;
+    color: #4f46e5;
+  }
+  .nav-item:hover {
+    background: #f8fafc;
+  }
+  .nav-pill {
+    font-size: 11px;
+    font-weight: 700;
+    padding: 2px 8px;
+    border-radius: 999px;
+    background: #fee2e2;
+    color: #b91c1c;
+  }
+  .sidebar-promo {
+    background: linear-gradient(135deg, #6366f1, #3b82f6);
+    color: #ffffff;
+    padding: 16px;
+    margin-top: 20px;
+  }
+  .sidebar-promo h3 {
+    margin: 0 0 6px;
+    font-size: 14px;
+    font-weight: 700;
+  }
+  .sidebar-promo p {
+    margin: 0 0 12px;
+    font-size: 12px;
+    color: #e0e7ff;
+    line-height: 1.4;
+  }
+  .promo-btn {
+    width: 100%;
+    padding: 8px 12px;
+    border: none;
+    border-radius: 10px;
+    background: #ffffff;
+    color: #4f46e5;
+    font-weight: 700;
+    font-size: 13px;
+    cursor: pointer;
+    transition: all .2s;
+  }
+
+  /* Main Workspace */
+  .main-pane {
+    flex: 1;
+    min-width: 0;
+    display: flex;
+    flex-direction: column;
+  }
+  .topbar {
+    background: #ffffff;
+    border-bottom: 1px solid #e2e8f0;
+    padding: 14px 28px;
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    gap: 16px;
+  }
+  .search-input {
+    width: 320px;
+    padding: 10px 14px;
+    border-radius: 12px;
+    border: 1px solid #cbd5e1;
+    background: #f8fafc;
+    color: #0f172a;
+    font-size: 14px;
+    transition: all .2s;
+  }
+  .top-actions {
+    display: flex;
+    align-items: center;
+    gap: 10px;
+  }
+  .btn-secondary {
+    padding: 9px 14px;
+    border-radius: 12px;
+    border: 1px solid #cbd5e1;
+    background: #ffffff;
+    color: #334155;
+    font-size: 13px;
+    font-weight: 600;
+    cursor: pointer;
+    transition: all .2s;
+  }
+  .btn-primary {
+    padding: 9px 16px;
+    border-radius: 12px;
+    border: none;
+    background: #4f46e5;
+    color: #ffffff;
+    font-size: 13px;
+    font-weight: 700;
+    cursor: pointer;
+    transition: all .2s;
+  }
+  button:focus {
+    outline: none;
+  }
+
+  .workspace-body {
+    padding: 20px 28px 26px;
+    display: flex;
+    flex-direction: column;
+    gap: 18px;
+  }
+
+  /* Purple-Blue Gradient Welcome Banner */
+  .welcome-banner {
+    background: linear-gradient(135deg, #7c3aed, #3b82f6); /* purple blue gradient */
+    color: #ffffff;
+    padding: 22px 26px;
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    gap: 20px;
+  }
+  .welcome-banner h1 {
+    margin: 0 0 6px;
+    font-size: 24px;
+    font-weight: 800;
+  }
+  .welcome-banner p {
+    margin: 0;
+    font-size: 14px;
+    color: #e0e7ff;
+  }
+  .banner-cta {
+    padding: 10px 18px;
+    border: none;
+    border-radius: 12px;
+    background: #ffffff;
+    color: #4f46e5;
+    font-weight: 700;
+    font-size: 14px;
+    cursor: pointer;
+    white-space: nowrap;
+    transition: all .2s;
+  }
+
+  /* Slop Uniform Radius & Shadow Helpers */
+  .rounded-2xl {
+    border-radius: 20px;
+  }
+  .shadow-xl {
+    box-shadow: 0 18px 34px rgba(15, 23, 42, 0.12);
+  }
+
+  /* 4 Identical Loud KPI Cards */
+  .kpi-grid {
+    display: grid;
+    grid-template-columns: repeat(4, 1fr);
+    gap: 16px;
+  }
+  .kpi-card {
+    background: #ffffff;
+    padding: 18px 20px;
+    border: 1px solid #e2e8f0;
+    transition: all .2s;
+  }
+  .kpi-head {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    margin-bottom: 10px;
+  }
+  .kpi-label {
+    font-size: 13px;
+    font-weight: 600;
+    color: #64748b;
+  }
+  .emoji-icon {
+    width: 36px;
+    height: 36px;
+    border-radius: 12px;
+    background: #eef2ff;
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    font-size: 18px;
+  }
+  .kpi-num {
+    font-size: 32px;
+    font-weight: 800;
+    color: #0f172a;
+    margin: 0 0 8px;
+  }
+  .kpi-tag {
+    display: inline-block;
+    padding: 3px 10px;
+    border-radius: 999px;
+    font-size: 12px;
+    font-weight: 600;
+  }
+  .tag-green { background: #dcfce7; color: #15803d; }
+  .tag-blue { background: #dbeafe; color: #1d4ed8; }
+  .tag-amber { background: #fef3c7; color: #b45309; }
+  .tag-pink { background: #fce7f3; color: #be185d; }
+
+  /* Unlabeled Rainbow Charts */
+  .charts-grid {
+    display: grid;
+    grid-template-columns: 1fr 1.2fr;
+    gap: 18px;
+  }
+  .chart-card {
+    background: #ffffff;
+    padding: 20px 22px;
+    border: 1px solid #e2e8f0;
+  }
+  .chart-card h2 {
+    margin: 0 0 4px;
+    font-size: 16px;
+    font-weight: 700;
+    color: #0f172a;
+  }
+  .chart-sub {
+    margin: 0 0 14px;
+    font-size: 12px;
+    color: #64748b;
+  }
+  .pie-row {
+    display: flex;
+    align-items: center;
+    justify-content: space-around;
+    gap: 14px;
+    height: 196px;
+  }
+  .legend-list {
+    list-style: none;
+    margin: 0;
+    padding: 0;
+    font-size: 13px;
+    color: #475569;
+  }
+  .legend-list li {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    margin-bottom: 9px;
+  }
+  .swatch {
+    width: 10px;
+    height: 10px;
+    border-radius: 50%;
+    display: inline-block;
+  }
+  .bar-svg {
+    width: 100%;
+    height: 196px;
+    display: block;
+  }
+
+  /* Bottom Table Card */
+  .table-card {
+    background: #ffffff;
+    padding: 18px 22px;
+    border: 1px solid #e2e8f0;
+  }
+  .table-card h2 {
+    margin: 0 0 12px;
+    font-size: 16px;
+    font-weight: 700;
+  }
+  table {
+    width: 100%;
+    border-collapse: collapse;
+    font-size: 13px;
+  }
+  th, td {
+    text-align: left;
+    padding: 10px 8px;
+    border-bottom: 1px solid #e2e8f0;
+  }
+  th {
+    font-size: 11px;
+    text-transform: uppercase;
+    color: #64748b;
+  }
+  .status-pill {
+    display: inline-block;
+    padding: 3px 10px;
+    border-radius: 999px;
+    font-size: 11px;
+    font-weight: 700;
+  }
+  .st-ok { background: #dcfce7; color: #15803d; }
+  .st-warn { background: #fef3c7; color: #b45309; }
+  .st-err { background: #fee2e2; color: #b91c1c; }
+
+  @media (max-width: 1024px) {
+    body { flex-direction: column; }
+    .sidebar { width: 100%; border-right: none; border-bottom: 1px solid #e2e8f0; }
+    .kpi-grid { grid-template-columns: repeat(2, 1fr); }
+    .charts-grid { grid-template-columns: 1fr; }
+  }
+</style>
+</head>
+<body>
+  <aside class="sidebar">
+    <div>
+      <div class="brand-row">
+        <span class="brand-badge" data-slop="emoji-as-icon">⚡</span>
+        <div>
+          <div class="brand-name">Vektor / PulseMesh</div>
+          <div class="brand-sub">Admin Console v2.4</div>
+        </div>
+      </div>
+
+      <div class="nav-group-label">Main Menu</div>
+      <nav>
+        <a href="#overview" class="nav-item active" data-slop="emoji-as-icon"><span>📊 Overview</span></a>
+        <a href="#analytics" class="nav-item" data-slop="emoji-as-icon"><span>⚡ Analytics</span></a>
+        <a href="#alerts" class="nav-item" data-slop="emoji-as-icon"><span>🔥 Alerts</span><span class="nav-pill">12</span></a>
+        <a href="#settings" class="nav-item" data-slop="emoji-as-icon"><span>⚙️ Settings</span></a>
+      </nav>
+
+      <div class="nav-group-label">Workspace</div>
+      <nav>
+        <a href="#regions" class="nav-item" data-slop="emoji-as-icon"><span>🌐 Regions</span></a>
+        <a href="#webhooks" class="nav-item" data-slop="emoji-as-icon"><span>📦 Webhooks</span></a>
+        <a href="#billing" class="nav-item" data-slop="emoji-as-icon"><span>💳 Billing</span></a>
+        <a href="#support" class="nav-item" data-slop="emoji-as-icon"><span>💬 Support</span></a>
+      </nav>
+    </div>
+
+    <div class="sidebar-promo rounded-2xl shadow-xl">
+      <h3>Upgrade to Pro</h3>
+      <p data-slop="generic-copy">Unlock seamless enterprise scale and elevate team metrics.</p>
+      <button type="button" class="promo-btn" data-slop="outline-removed">Get Started</button>
+    </div>
+  </aside>
+
+  <div class="main-pane">
+    <header class="topbar">
+      <input class="search-input" type="text" placeholder="Search metrics..." data-slop="placeholder-as-label">
+      <div class="top-actions">
+        <button type="button" class="btn-secondary" data-slop="emoji-as-icon">🔔 Notifications</button>
+        <button type="button" class="btn-secondary" data-slop="outline-removed">Export CSV</button>
+        <button type="button" class="btn-primary" data-slop="generic-copy">Get Started</button>
+      </div>
+    </header>
+
+    <main class="workspace-body">
+      <section class="welcome-banner rounded-2xl shadow-xl" data-slop="purple-blue-gradient">
+        <div>
+          <h1 data-slop="generic-copy">Unlock real-time insights seamlessly!</h1>
+          <p data-slop="generic-copy">Elevate your Vektor &amp; PulseMesh edge operations to revolutionize team visibility.</p>
+        </div>
+        <button type="button" class="banner-cta" data-slop="outline-removed">View Full Report</button>
+      </section>
+
+      <section class="kpi-grid">
+        <div class="kpi-card rounded-2xl shadow-xl" data-slop="rounded-2xl-repetition">
+          <div class="kpi-head">
+            <span class="kpi-label">Velocity Index</span>
+            <span class="emoji-icon" data-slop="emoji-as-icon">🚀</span>
+          </div>
+          <p class="kpi-num">+142%</p>
+          <span class="kpi-tag tag-green">All-time high</span>
+        </div>
+
+        <div class="kpi-card rounded-2xl shadow-xl" data-slop="uniform-shadow">
+          <div class="kpi-head">
+            <span class="kpi-label">Uptime Score</span>
+            <span class="emoji-icon" data-slop="emoji-as-icon">✨</span>
+          </div>
+          <p class="kpi-num">99.9%</p>
+          <span class="kpi-tag tag-blue">Monitored</span>
+        </div>
+
+        <div class="kpi-card rounded-2xl shadow-xl">
+          <div class="kpi-head">
+            <span class="kpi-label">Daily Events</span>
+            <span class="emoji-icon" data-slop="emoji-as-icon">🔥</span>
+          </div>
+          <p class="kpi-num">1.2M</p>
+          <span class="kpi-tag tag-amber">Trending up</span>
+        </div>
+
+        <div class="kpi-card rounded-2xl shadow-xl">
+          <div class="kpi-head">
+            <span class="kpi-label">Monthly Savings</span>
+            <span class="emoji-icon" data-slop="emoji-as-icon">💎</span>
+          </div>
+          <p class="kpi-num">$48K</p>
+          <span class="kpi-tag tag-pink">Optimized</span>
+        </div>
+      </section>
+
+      <section class="charts-grid">
+        <div class="chart-card rounded-2xl shadow-xl">
+          <h2>Traffic Breakdown</h2>
+          <p class="chart-sub">Share across clusters</p>
+          <div class="pie-row">
+            <svg width="184" height="184" viewBox="0 0 184 184" aria-hidden="true">
+              <circle cx="92" cy="92" r="68" fill="none" stroke="#8b5cf6" stroke-width="34" stroke-dasharray="135 427" transform="rotate(-90 92 92)"/>
+              <circle cx="92" cy="92" r="68" fill="none" stroke="#3b82f6" stroke-width="34" stroke-dasharray="102 427" stroke-dashoffset="-135" transform="rotate(-90 92 92)"/>
+              <circle cx="92" cy="92" r="68" fill="none" stroke="#10b981" stroke-width="34" stroke-dasharray="84 427" stroke-dashoffset="-237" transform="rotate(-90 92 92)"/>
+              <circle cx="92" cy="92" r="68" fill="none" stroke="#f59e0b" stroke-width="34" stroke-dasharray="60 427" stroke-dashoffset="-321" transform="rotate(-90 92 92)"/>
+              <circle cx="92" cy="92" r="68" fill="none" stroke="#ef4444" stroke-width="34" stroke-dasharray="46 427" stroke-dashoffset="-381" transform="rotate(-90 92 92)"/>
+            </svg>
+            <ul class="legend-list">
+              <li><span class="swatch" style="background:#8b5cf6"></span>North America</li>
+              <li><span class="swatch" style="background:#3b82f6"></span>Europe West</li>
+              <li><span class="swatch" style="background:#10b981"></span>Asia Pacific</li>
+              <li><span class="swatch" style="background:#f59e0b"></span>Fallback Pool</li>
+              <li><span class="swatch" style="background:#ef4444"></span>Dead Letter</li>
+            </ul>
+          </div>
+        </div>
+
+        <div class="chart-card rounded-2xl shadow-xl">
+          <h2>Performance Overview</h2>
+          <p class="chart-sub">Recent platform activity</p>
+          <svg class="bar-svg" viewBox="0 0 540 196" aria-hidden="true">
+            <rect x="16" y="88" width="38" height="96" rx="10" fill="#8b5cf6"/>
+            <rect x="68" y="54" width="38" height="130" rx="10" fill="#6366f1"/>
+            <rect x="120" y="96" width="38" height="88" rx="10" fill="#3b82f6"/>
+            <rect x="172" y="38" width="38" height="146" rx="10" fill="#06b6d4"/>
+            <rect x="224" y="72" width="38" height="112" rx="10" fill="#10b981"/>
+            <rect x="276" y="26" width="38" height="158" rx="10" fill="#84cc16"/>
+            <rect x="328" y="62" width="38" height="122" rx="10" fill="#f59e0b"/>
+            <rect x="380" y="20" width="38" height="164" rx="10" fill="#f97316"/>
+            <rect x="432" y="50" width="38" height="134" rx="10" fill="#ec4899"/>
+            <rect x="484" y="78" width="38" height="106" rx="10" fill="#ef4444"/>
+          </svg>
+        </div>
+      </section>
+
+      <section class="table-card rounded-2xl shadow-xl">
+        <h2>Recent Streams</h2>
+        <table>
+          <thead>
+            <tr>
+              <th>Endpoint</th>
+              <th>Cluster</th>
+              <th>Speed</th>
+              <th>Status</th>
+            </tr>
+          </thead>
+          <tbody>
+            <tr>
+              <td>/v2/hooks/card.authorized</td>
+              <td>iad-1</td>
+              <td>29ms</td>
+              <td><span class="status-pill st-ok">Healthy</span></td>
+            </tr>
+            <tr>
+              <td>/v2/hooks/settlement.cleared</td>
+              <td>sin-1</td>
+              <td>96ms</td>
+              <td><span class="status-pill st-err">Alert</span></td>
+            </tr>
+            <tr>
+              <td>/v2/hooks/invoice.disputed</td>
+              <td>sin-1</td>
+              <td>74ms</td>
+              <td><span class="status-pill st-warn">Slow</span></td>
+            </tr>
+            <tr>
+              <td>/v2/hooks/ledger.reconciled</td>
+              <td>fra-2</td>
+              <td>38ms</td>
+              <td><span class="status-pill st-ok">Healthy</span></td>
+            </tr>
+          </tbody>
+        </table>
+      </section>
+    </main>
+  </div>
+</body>
+</html>

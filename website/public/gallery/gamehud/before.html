@@ -1,0 +1,461 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=1, user-scalable=no" />
+  <title>AEGIS-07 Metaverse Mech Gacha — Web3 Hangar</title>
+  <style>
+    * {
+      box-sizing: border-box;
+    }
+
+    body {
+      margin: 0;
+      min-height: 900px;
+      font-family: Inter, Roboto, Arial, sans-serif;
+      background: linear-gradient(135deg, indigo, purple, cyan);
+      color: #ffffff;
+      overflow-x: hidden;
+    }
+
+    .topbar {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      padding: 14px 32px;
+      background: rgba(15, 23, 42, 0.72);
+      border-bottom: 1px solid rgba(255, 255, 255, 0.18);
+      font-family: Inter, sans-serif;
+    }
+
+    .brand {
+      display: flex;
+      align-items: center;
+      gap: 10px;
+      font-size: 20px;
+      font-weight: 800;
+    }
+
+    .brand-icon {
+      width: 38px;
+      height: 38px;
+      border-radius: 12px;
+      background: linear-gradient(135deg, #6366f1, #a855f7, #06b6d4);
+      display: inline-flex;
+      align-items: center;
+      justify-content: center;
+      font-size: 20px;
+    }
+
+    .currency-pills {
+      display: flex;
+      align-items: center;
+      gap: 12px;
+    }
+
+    .currency-pill {
+      background: rgba(30, 27, 75, 0.85);
+      border: 1px solid #8b5cf6;
+      padding: 7px 14px;
+      border-radius: 999px;
+      font-size: 13px;
+      font-weight: 700;
+      color: #f8fafc;
+      transition: all 0.3s;
+    }
+
+    .top-controls {
+      display: flex;
+      align-items: center;
+      gap: 10px;
+    }
+
+    .slop-input {
+      padding: 10px 14px;
+      border-radius: 12px;
+      border: 1px solid #a855f7;
+      background: rgba(15, 23, 42, 0.8);
+      color: #ffffff;
+      font-family: Inter, sans-serif;
+      font-size: 13px;
+      outline: none;
+      transition: all 0.3s;
+    }
+
+    .slop-input:focus {
+      outline: none;
+    }
+
+    .wallet-btn {
+      padding: 10px 18px;
+      border-radius: 12px;
+      border: none;
+      background: linear-gradient(90deg, #ec4899, #8b5cf6, #06b6d4);
+      color: #ffffff;
+      font-family: Roboto, sans-serif;
+      font-weight: 800;
+      font-size: 13px;
+      cursor: pointer;
+      outline: none;
+      transition: all 0.3s;
+    }
+
+    .wallet-btn:focus,
+    .cta-primary:focus,
+    .cta-secondary:focus,
+    .card-btn:focus {
+      outline: none;
+    }
+
+    .hero {
+      max-width: 1360px;
+      margin: 20px auto 18px;
+      padding: 30px 36px;
+      background: rgba(15, 23, 42, 0.66);
+      border: 1px solid rgba(168, 85, 247, 0.45);
+      transition: all 0.3s;
+    }
+
+    .text-center {
+      text-align: center;
+    }
+
+    .rounded-2xl {
+      border-radius: 24px;
+    }
+
+    .shadow-xl {
+      box-shadow: 0 20px 42px rgba(15, 23, 42, 0.45);
+    }
+
+    .vip-banner-tag {
+      display: inline-block;
+      padding: 5px 14px;
+      border-radius: 999px;
+      background: linear-gradient(90deg, #6366f1, #ec4899);
+      font-size: 12px;
+      font-weight: 800;
+      letter-spacing: 0.06em;
+      text-transform: uppercase;
+      margin-bottom: 12px;
+    }
+
+    .gradient-headline {
+      margin: 0 auto 12px;
+      max-width: 920px;
+      font-size: 42px;
+      line-height: 1.12;
+      font-weight: 900;
+      background: linear-gradient(90deg, #c084fc, #38bdf8, #f472b6);
+      -webkit-background-clip: text;
+      background-clip: text;
+      color: transparent;
+    }
+
+    .hero-sub {
+      margin: 0 auto 22px;
+      max-width: 760px;
+      font-size: 16px;
+      line-height: 1.5;
+      color: #e2e8f0;
+    }
+
+    .hero-ctas {
+      display: flex;
+      justify-content: center;
+      gap: 14px;
+      margin-bottom: 6px;
+    }
+
+    .cta-primary {
+      padding: 13px 28px;
+      border-radius: 16px;
+      border: none;
+      background: linear-gradient(135deg, #6366f1, #a855f7, #06b6d4);
+      color: #ffffff;
+      font-size: 15px;
+      font-weight: 800;
+      cursor: pointer;
+      transition: all 0.3s;
+      animation: pulseGlow 1.6s infinite;
+    }
+
+    .cta-secondary {
+      padding: 13px 28px;
+      border-radius: 16px;
+      border: 1px solid rgba(255, 255, 255, 0.4);
+      background: rgba(255, 255, 255, 0.12);
+      color: #ffffff;
+      font-size: 15px;
+      font-weight: 700;
+      cursor: pointer;
+      transition: all 0.3s;
+    }
+
+    @keyframes pulseGlow {
+      0%, 100% { transform: scale(1); }
+      50% { transform: scale(1.03); }
+    }
+
+    .loot-grid {
+      max-width: 1360px;
+      margin: 0 auto 18px;
+      display: grid;
+      grid-template-columns: repeat(4, 1fr);
+      gap: 18px;
+    }
+
+    .loot-card {
+      background: rgba(15, 23, 42, 0.78);
+      border: 1px solid rgba(168, 85, 247, 0.45);
+      border-left: 5px solid #a855f7;
+      border-radius: 24px;
+      padding: 20px;
+      display: flex;
+      flex-direction: column;
+      gap: 10px;
+      transition: all 0.3s;
+    }
+
+    .loot-card:hover {
+      transform: translateY(-4px);
+    }
+
+    .loot-top {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+    }
+
+    .emoji-orb {
+      width: 54px;
+      height: 54px;
+      border-radius: 18px;
+      background: linear-gradient(135deg, #4f46e5, #9333ea, #06b6d4);
+      display: inline-flex;
+      align-items: center;
+      justify-content: center;
+      font-size: 28px;
+    }
+
+    .rarity-tag {
+      padding: 4px 10px;
+      border-radius: 999px;
+      font-size: 11px;
+      font-weight: 800;
+      background: #facc15;
+      color: #1e1b4b;
+    }
+
+    .loot-card h3 {
+      margin: 2px 0 0;
+      font-size: 18px;
+      font-weight: 800;
+      color: #ffffff;
+    }
+
+    .loot-card p {
+      margin: 0;
+      font-size: 13px;
+      line-height: 1.45;
+      color: #cbd5e1;
+      flex: 1;
+    }
+
+    .power-bar {
+      height: 8px;
+      border-radius: 999px;
+      background: #1e293b;
+      overflow: hidden;
+    }
+
+    .power-fill {
+      height: 100%;
+      background: linear-gradient(90deg, #a855f7, #06b6d4);
+    }
+
+    .card-btn {
+      width: 100%;
+      padding: 11px 14px;
+      border-radius: 14px;
+      border: none;
+      background: linear-gradient(90deg, #6366f1, #a855f7);
+      color: #ffffff;
+      font-weight: 800;
+      font-size: 13px;
+      cursor: pointer;
+      transition: all 0.3s;
+    }
+
+    .bottom-gacha-strip {
+      max-width: 1360px;
+      margin: 0 auto 20px;
+      padding: 18px 26px;
+      background: rgba(15, 23, 42, 0.82);
+      border: 1px solid rgba(56, 189, 248, 0.4);
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      gap: 18px;
+      transition: all 0.3s;
+    }
+
+    .cp-box {
+      display: flex;
+      align-items: center;
+      gap: 14px;
+    }
+
+    .cp-num {
+      font-size: 28px;
+      font-weight: 900;
+      background: linear-gradient(90deg, #facc15, #f472b6);
+      -webkit-background-clip: text;
+      background-clip: text;
+      color: transparent;
+    }
+
+    .promo-form {
+      display: flex;
+      align-items: center;
+      gap: 10px;
+    }
+  </style>
+</head>
+<body>
+  <header class="topbar">
+    <div class="brand">
+      <span class="brand-icon" data-slop="emoji-as-icon">🤖</span>
+      <span>AEGIS-07 MetaMech Genesis</span>
+    </div>
+
+    <nav class="currency-pills">
+      <span class="currency-pill">💎 14,820 $AEGIS</span>
+      <span class="currency-pill">🔥 88/100 Stamina</span>
+      <span class="currency-pill">⚡ VIP LV.9 PASS</span>
+    </nav>
+
+    <div class="top-controls">
+      <input
+        type="text"
+        class="slop-input"
+        placeholder="Enter callsign"
+        tabindex="3"
+        style="outline: none; transition: all 0.3s;"
+        data-slop="placeholder-as-label"
+      />
+      <button
+        type="button"
+        class="wallet-btn"
+        tabindex="2"
+        style="outline: none; transition: all 0.3s;"
+        data-slop="outline-removed"
+      >
+        Connect Wallet 🚀
+      </button>
+    </div>
+  </header>
+
+  <section class="hero text-center rounded-2xl shadow-xl" data-slop="purple-blue-gradient">
+    <span class="vip-banner-tag">✨ Season 04 Mythic Gacha Drop Live · 800% Bonus Value ✨</span>
+    <h1 class="gradient-headline" data-slop="gradient-text-treatment">
+      Unleash Revolutionary Metaverse Mech Combat 🔥🚀💎
+    </h1>
+    <p class="hero-sub" data-slop="generic-copy">
+      Revolutionize your orbital hangar, unlock seamless Web3 hardpoint synergies, and elevate cutting-edge mech raids before you get started!
+    </p>
+    <div class="hero-ctas" data-slop="centered-hero-two-ctas">
+      <button type="button" class="cta-primary" tabindex="1" style="outline: none; transition: all 0.3s;" data-slop="outline-removed">
+        Get Started 💎
+      </button>
+      <button type="button" class="cta-secondary" tabindex="4" style="outline: none; transition: all 0.3s;">
+        Learn More
+      </button>
+    </div>
+  </section>
+
+  <main class="loot-grid">
+    <article class="loot-card rounded-2xl shadow-xl" data-slop="rounded-2xl-repetition">
+      <div class="loot-top">
+        <span class="emoji-orb" data-slop="emoji-as-icon">⚔️</span>
+        <span class="rarity-tag">SSR MYTHIC · 0.4%</span>
+      </div>
+      <h3>Hyper Rail-Blade Mk.IX</h3>
+      <p>Unlock seamless critical strikes and supercharge your PvP arena dominance instantly.</p>
+      <div class="power-bar"><div class="power-fill" style="width: 94%"></div></div>
+      <button type="button" class="card-btn" style="outline: none; transition: all 0.3s;">Equip &amp; Mint ⚔️</button>
+    </article>
+
+    <article class="loot-card rounded-2xl shadow-xl" data-slop="uniform-shadow">
+      <div class="loot-top">
+        <span class="emoji-orb">🛡️</span>
+        <span class="rarity-tag">UR GENESIS · NFT</span>
+      </div>
+      <h3>Quantum Aegis Barrier</h3>
+      <p>Elevate defensive shields with cutting-edge holographic reflection and zero cooldowns.</p>
+      <div class="power-bar"><div class="power-fill" style="width: 88%"></div></div>
+      <button type="button" class="card-btn" style="outline: none; transition: all 0.3s;">Equip &amp; Mint 🛡️</button>
+    </article>
+
+    <article class="loot-card rounded-2xl shadow-xl" data-slop="transition-all">
+      <div class="loot-top">
+        <span class="emoji-orb">🔥</span>
+        <span class="rarity-tag">HOT DEAL · 999x</span>
+      </div>
+      <h3>Inferno Overdrive Core</h3>
+      <p>Revolutionize thermal burst DPS and unlock explosive orbital boss loot multipliers.</p>
+      <div class="power-bar"><div class="power-fill" style="width: 97%"></div></div>
+      <button type="button" class="card-btn" style="outline: none; transition: all 0.3s;">Summon 10x 🔥</button>
+    </article>
+
+    <article class="loot-card rounded-2xl shadow-xl" data-slop="default-font-only">
+      <div class="loot-top">
+        <span class="emoji-orb">⚡</span>
+        <span class="rarity-tag">LIMITED · 02:14</span>
+      </div>
+      <h3>Cyber Plasma Reactor</h3>
+      <p>Get started with infinite energy boosts and seamless auto-battle salvage farming.</p>
+      <div class="power-bar"><div class="power-fill" style="width: 91%"></div></div>
+      <button type="button" class="card-btn" style="outline: none; transition: all 0.3s;">Summon 10x ⚡</button>
+    </article>
+  </main>
+
+  <footer class="bottom-gacha-strip rounded-2xl shadow-xl">
+    <div class="cp-box">
+      <span style="font-size: 26px;">🏆</span>
+      <div>
+        <div style="font-size: 12px; color: #cbd5e1; font-weight: 700;">TOTAL SQUAD COMBAT POWER</div>
+        <div class="cp-num">999,480 CP · TOP 0.1% WHALE TIER</div>
+      </div>
+    </div>
+
+    <div class="promo-form">
+      <input
+        type="text"
+        id="vip-code"
+        class="slop-input"
+        placeholder="Redeem VIP gift code"
+        style="outline: none; transition: all 0.3s;"
+      />
+      <input
+        type="text"
+        class="slop-input"
+        placeholder="Guild referral tag"
+        style="outline: none; transition: all 0.3s;"
+      />
+      <button type="button" class="wallet-btn" style="outline: none; transition: all 0.3s;">
+        Auto-Deploy Raid 🚀
+      </button>
+    </div>
+  </footer>
+
+  <script>
+    const vipCode = document.getElementById('vip-code');
+    if (vipCode) {
+      vipCode.addEventListener('paste', (event) => {
+        event.preventDefault();
+      });
+    }
+  </script>
+</body>
+</html>

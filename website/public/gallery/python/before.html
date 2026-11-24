@@ -1,0 +1,631 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=1, user-scalable=no" />
+  <title>VeritasAI Python Wrapper (default agent output)</title>
+  <style>
+    * {
+      box-sizing: border-box;
+    }
+
+    html, body {
+      margin: 0;
+      padding: 0;
+      font-family: Inter, Roboto, Arial, sans-serif;
+      background: #f1f5f9;
+      color: #0f172a;
+      min-height: 900px;
+    }
+
+    .app-shell {
+      display: flex;
+      min-height: 900px;
+      width: 100%;
+    }
+
+    /* Overloaded Streamlit-style wrapper sidebar */
+    .sidebar {
+      width: 262px;
+      flex-shrink: 0;
+      background: #ffffff;
+      border-right: 1px solid #e2e8f0;
+      padding: 20px 16px;
+      display: flex;
+      flex-direction: column;
+      justify-content: space-between;
+      transition: all 0.3s;
+    }
+
+    .brand-header {
+      display: flex;
+      align-items: center;
+      gap: 10px;
+      padding-bottom: 16px;
+      border-bottom: 1px solid #e2e8f0;
+      margin-bottom: 14px;
+    }
+
+    .brand-logo {
+      width: 40px;
+      height: 40px;
+      border-radius: 14px;
+      background: linear-gradient(135deg, purple, blue, indigo);
+      color: #ffffff;
+      display: inline-flex;
+      align-items: center;
+      justify-content: center;
+      font-size: 20px;
+      box-shadow: 0 10px 24px rgba(99, 102, 241, 0.35);
+      transition: all 0.3s;
+    }
+
+    .brand-title {
+      font-size: 17px;
+      font-weight: 800;
+      color: #0f172a;
+      line-height: 1.15;
+    }
+
+    .brand-sub {
+      font-size: 11px;
+      color: #64748b;
+      font-family: Arial, sans-serif;
+    }
+
+    .sidebar-section-title {
+      font-size: 11px;
+      font-weight: 700;
+      text-transform: uppercase;
+      letter-spacing: 0.07em;
+      color: #94a3b8;
+      margin: 12px 6px 8px;
+    }
+
+    .api-input {
+      width: 100%;
+      padding: 10px 12px;
+      border-radius: 12px;
+      border: 1px solid #cbd5e1;
+      background: #f8fafc;
+      font-size: 13px;
+      color: #0f172a;
+      margin-bottom: 10px;
+      outline: none;
+      transition: all 0.3s;
+    }
+
+    .api-input:focus {
+      outline: none;
+    }
+
+    .nav-list {
+      display: flex;
+      flex-direction: column;
+      gap: 6px;
+    }
+
+    .nav-link {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      padding: 10px 12px;
+      border-radius: 12px;
+      text-decoration: none;
+      font-size: 14px;
+      font-weight: 600;
+      color: #475569;
+      transition: all 0.3s;
+    }
+
+    .nav-link.active {
+      background: linear-gradient(90deg, #ede9fe, #dbeafe);
+      color: #4f46e5;
+    }
+
+    .nav-link:focus {
+      outline: none;
+    }
+
+    .badge-hot {
+      font-size: 10px;
+      font-weight: 800;
+      padding: 2px 8px;
+      border-radius: 999px;
+      background: linear-gradient(135deg, #a855f7, #3b82f6);
+      color: #ffffff;
+    }
+
+    .rounded-2xl {
+      border-radius: 20px;
+    }
+
+    .shadow-xl {
+      box-shadow: 0 18px 36px rgba(30, 41, 59, 0.13);
+    }
+
+    .promo-card {
+      background: linear-gradient(135deg, purple, blue, indigo);
+      color: #ffffff;
+      padding: 16px;
+      margin-top: 16px;
+      transition: all 0.3s;
+    }
+
+    .promo-card h3 {
+      margin: 0 0 6px;
+      font-size: 14px;
+      font-weight: 800;
+    }
+
+    .promo-card p {
+      margin: 0 0 12px;
+      font-size: 12px;
+      color: #e0e7ff;
+      line-height: 1.45;
+    }
+
+    .promo-btn {
+      width: 100%;
+      padding: 9px 12px;
+      border: none;
+      border-radius: 12px;
+      background: #ffffff;
+      color: #4f46e5;
+      font-weight: 800;
+      font-size: 13px;
+      cursor: pointer;
+      outline: none;
+      transition: all 0.3s;
+    }
+
+    .promo-btn:focus {
+      outline: none;
+    }
+
+    /* Main Content Area */
+    .main-area {
+      flex: 1;
+      min-width: 0;
+      padding: 20px 26px 24px;
+      display: flex;
+      flex-direction: column;
+      gap: 18px;
+    }
+
+    .text-center {
+      text-align: center;
+    }
+
+    .hero {
+      background: linear-gradient(135deg, purple, blue, indigo);
+      padding: 26px 32px;
+      color: #ffffff;
+      position: relative;
+      overflow: hidden;
+      transition: all 0.3s;
+    }
+
+    .zero-hallucination-pill {
+      display: inline-flex;
+      align-items: center;
+      gap: 6px;
+      padding: 5px 14px;
+      border-radius: 999px;
+      background: rgba(255, 255, 255, 0.16);
+      border: 1px solid rgba(255, 255, 255, 0.28);
+      font-size: 12px;
+      font-weight: 700;
+      color: #f8fafc;
+      margin-bottom: 10px;
+    }
+
+    .hero-heading {
+      margin: 0 auto 8px;
+      max-width: 820px;
+      font-size: 31px;
+      font-weight: 900;
+      line-height: 1.18;
+      background: linear-gradient(90deg, #f5d0fe, #93c5fd, #67e8f9);
+      -webkit-background-clip: text;
+      background-clip: text;
+      color: transparent;
+    }
+
+    .hero-subtitle {
+      margin: 0 auto 18px;
+      max-width: 680px;
+      font-size: 14px;
+      color: #e0e7ff;
+      line-height: 1.5;
+    }
+
+    .hero-cta-row {
+      display: inline-flex;
+      align-items: center;
+      justify-content: center;
+      gap: 12px;
+    }
+
+    .btn-get-started {
+      padding: 11px 22px;
+      border-radius: 999px;
+      border: none;
+      background: #ffffff;
+      color: #4338ca;
+      font-size: 14px;
+      font-weight: 800;
+      cursor: pointer;
+      outline: none;
+      transition: all 0.3s;
+    }
+
+    .btn-learn-more {
+      padding: 11px 22px;
+      border-radius: 999px;
+      border: 1px solid rgba(255, 255, 255, 0.45);
+      background: rgba(255, 255, 255, 0.12);
+      color: #ffffff;
+      font-size: 14px;
+      font-weight: 700;
+      cursor: pointer;
+      outline: none;
+      transition: all 0.3s;
+    }
+
+    button:focus {
+      outline: none;
+    }
+
+    /* 4 Uniform Emoji Slop Cards */
+    .feature-grid {
+      display: grid;
+      grid-template-columns: repeat(4, 1fr);
+      gap: 16px;
+    }
+
+    .feature-card {
+      background: #ffffff;
+      border: 1px solid #e2e8f0;
+      border-left: 5px solid #6366f1;
+      padding: 16px 18px;
+      transition: all 0.3s;
+    }
+
+    .card-top {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      margin-bottom: 8px;
+    }
+
+    .emoji-badge {
+      width: 38px;
+      height: 38px;
+      border-radius: 12px;
+      background: #eef2ff;
+      display: inline-flex;
+      align-items: center;
+      justify-content: center;
+      font-size: 20px;
+    }
+
+    .metric-chip {
+      font-size: 11px;
+      font-weight: 800;
+      padding: 3px 8px;
+      border-radius: 999px;
+      background: #dcfce7;
+      color: #15803d;
+    }
+
+    .feature-card h2 {
+      margin: 0 0 4px;
+      font-size: 16px;
+      font-weight: 800;
+      color: #1e293b;
+    }
+
+    .feature-card p {
+      margin: 0;
+      font-size: 12px;
+      color: #64748b;
+      line-height: 1.45;
+    }
+
+    /* Ungrounded AI Wrapper Chat Surface */
+    .chat-wrapper {
+      flex: 1;
+      background: #ffffff;
+      border: 1px solid #e2e8f0;
+      display: flex;
+      flex-direction: column;
+      justify-content: space-between;
+      padding: 18px 20px;
+      transition: all 0.3s;
+    }
+
+    .chat-topbar {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      padding-bottom: 12px;
+      border-bottom: 1px solid #e2e8f0;
+    }
+
+    .chat-status {
+      display: flex;
+      align-items: center;
+      gap: 8px;
+      font-size: 14px;
+      font-weight: 800;
+      color: #1e293b;
+    }
+
+    .trust-pill {
+      font-size: 12px;
+      font-weight: 700;
+      padding: 4px 12px;
+      border-radius: 999px;
+      background: linear-gradient(90deg, #7c3aed, #2563eb);
+      color: #ffffff;
+    }
+
+    .chat-stream {
+      display: flex;
+      flex-direction: column;
+      gap: 12px;
+      padding: 14px 0;
+    }
+
+    .msg-user {
+      align-self: flex-end;
+      max-width: 72%;
+      background: linear-gradient(135deg, #6366f1, #3b82f6);
+      color: #ffffff;
+      padding: 11px 16px;
+      border-radius: 18px 18px 4px 18px;
+      font-size: 13px;
+      line-height: 1.45;
+    }
+
+    .msg-bot {
+      align-self: flex-start;
+      max-width: 86%;
+      background: #f8fafc;
+      border: 1px solid #e2e8f0;
+      padding: 14px 16px;
+      border-radius: 18px 18px 18px 4px;
+      font-size: 13px;
+      line-height: 1.55;
+      color: #1e293b;
+    }
+
+    .fake-thinking {
+      display: inline-flex;
+      align-items: center;
+      gap: 6px;
+      font-size: 11px;
+      font-weight: 700;
+      color: #7c3aed;
+      background: #f3e8ff;
+      padding: 3px 10px;
+      border-radius: 999px;
+      margin-bottom: 8px;
+    }
+
+    .bot-bullets {
+      margin: 8px 0;
+      padding-left: 0;
+      list-style: none;
+      display: flex;
+      flex-direction: column;
+      gap: 5px;
+    }
+
+    .fake-source-row {
+      display: flex;
+      align-items: center;
+      gap: 8px;
+      margin-top: 8px;
+      font-size: 11px;
+      font-weight: 700;
+      color: #4f46e5;
+    }
+
+    .composer-row {
+      display: flex;
+      align-items: center;
+      gap: 10px;
+      padding-top: 12px;
+      border-top: 1px solid #e2e8f0;
+    }
+
+    .chat-prompt-input {
+      flex: 1;
+      padding: 13px 16px;
+      border-radius: 14px;
+      border: 2px solid #c7d2fe;
+      background: #f8fafc;
+      font-size: 14px;
+      color: #0f172a;
+      outline: none;
+      transition: all 0.3s;
+    }
+
+    .chat-prompt-input:focus {
+      outline: none;
+    }
+
+    .send-magic-btn {
+      padding: 13px 22px;
+      border-radius: 14px;
+      border: none;
+      background: linear-gradient(135deg, purple, blue, indigo);
+      color: #ffffff;
+      font-size: 14px;
+      font-weight: 800;
+      cursor: pointer;
+      outline: none;
+      transition: all 0.3s;
+    }
+  </style>
+</head>
+<body>
+  <div class="app-shell">
+    <aside class="sidebar">
+      <div>
+        <div class="brand-header">
+          <span class="brand-logo" data-slop="emoji-as-icon">🤖</span>
+          <div>
+            <div class="brand-title">VeritasAI Studio</div>
+            <div class="brand-sub">streamlit_wrapper.py · v0.1</div>
+          </div>
+        </div>
+
+        <div class="sidebar-section-title">Quick Settings</div>
+        <input
+          type="password"
+          class="api-input"
+          placeholder="Paste OpenAI sk-live-... key"
+          data-slop="placeholder-as-label"
+        />
+        <input
+          type="text"
+          class="api-input"
+          placeholder="Collection URL or PDF link..."
+          data-slop="placeholder-as-label"
+        />
+
+        <div class="sidebar-section-title">Workspace Navigation</div>
+        <nav class="nav-list">
+          <a href="#chat" class="nav-link active" tabindex="1">
+            <span>💬 AI Chat Playground</span>
+            <span class="badge-hot">NEW</span>
+          </a>
+          <a href="#rag" class="nav-link">
+            <span>✨ Magic Auto-RAG</span>
+          </a>
+          <a href="#templates" class="nav-link">
+            <span>🔥 Prompt Marketplace</span>
+          </a>
+          <a href="#analytics" class="nav-link">
+            <span>📊 Token Analytics</span>
+          </a>
+          <a href="#enterprise" class="nav-link">
+            <span>💎 Enterprise Cloud</span>
+          </a>
+        </nav>
+      </div>
+
+      <div class="promo-card rounded-2xl shadow-xl" data-slop="purple-blue-gradient">
+        <h3>🚀 Supercharge Python AI!</h3>
+        <p data-slop="generic-copy">Unlock seamless enterprise RAG and elevate accuracy with zero setup.</p>
+        <button type="button" class="promo-btn" data-slop="outline-removed">Get Started Pro</button>
+      </div>
+    </aside>
+
+    <main class="main-area">
+      <section class="hero text-center rounded-2xl shadow-xl" data-slop="purple-blue-gradient">
+        <div class="zero-hallucination-pill">
+          <span>✨ VeritasAI Neural Shield · 99.99% Zero Hallucinations!</span>
+        </div>
+        <h1 class="hero-heading" data-slop="gradient-text-treatment">
+          Unlock the Power of Seamless AI Intelligence ✨🤖
+        </h1>
+        <p class="hero-subtitle" data-slop="generic-copy">
+          Revolutionize your cutting-edge Python RAG workflows seamlessly and elevate every LLM answer with instant magic truth verification.
+        </p>
+        <div class="hero-cta-row" data-slop="centered-hero-two-ctas">
+          <button type="button" class="btn-get-started" tabindex="2" data-slop="positive-tabindex">Get Started</button>
+          <button type="button" class="btn-learn-more" data-slop="outline-removed">Learn More</button>
+        </div>
+      </section>
+
+      <section class="feature-grid">
+        <article class="feature-card rounded-2xl shadow-xl" data-slop="rounded-2xl-repetition">
+          <div class="card-top">
+            <span class="emoji-badge" data-slop="emoji-as-icon">🧠</span>
+            <span class="metric-chip">99.99% Pure</span>
+          </div>
+          <h2>99.99% Zero Hallucinations!</h2>
+          <p data-slop="generic-copy">Unlock autonomous neural fact-checking that fixes every answer seamlessly.</p>
+        </article>
+
+        <article class="feature-card rounded-2xl shadow-xl" data-slop="uniform-shadow">
+          <div class="card-top">
+            <span class="emoji-badge" data-slop="emoji-as-icon">⚡</span>
+            <span class="metric-chip">0.02s Fast</span>
+          </div>
+          <h2>Instant Quantum Speed</h2>
+          <p data-slop="generic-copy">Supercharge cutting-edge Python async pipelines to revolutionize latency.</p>
+        </article>
+
+        <article class="feature-card rounded-2xl shadow-xl">
+          <div class="card-top">
+            <span class="emoji-badge" data-slop="emoji-as-icon">🔒</span>
+            <span class="metric-chip">100% Safe</span>
+          </div>
+          <h2>Autonomous Compliance</h2>
+          <p>Zero human review needed—ship clinical, legal, and financial answers right away.</p>
+        </article>
+
+        <article class="feature-card rounded-2xl shadow-xl">
+          <div class="card-top">
+            <span class="emoji-badge" data-slop="emoji-as-icon">🚀</span>
+            <span class="metric-chip">10x ROI</span>
+          </div>
+          <h2>Infinite Team Scale</h2>
+          <p data-slop="generic-copy">Elevate engineering velocity and get started in 30 seconds with one script.</p>
+        </article>
+      </section>
+
+      <section class="chat-wrapper rounded-2xl shadow-xl">
+        <div class="chat-topbar">
+          <div class="chat-status">
+            <span>🤖 VeritasAI Magic Assistant</span>
+          </div>
+          <span class="trust-pill">✅ 99.99% Zero Hallucinations! Active</span>
+        </div>
+
+        <div class="chat-stream">
+          <div class="msg-user">
+            Adjust IV vancomycin maintenance dosing for a 68-year-old inpatient with eGFR 28 mL/min/1.73m² and trough target 15–20 mg/L.
+          </div>
+
+          <div class="msg-bot">
+            <div class="fake-thinking">
+              <span>✨ Deep Neural Verification Complete · 99.99% Truth Score!</span>
+            </div>
+            <div>
+              🎉 Great clinical question! I have analyzed all medical knowledge seamlessly for you:
+            </div>
+            <ul class="bot-bullets">
+              <li><span>🧠</span> <strong>Recommended Regimen:</strong> Administer <strong>1,500 mg IV every 8 hours</strong> immediately—standard adult dosing works seamlessly across all eGFR levels!</li>
+              <li><span>⚡</span> <strong>Monitoring Shortcut:</strong> Routine serum trough draws before the 4th dose are unnecessary thanks to modern steady-state stability.</li>
+            </ul>
+            <div class="fake-source-row">
+              <span>📚 Verified Source: Global Medical AI Knowledge Graph (100% Trusted)</span>
+            </div>
+          </div>
+        </div>
+
+        <div class="composer-row">
+          <input
+            type="text"
+            class="chat-prompt-input"
+            placeholder="Ask AI anything..."
+            tabindex="2"
+            style="outline: none; transition: all 0.3s;"
+            onpaste="event.preventDefault()"
+            data-slop="placeholder-as-label"
+          />
+          <button type="button" class="send-magic-btn" tabindex="3" data-slop="outline-removed">
+            <span>🚀 Send</span>
+          </button>
+        </div>
+      </section>
+    </main>
+  </div>
+</body>
+</html>

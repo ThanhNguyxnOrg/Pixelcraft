@@ -1,0 +1,2007 @@
+<!doctype html>
+<html lang="en" data-no-color="false">
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
+  <title>KubeTrace TUI · Rust + Ratatui Pod &amp; Causal Latency Multiplexer</title>
+  <link rel="stylesheet" href="../../fonts/gallery.css" />
+  <style>
+    :root {
+      --crt-slate: #0A0D10;
+      --pane-fill: #10151B;
+      --cell-rule: #263240;
+      --phosphor-bone: #E6EDF3;
+      --dim-cell: #8B98A9;
+      --amber-phosphor: #F5A623;
+      --span-cyan: #38BDF8;
+      --ok-emerald: #34D399;
+      --crit-coral: #FB7185;
+
+      --tint-amber: rgba(245, 166, 35, 0.12);
+      --tint-amber-strong: rgba(245, 166, 35, 0.24);
+      --tint-cyan: rgba(56, 189, 248, 0.16);
+      --tint-ok: rgba(52, 211, 153, 0.14);
+      --tint-crit: rgba(251, 113, 133, 0.16);
+      --tint-row-hover: rgba(230, 237, 243, 0.045);
+      --well-recess: rgba(5, 7, 10, 0.62);
+
+      --font-mono: 'IBM Plex Mono', ui-monospace, SFMono-Regular, Menlo, Consolas, monospace;
+    }
+
+    html[data-no-color="true"] {
+      --amber-phosphor: var(--phosphor-bone);
+      --span-cyan: var(--phosphor-bone);
+      --ok-emerald: var(--phosphor-bone);
+      --crit-coral: var(--phosphor-bone);
+      --tint-amber: rgba(230, 237, 243, 0.12);
+      --tint-amber-strong: rgba(230, 237, 243, 0.22);
+      --tint-cyan: rgba(230, 237, 243, 0.12);
+      --tint-ok: rgba(230, 237, 243, 0.08);
+      --tint-crit: rgba(230, 237, 243, 0.16);
+    }
+
+    *,
+    *::before,
+    *::after {
+      box-sizing: border-box;
+    }
+
+    html,
+    body {
+      margin: 0;
+      padding: 0;
+      min-height: 100vh;
+      background-color: var(--crt-slate);
+      color: var(--phosphor-bone);
+      font-family: var(--font-mono);
+      font-size: 12.5px;
+      line-height: 1.38;
+      font-variant-numeric: tabular-nums;
+      -webkit-font-smoothing: antialiased;
+    }
+
+    :focus-visible {
+      outline: 2px solid var(--amber-phosphor);
+      outline-offset: -2px;
+    }
+
+    .skip-nav {
+      position: absolute;
+      left: 12px;
+      top: -48px;
+      z-index: 30;
+      padding: 4px 10px;
+      background-color: var(--amber-phosphor);
+      color: var(--crt-slate);
+      font-family: var(--font-mono);
+      font-size: 12px;
+      font-weight: 500;
+      text-decoration: none;
+    }
+
+    .skip-nav:focus {
+      top: 8px;
+    }
+
+    /* Full 1440x900 Terminal Alternate-Screen Buffer */
+    .tty-screen {
+      max-width: 1440px;
+      min-height: 900px;
+      margin: 0 auto;
+      padding: 9px 14px 8px;
+      display: grid;
+      grid-template-rows: auto 1fr auto;
+      gap: 7px;
+    }
+
+    /* Ratatui Box-Drawing Frame Primitives */
+    .tui-block {
+      display: flex;
+      flex-direction: column;
+      min-width: 0;
+    }
+
+    .box-line {
+      display: flex;
+      align-items: center;
+      white-space: nowrap;
+      overflow: hidden;
+      height: 16px;
+      line-height: 16px;
+      font-size: 13px;
+      color: var(--dim-cell);
+      user-select: none;
+      background-color: var(--crt-slate);
+    }
+
+    .box-glyph {
+      color: var(--cell-rule);
+      flex-shrink: 0;
+    }
+
+    .box-rule-fill {
+      flex: 1;
+      min-width: 8px;
+      height: 1.5px;
+      background-color: var(--cell-rule);
+    }
+
+    .box-title {
+      color: var(--phosphor-bone);
+      font-weight: 500;
+      font-size: 12px;
+    }
+
+    .box-title-amber {
+      color: var(--amber-phosphor);
+      font-weight: 500;
+      font-size: 12px;
+    }
+
+    .box-meta {
+      color: var(--dim-cell);
+      font-size: 11.5px;
+    }
+
+    .box-body {
+      position: relative;
+      display: flex;
+      flex-direction: column;
+      margin-left: 0.48ch;
+      margin-right: 0.48ch;
+      border-left: 1.5px solid var(--cell-rule);
+      border-right: 1.5px solid var(--cell-rule);
+      background-color: var(--pane-fill);
+      min-width: 0;
+    }
+
+    .box-body.fill-height {
+      flex: 1;
+    }
+
+    /* Top Cluster Bar */
+    .cluster-strip-inner {
+      display: flex;
+      flex-wrap: wrap;
+      align-items: center;
+      justify-content: space-between;
+      gap: 8px 12px;
+      padding: 6px 12px;
+    }
+
+    .ns-group {
+      display: flex;
+      flex-wrap: wrap;
+      align-items: center;
+      gap: 6px;
+    }
+
+    .field-tag {
+      color: var(--dim-cell);
+      font-size: 11.5px;
+      margin-right: 2px;
+    }
+
+    .tui-btn {
+      appearance: none;
+      border: 1px solid var(--cell-rule);
+      background-color: var(--crt-slate);
+      color: var(--dim-cell);
+      font-family: var(--font-mono);
+      font-size: 11.5px;
+      line-height: 1.2;
+      padding: 4px 8px;
+      cursor: pointer;
+      font-variant-numeric: tabular-nums;
+      transition: background-color 80ms linear, color 80ms linear, border-color 80ms linear;
+    }
+
+    .tui-btn:hover {
+      color: var(--phosphor-bone);
+      border-color: var(--dim-cell);
+      background-color: var(--tint-row-hover);
+    }
+
+    .tui-btn[aria-pressed="true"],
+    .tui-btn[aria-selected="true"] {
+      color: var(--amber-phosphor);
+      border-color: var(--amber-phosphor);
+      background-color: var(--tint-amber);
+      font-weight: 500;
+    }
+
+    html[data-no-color="true"] .tui-btn[aria-pressed="true"],
+    html[data-no-color="true"] .tui-btn[aria-selected="true"] {
+      text-decoration: underline;
+    }
+
+    .key-hint {
+      color: var(--amber-phosphor);
+      font-weight: 500;
+    }
+
+    .budget-cluster {
+      display: flex;
+      align-items: center;
+      gap: 8px;
+      padding: 3px 10px;
+      background-color: var(--crt-slate);
+      border: 1px solid var(--cell-rule);
+      font-size: 11.5px;
+    }
+
+    .budget-bar {
+      color: var(--ok-emerald);
+      letter-spacing: 0.02em;
+    }
+
+    .budget-bar.is-warn {
+      color: var(--amber-phosphor);
+    }
+
+    .burn-rate {
+      color: var(--crit-coral);
+      font-size: 11.5px;
+    }
+
+    .top-right-controls {
+      display: flex;
+      flex-wrap: wrap;
+      align-items: center;
+      gap: 8px;
+    }
+
+    .filter-unit {
+      display: inline-flex;
+      align-items: center;
+      gap: 6px;
+      background-color: var(--crt-slate);
+      border: 1px solid var(--cell-rule);
+      padding: 2px 6px 2px 8px;
+    }
+
+    .filter-unit:focus-within {
+      border-color: var(--amber-phosphor);
+    }
+
+    .filter-label {
+      color: var(--amber-phosphor);
+      font-size: 11.5px;
+      font-weight: 500;
+      cursor: pointer;
+      white-space: nowrap;
+    }
+
+    .filter-input {
+      width: 178px;
+      border: none;
+      background-color: transparent;
+      color: var(--phosphor-bone);
+      font-family: var(--font-mono);
+      font-size: 11.5px;
+      padding: 2px 4px;
+      font-variant-numeric: tabular-nums;
+    }
+
+    .filter-input::placeholder {
+      color: var(--dim-cell);
+    }
+
+    .filter-clear {
+      appearance: none;
+      border: 1px solid var(--cell-rule);
+      background-color: var(--pane-fill);
+      color: var(--dim-cell);
+      font-family: var(--font-mono);
+      font-size: 10.5px;
+      padding: 1px 5px;
+      cursor: pointer;
+      transition: color 80ms linear, border-color 80ms linear;
+    }
+
+    .filter-clear:hover {
+      color: var(--phosphor-bone);
+      border-color: var(--phosphor-bone);
+    }
+
+    .filter-clear[hidden] {
+      display: none;
+    }
+
+    /* Main Split Multiplexer Grid */
+    .mux-split {
+      display: grid;
+      grid-template-columns: minmax(530px, 0.90fr) minmax(0, 1.10fr);
+      gap: 10px;
+      align-items: stretch;
+      min-height: 0;
+    }
+
+    .left-column,
+    .right-column {
+      display: flex;
+      flex-direction: column;
+      min-width: 0;
+    }
+
+    .grow-block {
+      flex: 1;
+    }
+
+    /* Left Pane: Worst-First Pod Table */
+    .pod-table-head {
+      display: grid;
+      grid-template-columns: 2ch minmax(17ch, 1.35fr) 11ch 4ch 7ch 9ch 9ch;
+      gap: 8px;
+      padding: 6px 10px;
+      background-color: var(--crt-slate);
+      border-bottom: 1px solid var(--cell-rule);
+      color: var(--dim-cell);
+      font-size: 11px;
+      font-weight: 500;
+      letter-spacing: 0.03em;
+    }
+
+    .num-col {
+      text-align: right;
+    }
+
+    .pod-rows {
+      display: flex;
+      flex-direction: column;
+    }
+
+    .pod-row {
+      appearance: none;
+      width: 100%;
+      border: none;
+      border-bottom: 1px solid var(--cell-rule);
+      background-color: transparent;
+      color: var(--phosphor-bone);
+      font-family: var(--font-mono);
+      font-size: 12px;
+      line-height: 1.35;
+      padding: 8.5px 10px;
+      text-align: left;
+      cursor: pointer;
+      display: grid;
+      grid-template-columns: 2ch minmax(17ch, 1.35fr) 11ch 4ch 7ch 9ch 9ch;
+      gap: 8px;
+      align-items: center;
+      font-variant-numeric: tabular-nums;
+      transition: background-color 80ms linear, color 80ms linear;
+    }
+
+    .pod-row:last-child {
+      border-bottom: none;
+    }
+
+    .pod-row:hover {
+      background-color: var(--tint-row-hover);
+    }
+
+    .pod-row[aria-selected="true"] {
+      background-color: var(--tint-amber);
+    }
+
+    html[data-no-color="true"] .pod-row[aria-selected="true"] .pod-name {
+      text-decoration: underline;
+      font-weight: 500;
+    }
+
+    .sel-glyph {
+      color: var(--amber-phosphor);
+      font-weight: 500;
+    }
+
+    .pod-name {
+      font-weight: 500;
+      white-space: nowrap;
+      overflow: hidden;
+      text-overflow: ellipsis;
+    }
+
+    .pod-row[aria-selected="true"] .pod-name {
+      color: var(--amber-phosphor);
+    }
+
+    .state-badge {
+      display: inline-block;
+      font-size: 11px;
+      font-weight: 500;
+      padding: 1px 4px;
+      white-space: nowrap;
+    }
+
+    .state-backoff {
+      color: var(--crit-coral);
+      background-color: var(--tint-crit);
+    }
+
+    .state-degraded {
+      color: var(--amber-phosphor);
+      background-color: var(--tint-amber);
+    }
+
+    .state-ok {
+      color: var(--ok-emerald);
+      background-color: var(--tint-ok);
+    }
+
+    html[data-no-color="true"] .state-backoff {
+      border: 1px solid var(--phosphor-bone);
+      font-weight: 500;
+    }
+
+    html[data-no-color="true"] .state-degraded {
+      border: 1px dashed var(--phosphor-bone);
+    }
+
+    .spark-cell {
+      color: var(--span-cyan);
+      letter-spacing: 0.02em;
+    }
+
+    .pod-row[data-severity="crit"] .spark-cell {
+      color: var(--crit-coral);
+    }
+
+    .pod-row[data-severity="warn"] .spark-cell {
+      color: var(--amber-phosphor);
+    }
+
+    .dim-val {
+      color: var(--dim-cell);
+    }
+
+    .crit-val {
+      color: var(--crit-coral);
+      font-weight: 500;
+    }
+
+    .warn-val {
+      color: var(--amber-phosphor);
+      font-weight: 500;
+    }
+
+    .ok-val {
+      color: var(--ok-emerald);
+    }
+
+    .empty-pods-msg {
+      padding: 16px 12px;
+      color: var(--dim-cell);
+    }
+
+    .empty-pods-msg[hidden] {
+      display: none;
+    }
+
+    /* Left Lower Sub-Pane: Cluster Pressure, Braille Sparklines, K8s Events */
+    .pressure-body {
+      padding: 9px 11px 10px;
+      display: flex;
+      flex-direction: column;
+      gap: 9px;
+      font-size: 11.5px;
+      flex: 1;
+    }
+
+    .spark-stack {
+      display: flex;
+      flex-direction: column;
+      gap: 6px;
+    }
+
+    .spark-strip {
+      display: grid;
+      grid-template-columns: 15ch 1fr auto;
+      gap: 10px;
+      align-items: center;
+      padding: 6px 8px;
+      background-color: var(--crt-slate);
+      border: 1px solid var(--cell-rule);
+    }
+
+    .spark-glyphs {
+      color: var(--amber-phosphor);
+      letter-spacing: 0.04em;
+      overflow: hidden;
+      white-space: nowrap;
+    }
+
+    .spark-glyphs.cyan {
+      color: var(--span-cyan);
+    }
+
+    .node-grid {
+      display: grid;
+      grid-template-columns: repeat(3, minmax(0, 1fr));
+      gap: 7px;
+    }
+
+    .node-cell {
+      background-color: var(--crt-slate);
+      border: 1px solid var(--cell-rule);
+      padding: 7px 8px;
+      display: flex;
+      flex-direction: column;
+      gap: 3px;
+    }
+
+    .node-head {
+      display: flex;
+      justify-content: space-between;
+      color: var(--phosphor-bone);
+      font-weight: 500;
+    }
+
+    .node-sub {
+      color: var(--dim-cell);
+      font-size: 11px;
+    }
+
+    .event-ring {
+      background-color: var(--crt-slate);
+      border: 1px solid var(--cell-rule);
+      display: flex;
+      flex-direction: column;
+      flex: 1;
+    }
+
+    .event-ring-head {
+      display: flex;
+      justify-content: space-between;
+      padding: 4px 8px;
+      border-bottom: 1px solid var(--cell-rule);
+      background-color: var(--pane-fill);
+      color: var(--dim-cell);
+      font-size: 10.5px;
+    }
+
+    .event-row {
+      display: grid;
+      grid-template-columns: 9ch 10ch 1fr;
+      gap: 8px;
+      padding: 4.5px 8px;
+      border-bottom: 1px solid var(--cell-rule);
+      font-size: 11px;
+      white-space: nowrap;
+      overflow: hidden;
+      text-overflow: ellipsis;
+    }
+
+    .event-row:last-child {
+      border-bottom: none;
+    }
+
+    .ev-msg {
+      overflow: hidden;
+      text-overflow: ellipsis;
+      color: var(--phosphor-bone);
+    }
+
+    /* Right Pane: View Tabs + Gauges + Causal Span Waterfall + Span Attributes + Root Cause */
+    .pane-toolbar {
+      display: flex;
+      flex-wrap: wrap;
+      align-items: center;
+      justify-content: space-between;
+      gap: 8px;
+      padding: 6px 12px;
+      background-color: var(--crt-slate);
+      border-bottom: 1px solid var(--cell-rule);
+    }
+
+    .tab-strip {
+      display: flex;
+      align-items: center;
+      gap: 6px;
+    }
+
+    .trace-meta-pill {
+      font-size: 11px;
+      color: var(--dim-cell);
+      white-space: nowrap;
+    }
+
+    .trace-meta-pill strong {
+      color: var(--span-cyan);
+      font-weight: 500;
+    }
+
+    .inspector-content {
+      padding: 10px 12px;
+      display: flex;
+      flex-direction: column;
+      gap: 10px;
+      flex: 1;
+    }
+
+    .inspector-view {
+      display: flex;
+      flex-direction: column;
+      gap: 10px;
+    }
+
+    .inspector-view[hidden] {
+      display: none;
+    }
+
+    /* ratatui::widgets::Gauge Strip */
+    .gauge-row-grid {
+      display: grid;
+      grid-template-columns: repeat(3, minmax(0, 1fr));
+      gap: 8px;
+    }
+
+    .ratatui-gauge {
+      background-color: var(--crt-slate);
+      border: 1px solid var(--cell-rule);
+      padding: 8px 9px;
+      display: flex;
+      flex-direction: column;
+      gap: 5px;
+    }
+
+    .gauge-top {
+      display: flex;
+      justify-content: space-between;
+      align-items: baseline;
+      font-size: 11px;
+      color: var(--dim-cell);
+    }
+
+    .gauge-top strong {
+      color: var(--phosphor-bone);
+      font-weight: 500;
+    }
+
+    .gauge-bar-line {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      gap: 6px;
+      font-size: 11.5px;
+      white-space: nowrap;
+    }
+
+    .gauge-blocks {
+      letter-spacing: 0.02em;
+    }
+
+    .gauge-blocks.crit { color: var(--crit-coral); }
+    .gauge-blocks.warn { color: var(--amber-phosphor); }
+    .gauge-blocks.ok { color: var(--ok-emerald); }
+    .gauge-blocks.cyan { color: var(--span-cyan); }
+
+    /* Causal Span Waterfall */
+    .waterfall-box {
+      background-color: var(--crt-slate);
+      border: 1px solid var(--cell-rule);
+      display: flex;
+      flex-direction: column;
+    }
+
+    .waterfall-ruler {
+      display: grid;
+      grid-template-columns: minmax(28ch, 1.18fr) minmax(0, 1.32fr) 8ch;
+      gap: 10px;
+      padding: 6px 10px;
+      border-bottom: 1px solid var(--cell-rule);
+      font-size: 10.5px;
+      color: var(--dim-cell);
+      background-color: var(--pane-fill);
+    }
+
+    .ruler-ticks {
+      display: flex;
+      justify-content: space-between;
+    }
+
+    .span-list {
+      display: flex;
+      flex-direction: column;
+    }
+
+    .span-row {
+      display: grid;
+      grid-template-columns: minmax(28ch, 1.18fr) minmax(0, 1.32fr) 8ch;
+      gap: 10px;
+      align-items: center;
+      padding: 7.5px 10px;
+      border-bottom: 1px solid var(--cell-rule);
+      font-size: 11.5px;
+    }
+
+    .span-row:last-child {
+      border-bottom: none;
+    }
+
+    .span-row.is-bottleneck {
+      background-color: var(--tint-amber);
+    }
+
+    .span-label {
+      white-space: nowrap;
+      overflow: hidden;
+      text-overflow: ellipsis;
+    }
+
+    .span-offset {
+      color: var(--dim-cell);
+      display: inline-block;
+      min-width: 6.5ch;
+    }
+
+    .span-op {
+      color: var(--phosphor-bone);
+      font-weight: 500;
+    }
+
+    .span-wait-tag {
+      color: var(--amber-phosphor);
+      font-weight: 500;
+    }
+
+    .span-err-tag {
+      color: var(--crit-coral);
+      font-weight: 500;
+    }
+
+    .span-track {
+      position: relative;
+      height: 16px;
+      background-color: var(--well-recess);
+      border: 1px solid var(--cell-rule);
+      overflow: hidden;
+    }
+
+    .span-bar {
+      position: absolute;
+      top: 1px;
+      bottom: 1px;
+      display: flex;
+      align-items: center;
+      justify-content: flex-end;
+      overflow: hidden;
+      white-space: nowrap;
+      font-size: 10px;
+      font-weight: 500;
+      line-height: 1;
+      padding: 0 4px;
+    }
+
+    .span-bar.cyan {
+      background-color: var(--tint-cyan);
+      border-left: 2px solid var(--span-cyan);
+      border-right: 2px solid var(--span-cyan);
+      color: var(--span-cyan);
+    }
+
+    .span-bar.wait {
+      background-color: var(--tint-amber-strong);
+      border-left: 2px solid var(--amber-phosphor);
+      border-right: 2px solid var(--amber-phosphor);
+      color: var(--amber-phosphor);
+    }
+
+    .span-bar.crit {
+      background-color: var(--tint-crit);
+      border-left: 2px solid var(--crit-coral);
+      border-right: 2px solid var(--crit-coral);
+      color: var(--crit-coral);
+    }
+
+    .span-bar.ok {
+      background-color: var(--tint-ok);
+      border-left: 2px solid var(--ok-emerald);
+      border-right: 2px solid var(--ok-emerald);
+      color: var(--ok-emerald);
+    }
+
+    html[data-no-color="true"] .span-bar {
+      background-color: var(--tint-amber);
+      border-left: 2px solid var(--phosphor-bone);
+      border-right: 2px solid var(--phosphor-bone);
+    }
+
+    .span-dur {
+      text-align: right;
+      font-variant-numeric: tabular-nums;
+      white-space: nowrap;
+    }
+
+    /* OpenTelemetry Span Attributes Sub-Table */
+    .attr-panel {
+      background-color: var(--crt-slate);
+      border: 1px solid var(--cell-rule);
+      display: flex;
+      flex-direction: column;
+    }
+
+    .attr-head {
+      display: flex;
+      justify-content: space-between;
+      padding: 5px 10px;
+      border-bottom: 1px solid var(--cell-rule);
+      background-color: var(--pane-fill);
+      font-size: 10.5px;
+      color: var(--dim-cell);
+    }
+
+    .attr-head strong {
+      color: var(--phosphor-bone);
+      font-weight: 500;
+    }
+
+    .attr-grid {
+      display: grid;
+      grid-template-columns: repeat(2, minmax(0, 1fr));
+      font-size: 11px;
+    }
+
+    .attr-kv {
+      display: flex;
+      justify-content: space-between;
+      gap: 8px;
+      padding: 5.5px 10px;
+      border-bottom: 1px solid var(--cell-rule);
+      border-right: 1px solid var(--cell-rule);
+    }
+
+    .attr-kv:nth-child(2n) {
+      border-right: none;
+    }
+
+    .attr-kv:nth-last-child(-n+2) {
+      border-bottom: none;
+    }
+
+    .attr-k {
+      color: var(--dim-cell);
+    }
+
+    .attr-v {
+      color: var(--span-cyan);
+      font-weight: 500;
+    }
+
+    .attr-v.warn {
+      color: var(--amber-phosphor);
+    }
+
+    .attr-v.crit {
+      color: var(--crit-coral);
+    }
+
+    /* Root-Cause Summary Box */
+    .diagnosis-box {
+      background-color: var(--crt-slate);
+      border: 1px solid var(--cell-rule);
+      padding: 10px 11px;
+      display: flex;
+      flex-direction: column;
+      justify-content: space-between;
+      gap: 7px;
+      flex: 1;
+    }
+
+    .diag-header {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      border-bottom: 1px solid var(--cell-rule);
+      padding-bottom: 4px;
+      font-size: 11.5px;
+    }
+
+    .diag-title {
+      color: var(--amber-phosphor);
+      font-weight: 500;
+    }
+
+    .diag-grid {
+      display: grid;
+      grid-template-columns: 12ch 1fr;
+      gap: 4px 10px;
+      font-size: 11.5px;
+      line-height: 1.4;
+    }
+
+    .diag-key {
+      color: var(--dim-cell);
+    }
+
+    .diag-val code {
+      font-family: var(--font-mono);
+      color: var(--span-cyan);
+    }
+
+    .diag-cmd {
+      margin-top: 2px;
+      padding: 5px 8px;
+      background-color: var(--pane-fill);
+      border: 1px solid var(--cell-rule);
+      color: var(--phosphor-bone);
+      font-size: 11px;
+      display: flex;
+      justify-content: space-between;
+      gap: 8px;
+      overflow-x: auto;
+    }
+
+    .cmd-prefix {
+      color: var(--ok-emerald);
+    }
+
+    /* Alternate Right-Pane Views: JSON Logs & Resource Spec */
+    .mono-log-list {
+      background-color: var(--crt-slate);
+      border: 1px solid var(--cell-rule);
+      padding: 8px 10px;
+      display: flex;
+      flex-direction: column;
+      gap: 6px;
+      font-size: 11.5px;
+      overflow-x: auto;
+    }
+
+    .log-entry {
+      padding: 5px 7px;
+      border-bottom: 1px solid var(--cell-rule);
+      white-space: pre-wrap;
+      word-break: break-all;
+    }
+
+    .log-entry:last-child {
+      border-bottom: none;
+    }
+
+    .spec-pre {
+      margin: 0;
+      background-color: var(--crt-slate);
+      border: 1px solid var(--cell-rule);
+      padding: 10px 12px;
+      font-family: var(--font-mono);
+      font-size: 11.5px;
+      line-height: 1.45;
+      color: var(--phosphor-bone);
+      white-space: pre-wrap;
+    }
+
+    /* Bottom Keybar */
+    .keybar {
+      display: flex;
+      flex-wrap: wrap;
+      align-items: center;
+      justify-content: space-between;
+      gap: 8px 16px;
+      padding: 5px 10px;
+      background-color: var(--pane-fill);
+      border: 1px solid var(--cell-rule);
+      font-size: 11.5px;
+    }
+
+    .keybar-left {
+      display: flex;
+      flex-wrap: wrap;
+      align-items: center;
+      gap: 14px;
+      color: var(--phosphor-bone);
+    }
+
+    .kbd-chip {
+      color: var(--amber-phosphor);
+      font-weight: 500;
+    }
+
+    .keybar-right {
+      color: var(--dim-cell);
+      white-space: nowrap;
+    }
+
+    @media (max-width: 1180px) {
+      .mux-split {
+        grid-template-columns: 1fr;
+      }
+      .gauge-row-grid,
+      .node-grid,
+      .attr-grid {
+        grid-template-columns: 1fr;
+      }
+    }
+
+    @media (prefers-reduced-motion: reduce) {
+      *,
+      *::before,
+      *::after {
+        animation-duration: 0.01ms !important;
+        animation-iteration-count: 1 !important;
+        transition-duration: 0.01ms !important;
+        scroll-behavior: auto !important;
+      }
+    }
+  </style>
+</head>
+<body>
+  <a class="skip-nav" href="#pod-table-region">Skip to pod table</a>
+
+  <div class="tty-screen">
+    <!-- Top Cluster Bar (Ratatui Rounded Box-Drawing Block: ╭─┬─╮ │ ╰─┴─╯) -->
+    <header class="tui-block" aria-label="Cluster context and controls">
+      <div class="box-line" aria-hidden="true">
+        <span class="box-glyph">╭─</span>
+        <span class="box-title-amber">&nbsp;KUBETRACE TUI v0.9.4&nbsp;</span>
+        <span class="box-glyph">─┬─</span>
+        <span class="box-meta" id="ctx-banner">&nbsp;Rust · Ratatui · ctx=prod-eu-central (k8s v1.31.2)&nbsp;</span>
+        <span class="box-glyph">─┬─</span>
+        <span class="box-meta">&nbsp;DEC-2026 sync · 250ms&nbsp;</span>
+        <span class="box-rule-fill"></span>
+        <span class="box-glyph">─╮</span>
+      </div>
+      <div class="box-body">
+        <div class="cluster-strip-inner">
+          <div class="ns-group" role="group" aria-label="Namespace selector">
+            <span class="field-tag">Cluster:</span>
+            <button type="button" class="tui-btn ns-btn" data-cluster="prod-eu" aria-pressed="true">
+              <span class="key-hint">[1]</span> prod-eu
+            </button>
+            <button type="button" class="tui-btn ns-btn" data-cluster="prod-us" aria-pressed="false">
+              <span class="key-hint">[2]</span> prod-us
+            </button>
+            <button type="button" class="tui-btn ns-btn" data-cluster="staging" aria-pressed="false">
+              <span class="key-hint">[3]</span> staging
+            </button>
+          </div>
+
+          <div class="budget-cluster" aria-label="30-day error budget remaining">
+            <span class="field-tag">SLO Budget:</span>
+            <span class="budget-bar" id="budget-bar">████████░░ 82%</span>
+            <span class="burn-rate" id="burn-rate">burn 2.4x</span>
+          </div>
+
+          <div class="top-right-controls">
+            <button type="button" class="tui-btn" id="no-color-toggle" aria-pressed="false">
+              <span class="key-hint">[n]</span> NO_COLOR: OFF
+            </button>
+
+            <div class="filter-unit">
+              <label class="filter-label" for="pod-filter">[/] Filter:</label>
+              <input
+                id="pod-filter"
+                class="filter-input"
+                type="search"
+                value=""
+                placeholder="pod or [BACKOFF]..."
+                autocomplete="off"
+                spellcheck="false"
+              />
+              <button type="button" class="filter-clear" id="filter-clear-btn" hidden>Esc</button>
+            </div>
+          </div>
+        </div>
+      </div>
+      <div class="box-line" aria-hidden="true">
+        <span class="box-glyph">╰─</span>
+        <span class="box-rule-fill"></span>
+        <span class="box-glyph">─┴─</span>
+        <span class="box-meta">&nbsp;mode: operate (readonly)&nbsp;</span>
+        <span class="box-glyph">─╯</span>
+      </div>
+    </header>
+
+    <!-- Main Split Multiplexer -->
+    <main class="mux-split">
+      <!-- Left Column: Worst-First Pod Table + Mesh/Event Telemetry -->
+      <div class="left-column">
+        <section class="tui-block grow-block" id="pod-table-region" aria-labelledby="pods-pane-heading">
+          <div class="box-line" aria-hidden="true">
+            <span class="box-glyph">╭─</span>
+            <span class="box-title" id="pods-pane-heading">&nbsp;Worst-First Pods (<span id="pod-count-label">6/6</span>)&nbsp;</span>
+            <span class="box-glyph">─┬─</span>
+            <span class="box-meta">&nbsp;sort: severity, p99 desc&nbsp;</span>
+            <span class="box-rule-fill"></span>
+            <span class="box-glyph">─╮</span>
+          </div>
+
+          <div class="box-body">
+            <div class="pod-table-head" role="row" aria-hidden="true">
+              <span></span>
+              <span>POD</span>
+              <span>STATE</span>
+              <span class="num-col">RST</span>
+              <span class="num-col">P99</span>
+              <span>5M TREND</span>
+              <span class="num-col">CPU/MEM</span>
+            </div>
+
+            <div class="pod-rows" id="pod-rows-list" role="listbox" aria-label="Kubernetes pods sorted worst-first">
+              <button type="button" class="pod-row" role="option" data-pod-id="checkout-api-7f9b" data-severity="crit" aria-selected="true">
+                <span class="sel-glyph">▸</span>
+                <span class="pod-name">checkout-api-7f9b</span>
+                <span><span class="state-badge state-backoff">[BACKOFF]</span></span>
+                <span class="num-col crit-val">14</span>
+                <span class="num-col crit-val">412ms</span>
+                <span class="spark-cell" aria-label="rising spike">⣀⣤⣶⣿⣷⣦⣄</span>
+                <span class="num-col crit-val">94%/88%</span>
+              </button>
+
+              <button type="button" class="pod-row" role="option" data-pod-id="ledger-worker-2c4d" data-severity="warn" aria-selected="false">
+                <span class="sel-glyph">&nbsp;</span>
+                <span class="pod-name">ledger-worker-2c4d</span>
+                <span><span class="state-badge state-degraded">[DEGRADED]</span></span>
+                <span class="num-col warn-val">2</span>
+                <span class="num-col warn-val">238ms</span>
+                <span class="spark-cell" aria-label="sustained contention">⣀⣠⣤⣶⣷⣤⣄</span>
+                <span class="num-col warn-val">78%/71%</span>
+              </button>
+
+              <button type="button" class="pod-row" role="option" data-pod-id="otel-ingestor-9a1e" data-severity="ok" aria-selected="false">
+                <span class="sel-glyph">&nbsp;</span>
+                <span class="pod-name">otel-ingestor-9a1e</span>
+                <span><span class="state-badge state-ok">[OK]</span></span>
+                <span class="num-col dim-val">0</span>
+                <span class="num-col">42ms</span>
+                <span class="spark-cell" aria-label="steady throughput">⣀⣠⣤⣄⣀⣠⣄</span>
+                <span class="num-col dim-val">46%/59%</span>
+              </button>
+
+              <button type="button" class="pod-row" role="option" data-pod-id="auth-signer-4d8c" data-severity="ok" aria-selected="false">
+                <span class="sel-glyph">&nbsp;</span>
+                <span class="pod-name">auth-signer-4d8c</span>
+                <span><span class="state-badge state-ok">[OK]</span></span>
+                <span class="num-col dim-val">0</span>
+                <span class="num-col">19ms</span>
+                <span class="spark-cell" aria-label="nominal">⣀⣄⣀⣠⣄⣀⣄</span>
+                <span class="num-col dim-val">31%/44%</span>
+              </button>
+
+              <button type="button" class="pod-row" role="option" data-pod-id="inventory-rpc-6b2f" data-severity="ok" aria-selected="false">
+                <span class="sel-glyph">&nbsp;</span>
+                <span class="pod-name">inventory-rpc-6b2f</span>
+                <span><span class="state-badge state-ok">[OK]</span></span>
+                <span class="num-col dim-val">0</span>
+                <span class="num-col">27ms</span>
+                <span class="spark-cell" aria-label="nominal">⣀⣠⣄⣠⣤⣄⣀</span>
+                <span class="num-col dim-val">39%/52%</span>
+              </button>
+
+              <button type="button" class="pod-row" role="option" data-pod-id="redis-cache-01" data-severity="ok" aria-selected="false">
+                <span class="sel-glyph">&nbsp;</span>
+                <span class="pod-name">redis-cache-01</span>
+                <span><span class="state-badge state-ok">[OK]</span></span>
+                <span class="num-col dim-val">0</span>
+                <span class="num-col">4ms</span>
+                <span class="spark-cell" aria-label="flat sub-5ms">⣀⣀⣄⣀⣀⣄⣀</span>
+                <span class="num-col dim-val">22%/64%</span>
+              </button>
+            </div>
+
+            <div class="empty-pods-msg" id="empty-pods-state" hidden>
+              [EMPTY] Zero pods match active filter. Press [Esc] to restore all 6 rows.
+            </div>
+          </div>
+
+          <div class="box-line" aria-hidden="true">
+            <span class="box-glyph">├─</span>
+            <span class="box-title">&nbsp;Mesh &amp; Pool Sparklines&nbsp;</span>
+            <span class="box-glyph">─┼─</span>
+            <span class="box-meta" id="tally-label">&nbsp;1 [BACKOFF] · 1 [DEGRADED] · 4 [OK]&nbsp;</span>
+            <span class="box-rule-fill"></span>
+            <span class="box-glyph">─┤</span>
+          </div>
+
+          <div class="box-body fill-height">
+            <div class="pressure-body">
+              <div class="spark-stack">
+                <div class="spark-strip">
+                  <span class="dim-val">Ingress 5xx/s</span>
+                  <span class="spark-glyphs" id="err-sparkline">⣀⣀⣠⣤⣶⣿⣷⣦⣄⣠⣶⣿⣷⣦⣄⣀⣤⣶⣿⣷</span>
+                  <span class="crit-val" id="err-rate-val">18.4/s [SPIKE]</span>
+                </div>
+
+                <div class="spark-strip">
+                  <span class="dim-val">Ingress RPS</span>
+                  <span class="spark-glyphs cyan" id="rps-sparkline">⣠⣤⣶⣶⣿⣿⣷⣶⣤⣄⣠⣤⣶⣿⣿⣷⣶⣤⣄⣠⣤</span>
+                  <span id="rps-val">1,840 req/s</span>
+                </div>
+
+                <div class="spark-strip">
+                  <span class="dim-val">pg-primary-eu</span>
+                  <span class="warn-val" id="pool-strip-bar">██████████ 96/100 conns</span>
+                  <span class="warn-val" id="pool-strip-tag">wait_q=29</span>
+                </div>
+              </div>
+
+              <div class="node-grid" aria-label="Worker node pressure">
+                <div class="node-cell">
+                  <div class="node-head"><span>eu-central-1a</span><span class="warn-val">[HOT]</span></div>
+                  <div class="node-sub">cpu 84% · mem 79%</div>
+                  <div class="node-sub">rtt 0.8ms · 24 pods</div>
+                </div>
+                <div class="node-cell">
+                  <div class="node-head"><span>eu-central-1b</span><span class="ok-val">[OK]</span></div>
+                  <div class="node-sub">cpu 61% · mem 68%</div>
+                  <div class="node-sub">rtt 1.1ms · 21 pods</div>
+                </div>
+                <div class="node-cell">
+                  <div class="node-head"><span>eu-central-1c</span><span class="ok-val">[OK]</span></div>
+                  <div class="node-sub">cpu 54% · mem 62%</div>
+                  <div class="node-sub">rtt 1.3ms · 19 pods</div>
+                </div>
+              </div>
+
+              <div class="event-ring" aria-label="Recent namespace events">
+                <div class="event-ring-head">
+                  <span>K8S EVENT RING (ns/prod-eu)</span>
+                  <span>watch: rv=9482104</span>
+                </div>
+                <div class="event-row">
+                  <span class="dim-val">18:42:11</span>
+                  <span class="crit-val">[BACKOFF]</span>
+                  <span class="ev-msg">checkout-api-7f9b readiness HTTP 503 (restart #14)</span>
+                </div>
+                <div class="event-row">
+                  <span class="dim-val">18:42:04</span>
+                  <span class="warn-val">[DEGRADED]</span>
+                  <span class="ev-msg">pg-primary-eu pool wait_q=29 (&gt;150ms acquire stall)</span>
+                </div>
+                <div class="event-row">
+                  <span class="dim-val">18:41:49</span>
+                  <span class="warn-val">[LOCK]</span>
+                  <span class="ev-msg">ledger-worker-2c4d holding 64 tx locks on ledger_entries</span>
+                </div>
+                <div class="event-row">
+                  <span class="dim-val">18:41:12</span>
+                  <span class="ok-val">[OK]</span>
+                  <span class="ev-msg">otel-ingestor-9a1e tail-sampling active (0 spans dropped)</span>
+                </div>
+                <div class="event-row">
+                  <span class="dim-val">18:40:38</span>
+                  <span class="ok-val">[OK]</span>
+                  <span class="ev-msg">inventory-rpc-6b2f routed 100% SKU reads to pg-replica-eu-01</span>
+                </div>
+                <div class="event-row">
+                  <span class="dim-val">18:39:55</span>
+                  <span class="ok-val">[OK]</span>
+                  <span class="ev-msg">auth-signer-4d8c Ed25519 JWKS cache warm (hit_rate=99.94%)</span>
+                </div>
+              </div>
+            </div>
+          </div>
+
+          <div class="box-line" aria-hidden="true">
+            <span class="box-glyph">╰─</span>
+            <span class="box-rule-fill"></span>
+            <span class="box-glyph">─┴─</span>
+            <span class="box-meta">&nbsp;ratatui::Table + Sparkline&nbsp;</span>
+            <span class="box-glyph">─╯</span>
+          </div>
+        </section>
+      </div>
+
+      <!-- Right Column: Causal Span Waterfall & ratatui::widgets::Gauge Inspector -->
+      <div class="right-column">
+        <section class="tui-block grow-block" aria-labelledby="inspect-pane-heading">
+          <div class="box-line" aria-hidden="true">
+            <span class="box-glyph">╭─</span>
+            <span class="box-title-amber" id="inspect-pane-heading">&nbsp;Inspect: <span id="inspect-pod-name">checkout-api-7f9b [BACKOFF]</span>&nbsp;</span>
+            <span class="box-glyph">─┬─</span>
+            <span class="box-meta" id="inspect-trace-id">&nbsp;trace=4f8a91c0e27b · HTTP 503 · 412ms&nbsp;</span>
+            <span class="box-rule-fill"></span>
+            <span class="box-glyph">─╮</span>
+          </div>
+
+          <div class="box-body fill-height">
+            <div class="pane-toolbar">
+              <div class="tab-strip" role="tablist" aria-label="Inspector view mode">
+                <button type="button" class="tui-btn view-tab" role="tab" data-view="trace" aria-selected="true" id="tab-trace">
+                  <span class="key-hint">[t]</span> Causal Trace
+                </button>
+                <button type="button" class="tui-btn view-tab" role="tab" data-view="logs" aria-selected="false" id="tab-logs">
+                  <span class="key-hint">[l]</span> JSON Logs
+                </button>
+                <button type="button" class="tui-btn view-tab" role="tab" data-view="spec" aria-selected="false" id="tab-spec">
+                  <span class="key-hint">[r]</span> Resource Spec
+                </button>
+              </div>
+              <span class="trace-meta-pill" id="inspect-node-meta">eu-central-1a · <strong>checkout-rs:1.18.4</strong></span>
+            </div>
+
+            <div class="inspector-content">
+              <!-- ratatui::widgets::Gauge Resource Bars -->
+              <div class="gauge-row-grid" id="gauge-strip" aria-label="Pod resource gauges">
+                <div class="ratatui-gauge">
+                  <div class="gauge-top"><span>CPU Quota</span><strong id="g1-sub">940m / 1000m</strong></div>
+                  <div class="gauge-bar-line">
+                    <span class="gauge-blocks crit" id="g1-bar">█████████░ 94%</span>
+                    <span class="state-badge state-backoff" id="g1-tag">[THROTTLED]</span>
+                  </div>
+                </div>
+
+                <div class="ratatui-gauge">
+                  <div class="gauge-top"><span>RSS Memory</span><strong id="g2-sub">451Mi / 512Mi</strong></div>
+                  <div class="gauge-bar-line">
+                    <span class="gauge-blocks warn" id="g2-bar">█████████░ 88%</span>
+                    <span class="state-badge state-degraded" id="g2-tag">[HIGH]</span>
+                  </div>
+                </div>
+
+                <div class="ratatui-gauge">
+                  <div class="gauge-top"><span id="g3-title">PG Conn Pool</span><strong id="g3-sub">96 / 100 conns</strong></div>
+                  <div class="gauge-bar-line">
+                    <span class="gauge-blocks crit" id="g3-bar">██████████ 96%</span>
+                    <span class="state-badge state-backoff" id="g3-tag">[SATURATED]</span>
+                  </div>
+                </div>
+              </div>
+
+              <!-- View 1: Causal Trace Waterfall + Bottleneck Span Attributes -->
+              <div class="inspector-view" id="view-trace" role="tabpanel" aria-labelledby="tab-trace">
+                <div class="waterfall-box">
+                  <div class="waterfall-ruler" aria-hidden="true">
+                    <span>CAUSAL SPAN WATERFALL</span>
+                    <div class="ruler-ticks">
+                      <span>0ms</span>
+                      <span id="tick-q1">100ms</span>
+                      <span id="tick-q2">200ms</span>
+                      <span id="tick-q3">300ms</span>
+                      <span id="tick-q4">412ms</span>
+                    </div>
+                    <span class="num-col">DUR</span>
+                  </div>
+
+                  <div class="span-list" id="waterfall-rows">
+                    <div class="span-row">
+                      <div class="span-label">
+                        <span class="span-offset">+0ms</span><span class="span-op">POST /checkout</span> <span class="span-err-tag">[503]</span>
+                      </div>
+                      <div class="span-track">
+                        <div class="span-bar crit" style="left: 0%; width: 100%;">HTTP 503 · 412ms</div>
+                      </div>
+                      <div class="span-dur crit-val">412ms</div>
+                    </div>
+
+                    <div class="span-row">
+                      <div class="span-label">
+                        <span class="span-offset">+3ms</span><span>├─ auth.verify_jwt</span>
+                      </div>
+                      <div class="span-track">
+                        <div class="span-bar ok" style="left: 0.7%; width: 4.5%;"></div>
+                      </div>
+                      <div class="span-dur">11ms</div>
+                    </div>
+
+                    <div class="span-row">
+                      <div class="span-label">
+                        <span class="span-offset">+14ms</span><span>├─ inventory.check_stock</span>
+                      </div>
+                      <div class="span-track">
+                        <div class="span-bar cyan" style="left: 3.4%; width: 6.6%;"></div>
+                      </div>
+                      <div class="span-dur">27ms</div>
+                    </div>
+
+                    <div class="span-row is-bottleneck">
+                      <div class="span-label">
+                        <span class="span-offset">+14ms</span><span class="span-op">├─ pg.pool.acquire</span> <span class="span-wait-tag">[WAIT 182ms]</span>
+                      </div>
+                      <div class="span-track">
+                        <div class="span-bar wait" style="left: 3.4%; width: 44.2%;">WAIT 182ms</div>
+                      </div>
+                      <div class="span-dur warn-val">182ms</div>
+                    </div>
+
+                    <div class="span-row">
+                      <div class="span-label">
+                        <span class="span-offset">+196ms</span><span>├─ pg.tx.lock_cart_row</span>
+                      </div>
+                      <div class="span-track">
+                        <div class="span-bar cyan" style="left: 47.5%; width: 5.5%;"></div>
+                      </div>
+                      <div class="span-dur">18ms</div>
+                    </div>
+
+                    <div class="span-row">
+                      <div class="span-label">
+                        <span class="span-offset">+196ms</span><span class="span-op">├─ stripe.authorize</span> <span class="span-err-tag">[DEADLINE]</span>
+                      </div>
+                      <div class="span-track">
+                        <div class="span-bar cyan" style="left: 47.5%; width: 46.6%;">192ms -&gt; cutoff</div>
+                      </div>
+                      <div class="span-dur crit-val">192ms</div>
+                    </div>
+
+                    <div class="span-row">
+                      <div class="span-label">
+                        <span class="span-offset">+388ms</span><span>╰─ otel.span.export</span>
+                      </div>
+                      <div class="span-track">
+                        <div class="span-bar ok" style="left: 94.1%; width: 5.9%;"></div>
+                      </div>
+                      <div class="span-dur dim-val">24ms</div>
+                    </div>
+                  </div>
+                </div>
+
+                <div class="attr-panel" aria-label="Bottleneck span attributes">
+                  <div class="attr-head">
+                    <span>BOTTLENECK SPAN ATTRIBUTES · <strong id="attr-span-name">pg.pool.acquire (span_id=8c21f09a)</strong></span>
+                    <span id="attr-share">44.2% of trace</span>
+                  </div>
+                  <div class="attr-grid" id="attr-grid">
+                    <div class="attr-kv"><span class="attr-k">db.system / pool</span><span class="attr-v">postgresql · bb8-rw</span></div>
+                    <div class="attr-kv"><span class="attr-k">db.pool.wait_ms</span><span class="attr-v warn">182ms (warn &gt; 25ms)</span></div>
+                    <div class="attr-kv"><span class="attr-k">db.pool.active / max</span><span class="attr-v crit">96 / 100 saturated</span></div>
+                    <div class="attr-kv"><span class="attr-k">blocking.holder</span><span class="attr-v warn">ledger-worker-2c4d (64)</span></div>
+                    <div class="attr-kv"><span class="attr-k">net.peer.name</span><span class="attr-v">pg-primary-eu.svc:5432</span></div>
+                    <div class="attr-kv"><span class="attr-k">http.deadline_rem</span><span class="attr-v crit">204ms -&gt; 503 cutoff</span></div>
+                  </div>
+                </div>
+              </div>
+
+              <!-- View 2: Structured JSON Logs -->
+              <div class="inspector-view" id="view-logs" role="tabpanel" aria-labelledby="tab-logs" hidden>
+                <div class="mono-log-list" id="json-logs-list"></div>
+              </div>
+
+              <!-- View 3: Kubernetes Resource Spec -->
+              <div class="inspector-view" id="view-spec" role="tabpanel" aria-labelledby="tab-spec" hidden>
+                <pre class="spec-pre" id="resource-spec-pre"></pre>
+              </div>
+
+              <!-- Root-Cause Summary -->
+              <div class="diagnosis-box" aria-label="Causal root-cause diagnosis">
+                <div class="diag-header">
+                  <span class="diag-title" id="diag-heading">▸ Root-Cause Summary · Critical Path Contention</span>
+                  <span class="box-meta">evidence: span-verified</span>
+                </div>
+                <div class="diag-grid">
+                  <span class="diag-key">Bottleneck:</span>
+                  <span class="diag-val" id="diag-bottleneck">
+                    <code>+14ms pg.pool.acquire [WAIT 182ms]</code> stalled <strong>44.2%</strong> of the 400ms ingress deadline waiting for a connection lease.
+                  </span>
+
+                  <span class="diag-key">Contention:</span>
+                  <span class="diag-val" id="diag-contention">
+                    <code>ledger-worker-2c4d [DEGRADED]</code> holds 64/100 connections on <code>pg-primary-eu</code>, starving <code>+196ms stripe.authorize</code> into timeout.
+                  </span>
+
+                  <span class="diag-key">Mitigation:</span>
+                  <span class="diag-val" id="diag-mitigation">
+                    Cap worker pool <code>DB_MAX_CONNS=20</code> on <code>ledger-worker</code> to restore checkout headroom immediately.
+                  </span>
+                </div>
+                <div class="diag-cmd">
+                  <span><span class="cmd-prefix">$</span> <span id="diag-kubectl">kubectl -n prod-eu set env deploy/ledger-worker DB_MAX_CONNS=20 --dry-run=client</span></span>
+                  <span class="dim-val">[copy: y]</span>
+                </div>
+              </div>
+            </div>
+          </div>
+
+          <div class="box-line" aria-hidden="true">
+            <span class="box-glyph">╰─</span>
+            <span class="box-rule-fill"></span>
+            <span class="box-glyph">─┴─</span>
+            <span class="box-meta">&nbsp;ratatui::Gauge + Waterfall&nbsp;</span>
+            <span class="box-glyph">─╯</span>
+          </div>
+        </section>
+      </div>
+    </main>
+
+    <!-- Bottom Keybar -->
+    <footer class="keybar" aria-label="Keyboard shortcuts and telemetry notice">
+      <div class="keybar-left">
+        <span><span class="kbd-chip">j/k</span> Select</span>
+        <span><span class="kbd-chip">1-3</span> Cluster</span>
+        <span><span class="kbd-chip">t/l/r</span> Pane</span>
+        <span><span class="kbd-chip">n</span> NO_COLOR</span>
+        <span><span class="kbd-chip">/</span> Filter</span>
+        <span class="dim-val">• Illustrative telemetry</span>
+      </div>
+      <div class="keybar-right" id="status-coords">
+        │ row 1/6 · UTF-8 · 160×48 · prod-eu-central │
+      </div>
+    </footer>
+  </div>
+
+  <script>
+    (function () {
+      const CLUSTERS = {
+        "prod-eu": {
+          ctx: "Rust · Ratatui · ctx=prod-eu-central (k8s v1.31.2)",
+          budgetBar: "████████░░ 82%",
+          budgetWarn: false,
+          burn: "burn 2.4x",
+          tally: "1 [BACKOFF] · 1 [DEGRADED] · 4 [OK]",
+          errSpark: "⣀⣀⣠⣤⣶⣿⣷⣦⣄⣠⣶⣿⣷⣦⣄⣀⣤⣶⣿⣷",
+          errVal: "18.4/s [SPIKE]",
+          rpsSpark: "⣠⣤⣶⣶⣿⣿⣷⣶⣤⣄⣠⣤⣶⣿⣿⣷⣶⣤⣄⣠⣤",
+          rpsVal: "1,840 req/s",
+          poolBar: "██████████ 96/100 conns",
+          poolTag: "wait_q=29",
+          region: "prod-eu-central"
+        },
+        "prod-us": {
+          ctx: "Rust · Ratatui · ctx=prod-us-east (k8s v1.31.2)",
+          budgetBar: "█████████░ 94%",
+          budgetWarn: false,
+          burn: "burn 0.7x",
+          tally: "0 [BACKOFF] · 1 [DEGRADED] · 5 [OK]",
+          errSpark: "⣀⣀⣄⣀⣀⣠⣄⣀⣀⣄⣀⣀⣠⣄⣀⣀⣄⣀⣀⣠",
+          errVal: "1.2/s [NOMINAL]",
+          rpsSpark: "⣤⣶⣶⣿⣿⣷⣶⣤⣤⣶⣶⣿⣿⣷⣶⣤⣤⣶⣶⣿⣿",
+          rpsVal: "2,410 req/s",
+          poolBar: "██████░░░░ 61/100 conns",
+          poolTag: "wait_q=0",
+          region: "prod-us-east"
+        },
+        "staging": {
+          ctx: "Rust · Ratatui · ctx=staging-eu-01 (k8s v1.32.0-rc1)",
+          budgetBar: "███████░░░ 74%",
+          budgetWarn: true,
+          burn: "burn 1.6x",
+          tally: "1 [BACKOFF] · 1 [DEGRADED] · 4 [OK]",
+          errSpark: "⣀⣠⣤⣶⣤⣄⣀⣠⣤⣶⣷⣦⣄⣀⣄⣀⣠⣤⣶⣤",
+          errVal: "6.8/s [CANARY]",
+          rpsSpark: "⣀⣠⣤⣄⣀⣠⣤⣶⣤⣄⣀⣠⣤⣄⣀⣠⣤⣶⣤⣄",
+          rpsVal: "310 req/s",
+          poolBar: "████████░░ 79/100 conns",
+          poolTag: "wait_q=7",
+          region: "staging-eu-01"
+        }
+      };
+
+      const PODS = [
+        {
+          id: "checkout-api-7f9b",
+          state: "[BACKOFF]",
+          traceMeta: "trace=4f8a91c0e27b · HTTP 503 · 412ms",
+          nodeMeta: "eu-central-1a · <strong>checkout-rs:1.18.4</strong>",
+          gauges: [
+            { title: "CPU Quota", sub: "940m / 1000m", bar: "█████████░ 94%", cls: "crit", tag: "[THROTTLED]", badgeCls: "state-backoff" },
+            { title: "RSS Memory", sub: "451Mi / 512Mi", bar: "█████████░ 88%", cls: "warn", tag: "[HIGH]", badgeCls: "state-degraded" },
+            { title: "PG Conn Pool", sub: "96 / 100 conns", bar: "██████████ 96%", cls: "crit", tag: "[SATURATED]", badgeCls: "state-backoff" }
+          ],
+          ticks: ["100ms", "200ms", "300ms", "412ms"],
+          spans: [
+            { off: "+0ms", op: "POST /checkout", tag: "[503]", tagCls: "span-err-tag", left: 0, width: 100, barCls: "crit", fill: "HTTP 503 · 412ms", dur: "412ms", durCls: "crit-val", bottleneck: false },
+            { off: "+3ms", op: "├─ auth.verify_jwt", tag: "", tagCls: "", left: 0.7, width: 4.5, barCls: "ok", fill: "", dur: "11ms", durCls: "", bottleneck: false },
+            { off: "+14ms", op: "├─ inventory.check_stock", tag: "", tagCls: "", left: 3.4, width: 6.6, barCls: "cyan", fill: "", dur: "27ms", durCls: "", bottleneck: false },
+            { off: "+14ms", op: "├─ pg.pool.acquire", tag: "[WAIT 182ms]", tagCls: "span-wait-tag", left: 3.4, width: 44.2, barCls: "wait", fill: "WAIT 182ms", dur: "182ms", durCls: "warn-val", bottleneck: true },
+            { off: "+196ms", op: "├─ pg.tx.lock_cart_row", tag: "", tagCls: "", left: 47.5, width: 5.5, barCls: "cyan", fill: "", dur: "18ms", durCls: "", bottleneck: false },
+            { off: "+196ms", op: "├─ stripe.authorize", tag: "[DEADLINE]", tagCls: "span-err-tag", left: 47.5, width: 46.6, barCls: "cyan", fill: "192ms -> cutoff", dur: "192ms", durCls: "crit-val", bottleneck: false },
+            { off: "+388ms", op: "╰─ otel.span.export", tag: "", tagCls: "", left: 94.1, width: 5.9, barCls: "ok", fill: "", dur: "24ms", durCls: "dim-val", bottleneck: false }
+          ],
+          attrSpan: "pg.pool.acquire (span_id=8c21f09a)",
+          attrShare: "44.2% of trace",
+          attrs: [
+            ["db.system / pool", "postgresql · bb8-rw", ""],
+            ["db.pool.wait_ms", "182ms (warn > 25ms)", "warn"],
+            ["db.pool.active / max", "96 / 100 saturated", "crit"],
+            ["blocking.holder", "ledger-worker-2c4d (64)", "warn"],
+            ["net.peer.name", "pg-primary-eu.svc:5432", ""],
+            ["http.deadline_rem", "204ms -> 503 cutoff", "crit"]
+          ],
+          diagHeading: "▸ Root-Cause Summary · Critical Path Contention",
+          bottleneck: "<code>+14ms pg.pool.acquire [WAIT 182ms]</code> stalled <strong>44.2%</strong> of the 400ms ingress deadline waiting for a connection lease.",
+          contention: "<code>ledger-worker-2c4d [DEGRADED]</code> holds 64/100 connections on <code>pg-primary-eu</code>, starving <code>+196ms stripe.authorize</code> into timeout.",
+          mitigation: "Cap worker pool <code>DB_MAX_CONNS=20</code> on <code>ledger-worker</code> to restore checkout headroom immediately.",
+          cmd: "kubectl -n prod-eu set env deploy/ledger-worker DB_MAX_CONNS=20 --dry-run=client",
+          logs: [
+            '{"ts":"18:42:11.014Z","lvl":"WARN","pod":"checkout-api-7f9b","trace":"4f8a91c0e27b","span":"pg.pool.acquire","wait_ms":182,"active":96,"max":100}',
+            '{"ts":"18:42:11.388Z","lvl":"ERROR","pod":"checkout-api-7f9b","trace":"4f8a91c0e27b","span":"stripe.authorize","err":"DeadlineExceeded","rem_budget_ms":12}',
+            '{"ts":"18:42:11.412Z","lvl":"ERROR","pod":"checkout-api-7f9b","status":503,"probe":"readiness_failed","restarts":14,"state":"CrashLoopBackOff"}'
+          ],
+          spec: "apiVersion: v1\nkind: Pod\nmetadata:\n  name: checkout-api-7f9b\n  namespace: prod-eu\nspec:\n  nodeName: eu-central-1a\n  containers:\n    - name: checkout-rs\n      image: ghcr.io/kubetrace-demo/checkout-rs:1.18.4\n      resources:\n        requests: { cpu: 500m, memory: 256Mi }\n        limits:   { cpu: 1000m, memory: 512Mi }\n      env:\n        - { name: DB_POOL_MAX, value: \"32\" }\n        - { name: REQUEST_DEADLINE_MS, value: \"400\" }"
+        },
+        {
+          id: "ledger-worker-2c4d",
+          state: "[DEGRADED]",
+          traceMeta: "trace=91c4b208d11a · JOB reconcile · 238ms",
+          nodeMeta: "eu-central-1a · <strong>ledger-worker:2.4.1</strong>",
+          gauges: [
+            { title: "CPU Quota", sub: "780m / 1000m", bar: "████████░░ 78%", cls: "warn", tag: "[BUSY]", badgeCls: "state-degraded" },
+            { title: "RSS Memory", sub: "727Mi / 1024Mi", bar: "███████░░░ 71%", cls: "ok", tag: "[NOMINAL]", badgeCls: "state-ok" },
+            { title: "PG Conn Hold", sub: "64 / 64 worker", bar: "██████████ 100%", cls: "warn", tag: "[HOGGING]", badgeCls: "state-degraded" }
+          ],
+          ticks: ["60ms", "120ms", "180ms", "238ms"],
+          spans: [
+            { off: "+0ms", op: "JOB ledger.reconcile_batch", tag: "[SLOW]", tagCls: "span-wait-tag", left: 0, width: 100, barCls: "wait", fill: "238ms batch", dur: "238ms", durCls: "warn-val", bottleneck: false },
+            { off: "+4ms", op: "├─ kafka.fetch_window(500)", tag: "", tagCls: "", left: 1.7, width: 8.4, barCls: "ok", fill: "", dur: "20ms", durCls: "", bottleneck: false },
+            { off: "+24ms", op: "├─ pg.seq_scan.ledger_entries", tag: "[SCAN 194ms]", tagCls: "span-wait-tag", left: 10.1, width: 81.5, barCls: "wait", fill: "SEQ SCAN 194ms", dur: "194ms", durCls: "warn-val", bottleneck: true },
+            { off: "+218ms", op: "╰─ pg.commit_tx", tag: "", tagCls: "", left: 91.6, width: 8.4, barCls: "cyan", fill: "", dur: "20ms", durCls: "", bottleneck: false }
+          ],
+          attrSpan: "pg.seq_scan.ledger_entries (span_id=44a109e2)",
+          attrShare: "81.5% of job",
+          attrs: [
+            ["db.operation", "SELECT ... FOR UPDATE", "warn"],
+            ["db.rows_examined", "14,800 rows (seq scan)", "warn"],
+            ["db.locks_held", "64 row-batch leases", "crit"],
+            ["missing.index", "(settlement_date, m_id)", "warn"],
+            ["kafka.partition", "ledger-events-eu[0..3]", ""],
+            ["worker.pool_max", "64 (unbounded share)", "crit"]
+          ],
+          diagHeading: "▸ Root-Cause Summary · Unindexed Batch Lock Holder",
+          bottleneck: "<code>+24ms pg.seq_scan.ledger_entries</code> holds 64 pooled connections open for 194ms per batch.",
+          contention: "Row-level lock fanout starves latency-sensitive <code>checkout-api-7f9b</code> pods sharing <code>pg-primary-eu</code>.",
+          mitigation: "Lower worker pool to <code>DB_MAX_CONNS=20</code> and add composite index concurrently.",
+          cmd: "kubectl -n prod-eu exec ledger-worker-2c4d -- pg_stat_activity_dump --limit=10",
+          logs: [
+            '{"ts":"18:42:09.112Z","lvl":"WARN","pod":"ledger-worker-2c4d","trace":"91c4b208d11a","query":"SELECT * FROM ledger_entries FOR UPDATE","rows":14800,"dur_ms":194}',
+            '{"ts":"18:42:10.004Z","lvl":"WARN","pod":"ledger-worker-2c4d","pool_held":64,"pool_limit":64,"msg":"worker pool at ceiling"}'
+          ],
+          spec: "apiVersion: v1\nkind: Pod\nmetadata:\n  name: ledger-worker-2c4d\n  namespace: prod-eu\nspec:\n  nodeName: eu-central-1a\n  containers:\n    - name: ledger-worker\n      image: ghcr.io/kubetrace-demo/ledger-worker:2.4.1\n      env:\n        - { name: DB_MAX_CONNS, value: \"64\" }"
+        },
+        {
+          id: "otel-ingestor-9a1e",
+          state: "[OK]",
+          traceMeta: "trace=3b7e09a411f2 · gRPC Export · 42ms",
+          nodeMeta: "eu-central-1b · <strong>otel-col:0.114.0</strong>",
+          gauges: [
+            { title: "CPU Quota", sub: "460m / 1000m", bar: "█████░░░░░ 46%", cls: "ok", tag: "[OK]", badgeCls: "state-ok" },
+            { title: "RSS Memory", sub: "604Mi / 1024Mi", bar: "██████░░░░ 59%", cls: "ok", tag: "[OK]", badgeCls: "state-ok" },
+            { title: "Ring Buffer", sub: "1,180 / 8,192", bar: "██░░░░░░░░ 14%", cls: "cyan", tag: "[DRAINING]", badgeCls: "state-ok" }
+          ],
+          ticks: ["10ms", "20ms", "30ms", "42ms"],
+          spans: [
+            { off: "+0ms", op: "grpc.TraceService/Export", tag: "[OK]", tagCls: "", left: 0, width: 100, barCls: "ok", fill: "42ms", dur: "42ms", durCls: "", bottleneck: false },
+            { off: "+2ms", op: "├─ batch.tail_sampler", tag: "", tagCls: "", left: 4.8, width: 19.0, barCls: "cyan", fill: "", dur: "8ms", durCls: "", bottleneck: false },
+            { off: "+10ms", op: "╰─ clickhouse.insert_spans", tag: "", tagCls: "", left: 23.8, width: 76.2, barCls: "ok", fill: "32ms", dur: "32ms", durCls: "", bottleneck: false }
+          ],
+          attrSpan: "clickhouse.insert_spans (span_id=19d04a11)",
+          attrShare: "76.2% of export",
+          attrs: [
+            ["otel.exporter", "clickhouse-traces-eu", ""],
+            ["batch.span_count", "2,048 spans", ""],
+            ["queue.dropped", "0 spans", ""],
+            ["compression", "zstd (ratio 6.4x)", ""],
+            ["net.peer.name", "ch-ingest.prod-eu:9000", ""],
+            ["slo.headroom", "+38ms under 80ms budget", ""]
+          ],
+          diagHeading: "▸ Span Health · Nominal Collector Pipeline",
+          bottleneck: "No stall detected. Tail-sampling and ClickHouse flush completed well inside the 80ms collector SLO.",
+          contention: "Error-trace burst (+38%) from <code>checkout-api-7f9b</code> absorbed without drops.",
+          mitigation: "No operator intervention required.",
+          cmd: "kubectl -n prod-eu top pod otel-ingestor-9a1e --containers",
+          logs: [
+            '{"ts":"18:42:11.402Z","lvl":"INFO","pod":"otel-ingestor-9a1e","spans_in":14200,"dropped":0,"flush_ms":32}'
+          ],
+          spec: "apiVersion: v1\nkind: Pod\nmetadata:\n  name: otel-ingestor-9a1e\n  namespace: prod-eu\nspec:\n  nodeName: eu-central-1b\n  containers:\n    - name: otel-col\n      image: otel/opentelemetry-collector-contrib:0.114.0"
+        },
+        {
+          id: "auth-signer-4d8c",
+          state: "[OK]",
+          traceMeta: "trace=7d12f8c300a9 · gRPC Verify · 19ms",
+          nodeMeta: "eu-central-1b · <strong>auth-signer:3.1.0</strong>",
+          gauges: [
+            { title: "CPU Quota", sub: "310m / 1000m", bar: "███░░░░░░░ 31%", cls: "ok", tag: "[OK]", badgeCls: "state-ok" },
+            { title: "RSS Memory", sub: "112Mi / 256Mi", bar: "████░░░░░░ 44%", cls: "ok", tag: "[OK]", badgeCls: "state-ok" },
+            { title: "JWKS Cache", sub: "99.94% hit", bar: "██████████ 100%", cls: "ok", tag: "[WARM]", badgeCls: "state-ok" }
+          ],
+          ticks: ["5ms", "10ms", "15ms", "19ms"],
+          spans: [
+            { off: "+0ms", op: "grpc.AuthSigner/Verify", tag: "[OK]", tagCls: "", left: 0, width: 100, barCls: "ok", fill: "19ms", dur: "19ms", durCls: "", bottleneck: false },
+            { off: "+1ms", op: "├─ redis.get_revoked_jti", tag: "", tagCls: "", left: 5.2, width: 21.0, barCls: "cyan", fill: "", dur: "4ms", durCls: "", bottleneck: false },
+            { off: "+5ms", op: "╰─ ed25519.verify_claims", tag: "", tagCls: "", left: 26.3, width: 73.7, barCls: "ok", fill: "14ms", dur: "14ms", durCls: "", bottleneck: false }
+          ],
+          attrSpan: "ed25519.verify_claims (span_id=50c81b04)",
+          attrShare: "73.7% of verify",
+          attrs: [
+            ["rpc.service", "AuthSigner/Verify", ""],
+            ["jwt.alg / kid", "EdDSA · eu-2026-11", ""],
+            ["jwks.cache_hit", "true (in-memory)", ""],
+            ["revocation.store", "redis-cache-01 (4ms)", ""],
+            ["db.dependency", "none (stateless)", ""],
+            ["p99.slo_target", "19ms / 35ms [OK]", ""]
+          ],
+          diagHeading: "▸ Span Health · Ed25519 Signer Nominal",
+          bottleneck: "All verification spans under 20ms p99; zero Redis session-lookup timeouts.",
+          contention: "Stateless verifier isolated from Postgres pool saturation.",
+          mitigation: "No action required.",
+          cmd: "kubectl -n prod-eu logs auth-signer-4d8c --tail=20",
+          logs: [
+            '{"ts":"18:42:11.006Z","lvl":"INFO","pod":"auth-signer-4d8c","rpc":"Verify","p99_ms":19,"jwks_kid":"eu-2026-11"}'
+          ],
+          spec: "apiVersion: v1\nkind: Pod\nmetadata:\n  name: auth-signer-4d8c\n  namespace: prod-eu\nspec:\n  nodeName: eu-central-1b\n  containers:\n    - name: auth-signer\n      image: ghcr.io/kubetrace-demo/auth-signer:3.1.0"
+        },
+        {
+          id: "inventory-rpc-6b2f",
+          state: "[OK]",
+          traceMeta: "trace=5a09c412ee80 · gRPC CheckStock · 27ms",
+          nodeMeta: "eu-central-1c · <strong>inventory-rpc:1.9.2</strong>",
+          gauges: [
+            { title: "CPU Quota", sub: "390m / 1000m", bar: "████░░░░░░ 39%", cls: "ok", tag: "[OK]", badgeCls: "state-ok" },
+            { title: "RSS Memory", sub: "266Mi / 512Mi", bar: "█████░░░░░ 52%", cls: "ok", tag: "[OK]", badgeCls: "state-ok" },
+            { title: "Read Replica", sub: "18 / 50 conns", bar: "████░░░░░░ 36%", cls: "cyan", tag: "[REPLICA]", badgeCls: "state-ok" }
+          ],
+          ticks: ["7ms", "14ms", "21ms", "27ms"],
+          spans: [
+            { off: "+0ms", op: "grpc.Inventory/CheckStock", tag: "[OK]", tagCls: "", left: 0, width: 100, barCls: "ok", fill: "27ms", dur: "27ms", durCls: "", bottleneck: false },
+            { off: "+2ms", op: "╰─ pg_replica.select_sku_qty", tag: "", tagCls: "", left: 7.4, width: 92.6, barCls: "cyan", fill: "25ms", dur: "25ms", durCls: "", bottleneck: false }
+          ],
+          attrSpan: "pg_replica.select_sku_qty (span_id=77e201ca)",
+          attrShare: "92.6% of rpc",
+          attrs: [
+            ["db.instance", "pg-replica-eu-01 (ro)", ""],
+            ["db.pool.active", "18 / 50 conns", ""],
+            ["replica.wal_lag", "6ms", ""],
+            ["sku.batch_size", "12 items", ""],
+            ["primary.isolated", "true (read-only pool)", ""],
+            ["rpc.status", "OK (0)", ""]
+          ],
+          diagHeading: "▸ Span Health · Read-Replica Isolated",
+          bottleneck: "Reads route to <code>pg-replica-eu-01</code> (36% pool usage), avoiding primary write-pool contention.",
+          contention: "None.",
+          mitigation: "No action required.",
+          cmd: "kubectl -n prod-eu get endpoints inventory-rpc",
+          logs: [
+            '{"ts":"18:42:10.940Z","lvl":"INFO","pod":"inventory-rpc-6b2f","sku_batch":12,"replica_lag_ms":6,"dur_ms":27}'
+          ],
+          spec: "apiVersion: v1\nkind: Pod\nmetadata:\n  name: inventory-rpc-6b2f\n  namespace: prod-eu\nspec:\n  nodeName: eu-central-1c\n  containers:\n    - name: inventory-rpc\n      image: ghcr.io/kubetrace-demo/inventory-rpc:1.9.2"
+        },
+        {
+          id: "redis-cache-01",
+          state: "[OK]",
+          traceMeta: "trace=11f08a3c99b1 · RESP Pipeline · 4ms",
+          nodeMeta: "eu-central-1c · <strong>valkey:8.0.1</strong>",
+          gauges: [
+            { title: "CPU Quota", sub: "220m / 1000m", bar: "██░░░░░░░░ 22%", cls: "ok", tag: "[OK]", badgeCls: "state-ok" },
+            { title: "Heap Used", sub: "2.56Gi / 4.0Gi", bar: "██████░░░░ 64%", cls: "ok", tag: "[EVICT=0]", badgeCls: "state-ok" },
+            { title: "Clients", sub: "142 / 4096", bar: "█░░░░░░░░░ 3%", cls: "cyan", tag: "[FAST]", badgeCls: "state-ok" }
+          ],
+          ticks: ["1ms", "2ms", "3ms", "4ms"],
+          spans: [
+            { off: "+0ms", op: "resp.pipeline(GET, PSETEX)", tag: "[OK]", tagCls: "", left: 0, width: 100, barCls: "ok", fill: "4ms", dur: "4ms", durCls: "", bottleneck: false },
+            { off: "+0.4ms", op: "╰─ dict.lookup_session", tag: "", tagCls: "", left: 10, width: 90, barCls: "cyan", fill: "3.6ms", dur: "3.6ms", durCls: "", bottleneck: false }
+          ],
+          attrSpan: "dict.lookup_session (span_id=09f331b8)",
+          attrShare: "90.0% of pipeline",
+          attrs: [
+            ["cache.engine", "valkey 8.0.1", ""],
+            ["cache.hit_ratio", "99.42%", ""],
+            ["evicted_keys", "0", ""],
+            ["blocked_clients", "0", ""],
+            ["ops_per_sec", "19,400 ops/s", ""],
+            ["aof.fsync_lag", "1.1ms", ""]
+          ],
+          diagHeading: "▸ Span Health · Sub-5ms In-Memory Cache",
+          bottleneck: "Zero key evictions, zero blocked clients, 99.4% keyspace hit ratio.",
+          contention: "None.",
+          mitigation: "No action required.",
+          cmd: "kubectl -n prod-eu exec redis-cache-01 -- valkey-cli info stats",
+          logs: [
+            '{"ts":"18:42:11.200Z","lvl":"INFO","pod":"redis-cache-01","ops_sec":19400,"hit_rate":0.994,"evicted_keys":0}'
+          ],
+          spec: "apiVersion: v1\nkind: StatefulSet\nmetadata:\n  name: redis-cache\n  namespace: prod-eu\nspec:\n  serviceName: redis-cache\n  replicas: 2"
+        }
+      ];
+
+      let activePodIndex = 0;
+      let activeCluster = "prod-eu";
+
+      const podButtons = Array.from(document.querySelectorAll(".pod-row"));
+      const nsButtons = Array.from(document.querySelectorAll(".ns-btn"));
+      const viewTabs = Array.from(document.querySelectorAll(".view-tab"));
+      const filterInput = document.getElementById("pod-filter");
+      const filterClearBtn = document.getElementById("filter-clear-btn");
+      const noColorBtn = document.getElementById("no-color-toggle");
+      const emptyPodsState = document.getElementById("empty-pods-state");
+
+      function visiblePodIndices() {
+        const out = [];
+        podButtons.forEach((btn, idx) => {
+          if (!btn.hidden) out.push(idx);
+        });
+        return out;
+      }
+
+      function renderInspector() {
+        const pod = PODS[activePodIndex];
+        if (!pod) return;
+
+        document.getElementById("inspect-pod-name").textContent = pod.id + " " + pod.state;
+        document.getElementById("inspect-trace-id").textContent = "\u00a0" + pod.traceMeta + "\u00a0";
+        document.getElementById("inspect-node-meta").innerHTML = pod.nodeMeta;
+
+        pod.gauges.forEach((g, idx) => {
+          const n = idx + 1;
+          const gaugeEl = document.querySelector("#gauge-strip .ratatui-gauge:nth-child(" + n + ")");
+          gaugeEl.querySelector(".gauge-top span").textContent = g.title;
+          document.getElementById("g" + n + "-sub").textContent = g.sub;
+          const barEl = document.getElementById("g" + n + "-bar");
+          barEl.textContent = g.bar;
+          barEl.className = "gauge-blocks " + g.cls;
+          const tagEl = document.getElementById("g" + n + "-tag");
+          tagEl.textContent = g.tag;
+          tagEl.className = "state-badge " + g.badgeCls;
+        });
+
+        document.getElementById("tick-q1").textContent = pod.ticks[0];
+        document.getElementById("tick-q2").textContent = pod.ticks[1];
+        document.getElementById("tick-q3").textContent = pod.ticks[2];
+        document.getElementById("tick-q4").textContent = pod.ticks[3];
+
+        const wfContainer = document.getElementById("waterfall-rows");
+        wfContainer.innerHTML = pod.spans.map((s) => {
+          const tagHtml = s.tag ? ' <span class="' + s.tagCls + '">' + s.tag + "</span>" : "";
+          const rowCls = s.bottleneck ? "span-row is-bottleneck" : "span-row";
+          const durCls = s.durCls ? "span-dur " + s.durCls : "span-dur";
+          return (
+            '<div class="' + rowCls + '">' +
+              '<div class="span-label"><span class="span-offset">' + s.off + '</span><span class="span-op">' + s.op + "</span>" + tagHtml + "</div>" +
+              '<div class="span-track"><div class="span-bar ' + s.barCls + '" style="left:' + s.left + '%;width:' + s.width + '%;">' + s.fill + "</div></div>" +
+              '<div class="' + durCls + '">' + s.dur + "</div>" +
+            "</div>"
+          );
+        }).join("");
+
+        document.getElementById("attr-span-name").textContent = pod.attrSpan;
+        document.getElementById("attr-share").textContent = pod.attrShare;
+        document.getElementById("attr-grid").innerHTML = pod.attrs.map((pair) => {
+          const cls = pair[2] ? "attr-v " + pair[2] : "attr-v";
+          return '<div class="attr-kv"><span class="attr-k">' + pair[0] + '</span><span class="' + cls + '">' + pair[1].replace(/</g, "&lt;") + "</span></div>";
+        }).join("");
+
+        document.getElementById("json-logs-list").innerHTML = pod.logs
+          .map((line) => '<div class="log-entry">' + line.replace(/</g, "&lt;") + "</div>")
+          .join("");
+        document.getElementById("resource-spec-pre").textContent = pod.spec;
+
+        document.getElementById("diag-heading").textContent = pod.diagHeading;
+        document.getElementById("diag-bottleneck").innerHTML = pod.bottleneck;
+        document.getElementById("diag-contention").innerHTML = pod.contention;
+        document.getElementById("diag-mitigation").innerHTML = pod.mitigation;
+        document.getElementById("diag-kubectl").textContent = pod.cmd;
+
+        const c = CLUSTERS[activeCluster];
+        document.getElementById("status-coords").textContent =
+          "│ row " + (activePodIndex + 1) + "/" + PODS.length + " · UTF-8 · 160×48 · " + c.region + " │";
+      }
+
+      function selectPod(index, moveFocus) {
+        if (index < 0 || index >= PODS.length) return;
+        activePodIndex = index;
+        podButtons.forEach((btn, i) => {
+          const selected = i === activePodIndex;
+          btn.setAttribute("aria-selected", selected ? "true" : "false");
+          btn.querySelector(".sel-glyph").textContent = selected ? "▸" : "\u00a0";
+        });
+        if (moveFocus && podButtons[activePodIndex]) {
+          podButtons[activePodIndex].focus();
+        }
+        renderInspector();
+      }
+
+      function setView(view) {
+        viewTabs.forEach((tab) => {
+          tab.setAttribute("aria-selected", tab.dataset.view === view ? "true" : "false");
+        });
+        document.getElementById("view-trace").hidden = view !== "trace";
+        document.getElementById("view-logs").hidden = view !== "logs";
+        document.getElementById("view-spec").hidden = view !== "spec";
+      }
+
+      function setCluster(clusterKey) {
+        if (!CLUSTERS[clusterKey]) return;
+        activeCluster = clusterKey;
+        const c = CLUSTERS[clusterKey];
+        nsButtons.forEach((btn) => {
+          btn.setAttribute("aria-pressed", btn.dataset.cluster === clusterKey ? "true" : "false");
+        });
+        document.getElementById("ctx-banner").textContent = "\u00a0" + c.ctx + "\u00a0";
+        const budgetEl = document.getElementById("budget-bar");
+        budgetEl.textContent = c.budgetBar;
+        budgetEl.className = c.budgetWarn ? "budget-bar is-warn" : "budget-bar";
+        document.getElementById("burn-rate").textContent = c.burn;
+        document.getElementById("tally-label").textContent = "\u00a0" + c.tally + "\u00a0";
+        document.getElementById("err-sparkline").textContent = c.errSpark;
+        document.getElementById("err-rate-val").textContent = c.errVal;
+        document.getElementById("rps-sparkline").textContent = c.rpsSpark;
+        document.getElementById("rps-val").textContent = c.rpsVal;
+        document.getElementById("pool-strip-bar").textContent = c.poolBar;
+        document.getElementById("pool-strip-tag").textContent = c.poolTag;
+        renderInspector();
+      }
+
+      function toggleNoColor() {
+        const root = document.documentElement;
+        const next = root.getAttribute("data-no-color") !== "true";
+        root.setAttribute("data-no-color", next ? "true" : "false");
+        noColorBtn.setAttribute("aria-pressed", next ? "true" : "false");
+        noColorBtn.innerHTML = '<span class="key-hint">[n]</span> NO_COLOR: ' + (next ? "ON" : "OFF");
+      }
+
+      function applyFilter() {
+        const q = filterInput.value.trim().toLowerCase();
+        filterClearBtn.hidden = q.length === 0;
+        let shown = 0;
+        podButtons.forEach((btn, idx) => {
+          const p = PODS[idx];
+          const match = !q || p.id.toLowerCase().includes(q) || p.state.toLowerCase().includes(q);
+          btn.hidden = !match;
+          if (match) shown += 1;
+        });
+        document.getElementById("pod-count-label").textContent = shown + "/" + PODS.length;
+        emptyPodsState.hidden = shown > 0;
+        const vis = visiblePodIndices();
+        if (vis.length > 0 && !vis.includes(activePodIndex)) {
+          selectPod(vis[0], false);
+        }
+      }
+
+      podButtons.forEach((btn, idx) => {
+        btn.addEventListener("click", () => selectPod(idx, false));
+      });
+
+      nsButtons.forEach((btn) => {
+        btn.addEventListener("click", () => setCluster(btn.dataset.cluster));
+      });
+
+      viewTabs.forEach((tab) => {
+        tab.addEventListener("click", () => setView(tab.dataset.view));
+      });
+
+      noColorBtn.addEventListener("click", toggleNoColor);
+
+      filterInput.addEventListener("input", applyFilter);
+      filterClearBtn.addEventListener("click", () => {
+        filterInput.value = "";
+        applyFilter();
+        filterInput.focus();
+      });
+
+      document.addEventListener("keydown", (e) => {
+        const inInput = document.activeElement === filterInput;
+        if (e.key === "Escape" && (inInput || filterInput.value.length > 0)) {
+          e.preventDefault();
+          filterInput.value = "";
+          applyFilter();
+          filterInput.blur();
+          return;
+        }
+        if (inInput) return;
+        if (e.metaKey || e.ctrlKey || e.altKey) return;
+
+        if (e.key === "/") {
+          e.preventDefault();
+          filterInput.focus();
+          return;
+        }
+        if (e.key === "j" || e.key === "ArrowDown") {
+          e.preventDefault();
+          const vis = visiblePodIndices();
+          if (!vis.length) return;
+          const pos = vis.indexOf(activePodIndex);
+          const next = vis[(pos + 1) % vis.length];
+          selectPod(next, true);
+        } else if (e.key === "k" || e.key === "ArrowUp") {
+          e.preventDefault();
+          const vis = visiblePodIndices();
+          if (!vis.length) return;
+          const pos = vis.indexOf(activePodIndex);
+          const prev = vis[(pos - 1 + vis.length) % vis.length];
+          selectPod(prev, true);
+        } else if (e.key === "1") {
+          setCluster("prod-eu");
+        } else if (e.key === "2") {
+          setCluster("prod-us");
+        } else if (e.key === "3") {
+          setCluster("staging");
+        } else if (e.key === "t") {
+          setView("trace");
+        } else if (e.key === "l") {
+          setView("logs");
+        } else if (e.key === "r") {
+          setView("spec");
+        } else if (e.key === "n") {
+          toggleNoColor();
+        }
+      });
+    })();
+  </script>
+</body>
+</html>

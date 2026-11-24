@@ -54,13 +54,38 @@ test("showcase identities, version, references, and agent count stay synced with
   ).filter((f) => f.endsWith(".json")).length;
   assert.equal(meta.totalEvalFixtures, expectedFixtures);
   assert.ok(meta.totalEvalCases >= expectedSkills.length);
-  assert.equal(meta.totalGalleryExhibits, 6);
+  const gallery = JSON.parse(await read("src/generated/gallery.json"));
+  assert.equal(meta.totalGalleryExhibits, Object.keys(gallery.items).length);
+  assert.equal(meta.totalGalleryExhibits, 22);
 });
 
-test("gallery metadata matches source scanner output, covers all 6 multi-stack exhibits, and all paired assets exist", async () => {
+test("gallery metadata matches source scanner output, covers all 22 multi-stack exhibits, and all paired assets exist", async () => {
   const { execFileSync } = await import("node:child_process");
   const meta = JSON.parse(await read("src/generated/gallery.json"));
-  const expectedIds = ["coffee", "clinic", "grid", "tui", "mobile", "document"];
+  const expectedIds = [
+    "swiftui",
+    "compose",
+    "flutter",
+    "mobile",
+    "kubetrace",
+    "tui",
+    "desktop",
+    "python",
+    "dashboard",
+    "grid",
+    "liveview",
+    "saas",
+    "store",
+    "booking",
+    "learning",
+    "magazine",
+    "coffee",
+    "clinic",
+    "email",
+    "proposal",
+    "document",
+    "gamehud",
+  ];
   assert.deepEqual(Object.keys(meta.items).sort(), [...expectedIds].sort());
   for (const [id, pair] of Object.entries(meta.items)) {
     for (const side of ["before", "after"]) {

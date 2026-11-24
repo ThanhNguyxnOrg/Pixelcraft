@@ -1,0 +1,451 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Aomori Thermal — Best Hotel Deals & Instant Booking (default agent output)</title>
+<style>
+  :root {
+    --blue: #003580;
+    --indigo: #4f46e5;
+  }
+  * { box-sizing: border-box; }
+  body {
+    margin: 0;
+    font-family: Inter, sans-serif;
+    background: #f1f5f9;
+    color: #0f172a;
+  }
+  .promo-strip {
+    background: #dc2626;
+    color: #ffffff;
+    font-size: 12px;
+    font-weight: 700;
+    text-align: center;
+    padding: 7px 16px;
+    letter-spacing: 0.02em;
+  }
+  .hero {
+    background: linear-gradient(125deg, #003580 0%, #1d4ed8 48%, #4f46e5 100%);
+    color: #ffffff;
+    padding: 20px 32px 72px;
+    text-align: center;
+  }
+  .nav {
+    max-width: 1200px;
+    margin: 0 auto 28px;
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+  }
+  .brand {
+    font-size: 21px;
+    font-weight: 800;
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    letter-spacing: -0.02em;
+  }
+  .brand-pill {
+    background: #facc15;
+    color: #1e3a8a;
+    font-size: 10px;
+    font-weight: 800;
+    padding: 2px 7px;
+    border-radius: 999px;
+    text-transform: uppercase;
+  }
+  .nav-links {
+    display: flex;
+    align-items: center;
+    gap: 22px;
+    font-size: 13px;
+    font-weight: 600;
+  }
+  .nav-links a {
+    color: #e0e7ff;
+    text-decoration: none;
+  }
+  .nav-cta {
+    background: #ffffff;
+    color: #003580;
+    padding: 7px 14px;
+    border-radius: 8px;
+    font-weight: 700;
+    font-size: 13px;
+    border: 0;
+    cursor: pointer;
+    transition: all .25s ease;
+  }
+  .hero h1 {
+    margin: 0 auto 10px;
+    max-width: 760px;
+    font-size: 40px;
+    line-height: 1.12;
+    font-weight: 800;
+    letter-spacing: -0.02em;
+  }
+  .hero p {
+    margin: 0 auto 20px;
+    max-width: 620px;
+    font-size: 16px;
+    color: #dbeafe;
+  }
+  .cta-row {
+    display: flex;
+    justify-content: center;
+    gap: 12px;
+  }
+  .btn {
+    padding: 12px 22px;
+    border-radius: 10px;
+    border: 0;
+    font-size: 14px;
+    font-weight: 700;
+    cursor: pointer;
+    transition: all .25s ease;
+  }
+  .btn.primary {
+    background: #facc15;
+    color: #0f172a;
+    box-shadow: 0 8px 20px rgba(15, 23, 42, .25);
+  }
+  .btn.ghost {
+    background: rgba(255, 255, 255, .15);
+    color: #ffffff;
+    border: 1px solid rgba(255, 255, 255, .4);
+  }
+  .btn:focus, input:focus, .nav-cta:focus { outline: none; }
+
+  .search-shell {
+    max-width: 1180px;
+    margin: -42px auto 18px;
+    background: #ffffff;
+    border: 3px solid #facc15;
+    border-radius: 14px;
+    padding: 14px;
+    box-shadow: 0 18px 36px rgba(0, 53, 128, .18);
+    display: grid;
+    grid-template-columns: 1.2fr 1.25fr 1fr 0.95fr 158px;
+    gap: 10px;
+  }
+  .search-shell input {
+    width: 100%;
+    padding: 13px 14px;
+    border: 1px solid #cbd5e1;
+    border-radius: 8px;
+    font-size: 13px;
+    color: #0f172a;
+    background: #f8fafc;
+    transition: all .25s ease;
+  }
+  .search-submit {
+    background: linear-gradient(135deg, #003580, #4f46e5);
+    color: #ffffff;
+    border-radius: 8px;
+  }
+
+  .urgency-bar {
+    max-width: 1180px;
+    margin: 0 auto 18px;
+    background: #fef2f2;
+    border: 1px solid #fca5a5;
+    border-radius: 10px;
+    padding: 10px 16px;
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    font-size: 13px;
+    color: #991b1b;
+    font-weight: 700;
+  }
+  .urgency-timer {
+    background: #dc2626;
+    color: #ffffff;
+    padding: 4px 10px;
+    border-radius: 6px;
+    font-size: 12px;
+  }
+
+  .section {
+    max-width: 1180px;
+    margin: 0 auto 24px;
+    padding: 0 4px;
+  }
+  .section-head {
+    display: flex;
+    justify-content: space-between;
+    align-items: baseline;
+    margin-bottom: 14px;
+  }
+  .section-head h2 {
+    margin: 0;
+    font-size: 22px;
+    font-weight: 800;
+    color: #0f172a;
+  }
+  .section-head p {
+    margin: 0;
+    font-size: 13px;
+    color: #64748b;
+  }
+  .cards {
+    display: grid;
+    grid-template-columns: repeat(3, 1fr);
+    gap: 18px;
+  }
+  .card {
+    background: #ffffff;
+    border: 1px solid #e2e8f0;
+    border-radius: 14px;
+    overflow: hidden;
+    box-shadow: 0 10px 24px rgba(15, 23, 42, .08);
+    transition: all .25s ease;
+    display: flex;
+    flex-direction: column;
+  }
+  .card:hover { transform: translateY(-3px); }
+  .card-banner {
+    height: 118px;
+    background: linear-gradient(135deg, #1e40af, #6366f1);
+    position: relative;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-size: 38px;
+  }
+  .badge-stack {
+    position: absolute;
+    top: 10px;
+    left: 10px;
+    display: flex;
+    gap: 6px;
+    flex-wrap: wrap;
+  }
+  .panic-badge {
+    background: #dc2626;
+    color: #ffffff;
+    font-size: 11px;
+    font-weight: 800;
+    padding: 4px 8px;
+    border-radius: 6px;
+    letter-spacing: 0.01em;
+  }
+  .deal-badge {
+    background: #16a34a;
+    color: #ffffff;
+    font-size: 11px;
+    font-weight: 800;
+    padding: 4px 8px;
+    border-radius: 6px;
+  }
+  .score-box {
+    position: absolute;
+    top: 10px;
+    right: 10px;
+    background: #003580;
+    color: #ffffff;
+    font-size: 12px;
+    font-weight: 800;
+    padding: 4px 8px;
+    border-radius: 6px;
+  }
+  .card-body {
+    padding: 16px;
+    display: flex;
+    flex-direction: column;
+    flex: 1;
+  }
+  .view-alert {
+    color: #dc2626;
+    font-size: 12px;
+    font-weight: 700;
+    margin-bottom: 6px;
+  }
+  .card h3 {
+    margin: 0 0 6px;
+    font-size: 18px;
+    font-weight: 800;
+    color: #003580;
+  }
+  .card p {
+    margin: 0 0 12px;
+    font-size: 13px;
+    color: #475569;
+    line-height: 1.45;
+  }
+  .card-foot {
+    margin-top: auto;
+    padding-top: 12px;
+    border-top: 1px solid #f1f5f9;
+    display: flex;
+    justify-content: space-between;
+    align-items: flex-end;
+    gap: 10px;
+  }
+  .price-col {
+    display: flex;
+    flex-direction: column;
+  }
+  .strike-price {
+    font-size: 13px;
+    color: #ef4444;
+    text-decoration: line-through;
+    font-weight: 600;
+  }
+  .price {
+    font-size: 24px;
+    font-weight: 800;
+    color: #0f172a;
+    line-height: 1.1;
+  }
+  .price small {
+    font-size: 12px;
+    font-weight: 500;
+    color: #64748b;
+  }
+  .hidden-fee {
+    font-size: 10px;
+    color: #94a3b8;
+    margin-top: 3px;
+  }
+  .card .btn {
+    padding: 10px 15px;
+    background: #006ce4;
+    color: #ffffff;
+    font-size: 13px;
+    border-radius: 8px;
+  }
+</style>
+</head>
+<body>
+  <div class="promo-strip">
+    <span class="icon" data-slop="emoji-as-icon">🔥</span> FLASH DEAL: Prices dropping fast for Aomori Thermal — lock in savings before rooms sell out!
+  </div>
+
+  <header class="hero" data-slop="purple-blue-gradient">
+    <nav class="nav">
+      <div class="brand">
+        <span class="icon" data-slop="emoji-as-icon">🏨</span>
+        Aomori Thermal
+        <span class="brand-pill">Genius Deal</span>
+      </div>
+      <div class="nav-links">
+        <a href="#rooms">Stays</a>
+        <a href="#deals">Hot Deals</a>
+        <a href="#reviews">Reviews (4.9★)</a>
+        <button type="button" class="nav-cta">Sign in</button>
+      </div>
+    </nav>
+    <h1 data-slop="generic-copy">Unlock your dream getaway seamlessly</h1>
+    <p>Elevate your stay at Aomori Thermal with instant luxury deals, effortless booking, and next-level coastal savings.</p>
+    <div class="cta-row">
+      <button type="button" class="btn primary" data-slop="outline-removed">Get started</button>
+      <button type="button" class="btn ghost">Explore rooms</button>
+    </div>
+  </header>
+
+  <form class="search-shell" onsubmit="return false;">
+    <input type="text" placeholder="Destination" data-slop="placeholder-as-label">
+    <input type="text" placeholder="Check-in — Check-out" data-slop="placeholder-as-label">
+    <input type="text" placeholder="2 adults · 1 room" data-slop="placeholder-as-label">
+    <input type="text" id="promo-code" placeholder="Promo code" data-slop="paste-blocked">
+    <button type="submit" class="btn search-submit">Search Now</button>
+  </form>
+
+  <div class="urgency-bar">
+    <span><span class="icon">👀</span> 47 people viewing right now! High demand for your dates — 92% of cliffside rooms are already gone.</span>
+    <span class="urgency-timer">Deal expires in 04:12</span>
+  </div>
+
+  <main class="section" id="rooms">
+    <div class="section-head">
+      <h2>Elevate your stay — Top Aomori Thermal Deals</h2>
+      <p>Sorted by: Our Top Picks · Prices exclude mandatory property charges</p>
+    </div>
+
+    <div class="cards">
+      <article class="card">
+        <div class="card-banner">
+          <div class="badge-stack">
+            <span class="panic-badge">🔥 ONLY 1 ROOM LEFT!</span>
+            <span class="deal-badge">⚡ Deal</span>
+          </div>
+          <span class="score-box">9.8 Superb</span>
+          <span class="icon">♨️</span>
+        </div>
+        <div class="card-body">
+          <div class="view-alert"><span>👀 47 people viewing right now!</span></div>
+          <h3>Cedar Cliff Suite</h3>
+          <p>Experience seamless luxury soaking and elevate your coastal retreat with panoramic ocean vibes.</p>
+          <div class="card-foot">
+            <div class="price-col">
+              <span class="strike-price">$680</span>
+              <div class="price">$280 <small>/ night</small></div>
+              <div class="hidden-fee">+ $89 resort fee + taxes</div>
+            </div>
+            <button type="button" class="btn">Book now</button>
+          </div>
+        </div>
+      </article>
+
+      <article class="card">
+        <div class="card-banner">
+          <div class="badge-stack">
+            <span class="panic-badge">🔥 ONLY 1 ROOM LEFT!</span>
+            <span class="deal-badge">⚡ Deal</span>
+          </div>
+          <span class="score-box">9.6 Exceptional</span>
+          <span class="icon">🌊</span>
+        </div>
+        <div class="card-body">
+          <div class="view-alert"><span>🔥 Booked 6 times in the last hour!</span></div>
+          <h3>Basalt Bath Pavilion</h3>
+          <p>Unlock next-level relaxation in our flagship thermal pavilion with effortless check-in and scenic views.</p>
+          <div class="card-foot">
+            <div class="price-col">
+              <span class="strike-price">$790</span>
+              <div class="price">$340 <small>/ night</small></div>
+              <div class="hidden-fee">+ $89 resort fee + taxes</div>
+            </div>
+            <button type="button" class="btn">Book now</button>
+          </div>
+        </div>
+      </article>
+
+      <article class="card">
+        <div class="card-banner">
+          <div class="badge-stack">
+            <span class="panic-badge">🔥 LAST CHANCE!</span>
+            <span class="deal-badge">⚡ Deal</span>
+          </div>
+          <span class="score-box">9.4 Fabulous</span>
+          <span class="icon">✨</span>
+        </div>
+        <div class="card-body">
+          <div class="view-alert"><span>👀 29 people viewing this suite!</span></div>
+          <h3>Tidepool Loft</h3>
+          <p>Seamless boutique living above the tide line — get started on your unforgettable getaway today.</p>
+          <div class="card-foot">
+            <div class="price-col">
+              <span class="strike-price">$620</span>
+              <div class="price">$260 <small>/ night</small></div>
+              <div class="hidden-fee">+ $89 resort fee + taxes</div>
+            </div>
+            <button type="button" class="btn">Book now</button>
+          </div>
+        </div>
+      </article>
+    </div>
+  </main>
+
+  <script>
+    const promoInput = document.getElementById('promo-code');
+    if (promoInput) {
+      promoInput.addEventListener('paste', (event) => {
+        event.preventDefault();
+      });
+    }
+  </script>
+</body>
+</html>

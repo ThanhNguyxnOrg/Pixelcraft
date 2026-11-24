@@ -1,0 +1,1837 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Vektor Edge · Midnight Avionics Telemetry Cockpit (with Pixelcraft)</title>
+<link rel="stylesheet" href="../../fonts/gallery.css">
+<style>
+  :root {
+    --hull-bg: #070b11;
+    --pod-bg: #0f1621;
+    --pod-elevated: #141e2d;
+    --well-bg: #05080d;
+    --seam-hairline: #1e293b;
+    --seam-recess: #162030;
+    --seam-bright: #2e3f57;
+    --ink-ice: #edf2f7;
+    --ink-steel: #8fa3b8;
+    --ink-dim: #647991;
+    --signal-cyan: #38bdf8;
+    --signal-cyan-soft: rgba(56, 189, 248, 0.16);
+    --signal-cyan-ring: rgba(56, 189, 248, 0.34);
+    --status-ok: #34d399;
+    --status-ok-bg: rgba(52, 211, 153, 0.12);
+    --status-ok-seam: rgba(52, 211, 153, 0.34);
+    --status-degraded: #fbbf24;
+    --status-degraded-bg: rgba(251, 191, 36, 0.12);
+    --status-degraded-seam: rgba(251, 191, 36, 0.36);
+    --status-failing: #fb7185;
+    --status-failing-bg: rgba(251, 113, 133, 0.13);
+    --status-failing-seam: rgba(251, 113, 133, 0.38);
+    --bevel-top: rgba(237, 242, 247, 0.05);
+    --well-shadow: rgba(2, 4, 8, 0.65);
+    --graticule-line: rgba(143, 163, 184, 0.11);
+    --graticule-major: rgba(143, 163, 184, 0.22);
+    --radius-pod: 8px;
+    --radius-well: 6px;
+    --radius-control: 5px;
+    --font-display: 'Barlow Condensed', system-ui, -apple-system, sans-serif;
+    --font-ui: 'Public Sans', system-ui, -apple-system, sans-serif;
+    --font-mono: 'IBM Plex Mono', ui-monospace, SFMono-Regular, monospace;
+  }
+
+  * {
+    box-sizing: border-box;
+  }
+
+  html, body {
+    margin: 0;
+    padding: 0;
+    background-color: var(--hull-bg);
+    color: var(--ink-ice);
+    font-family: var(--font-ui);
+    font-size: 13px;
+    line-height: 1.35;
+    -webkit-font-smoothing: antialiased;
+  }
+
+  :focus-visible {
+    outline: 2px solid var(--signal-cyan);
+    outline-offset: 2px;
+  }
+
+  .skip-link {
+    position: absolute;
+    left: 16px;
+    top: -48px;
+    z-index: 40;
+    background-color: var(--signal-cyan);
+    color: var(--well-bg);
+    padding: 7px 12px;
+    border-radius: var(--radius-control);
+    font-family: var(--font-mono);
+    font-size: 12px;
+    font-weight: 500;
+    text-decoration: none;
+  }
+
+  .skip-link:focus {
+    top: 10px;
+  }
+
+  .tabular {
+    font-variant-numeric: tabular-nums;
+  }
+
+  /* Cockpit Command Strip */
+  .command-strip {
+    background-color: var(--pod-bg);
+    border-bottom: 1px solid var(--seam-hairline);
+    padding: 9px 20px;
+    display: flex;
+    flex-wrap: wrap;
+    align-items: center;
+    justify-content: space-between;
+    gap: 10px 18px;
+  }
+
+  .brand-lockup {
+    display: flex;
+    align-items: center;
+    gap: 12px;
+  }
+
+  .brand-emblem {
+    width: 30px;
+    height: 30px;
+    border-radius: var(--radius-well);
+    background-color: var(--well-bg);
+    border: 1px solid var(--seam-bright);
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    flex-shrink: 0;
+  }
+
+  .brand-titles {
+    display: flex;
+    align-items: baseline;
+    gap: 12px;
+    flex-wrap: wrap;
+  }
+
+  .brand-heading {
+    margin: 0;
+    font-family: var(--font-display);
+    font-size: 22px;
+    font-weight: 800;
+    letter-spacing: 0.06em;
+    text-transform: uppercase;
+    color: var(--ink-ice);
+    line-height: 1;
+  }
+
+  .brand-bus-tag {
+    font-family: var(--font-mono);
+    font-size: 11px;
+    color: var(--ink-steel);
+    letter-spacing: 0.04em;
+    padding: 2px 7px;
+    border-radius: var(--radius-control);
+    background-color: var(--well-bg);
+    border: 1px solid var(--seam-recess);
+  }
+
+  .command-controls {
+    display: flex;
+    flex-wrap: wrap;
+    align-items: center;
+    gap: 10px 14px;
+  }
+
+  .live-cluster {
+    display: inline-flex;
+    align-items: center;
+    gap: 8px;
+    background-color: var(--well-bg);
+    border: 1px solid var(--seam-recess);
+    border-radius: var(--radius-well);
+    padding: 3px 4px 3px 10px;
+  }
+
+  .signal-pill {
+    display: inline-flex;
+    align-items: center;
+    gap: 6px;
+    font-family: var(--font-mono);
+    font-size: 11px;
+    font-weight: 500;
+    letter-spacing: 0.05em;
+    color: var(--status-ok);
+  }
+
+  .signal-pill.is-paused {
+    color: var(--status-degraded);
+  }
+
+  .signal-pulse {
+    display: inline-block;
+    animation: phosphor-pulse 1.8s ease-in-out infinite;
+  }
+
+  .signal-pill.is-paused .signal-pulse {
+    animation: none;
+  }
+
+  @keyframes phosphor-pulse {
+    0%, 100% { opacity: 1; }
+    50% { opacity: 0.42; }
+  }
+
+  .stream-toggle {
+    appearance: none;
+    border: 1px solid var(--seam-hairline);
+    background-color: var(--pod-elevated);
+    color: var(--ink-ice);
+    font-family: var(--font-mono);
+    font-size: 11px;
+    font-weight: 500;
+    padding: 4px 10px;
+    border-radius: var(--radius-control);
+    cursor: pointer;
+    transition: background-color 140ms ease, border-color 140ms ease, color 140ms ease;
+  }
+
+  .stream-toggle:hover {
+    border-color: var(--signal-cyan);
+    color: var(--signal-cyan);
+  }
+
+  .switch-unit {
+    display: inline-flex;
+    align-items: center;
+    gap: 7px;
+  }
+
+  .switch-caption {
+    font-family: var(--font-mono);
+    font-size: 10px;
+    text-transform: uppercase;
+    letter-spacing: 0.08em;
+    color: var(--ink-steel);
+  }
+
+  .segmented-rail {
+    display: inline-flex;
+    background-color: var(--well-bg);
+    border: 1px solid var(--seam-recess);
+    border-radius: var(--radius-well);
+    padding: 2px;
+    gap: 2px;
+  }
+
+  .seg-btn {
+    appearance: none;
+    border: 1px solid transparent;
+    background-color: transparent;
+    color: var(--ink-steel);
+    font-family: var(--font-mono);
+    font-size: 11px;
+    font-weight: 500;
+    padding: 4px 9px;
+    border-radius: var(--radius-control);
+    cursor: pointer;
+    transition: background-color 140ms ease, border-color 140ms ease, color 140ms ease;
+  }
+
+  .seg-btn:hover {
+    color: var(--ink-ice);
+    background-color: var(--pod-bg);
+  }
+
+  .seg-btn[aria-pressed="true"] {
+    background-color: var(--pod-elevated);
+    border-color: var(--signal-cyan-ring);
+    color: var(--signal-cyan);
+  }
+
+  /* Cockpit Main Grid */
+  .cockpit-shell {
+    max-width: 1440px;
+    margin: 0 auto;
+    padding: 14px 20px 12px;
+    display: grid;
+    gap: 12px;
+  }
+
+  .upper-deck {
+    display: grid;
+    grid-template-columns: minmax(0, 1.5fr) minmax(0, 1fr);
+    gap: 14px;
+    align-items: stretch;
+  }
+
+  .pod {
+    background-color: var(--pod-bg);
+    border: 1px solid var(--seam-hairline);
+    border-radius: var(--radius-pod);
+    box-shadow: inset 0 1px 0 var(--bevel-top);
+    padding: 13px 16px;
+    display: flex;
+    flex-direction: column;
+  }
+
+  .pod-kicker {
+    font-family: var(--font-mono);
+    font-size: 10px;
+    font-weight: 500;
+    letter-spacing: 0.09em;
+    text-transform: uppercase;
+    color: var(--ink-steel);
+  }
+
+  /* Left 60%: Oscilloscope Pod */
+  .scope-pod {
+    gap: 10px;
+  }
+
+  .scope-header {
+    display: flex;
+    flex-wrap: wrap;
+    justify-content: space-between;
+    align-items: flex-end;
+    gap: 8px 16px;
+  }
+
+  .scope-readout-block {
+    display: flex;
+    flex-direction: column;
+    gap: 3px;
+  }
+
+  .scope-title-line {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+  }
+
+  .scope-tag {
+    font-family: var(--font-mono);
+    font-size: 10px;
+    color: var(--signal-cyan);
+    background-color: var(--signal-cyan-soft);
+    border: 1px solid var(--signal-cyan-ring);
+    border-radius: var(--radius-control);
+    padding: 1px 6px;
+    letter-spacing: 0.05em;
+  }
+
+  .primary-metric-row {
+    display: flex;
+    align-items: baseline;
+    gap: 12px;
+    flex-wrap: wrap;
+  }
+
+  .giant-readout {
+    font-family: var(--font-display);
+    font-size: 44px;
+    font-weight: 800;
+    line-height: 0.94;
+    letter-spacing: 0.01em;
+    color: var(--ink-ice);
+  }
+
+  .metric-meta {
+    display: flex;
+    flex-direction: column;
+    gap: 2px;
+  }
+
+  .metric-label {
+    font-size: 12px;
+    font-weight: 600;
+    color: var(--ink-ice);
+  }
+
+  .metric-delta {
+    font-family: var(--font-mono);
+    font-size: 11px;
+    color: var(--ink-steel);
+  }
+
+  .metric-delta strong {
+    color: var(--status-ok);
+    font-weight: 500;
+  }
+
+  .metric-delta strong.is-warn {
+    color: var(--status-degraded);
+  }
+
+  .freq-readout {
+    display: flex;
+    align-items: center;
+    gap: 12px;
+    background-color: var(--well-bg);
+    border: 1px solid var(--seam-recess);
+    border-radius: var(--radius-well);
+    padding: 7px 11px;
+  }
+
+  .freq-item {
+    display: flex;
+    flex-direction: column;
+    gap: 1px;
+  }
+
+  .freq-item + .freq-item {
+    padding-left: 12px;
+    border-left: 1px solid var(--seam-recess);
+  }
+
+  .freq-key {
+    font-family: var(--font-mono);
+    font-size: 9px;
+    letter-spacing: 0.08em;
+    text-transform: uppercase;
+    color: var(--ink-steel);
+  }
+
+  .freq-val {
+    font-family: var(--font-mono);
+    font-size: 12px;
+    font-weight: 500;
+    color: var(--ink-ice);
+  }
+
+  .freq-val.cyan { color: var(--signal-cyan); }
+  .freq-val.amber { color: var(--status-degraded); }
+
+  .scope-well {
+    position: relative;
+    background-color: var(--well-bg);
+    border: 1px solid var(--seam-recess);
+    border-radius: var(--radius-well);
+    box-shadow: inset 0 2px 10px var(--well-shadow);
+    height: 274px;
+    width: 100%;
+    overflow: hidden;
+  }
+
+  .scope-canvas {
+    display: block;
+    width: 100%;
+    height: 100%;
+    cursor: crosshair;
+  }
+
+  .scope-footer {
+    display: flex;
+    flex-wrap: wrap;
+    justify-content: space-between;
+    align-items: center;
+    gap: 8px;
+    font-family: var(--font-mono);
+    font-size: 11px;
+    color: var(--ink-steel);
+    padding-top: 2px;
+  }
+
+  .scope-footer-group {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 14px;
+  }
+
+  .scope-hover-readout {
+    color: var(--signal-cyan);
+  }
+
+  /* Right 40%: Radial Arc Gauges + Edge PoP Health */
+  .right-stack {
+    display: flex;
+    flex-direction: column;
+    gap: 12px;
+  }
+
+  .gauges-pod {
+    gap: 8px;
+  }
+
+  .pod-head-row {
+    display: flex;
+    justify-content: space-between;
+    align-items: baseline;
+    gap: 8px;
+  }
+
+  .pod-subnote {
+    font-family: var(--font-mono);
+    font-size: 10px;
+    color: var(--ink-steel);
+  }
+
+  .gauges-grid {
+    display: grid;
+    grid-template-columns: repeat(3, minmax(0, 1fr));
+    gap: 10px;
+  }
+
+  .gauge-cell {
+    background-color: var(--well-bg);
+    border: 1px solid var(--seam-recess);
+    border-radius: var(--radius-well);
+    padding: 8px 6px 9px;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+  }
+
+  .gauge-svg {
+    width: 100%;
+    max-width: 148px;
+    height: 108px;
+    display: block;
+  }
+
+  .gauge-name {
+    font-family: var(--font-display);
+    font-size: 14px;
+    font-weight: 600;
+    letter-spacing: 0.08em;
+    text-transform: uppercase;
+    color: var(--ink-ice);
+    margin-top: -2px;
+  }
+
+  .gauge-sub {
+    font-family: var(--font-mono);
+    font-size: 10px;
+    color: var(--ink-steel);
+    margin-top: 2px;
+  }
+
+  /* Ranked Edge PoP Health */
+  .pop-pod {
+    flex: 1;
+    gap: 9px;
+  }
+
+  .pop-list {
+    display: flex;
+    flex-direction: column;
+    gap: 7px;
+  }
+
+  .pop-row {
+    appearance: none;
+    width: 100%;
+    text-align: left;
+    background-color: var(--well-bg);
+    border: 1px solid var(--seam-recess);
+    border-radius: var(--radius-well);
+    padding: 8px 11px;
+    color: var(--ink-ice);
+    cursor: pointer;
+    display: grid;
+    grid-template-columns: 78px 104px minmax(0, 1fr) 74px;
+    align-items: center;
+    gap: 10px;
+    transition: background-color 140ms ease, border-color 140ms ease;
+  }
+
+  .pop-row:hover {
+    background-color: var(--pod-elevated);
+    border-color: var(--seam-bright);
+  }
+
+  .pop-row[aria-pressed="true"] {
+    background-color: var(--pod-elevated);
+    border-color: var(--signal-cyan);
+    box-shadow: inset 0 0 0 1px var(--signal-cyan-ring);
+  }
+
+  .pop-id-wrap {
+    display: flex;
+    flex-direction: column;
+    gap: 1px;
+  }
+
+  .pop-slug {
+    font-family: var(--font-mono);
+    font-size: 12px;
+    font-weight: 500;
+    color: var(--ink-ice);
+  }
+
+  .pop-city {
+    font-size: 10px;
+    color: var(--ink-steel);
+  }
+
+  .meter-track {
+    position: relative;
+    height: 7px;
+    background-color: var(--pod-bg);
+    border: 1px solid var(--seam-hairline);
+    border-radius: 3px;
+    overflow: visible;
+  }
+
+  .meter-fill {
+    height: 100%;
+    border-radius: 2px;
+    transition: width 200ms ease;
+  }
+
+  .meter-fill.ok { background-color: var(--status-ok); }
+  .meter-fill.degraded { background-color: var(--status-degraded); }
+  .meter-fill.failing { background-color: var(--status-failing); }
+
+  .meter-sla-tick {
+    position: absolute;
+    left: 80%;
+    top: -3px;
+    bottom: -3px;
+    width: 1.5px;
+    background-color: var(--status-failing);
+  }
+
+  .pop-latency {
+    text-align: right;
+    font-family: var(--font-mono);
+    font-size: 12px;
+    font-weight: 500;
+    color: var(--ink-ice);
+  }
+
+  .pop-retry {
+    display: block;
+    font-size: 10px;
+    color: var(--ink-steel);
+  }
+
+  /* Status Badges (Always Geometric Glyph + Text) */
+  .status-badge {
+    display: inline-flex;
+    align-items: center;
+    gap: 5px;
+    font-family: var(--font-mono);
+    font-size: 11px;
+    font-weight: 500;
+    padding: 2px 8px;
+    border-radius: var(--radius-control);
+    border: 1px solid transparent;
+    white-space: nowrap;
+  }
+
+  .status-badge.ok {
+    color: var(--status-ok);
+    background-color: var(--status-ok-bg);
+    border-color: var(--status-ok-seam);
+  }
+
+  .status-badge.degraded {
+    color: var(--status-degraded);
+    background-color: var(--status-degraded-bg);
+    border-color: var(--status-degraded-seam);
+  }
+
+  .status-badge.failing {
+    color: var(--status-failing);
+    background-color: var(--status-failing-bg);
+    border-color: var(--status-failing-seam);
+  }
+
+  /* Lower Full-Width Deck: Live Delivery Queue Matrix */
+  .matrix-pod {
+    gap: 10px;
+  }
+
+  .matrix-header {
+    display: flex;
+    flex-wrap: wrap;
+    justify-content: space-between;
+    align-items: center;
+    gap: 10px 16px;
+  }
+
+  .matrix-title-group {
+    display: flex;
+    align-items: baseline;
+    gap: 10px;
+    flex-wrap: wrap;
+  }
+
+  .matrix-heading {
+    margin: 0;
+    font-family: var(--font-display);
+    font-size: 18px;
+    font-weight: 800;
+    letter-spacing: 0.06em;
+    text-transform: uppercase;
+    color: var(--ink-ice);
+  }
+
+  .matrix-count {
+    font-family: var(--font-mono);
+    font-size: 11px;
+    color: var(--ink-steel);
+  }
+
+  .filter-bar {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    flex-wrap: wrap;
+  }
+
+  .filter-label {
+    font-family: var(--font-mono);
+    font-size: 11px;
+    color: var(--ink-steel);
+    text-transform: uppercase;
+    letter-spacing: 0.06em;
+  }
+
+  .filter-input {
+    width: 248px;
+    background-color: var(--well-bg);
+    border: 1px solid var(--seam-bright);
+    border-radius: var(--radius-control);
+    color: var(--ink-ice);
+    font-family: var(--font-mono);
+    font-size: 12px;
+    padding: 5px 10px;
+    transition: border-color 140ms ease;
+  }
+
+  .filter-input::placeholder {
+    color: var(--ink-dim);
+  }
+
+  .filter-input:hover {
+    border-color: var(--signal-cyan-ring);
+  }
+
+  .clear-btn {
+    appearance: none;
+    background-color: var(--pod-elevated);
+    border: 1px solid var(--seam-hairline);
+    border-radius: var(--radius-control);
+    color: var(--ink-steel);
+    font-family: var(--font-mono);
+    font-size: 11px;
+    padding: 5px 9px;
+    cursor: pointer;
+    transition: border-color 140ms ease, color 140ms ease;
+  }
+
+  .clear-btn:hover {
+    border-color: var(--signal-cyan);
+    color: var(--signal-cyan);
+  }
+
+  .clear-btn[hidden] {
+    display: none;
+  }
+
+  .table-scroll {
+    width: 100%;
+    overflow-x: auto;
+    background-color: var(--well-bg);
+    border: 1px solid var(--seam-recess);
+    border-radius: var(--radius-well);
+  }
+
+  .queue-table {
+    width: 100%;
+    border-collapse: collapse;
+    min-width: 760px;
+  }
+
+  .queue-table thead th {
+    font-family: var(--font-mono);
+    font-size: 10px;
+    font-weight: 500;
+    letter-spacing: 0.08em;
+    text-transform: uppercase;
+    color: var(--ink-steel);
+    background-color: var(--pod-bg);
+    border-bottom: 1px solid var(--seam-hairline);
+    padding: 8px 12px;
+    text-align: left;
+  }
+
+  .queue-table thead th.num,
+  .queue-table tbody td.num {
+    text-align: right;
+  }
+
+  .queue-table tbody td {
+    padding: 8px 12px;
+    border-bottom: 1px solid var(--seam-recess);
+    font-size: 12px;
+    color: var(--ink-ice);
+    vertical-align: middle;
+  }
+
+  .queue-table tbody tr:last-child td {
+    border-bottom: none;
+  }
+
+  .queue-table tbody tr:hover td {
+    background-color: var(--pod-bg);
+  }
+
+  .ep-slug {
+    font-family: var(--font-mono);
+    font-size: 12px;
+    font-weight: 500;
+    color: var(--ink-ice);
+  }
+
+  .ep-family {
+    font-family: var(--font-ui);
+    font-size: 11px;
+    color: var(--ink-steel);
+    margin-left: 8px;
+  }
+
+  .pop-chip {
+    font-family: var(--font-mono);
+    font-size: 11px;
+    color: var(--signal-cyan);
+    background-color: var(--pod-bg);
+    border: 1px solid var(--seam-hairline);
+    border-radius: var(--radius-control);
+    padding: 2px 7px;
+    display: inline-block;
+  }
+
+  .mono-val {
+    font-family: var(--font-mono);
+    font-size: 12px;
+  }
+
+  .mono-val.warn { color: var(--status-degraded); }
+  .mono-val.fail { color: var(--status-failing); }
+
+  .inline-lat {
+    display: inline-flex;
+    align-items: center;
+    justify-content: flex-end;
+    gap: 8px;
+  }
+
+  .micro-bar {
+    width: 64px;
+    height: 5px;
+    background-color: var(--pod-bg);
+    border: 1px solid var(--seam-hairline);
+    border-radius: 2px;
+    position: relative;
+    overflow: hidden;
+  }
+
+  .micro-fill {
+    height: 100%;
+    display: block;
+  }
+
+  .micro-fill.ok { background-color: var(--status-ok); }
+  .micro-fill.degraded { background-color: var(--status-degraded); }
+  .micro-fill.failing { background-color: var(--status-failing); }
+
+  .empty-row td {
+    padding: 22px 16px;
+    color: var(--ink-steel);
+    font-family: var(--font-mono);
+    font-size: 12px;
+  }
+
+  .empty-wrap {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    gap: 12px;
+  }
+
+  /* Honest Colophon */
+  .colophon {
+    display: flex;
+    flex-wrap: wrap;
+    justify-content: space-between;
+    align-items: center;
+    gap: 6px 16px;
+    padding: 0 2px;
+    font-family: var(--font-mono);
+    font-size: 11px;
+    color: var(--ink-steel);
+  }
+
+  /* Responsive below 1024px */
+  @media (max-width: 1024px) {
+    .upper-deck {
+      grid-template-columns: 1fr;
+    }
+    .scope-well {
+      height: 248px;
+    }
+  }
+
+  @media (max-width: 680px) {
+    .command-strip {
+      padding: 10px 14px;
+    }
+    .cockpit-shell {
+      padding: 12px 14px 18px;
+    }
+    .gauges-grid {
+      grid-template-columns: 1fr;
+    }
+    .pop-row {
+      grid-template-columns: 74px 98px 1fr 68px;
+      gap: 6px;
+    }
+    .filter-input {
+      width: 100%;
+    }
+  }
+
+  @media (prefers-reduced-motion: reduce) {
+    *, *::before, *::after {
+      animation-duration: 0.01ms !important;
+      animation-iteration-count: 1 !important;
+      transition-duration: 0.01ms !important;
+      scroll-behavior: auto !important;
+    }
+    .signal-pulse {
+      animation: none;
+    }
+  }
+</style>
+</head>
+<body>
+  <a href="#main-cockpit" class="skip-link">Skip to telemetry cockpit</a>
+
+  <header class="command-strip">
+    <div class="brand-lockup">
+      <div class="brand-emblem" aria-hidden="true">
+        <svg width="20" height="20" viewBox="0 0 20 20" fill="none">
+          <rect x="2" y="2" width="16" height="16" rx="2" stroke="var(--seam-bright)" stroke-width="1.2"/>
+          <path d="M3.5 11.5 L7 11.5 L8.8 6 L11.2 14 L13 9.5 L16.5 9.5" stroke="var(--signal-cyan)" stroke-width="1.7" stroke-linecap="round" stroke-linejoin="round"/>
+          <circle cx="16.5" cy="9.5" r="1.5" fill="var(--status-ok)"/>
+        </svg>
+      </div>
+      <div class="brand-titles">
+        <h1 class="brand-heading">VEKTOR · EDGE TELEMETRY</h1>
+        <span class="brand-bus-tag">SOLID SIGNAL BUS · 10 Hz</span>
+      </div>
+    </div>
+
+    <div class="command-controls">
+      <div class="live-cluster">
+        <span id="live-status-pill" class="signal-pill" role="status" aria-live="polite">
+          <span class="signal-pulse" aria-hidden="true">●</span>
+          <span id="live-status-text">SIGNAL LIVE</span>
+        </span>
+        <button id="stream-toggle-btn" type="button" class="stream-toggle" aria-pressed="false">Pause stream</button>
+      </div>
+
+      <div class="switch-unit">
+        <span class="switch-caption" id="window-label">Window</span>
+        <div class="segmented-rail" role="group" aria-labelledby="window-label">
+          <button type="button" class="seg-btn" data-window="15m" aria-pressed="true">15m</button>
+          <button type="button" class="seg-btn" data-window="1h" aria-pressed="false">1h</button>
+          <button type="button" class="seg-btn" data-window="24h" aria-pressed="false">24h</button>
+        </div>
+      </div>
+
+      <div class="switch-unit">
+        <span class="switch-caption" id="region-label">Region</span>
+        <div class="segmented-rail" role="group" aria-labelledby="region-label">
+          <button type="button" class="seg-btn" data-region="All" aria-pressed="true">All</button>
+          <button type="button" class="seg-btn" data-region="iad-1" aria-pressed="false">iad-1</button>
+          <button type="button" class="seg-btn" data-region="fra-2" aria-pressed="false">fra-2</button>
+          <button type="button" class="seg-btn" data-region="sin-1" aria-pressed="false">sin-1</button>
+        </div>
+      </div>
+    </div>
+  </header>
+
+  <main id="main-cockpit" class="cockpit-shell">
+    <!-- Upper Instrument Deck: 60% Oscilloscope / 40% Radial Arc Gauges + Edge PoP Health -->
+    <section class="upper-deck" aria-label="Primary telemetry instruments">
+      <!-- Left 60%: Multi-Trace Canvas Oscilloscope Pod -->
+      <article class="pod scope-pod">
+        <div class="scope-header">
+          <div class="scope-readout-block">
+            <div class="scope-title-line">
+              <span class="pod-kicker">MULTI-TRACE DELIVERY OSCILLOSCOPE</span>
+              <span id="scope-context-tag" class="scope-tag">ALL REGIONS · 15M</span>
+            </div>
+            <div class="primary-metric-row">
+              <span id="p95-readout" class="giant-readout tabular">42 ms</span>
+              <div class="metric-meta">
+                <span class="metric-label">P95 webhook delivery</span>
+                <span id="p95-delta-text" class="metric-delta tabular"><strong>−6 ms vs 24h baseline</strong> · 99.94% within 80 ms SLA</span>
+              </div>
+            </div>
+          </div>
+
+          <div class="freq-readout tabular" aria-label="Signal sampling parameters">
+            <div class="freq-item">
+              <span class="freq-key">SWEEP</span>
+              <span id="freq-sweep" class="freq-val cyan">10.0 Hz</span>
+            </div>
+            <div class="freq-item">
+              <span class="freq-key">PEAK P99</span>
+              <span id="freq-p99" class="freq-val amber">71 ms</span>
+            </div>
+            <div class="freq-item">
+              <span class="freq-key">JITTER</span>
+              <span id="freq-jitter" class="freq-val">1.8 ms</span>
+            </div>
+          </div>
+        </div>
+
+        <div class="scope-well">
+          <canvas id="scope-canvas" class="scope-canvas" role="img" aria-label="Multi-trace delivery latency oscilloscope showing P99, P95, P50 traces against the 80 millisecond SLA limit"></canvas>
+        </div>
+
+        <div class="scope-footer tabular">
+          <div class="scope-footer-group">
+            <span id="scope-buffer-note">BUFFER 72 SAMPLES · DIRECT-LABELED TRACES</span>
+            <span id="scope-breach-note">SLA EXCURSIONS: 0 IN WINDOW</span>
+          </div>
+          <span id="scope-hover-note" class="scope-hover-readout">MOVE POINTER OVER SCOPE FOR SAMPLE CURSOR</span>
+        </div>
+      </article>
+
+      <!-- Right 40%: Three Precision 240-deg Radial Arc Gauges + Edge PoP Health -->
+      <div class="right-stack">
+        <article class="pod gauges-pod" aria-label="Precision radial gauges">
+          <div class="pod-head-row">
+            <span class="pod-kicker">AVIONICS BUDGET &amp; LOAD GAUGES</span>
+            <span class="pod-subnote">240° ARC · THRESHOLD TICKS</span>
+          </div>
+
+          <div class="gauges-grid">
+            <!-- Gauge 1: SLA BUDGET -->
+            <div class="gauge-cell">
+              <svg class="gauge-svg" viewBox="0 0 132 108" role="img" aria-labelledby="g-sla-title">
+                <title id="g-sla-title">SLA budget remaining 71.4 percent</title>
+                <g stroke="var(--seam-bright)" stroke-width="1.2">
+                  <line x1="21.0" y1="88.0" x2="17.5" y2="90.0"/>
+                  <line x1="15.0" y1="51.2" x2="11.1" y2="50.4"/>
+                  <line x1="44.9" y1="14.5" x2="43.3" y2="10.8"/>
+                  <line x1="87.1" y1="14.5" x2="88.7" y2="10.8"/>
+                  <line x1="117.0" y1="51.2" x2="120.9" y2="50.4"/>
+                  <line x1="111.0" y1="88.0" x2="114.5" y2="90.0"/>
+                </g>
+                <path d="M 26.16 85 A 46 46 0 1 1 105.84 85" fill="none" stroke="var(--seam-hairline)" stroke-width="7.5" stroke-linecap="butt" pathLength="100"/>
+                <path id="arc-sla" d="M 26.16 85 A 46 46 0 1 1 105.84 85" fill="none" stroke="var(--status-ok)" stroke-width="7.5" stroke-linecap="butt" pathLength="100" stroke-dasharray="71.4 100"/>
+                <!-- Explicit 25% reserve warning tick (210 deg) -->
+                <line x1="25.3" y1="38.5" x2="19.2" y2="35.0" stroke="var(--status-degraded)" stroke-width="2.2"/>
+                <text id="val-sla" x="66" y="64" text-anchor="middle" fill="var(--ink-ice)" font-family="var(--font-display)" font-size="25" font-weight="800" class="tabular">71.4%</text>
+                <text x="66" y="79" text-anchor="middle" fill="var(--status-ok)" font-family="var(--font-mono)" font-size="9.5" font-weight="500">LEFT</text>
+                <text x="20" y="102" text-anchor="start" fill="var(--ink-steel)" font-family="var(--font-mono)" font-size="8.5">0%</text>
+                <text x="112" y="102" text-anchor="end" fill="var(--ink-steel)" font-family="var(--font-mono)" font-size="8.5">100%</text>
+              </svg>
+              <span class="gauge-name">SLA BUDGET</span>
+              <span class="gauge-sub tabular">MIN 25% RESERVE</span>
+            </div>
+
+            <!-- Gauge 2: THROUGHPUT -->
+            <div class="gauge-cell">
+              <svg class="gauge-svg" viewBox="0 0 132 108" role="img" aria-labelledby="g-tput-title">
+                <title id="g-tput-title">Edge throughput 14.2 thousand requests per second</title>
+                <g stroke="var(--seam-bright)" stroke-width="1.2">
+                  <line x1="21.0" y1="88.0" x2="17.5" y2="90.0"/>
+                  <line x1="15.0" y1="51.2" x2="11.1" y2="50.4"/>
+                  <line x1="44.9" y1="14.5" x2="43.3" y2="10.8"/>
+                  <line x1="87.1" y1="14.5" x2="88.7" y2="10.8"/>
+                  <line x1="117.0" y1="51.2" x2="120.9" y2="50.4"/>
+                  <line x1="111.0" y1="88.0" x2="114.5" y2="90.0"/>
+                </g>
+                <path d="M 26.16 85 A 46 46 0 1 1 105.84 85" fill="none" stroke="var(--seam-hairline)" stroke-width="7.5" stroke-linecap="butt" pathLength="100"/>
+                <path id="arc-tput" d="M 26.16 85 A 46 46 0 1 1 105.84 85" fill="none" stroke="var(--signal-cyan)" stroke-width="7.5" stroke-linecap="butt" pathLength="100" stroke-dasharray="71.0 100"/>
+                <!-- Explicit 85% capacity rail tick (354 deg) -->
+                <line x1="112.7" y1="57.1" x2="119.7" y2="56.4" stroke="var(--status-degraded)" stroke-width="2.2"/>
+                <text id="val-tput" x="66" y="64" text-anchor="middle" fill="var(--ink-ice)" font-family="var(--font-display)" font-size="25" font-weight="800" class="tabular">14.2k/s</text>
+                <text x="66" y="79" text-anchor="middle" fill="var(--signal-cyan)" font-family="var(--font-mono)" font-size="9.5" font-weight="500">INGEST</text>
+                <text x="20" y="102" text-anchor="start" fill="var(--ink-steel)" font-family="var(--font-mono)" font-size="8.5">0</text>
+                <text x="112" y="102" text-anchor="end" fill="var(--ink-steel)" font-family="var(--font-mono)" font-size="8.5">20k/s</text>
+              </svg>
+              <span class="gauge-name">THROUGHPUT</span>
+              <span class="gauge-sub tabular">CAP 17.0k/s WARN</span>
+            </div>
+
+            <!-- Gauge 3: RETRY LOAD -->
+            <div class="gauge-cell">
+              <svg class="gauge-svg" viewBox="0 0 132 108" role="img" aria-labelledby="g-retry-title">
+                <title id="g-retry-title">Retry load 1.4 percent of delivery queue</title>
+                <g stroke="var(--seam-bright)" stroke-width="1.2">
+                  <line x1="21.0" y1="88.0" x2="17.5" y2="90.0"/>
+                  <line x1="15.0" y1="51.2" x2="11.1" y2="50.4"/>
+                  <line x1="44.9" y1="14.5" x2="43.3" y2="10.8"/>
+                  <line x1="87.1" y1="14.5" x2="88.7" y2="10.8"/>
+                  <line x1="117.0" y1="51.2" x2="120.9" y2="50.4"/>
+                  <line x1="111.0" y1="88.0" x2="114.5" y2="90.0"/>
+                </g>
+                <path d="M 26.16 85 A 46 46 0 1 1 105.84 85" fill="none" stroke="var(--seam-hairline)" stroke-width="7.5" stroke-linecap="butt" pathLength="100"/>
+                <path id="arc-retry" d="M 26.16 85 A 46 46 0 1 1 105.84 85" fill="none" stroke="var(--status-degraded)" stroke-width="7.5" stroke-linecap="butt" pathLength="100" stroke-dasharray="28.0 100"/>
+                <!-- Explicit 2.0% alert threshold tick (40% of 5% scale = 246 deg) -->
+                <line x1="46.9" y1="19.1" x2="44.0" y2="12.7" stroke="var(--status-failing)" stroke-width="2.2"/>
+                <text id="val-retry" x="66" y="64" text-anchor="middle" fill="var(--ink-ice)" font-family="var(--font-display)" font-size="25" font-weight="800" class="tabular">1.4%</text>
+                <text id="unit-retry" x="66" y="79" text-anchor="middle" fill="var(--status-degraded)" font-family="var(--font-mono)" font-size="9.5" font-weight="500">BACKOFF</text>
+                <text x="20" y="102" text-anchor="start" fill="var(--ink-steel)" font-family="var(--font-mono)" font-size="8.5">0%</text>
+                <text x="112" y="102" text-anchor="end" fill="var(--ink-steel)" font-family="var(--font-mono)" font-size="8.5">5.0%</text>
+              </svg>
+              <span class="gauge-name">RETRY LOAD</span>
+              <span class="gauge-sub tabular">LIMIT 2.0% RAIL</span>
+            </div>
+          </div>
+        </article>
+
+        <!-- Ranked Edge PoP Health (Worst-First, Click to Filter Cockpit) -->
+        <article class="pod pop-pod" aria-label="Edge PoP health ranked worst first">
+          <div class="pod-head-row">
+            <span class="pod-kicker">EDGE POP HEALTH · WORST-FIRST</span>
+            <span class="pod-subnote">SELECT ROW TO FILTER COCKPIT</span>
+          </div>
+
+          <div id="pop-list" class="pop-list" role="group" aria-label="Filter telemetry by edge PoP">
+            <!-- Populated deterministically and updated via Solid-style signals -->
+          </div>
+        </article>
+      </div>
+    </section>
+
+    <!-- Lower Full-Width Deck: Live Delivery Queue Matrix -->
+    <section class="pod matrix-pod" aria-label="Live delivery queue matrix">
+      <div class="matrix-header">
+        <div class="matrix-title-group">
+          <h2 class="matrix-heading">LIVE DELIVERY QUEUE MATRIX</h2>
+          <span id="matrix-count" class="matrix-count tabular">6 ENDPOINTS · SORTED WORST-FIRST</span>
+        </div>
+
+        <div class="filter-bar">
+          <label for="ep-filter" class="filter-label">Filter endpoints</label>
+          <input id="ep-filter" class="filter-input" type="search" aria-label="Filter endpoints by route, region, or status" placeholder="/v2/hooks/ or sin-1">
+          <button id="ep-clear-btn" type="button" class="clear-btn" hidden>Reset</button>
+        </div>
+      </div>
+
+      <div class="table-scroll">
+        <table class="queue-table">
+          <thead>
+            <tr>
+              <th scope="col">Endpoint Route</th>
+              <th scope="col">Edge PoP</th>
+              <th scope="col" class="num">Rate / s</th>
+              <th scope="col" class="num">P95 Latency (80 ms SLA)</th>
+              <th scope="col" class="num">Retry %</th>
+              <th scope="col" class="num">Backlog</th>
+              <th scope="col">Status</th>
+            </tr>
+          </thead>
+          <tbody id="matrix-tbody">
+            <!-- Populated deterministically via Solid-style signal effects -->
+          </tbody>
+        </table>
+      </div>
+    </section>
+
+    <footer class="colophon">
+      <span>Illustrative telemetry · Fictional Vektor Edge · Solid fine-grained signal architecture</span>
+      <span>SLA target 80 ms P95 · Status pairs glyph + text · Keyboard &amp; reduced-motion compliant</span>
+    </footer>
+  </main>
+
+<script>
+(() => {
+  'use strict';
+
+  /* Minimal SolidJS-style fine-grained reactive signal kernel */
+  let activeListener = null;
+
+  function createSignal(initialValue) {
+    let value = initialValue;
+    const subscribers = new Set();
+    const read = () => {
+      if (activeListener) subscribers.add(activeListener);
+      return value;
+    };
+    const write = (next) => {
+      const resolved = typeof next === 'function' ? next(value) : next;
+      if (Object.is(resolved, value)) return;
+      value = resolved;
+      for (const fn of [...subscribers]) fn();
+    };
+    return [read, write];
+  }
+
+  function createEffect(fn) {
+    const execute = () => {
+      activeListener = execute;
+      try {
+        fn();
+      } finally {
+        activeListener = null;
+      }
+    };
+    execute();
+  }
+
+  function createMemo(compute) {
+    const [get, set] = createSignal();
+    createEffect(() => set(compute()));
+    return get;
+  }
+
+  /* Read semantic design tokens from CSS custom properties (no hardcoded palette literals in JS) */
+  function readTokens() {
+    const style = getComputedStyle(document.documentElement);
+    const pick = (name) => style.getPropertyValue(name).trim();
+    return {
+      wellBg: pick('--well-bg'),
+      podBg: pick('--pod-bg'),
+      seamHairline: pick('--seam-hairline'),
+      inkIce: pick('--ink-ice'),
+      inkSteel: pick('--ink-steel'),
+      signalCyan: pick('--signal-cyan'),
+      statusOk: pick('--status-ok'),
+      statusDegraded: pick('--status-degraded'),
+      statusFailing: pick('--status-failing'),
+      graticuleLine: pick('--graticule-line'),
+      graticuleMajor: pick('--graticule-major'),
+      fontMono: pick('--font-mono')
+    };
+  }
+
+  const TOKENS = readTokens();
+
+  /* Telemetry Domain Model (Fictional Vektor Edge) */
+  const POP_METADATA = [
+    {
+      id: 'sin-1',
+      city: 'Singapore',
+      status: 'degraded',
+      p95: { '15m': 68, '1h': 64, '24h': 59 },
+      retry: { '15m': 3.1, '1h': 2.7, '24h': 2.2 },
+      slaBudget: { '15m': 54.2, '1h': 58.6, '24h': 62.0 },
+      throughputK: { '15m': 3.2, '1h': 3.0, '24h': 2.8 },
+      deltaMs: { '15m': '+11 ms vs 24h baseline', '1h': '+7 ms vs 24h baseline', '24h': '+4 ms vs 7d baseline' },
+      withinSla: { '15m': '97.82%', '1h': '98.15%', '24h': '98.60%' }
+    },
+    {
+      id: 'fra-2',
+      city: 'Frankfurt',
+      status: 'ok',
+      p95: { '15m': 39, '1h': 41, '24h': 40 },
+      retry: { '15m': 0.8, '1h': 0.9, '24h': 0.8 },
+      slaBudget: { '15m': 79.8, '1h': 78.4, '24h': 80.1 },
+      throughputK: { '15m': 5.4, '1h': 5.1, '24h': 4.8 },
+      deltaMs: { '15m': '−3 ms vs 24h baseline', '1h': '−1 ms vs 24h baseline', '24h': '−2 ms vs 7d baseline' },
+      withinSla: { '15m': '99.96%', '1h': '99.94%', '24h': '99.95%' }
+    },
+    {
+      id: 'iad-1',
+      city: 'Ashburn',
+      status: 'ok',
+      p95: { '15m': 31, '1h': 32, '24h': 34 },
+      retry: { '15m': 0.4, '1h': 0.5, '24h': 0.5 },
+      slaBudget: { '15m': 88.5, '1h': 87.9, '24h': 86.2 },
+      throughputK: { '15m': 5.6, '1h': 5.5, '24h': 5.2 },
+      deltaMs: { '15m': '−8 ms vs 24h baseline', '1h': '−6 ms vs 24h baseline', '24h': '−5 ms vs 7d baseline' },
+      withinSla: { '15m': '99.99%', '1h': '99.98%', '24h': '99.98%' }
+    }
+  ];
+
+  const ALL_AGGREGATE = {
+    p95: { '15m': 42, '1h': 44, '24h': 46 },
+    retry: { '15m': 1.4, '1h': 1.3, '24h': 1.2 },
+    slaBudget: { '15m': 71.4, '1h': 73.2, '24h': 74.8 },
+    throughputK: { '15m': 14.2, '1h': 13.6, '24h': 12.8 },
+    deltaMs: { '15m': '−6 ms vs 24h baseline', '1h': '−4 ms vs 24h baseline', '24h': '−2 ms vs 7d baseline' },
+    withinSla: { '15m': '99.94%', '1h': '99.91%', '24h': '99.89%' }
+  };
+
+  const ENDPOINTS = [
+    { route: '/v2/hooks/settlement.cleared', family: 'clearing-bus', region: 'sin-1', rate: 1480, p95: 96, retry: 6.8, backlog: 412, status: 'failing' },
+    { route: '/v2/hooks/invoice.disputed', family: 'billing-core', region: 'sin-1', rate: 940, p95: 74, retry: 3.2, backlog: 128, status: 'degraded' },
+    { route: '/v2/hooks/payout.dispatched', family: 'treasury-out', region: 'fra-2', rate: 2110, p95: 54, retry: 1.9, backlog: 46, status: 'degraded' },
+    { route: '/v2/hooks/ledger.reconciled', family: 'ledger-sync', region: 'fra-2', rate: 3290, p95: 38, retry: 0.6, backlog: 12, status: 'ok' },
+    { route: '/v2/hooks/card.authorized', family: 'auth-edge', region: 'iad-1', rate: 4620, p95: 29, retry: 0.3, backlog: 4, status: 'ok' },
+    { route: '/v2/hooks/token.rotated', family: 'vault-mesh', region: 'iad-1', rate: 1760, p95: 24, retry: 0.2, backlog: 0, status: 'ok' }
+  ];
+
+  const SEVERITY_ORDER = { failing: 0, degraded: 1, ok: 2 };
+  const STATUS_META = {
+    failing: { glyph: '■', label: 'Failing', cls: 'failing' },
+    degraded: { glyph: '▲', label: 'Degraded', cls: 'degraded' },
+    ok: { glyph: '●', label: 'OK', cls: 'ok' }
+  };
+
+  const WINDOW_LABELS = {
+    '15m': ['-15m', '-12m', '-9m', '-6m', '-3m', 'NOW'],
+    '1h': ['-60m', '-48m', '-36m', '-24m', '-12m', 'NOW'],
+    '24h': ['-24h', '-19h', '-14h', '-9h', '-4h', 'NOW']
+  };
+
+  /* Deterministic Waveform Generator for Oscilloscope */
+  const SAMPLE_COUNT = 72;
+
+  function generateTraceSeries(region, win, phase) {
+    const baseP95 = region === 'All'
+      ? ALL_AGGREGATE.p95[win]
+      : POP_METADATA.find((p) => p.id === region).p95[win];
+
+    const seed = (region === 'sin-1' ? 3.1 : region === 'fra-2' ? 1.7 : region === 'iad-1' ? 0.6 : 2.3)
+      + (win === '1h' ? 1.4 : win === '24h' ? 2.8 : 0);
+
+    const p50 = [];
+    const p95 = [];
+    const p99 = [];
+    const amp = region === 'sin-1' ? 6.5 : region === 'All' ? 4.2 : 3.2;
+
+    for (let i = 0; i < SAMPLE_COUNT; i++) {
+      const t = (i + phase) * 0.24 + seed;
+      const waveA = Math.sin(t) * amp;
+      const waveB = Math.cos(t * 2.15 + 0.8) * (amp * 0.45);
+      const micro = Math.sin(t * 4.7) * 1.2;
+      const burst = (region === 'sin-1' && Math.sin(t * 0.55) > 0.72) ? 9.5 : 0;
+
+      const v95 = Math.max(14, Math.min(96, baseP95 + waveA + waveB * 0.6 + micro + burst * 0.55));
+      const v99 = Math.max(v95 + 11, Math.min(99, v95 + (region === 'sin-1' ? 19 : 23) + Math.abs(waveB) * 1.4 + burst));
+      const v50 = Math.max(10, Math.min(v95 - 9, v95 * 0.57 + Math.sin(t * 1.3) * 1.8));
+
+      p50.push(Number(v50.toFixed(1)));
+      p95.push(Number(v95.toFixed(1)));
+      p99.push(Number(v99.toFixed(1)));
+    }
+    return { p50, p95, p99 };
+  }
+
+  /* Reactive Signals */
+  const prefersReduced = window.matchMedia && window.matchMedia('(prefers-reduced-motion: reduce)').matches;
+  const [timeWindow, setTimeWindow] = createSignal('15m');
+  const [selectedRegion, setSelectedRegion] = createSignal('All');
+  const [isStreaming, setIsStreaming] = createSignal(!prefersReduced);
+  const [tickPhase, setTickPhase] = createSignal(0);
+  const [filterQuery, setFilterQuery] = createSignal('');
+  const [hoverIndex, setHoverIndex] = createSignal(-1);
+
+  const activeMetrics = createMemo(() => {
+    const reg = selectedRegion();
+    const win = timeWindow();
+    const phase = tickPhase();
+    const src = reg === 'All' ? ALL_AGGREGATE : POP_METADATA.find((p) => p.id === reg);
+    const jitterShift = phase === 0 ? 0 : Math.round(Math.sin(phase * 0.7));
+    return {
+      p95: Math.max(18, src.p95[win] + jitterShift),
+      retry: src.retry[win],
+      slaBudget: src.slaBudget[win],
+      throughputK: src.throughputK[win],
+      deltaMs: src.deltaMs[win],
+      withinSla: src.withinSla[win],
+      isWarn: reg === 'sin-1'
+    };
+  });
+
+  const traceSeries = createMemo(() => generateTraceSeries(selectedRegion(), timeWindow(), tickPhase()));
+
+  const filteredEndpoints = createMemo(() => {
+    const reg = selectedRegion();
+    const q = filterQuery().trim().toLowerCase();
+    const winMult = timeWindow() === '1h' ? 0.96 : timeWindow() === '24h' ? 0.91 : 1.0;
+
+    return ENDPOINTS
+      .filter((ep) => reg === 'All' || ep.region === reg)
+      .filter((ep) => {
+        if (!q) return true;
+        return ep.route.toLowerCase().includes(q)
+          || ep.region.toLowerCase().includes(q)
+          || ep.family.toLowerCase().includes(q)
+          || ep.status.toLowerCase().includes(q);
+      })
+      .map((ep) => ({
+        ...ep,
+        displayRate: Math.round(ep.rate * winMult)
+      }))
+      .sort((a, b) => (SEVERITY_ORDER[a.status] - SEVERITY_ORDER[b.status]) || (b.p95 - a.p95));
+  });
+
+  /* DOM References */
+  const livePillEl = document.getElementById('live-status-pill');
+  const liveTextEl = document.getElementById('live-status-text');
+  const streamToggleBtn = document.getElementById('stream-toggle-btn');
+  const windowBtns = [...document.querySelectorAll('[data-window]')];
+  const regionBtns = [...document.querySelectorAll('[data-region]')];
+  const scopeContextTag = document.getElementById('scope-context-tag');
+  const p95ReadoutEl = document.getElementById('p95-readout');
+  const p95DeltaEl = document.getElementById('p95-delta-text');
+  const freqSweepEl = document.getElementById('freq-sweep');
+  const freqP99El = document.getElementById('freq-p99');
+  const freqJitterEl = document.getElementById('freq-jitter');
+  const scopeBreachNote = document.getElementById('scope-breach-note');
+  const scopeHoverNote = document.getElementById('scope-hover-note');
+  const canvas = document.getElementById('scope-canvas');
+  const ctx = canvas.getContext('2d');
+
+  const arcSla = document.getElementById('arc-sla');
+  const valSla = document.getElementById('val-sla');
+  const arcTput = document.getElementById('arc-tput');
+  const valTput = document.getElementById('val-tput');
+  const arcRetry = document.getElementById('arc-retry');
+  const valRetry = document.getElementById('val-retry');
+  const unitRetry = document.getElementById('unit-retry');
+
+  const popListEl = document.getElementById('pop-list');
+  const matrixCountEl = document.getElementById('matrix-count');
+  const matrixTbodyEl = document.getElementById('matrix-tbody');
+  const filterInputEl = document.getElementById('ep-filter');
+  const clearBtnEl = document.getElementById('ep-clear-btn');
+
+  /* Fine-Grained Effect 1: Stream Toggle & Status Pill */
+  createEffect(() => {
+    const live = isStreaming();
+    livePillEl.classList.toggle('is-paused', !live);
+    livePillEl.querySelector('.signal-pulse').textContent = live ? '●' : '■';
+    liveTextEl.textContent = live ? 'SIGNAL LIVE' : 'STREAM PAUSED';
+    streamToggleBtn.textContent = live ? 'Pause stream' : 'Resume stream';
+    streamToggleBtn.setAttribute('aria-pressed', String(!live));
+    freqSweepEl.textContent = live ? '10.0 Hz' : 'HOLD';
+  });
+
+  /* Fine-Grained Effect 2: Segmented Controls Sync */
+  createEffect(() => {
+    const win = timeWindow();
+    const reg = selectedRegion();
+    windowBtns.forEach((btn) => btn.setAttribute('aria-pressed', String(btn.dataset.window === win)));
+    regionBtns.forEach((btn) => btn.setAttribute('aria-pressed', String(btn.dataset.region === reg)));
+    scopeContextTag.textContent = `${reg === 'All' ? 'ALL REGIONS' : reg.toUpperCase()} · ${win.toUpperCase()}`;
+  });
+
+  /* Fine-Grained Effect 3: Primary Scope Readout & Radial Arc Gauges */
+  createEffect(() => {
+    const m = activeMetrics();
+    const series = traceSeries();
+    const peakP99 = Math.round(Math.max(...series.p99));
+    const breaches = series.p99.filter((v) => v > 80).length;
+
+    p95ReadoutEl.textContent = `${m.p95} ms`;
+    p95DeltaEl.innerHTML = `<strong class="${m.isWarn ? 'is-warn' : ''}">${m.deltaMs}</strong> · ${m.withinSla} within 80 ms SLA`;
+    freqP99El.textContent = `${peakP99} ms`;
+    freqJitterEl.textContent = `${(m.isWarn ? 3.4 : 1.8).toFixed(1)} ms`;
+    scopeBreachNote.textContent = `P99 > 80 MS EXCURSIONS: ${breaches} IN WINDOW`;
+
+    /* Update 240-deg SVG Arc Gauges */
+    const slaPct = Math.max(0, Math.min(100, m.slaBudget));
+    arcSla.setAttribute('stroke-dasharray', `${slaPct.toFixed(1)} 100`);
+    arcSla.setAttribute('stroke', slaPct < 60 ? 'var(--status-degraded)' : 'var(--status-ok)');
+    valSla.textContent = `${slaPct.toFixed(1)}%`;
+
+    const tputPct = Math.max(0, Math.min(100, (m.throughputK / 20) * 100));
+    arcTput.setAttribute('stroke-dasharray', `${tputPct.toFixed(1)} 100`);
+    valTput.textContent = `${m.throughputK.toFixed(1)}k/s`;
+
+    const retryPct = Math.max(0, Math.min(100, (m.retry / 5.0) * 100));
+    arcRetry.setAttribute('stroke-dasharray', `${retryPct.toFixed(1)} 100`);
+    const retryColor = m.retry >= 2.0 ? 'var(--status-failing)' : m.retry >= 1.0 ? 'var(--status-degraded)' : 'var(--status-ok)';
+    arcRetry.setAttribute('stroke', retryColor);
+    unitRetry.setAttribute('fill', retryColor);
+    valRetry.textContent = `${m.retry.toFixed(1)}%`;
+  });
+
+  /* Fine-Grained Effect 4: Ranked Edge PoP Health Bars (Worst-First) */
+  createEffect(() => {
+    const win = timeWindow();
+    const activeReg = selectedRegion();
+    const sortedPops = [...POP_METADATA].sort((a, b) => b.p95[win] - a.p95[win]);
+
+    popListEl.innerHTML = '';
+    for (const pop of sortedPops) {
+      const p95Val = pop.p95[win];
+      const retryVal = pop.retry[win];
+      const st = STATUS_META[pop.status];
+      const widthPct = Math.min(100, Math.round((p95Val / 100) * 100));
+
+      const btn = document.createElement('button');
+      btn.type = 'button';
+      btn.className = 'pop-row';
+      btn.setAttribute('aria-pressed', String(activeReg === pop.id));
+      btn.innerHTML = `
+        <span class="pop-id-wrap">
+          <span class="pop-slug">${pop.id}</span>
+          <span class="pop-city">${pop.city}</span>
+        </span>
+        <span class="status-badge ${st.cls}">${st.glyph} ${st.label}</span>
+        <span class="meter-track" aria-hidden="true">
+          <span class="meter-fill ${st.cls}" style="width:${widthPct}%"></span>
+          <span class="meter-sla-tick" title="80 ms SLA threshold"></span>
+        </span>
+        <span class="pop-latency tabular">
+          ${p95Val} ms
+          <span class="pop-retry">${retryVal.toFixed(1)}% retry</span>
+        </span>
+      `;
+      btn.addEventListener('click', () => {
+        setSelectedRegion((curr) => (curr === pop.id ? 'All' : pop.id));
+      });
+      popListEl.appendChild(btn);
+    }
+  });
+
+  /* Fine-Grained Effect 5: Live Delivery Queue Matrix */
+  createEffect(() => {
+    const rows = filteredEndpoints();
+    const q = filterQuery().trim();
+    const reg = selectedRegion();
+
+    clearBtnEl.hidden = !q && reg === 'All';
+    matrixCountEl.textContent = `${rows.length} ${rows.length === 1 ? 'ENDPOINT' : 'ENDPOINTS'} · SORTED WORST-FIRST`;
+
+    matrixTbodyEl.innerHTML = '';
+    if (rows.length === 0) {
+      const tr = document.createElement('tr');
+      tr.className = 'empty-row';
+      tr.innerHTML = `
+        <td colspan="7">
+          <div class="empty-wrap">
+            <span>No delivery routes match "${q || reg}".</span>
+            <button type="button" class="clear-btn" id="inline-reset-btn">Clear filter</button>
+          </div>
+        </td>
+      `;
+      matrixTbodyEl.appendChild(tr);
+      const inlineBtn = document.getElementById('inline-reset-btn');
+      if (inlineBtn) {
+        inlineBtn.addEventListener('click', () => {
+          filterInputEl.value = '';
+          setFilterQuery('');
+          setSelectedRegion('All');
+        });
+      }
+      return;
+    }
+
+    for (const ep of rows) {
+      const st = STATUS_META[ep.status];
+      const latClass = ep.p95 > 80 ? 'fail' : ep.p95 >= 50 ? 'warn' : '';
+      const retryClass = ep.retry >= 5 ? 'fail' : ep.retry >= 1.5 ? 'warn' : '';
+      const barPct = Math.min(100, Math.round((ep.p95 / 100) * 100));
+
+      const tr = document.createElement('tr');
+      tr.innerHTML = `
+        <td><span class="ep-slug">${ep.route}</span><span class="ep-family">${ep.family}</span></td>
+        <td><span class="pop-chip">${ep.region}</span></td>
+        <td class="num mono-val tabular">${ep.displayRate.toLocaleString('en-US')}/s</td>
+        <td class="num mono-val tabular ${latClass}">
+          <span class="inline-lat">
+            <span class="micro-bar" aria-hidden="true"><span class="micro-fill ${st.cls}" style="width:${barPct}%"></span></span>
+            <span>${ep.p95} ms</span>
+          </span>
+        </td>
+        <td class="num mono-val tabular ${retryClass}">${ep.retry.toFixed(1)}%</td>
+        <td class="num mono-val tabular">${ep.backlog.toLocaleString('en-US')}</td>
+        <td><span class="status-badge ${st.cls}">${st.glyph} ${st.label}</span></td>
+      `;
+      matrixTbodyEl.appendChild(tr);
+    }
+  });
+
+  /* High-DPI Multi-Trace Oscilloscope Canvas Renderer */
+  function drawOscilloscope() {
+    const rect = canvas.parentElement.getBoundingClientRect();
+    const cssW = Math.max(320, Math.floor(rect.width));
+    const cssH = Math.max(200, Math.floor(rect.height));
+    const dpr = Math.max(2, window.devicePixelRatio || 1);
+
+    if (canvas.width !== cssW * dpr || canvas.height !== cssH * dpr) {
+      canvas.width = cssW * dpr;
+      canvas.height = cssH * dpr;
+    }
+
+    ctx.save();
+    ctx.scale(dpr, dpr);
+
+    /* Plot geometry — reserve crisp right gutter for direct on-canvas trace labels */
+    const padL = 44;
+    const padR = 92;
+    const padT = 18;
+    const padB = 28;
+    const plotW = cssW - padL - padR;
+    const plotH = cssH - padT - padB;
+    const maxMs = 100;
+
+    const xOf = (idx) => padL + (idx / (SAMPLE_COUNT - 1)) * plotW;
+    const yOf = (ms) => padT + plotH - (Math.max(0, Math.min(maxMs, ms)) / maxMs) * plotH;
+
+    /* Clear recessed instrument well */
+    ctx.fillStyle = TOKENS.wellBg;
+    ctx.fillRect(0, 0, cssW, cssH);
+
+    /* Subtle horizontal graticule & Y-axis labels (0, 20, 40, 60, 80, 100 ms) */
+    ctx.font = `500 10px ${TOKENS.fontMono}`;
+    ctx.textBaseline = 'middle';
+    const yTicks = [0, 20, 40, 60, 80, 100];
+    for (const ms of yTicks) {
+      const y = Math.round(yOf(ms)) + 0.5;
+      ctx.beginPath();
+      ctx.moveTo(padL, y);
+      ctx.lineTo(padL + plotW, y);
+      ctx.strokeStyle = ms === 0 ? TOKENS.graticuleMajor : TOKENS.graticuleLine;
+      ctx.lineWidth = 1;
+      ctx.stroke();
+
+      ctx.fillStyle = ms === 80 ? TOKENS.statusFailing : TOKENS.inkSteel;
+      ctx.textAlign = 'right';
+      ctx.fillText(`${ms}`, padL - 9, y);
+    }
+
+    /* Y-axis unit tag */
+    ctx.fillStyle = TOKENS.inkSteel;
+    ctx.textAlign = 'left';
+    ctx.fillText('MS', 10, padT - 6);
+
+    /* Vertical time graticule & X-axis labels */
+    const xLabels = WINDOW_LABELS[timeWindow()];
+    const vSteps = xLabels.length - 1;
+    for (let s = 0; s <= vSteps; s++) {
+      const x = Math.round(padL + (s / vSteps) * plotW) + 0.5;
+      ctx.beginPath();
+      ctx.moveTo(x, padT);
+      ctx.lineTo(x, padT + plotH);
+      ctx.strokeStyle = s === vSteps ? TOKENS.graticuleMajor : TOKENS.graticuleLine;
+      ctx.lineWidth = 1;
+      ctx.stroke();
+
+      ctx.fillStyle = s === vSteps ? TOKENS.signalCyan : TOKENS.inkSteel;
+      ctx.textAlign = s === 0 ? 'left' : s === vSteps ? 'right' : 'center';
+      ctx.fillText(xLabels[s], x, cssH - 12);
+    }
+
+    /* 80 ms SLA Threshold Line (Alert Coral, directly labeled on canvas) */
+    const slaY = Math.round(yOf(80)) + 0.5;
+    ctx.save();
+    ctx.setLineDash([6, 4]);
+    ctx.beginPath();
+    ctx.moveTo(padL, slaY);
+    ctx.lineTo(padL + plotW, slaY);
+    ctx.strokeStyle = TOKENS.statusFailing;
+    ctx.lineWidth = 1.4;
+    ctx.stroke();
+    ctx.restore();
+
+    /* Direct SLA Pill Tag inside top-left of threshold line */
+    const slaTagText = '80 MS SLA LIMIT';
+    ctx.font = `500 9.5px ${TOKENS.fontMono}`;
+    const slaTagW = ctx.measureText(slaTagText).width + 12;
+    ctx.fillStyle = TOKENS.podBg;
+    ctx.fillRect(padL + 8, slaY - 19, slaTagW, 15);
+    ctx.strokeStyle = TOKENS.statusFailing;
+    ctx.lineWidth = 1;
+    ctx.strokeRect(padL + 8.5, slaY - 18.5, slaTagW - 1, 14);
+    ctx.fillStyle = TOKENS.statusFailing;
+    ctx.textAlign = 'left';
+    ctx.textBaseline = 'middle';
+    ctx.fillText(slaTagText, padL + 14, slaY - 11);
+
+    const { p50, p95, p99 } = traceSeries();
+
+    /* Helper to stroke trace path */
+    function tracePath(arr) {
+      ctx.beginPath();
+      for (let i = 0; i < arr.length; i++) {
+        const x = xOf(i);
+        const y = yOf(arr[i]);
+        if (i === 0) ctx.moveTo(x, y);
+        else ctx.lineTo(x, y);
+      }
+    }
+
+    /* 1. P95 Shaded Phosphor Area Fill */
+    tracePath(p95);
+    ctx.lineTo(xOf(SAMPLE_COUNT - 1), yOf(0));
+    ctx.lineTo(xOf(0), yOf(0));
+    ctx.closePath();
+    const grad = ctx.createLinearGradient(0, padT, 0, padT + plotH);
+    grad.addColorStop(0, 'rgba(56, 189, 248, 0.22)');
+    grad.addColorStop(0.75, 'rgba(56, 189, 248, 0.04)');
+    grad.addColorStop(1, 'rgba(56, 189, 248, 0.0)');
+    ctx.fillStyle = grad;
+    ctx.fill();
+
+    /* 2. P50 Cool Steel Dashed Trace */
+    ctx.save();
+    ctx.setLineDash([4, 4]);
+    tracePath(p50);
+    ctx.strokeStyle = TOKENS.inkSteel;
+    ctx.lineWidth = 1.4;
+    ctx.stroke();
+    ctx.restore();
+
+    /* 3. P99 Instrument Amber Trace */
+    tracePath(p99);
+    ctx.strokeStyle = TOKENS.statusDegraded;
+    ctx.lineWidth = 1.75;
+    ctx.lineJoin = 'round';
+    ctx.stroke();
+
+    /* 4. P95 Phosphor Cyan Primary Trace (subtle glow + crisp core) */
+    ctx.save();
+    tracePath(p95);
+    ctx.strokeStyle = 'rgba(56, 189, 248, 0.28)';
+    ctx.lineWidth = 5;
+    ctx.lineJoin = 'round';
+    ctx.stroke();
+    tracePath(p95);
+    ctx.strokeStyle = TOKENS.signalCyan;
+    ctx.lineWidth = 2.1;
+    ctx.stroke();
+    ctx.restore();
+
+    /* Direct On-Canvas Right-Edge Trace Labels with Collision Avoidance */
+    const lastIdx = SAMPLE_COUNT - 1;
+    const endX = xOf(lastIdx);
+    const labelItems = [
+      { key: 'P99', val: p99[lastIdx], y: yOf(p99[lastIdx]), color: TOKENS.statusDegraded },
+      { key: 'P95', val: p95[lastIdx], y: yOf(p95[lastIdx]), color: TOKENS.signalCyan },
+      { key: 'P50', val: p50[lastIdx], y: yOf(p50[lastIdx]), color: TOKENS.inkSteel }
+    ].sort((a, b) => a.y - b.y);
+
+    const minLabelGap = 18;
+    for (let i = 1; i < labelItems.length; i++) {
+      if (labelItems[i].y - labelItems[i - 1].y < minLabelGap) {
+        labelItems[i].y = labelItems[i - 1].y + minLabelGap;
+      }
+    }
+
+    ctx.font = `500 10.5px ${TOKENS.fontMono}`;
+    ctx.textAlign = 'left';
+    ctx.textBaseline = 'middle';
+
+    for (const item of labelItems) {
+      const trueY = yOf(item.val);
+      /* Terminal phosphor dot */
+      ctx.beginPath();
+      ctx.arc(endX, trueY, 3.2, 0, Math.PI * 2);
+      ctx.fillStyle = item.color;
+      ctx.fill();
+
+      /* Leader hair-tick to direct label */
+      ctx.beginPath();
+      ctx.moveTo(endX + 4, trueY);
+      ctx.lineTo(endX + 11, item.y);
+      ctx.strokeStyle = item.color;
+      ctx.lineWidth = 1;
+      ctx.stroke();
+
+      /* Label pill */
+      const labelText = `${item.key} ${Math.round(item.val)} ms`;
+      const lx = endX + 14;
+      const ly = Math.max(padT + 8, Math.min(padT + plotH - 8, item.y));
+      ctx.fillStyle = item.color;
+      ctx.fillText(labelText, lx, ly);
+    }
+
+    /* Interactive Sample Crosshair when Hovering */
+    const hIdx = hoverIndex();
+    if (hIdx >= 0 && hIdx < SAMPLE_COUNT) {
+      const hx = Math.round(xOf(hIdx)) + 0.5;
+      ctx.save();
+      ctx.setLineDash([2, 3]);
+      ctx.beginPath();
+      ctx.moveTo(hx, padT);
+      ctx.lineTo(hx, padT + plotH);
+      ctx.strokeStyle = TOKENS.inkIce;
+      ctx.lineWidth = 1;
+      ctx.stroke();
+      ctx.restore();
+
+      const pts = [
+        { val: p99[hIdx], color: TOKENS.statusDegraded },
+        { val: p95[hIdx], color: TOKENS.signalCyan },
+        { val: p50[hIdx], color: TOKENS.inkSteel }
+      ];
+      for (const pt of pts) {
+        ctx.beginPath();
+        ctx.arc(hx, yOf(pt.val), 3.6, 0, Math.PI * 2);
+        ctx.fillStyle = TOKENS.wellBg;
+        ctx.fill();
+        ctx.strokeStyle = pt.color;
+        ctx.lineWidth = 2;
+        ctx.stroke();
+      }
+      scopeHoverNote.textContent = `SAMPLE #${hIdx + 1}: P99 ${Math.round(p99[hIdx])} ms · P95 ${Math.round(p95[hIdx])} ms · P50 ${Math.round(p50[hIdx])} ms`;
+    } else {
+      scopeHoverNote.textContent = 'MOVE POINTER OVER SCOPE FOR SAMPLE CURSOR';
+    }
+
+    ctx.restore();
+  }
+
+  /* Fine-Grained Effect 6: Redraw Oscilloscope Whenever Signals Change */
+  createEffect(() => {
+    traceSeries();
+    timeWindow();
+    hoverIndex();
+    drawOscilloscope();
+  });
+
+  /* UI Event Bindings */
+  streamToggleBtn.addEventListener('click', () => {
+    setIsStreaming((curr) => !curr);
+  });
+
+  windowBtns.forEach((btn) => {
+    btn.addEventListener('click', () => setTimeWindow(btn.dataset.window));
+  });
+
+  regionBtns.forEach((btn) => {
+    btn.addEventListener('click', () => setSelectedRegion(btn.dataset.region));
+  });
+
+  filterInputEl.addEventListener('input', (e) => {
+    setFilterQuery(e.target.value);
+  });
+
+  clearBtnEl.addEventListener('click', () => {
+    filterInputEl.value = '';
+    setFilterQuery('');
+    setSelectedRegion('All');
+    filterInputEl.focus();
+  });
+
+  canvas.addEventListener('mousemove', (e) => {
+    const rect = canvas.getBoundingClientRect();
+    const padL = 44;
+    const padR = 92;
+    const plotW = Math.max(1, rect.width - padL - padR);
+    const relX = e.clientX - rect.left - padL;
+    if (relX < 0 || relX > plotW) {
+      setHoverIndex(-1);
+      return;
+    }
+    const idx = Math.round((relX / plotW) * (SAMPLE_COUNT - 1));
+    setHoverIndex(Math.max(0, Math.min(SAMPLE_COUNT - 1, idx)));
+  });
+
+  canvas.addEventListener('mouseleave', () => setHoverIndex(-1));
+  window.addEventListener('resize', drawOscilloscope);
+
+  /* Live Signal Sweep Loop (respects Pause stream & prefers-reduced-motion) */
+  window.setInterval(() => {
+    if (isStreaming()) {
+      setTickPhase((n) => n + 1);
+    }
+  }, 1100);
+})();
+</script>
+</body>
+</html>

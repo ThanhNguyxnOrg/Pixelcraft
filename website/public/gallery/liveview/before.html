@@ -1,0 +1,442 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=1, user-scalable=no">
+<title>Osteria Ferro — AI-Powered Culinary Experience (default agent output)</title>
+<style>
+  * {
+    box-sizing: border-box;
+  }
+  body {
+    margin: 0;
+    font-family: Inter, Roboto, Arial, sans-serif;
+    background: #f8fafc;
+    color: #0f172a;
+    min-height: 900px;
+  }
+  .promo-banner {
+    background: linear-gradient(90deg, #7c3aed, #4f46e5, #2563eb);
+    color: #ffffff;
+    text-align: center;
+    padding: 8px 16px;
+    font-size: 12px;
+    font-weight: 700;
+    letter-spacing: 0.03em;
+  }
+  .navbar {
+    background: #ffffff;
+    border-bottom: 1px solid #e2e8f0;
+    padding: 12px 40px;
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    transition: all 0.3s ease;
+  }
+  .logo-wrap {
+    display: flex;
+    align-items: center;
+    gap: 10px;
+    font-size: 20px;
+    font-weight: 800;
+    color: #1e1b4b;
+  }
+  .logo-icon {
+    width: 36px;
+    height: 36px;
+    border-radius: 12px;
+    background: linear-gradient(135deg, purple, indigo, blue);
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    font-size: 18px;
+    color: #ffffff;
+  }
+  .ai-pill {
+    background: #ede9fe;
+    color: #6d28d9;
+    font-size: 11px;
+    font-weight: 800;
+    padding: 3px 9px;
+    border-radius: 999px;
+    text-transform: uppercase;
+  }
+  .nav-links {
+    display: flex;
+    align-items: center;
+    gap: 24px;
+    font-size: 14px;
+    font-weight: 600;
+  }
+  .nav-links a {
+    color: #475569;
+    text-decoration: none;
+    transition: all 0.3s ease;
+  }
+  .nav-links a:focus {
+    outline: none;
+  }
+  .nav-btn {
+    background: linear-gradient(135deg, #7c3aed, #3b82f6);
+    color: #ffffff;
+    border: 0;
+    border-radius: 999px;
+    padding: 10px 20px;
+    font-family: Inter, sans-serif;
+    font-size: 13px;
+    font-weight: 700;
+    cursor: pointer;
+    transition: all 0.3s ease;
+  }
+  .nav-btn:focus {
+    outline: none;
+  }
+  .hero {
+    background: linear-gradient(135deg, purple, indigo, blue);
+    color: #ffffff;
+    padding: 28px 32px 62px;
+    position: relative;
+    overflow: hidden;
+  }
+  .text-center {
+    text-align: center;
+  }
+  .hero-badge-row {
+    display: inline-flex;
+    align-items: center;
+    gap: 10px;
+    background: rgba(255, 255, 255, 0.16);
+    border: 1px solid rgba(255, 255, 255, 0.28);
+    padding: 6px 16px;
+    border-radius: 999px;
+    font-size: 13px;
+    font-weight: 700;
+    margin-bottom: 14px;
+  }
+  .star-chip {
+    background: #facc15;
+    color: #1e1b4b;
+    padding: 2px 9px;
+    border-radius: 999px;
+    font-weight: 800;
+    font-size: 12px;
+  }
+  .hero-title {
+    max-width: 860px;
+    margin: 0 auto 10px;
+    font-size: 44px;
+    line-height: 1.1;
+    font-weight: 900;
+    letter-spacing: -0.02em;
+    background: linear-gradient(90deg, #ffffff 0%, #f5d0fe 50%, #bae6fd 100%);
+    -webkit-background-clip: text;
+    background-clip: text;
+    color: transparent;
+  }
+  .hero-sub {
+    max-width: 650px;
+    margin: 0 auto 18px;
+    font-size: 15px;
+    line-height: 1.5;
+    color: #e0e7ff;
+  }
+  .hero-ctas {
+    display: flex;
+    justify-content: center;
+    gap: 14px;
+    margin-bottom: 4px;
+  }
+  .cta-primary {
+    background: #ffffff;
+    color: #4f46e5;
+    border: 0;
+    border-radius: 14px;
+    padding: 12px 26px;
+    font-family: Inter, sans-serif;
+    font-size: 15px;
+    font-weight: 800;
+    cursor: pointer;
+    box-shadow: 0 12px 28px rgba(15, 23, 42, 0.28);
+    transition: all 0.3s ease;
+  }
+  .cta-secondary {
+    background: rgba(255, 255, 255, 0.14);
+    color: #ffffff;
+    border: 1px solid rgba(255, 255, 255, 0.45);
+    border-radius: 14px;
+    padding: 12px 26px;
+    font-family: Inter, sans-serif;
+    font-size: 15px;
+    font-weight: 700;
+    cursor: pointer;
+    transition: all 0.3s ease;
+  }
+  .cta-primary:focus,
+  .cta-secondary:focus {
+    outline: none;
+  }
+  .booking-widget {
+    max-width: 1180px;
+    margin: -38px auto 18px;
+    background: #ffffff;
+    border: 2px solid #c4b5fd;
+    padding: 15px 18px;
+    position: relative;
+    z-index: 2;
+    transition: all 0.3s ease;
+  }
+  .widget-top {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    margin-bottom: 12px;
+    font-size: 13px;
+    font-weight: 700;
+    color: #4f46e5;
+  }
+  .urgency-pill {
+    background: #fee2e2;
+    color: #dc2626;
+    padding: 4px 10px;
+    border-radius: 999px;
+    font-size: 12px;
+    font-weight: 800;
+  }
+  .booking-grid {
+    display: grid;
+    grid-template-columns: 1.1fr 1.1fr 0.9fr 0.95fr 180px;
+    gap: 12px;
+  }
+  .slop-input {
+    width: 100%;
+    padding: 12px 14px;
+    border: 1px solid #cbd5e1;
+    border-radius: 12px;
+    font-family: Inter, sans-serif;
+    font-size: 14px;
+    background: #f8fafc;
+    color: #0f172a;
+    outline: none;
+    transition: all 0.3s ease;
+  }
+  .slop-input:focus {
+    outline: none;
+    border-color: #8b5cf6;
+  }
+  .book-submit {
+    background: linear-gradient(135deg, purple, indigo, blue);
+    color: #ffffff;
+    border: 0;
+    border-radius: 12px;
+    font-family: Inter, sans-serif;
+    font-size: 14px;
+    font-weight: 800;
+    cursor: pointer;
+    transition: all 0.3s ease;
+  }
+  .book-submit:focus {
+    outline: none;
+  }
+  .rounded-2xl {
+    border-radius: 16px;
+  }
+  .shadow-lg {
+    box-shadow: 0 12px 28px rgba(79, 70, 229, 0.12);
+  }
+  .features-section {
+    max-width: 1180px;
+    margin: 0 auto 22px;
+    padding: 0 4px;
+  }
+  .section-bar {
+    display: flex;
+    justify-content: space-between;
+    align-items: baseline;
+    margin-bottom: 14px;
+  }
+  .section-bar h2 {
+    margin: 0;
+    font-size: 22px;
+    font-weight: 800;
+    color: #1e1b4b;
+  }
+  .section-bar span {
+    font-size: 13px;
+    color: #64748b;
+    font-weight: 600;
+  }
+  .cards-grid {
+    display: grid;
+    grid-template-columns: repeat(4, 1fr);
+    gap: 18px;
+  }
+  .feature-card {
+    background: #ffffff;
+    border: 1px solid #e2e8f0;
+    border-left: 5px solid #7c3aed;
+    padding: 20px 18px;
+    transition: all 0.3s ease;
+  }
+  .feature-card:hover {
+    transform: translateY(-4px);
+  }
+  .emoji-box {
+    width: 44px;
+    height: 44px;
+    border-radius: 12px;
+    background: #f3e8ff;
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    font-size: 22px;
+    margin-bottom: 12px;
+  }
+  .feature-card h3 {
+    margin: 0 0 8px;
+    font-size: 17px;
+    font-weight: 800;
+    color: #0f172a;
+  }
+  .feature-card p {
+    margin: 0 0 12px;
+    font-size: 13px;
+    line-height: 1.5;
+    color: #64748b;
+  }
+  .card-tag {
+    display: inline-block;
+    font-size: 11px;
+    font-weight: 700;
+    color: #6d28d9;
+    background: #ede9fe;
+    padding: 3px 9px;
+    border-radius: 999px;
+  }
+  .social-strip {
+    max-width: 1180px;
+    margin: 0 auto 24px;
+    background: linear-gradient(135deg, #312e81, #4f46e5);
+    color: #ffffff;
+    padding: 16px 24px;
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    gap: 18px;
+  }
+  .social-strip p {
+    margin: 0;
+    font-size: 14px;
+    font-weight: 600;
+  }
+  .vip-row {
+    display: flex;
+    gap: 10px;
+    align-items: center;
+  }
+  .vip-input {
+    padding: 10px 14px;
+    border-radius: 10px;
+    border: 0;
+    font-size: 13px;
+    width: 220px;
+    outline: none;
+    transition: all 0.3s ease;
+  }
+</style>
+</head>
+<body>
+  <div class="promo-banner">
+    🔥 FLASH VIP DROP: Unlock 25% OFF Our Cutting-Edge Tasting Menu — Only 2 Tables Left Tonight! ⏳
+  </div>
+
+  <header class="navbar">
+    <div class="logo-wrap">
+      <span class="logo-icon">🍝</span>
+      <span>Osteria Ferro</span>
+      <span class="ai-pill">AI Smart-Table 2.0</span>
+    </div>
+    <nav class="nav-links">
+      <a href="#" tabindex="3">🍽️ Menu</a>
+      <a href="#" tabindex="4">✨ Experience</a>
+      <a href="#" tabindex="5">💎 VIP Club</a>
+      <button class="nav-btn" tabindex="1">🚀 Get Started</button>
+    </nav>
+  </header>
+
+  <section class="hero text-center" data-slop="purple-blue-gradient">
+    <div class="hero-badge-row">
+      <span class="star-chip">4.99★ #1 Restaurant!</span>
+      <span>🏆 Voted Best Culinary Disruption by 50,000+ Foodies</span>
+    </div>
+    <h1 class="hero-title" data-slop="gradient-text-treatment">Elevate Your Seamless Culinary Journey 🍝✨🍷</h1>
+    <p class="hero-sub" data-slop="generic-copy">
+      Unlock cutting-edge wood-fired gastronomy and revolutionize your night out. Supercharge every dinner reservation with our AI-curated table matching engine.
+    </p>
+    <div class="hero-ctas" data-slop="centered-hero-two-ctas">
+      <button class="cta-primary" tabindex="2" data-slop="outline-removed">Get Started</button>
+      <button class="cta-secondary">Learn More</button>
+    </div>
+  </section>
+
+  <section class="booking-widget rounded-2xl shadow-lg">
+    <div class="widget-top">
+      <span>⚡ Instant AI Table Concierge — Seamless One-Click Reservation ($15 VIP Convenience Fee Applies)</span>
+      <span class="urgency-pill">🔥 37 people booking right now!</span>
+    </div>
+    <form class="booking-grid" onsubmit="event.preventDefault()">
+      <input class="slop-input" type="tel" placeholder="Guest phone" id="guest-phone" data-slop="placeholder-as-label" style="outline: none; transition: all 0.3s;">
+      <input class="slop-input" type="text" placeholder="Full guest name" id="paste-target" data-slop="paste-blocked">
+      <input class="slop-input" type="text" placeholder="Party size (e.g. 4)">
+      <input class="slop-input" type="text" placeholder="Promo or VIP code">
+      <button class="book-submit" type="submit">✨ Reserve Now</button>
+    </form>
+  </section>
+
+  <section class="features-section">
+    <div class="section-bar">
+      <h2>Why Diners Love Our Next-Gen Bistro Experience</h2>
+      <span>⭐ 4.99★ #1 Restaurant! · 12,840+ Verified 5-Star Reviews</span>
+    </div>
+    <div class="cards-grid">
+      <article class="feature-card rounded-2xl shadow-lg">
+        <span class="emoji-box" data-slop="emoji-as-icon">🍝</span>
+        <h3>Artisanal Synergy</h3>
+        <p>Elevate classic pasta craft with cutting-edge molecular plating designed to delight every palate.</p>
+        <span class="card-tag">✨ Chef's AI Pick</span>
+      </article>
+      <article class="feature-card rounded-2xl shadow-lg">
+        <span class="emoji-box">🔥</span>
+        <h3>Seamless Wood-Fire</h3>
+        <p>Unlock bold smoky flavor profiles crafted in our signature hyper-heated smart hearth oven.</p>
+        <span class="card-tag">🔥 Trending Dish</span>
+      </article>
+      <article class="feature-card rounded-2xl shadow-lg">
+        <span class="emoji-box">🍷</span>
+        <h3>Smart Sommelier</h3>
+        <p>Revolutionize your glass list with algorithmic cellar pairings tailored to your mood in seconds.</p>
+        <span class="card-tag">🍷 99% Match Rate</span>
+      </article>
+      <article class="feature-card rounded-2xl shadow-lg">
+        <span class="emoji-box">💎</span>
+        <h3>VIP Velvet Access</h3>
+        <p>Supercharge date night and get started with priority lounge upgrades and bottle service perks.</p>
+        <span class="card-tag">🚀 Fast-Track</span>
+      </article>
+    </div>
+  </section>
+
+  <section class="social-strip rounded-2xl shadow-lg">
+    <p>🎉 Unlock Secret Off-Menu Truffle Drops! Join 25,000+ insiders and elevate your inbox seamlessly.</p>
+    <div class="vip-row">
+      <input class="vip-input" type="email" placeholder="Enter your email address">
+      <button class="cta-primary" type="button">Get Started</button>
+    </div>
+  </section>
+
+  <script>
+    document.querySelectorAll('input').forEach(function (el) {
+      el.addEventListener('paste', e => e.preventDefault());
+    });
+  </script>
+</body>
+</html>

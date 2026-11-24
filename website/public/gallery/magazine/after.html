@@ -1,0 +1,1281 @@
+<!doctype html>
+<html lang="en" data-spread="print" data-type-size="m">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>SOLARIS — Issue 09: Cinema &amp; Acoustics (with Pixelcraft)</title>
+<link rel="stylesheet" href="../../fonts/gallery.css">
+<style>
+  :root {
+    --cover-bg: #0d0c0d;
+    --cover-surface: #171518;
+    --cover-surface-hi: #242126;
+    --cover-ink: #ffffff;
+    --cover-muted: #a1a1aa;
+    --cover-rule: #2d2930;
+
+    --crimson: #d62828;
+    --crimson-deep: #991b1b;
+    --crimson-ink: #ffffff;
+    --ochre: #eab308;
+    --ochre-ink: #0d0c0d;
+
+    --concrete-dark: #18161a;
+    --concrete-mid: #28242c;
+    --concrete-light: #3f3a44;
+    --concrete-edge: #e4e4e7;
+
+    --spread-bg: #ffffff;
+    --spread-tint: #f4f4f5;
+    --spread-ink: #111111;
+    --spread-muted: #52525b;
+    --spread-rule: #111111;
+    --spread-hairline: #d4d4d8;
+    --spread-accent: #c81e1e;
+    --spread-accent-bg: #fef2f2;
+
+    --quote-bg: #0d0c0d;
+    --quote-ink: #ffffff;
+    --quote-muted: #d4d4d8;
+
+    --font-display: "Barlow Condensed", "DIN Condensed", sans-serif;
+    --font-serif: Georgia, "Iowan Old Style", "Palatino Linotype", serif;
+    --font-mono: "IBM Plex Mono", ui-monospace, SFMono-Regular, monospace;
+
+    --essay-size: 0.94rem;
+    --essay-leading: 1.56;
+    --dur-fast: 160ms;
+    --ease-cut: cubic-bezier(0.2, 0.8, 0.2, 1);
+  }
+
+  :root[data-spread="noir"] {
+    --spread-bg: #121113;
+    --spread-tint: #1b191d;
+    --spread-ink: #f4f4f5;
+    --spread-muted: #a1a1aa;
+    --spread-rule: #f4f4f5;
+    --spread-hairline: #312e35;
+    --spread-accent: #f04848;
+    --spread-accent-bg: #2a1416;
+    --quote-bg: #1c191f;
+    --quote-ink: #ffffff;
+    --quote-muted: #a1a1aa;
+  }
+
+  :root[data-type-size="s"] {
+    --essay-size: 0.86rem;
+    --essay-leading: 1.5;
+  }
+
+  :root[data-type-size="m"] {
+    --essay-size: 0.94rem;
+    --essay-leading: 1.56;
+  }
+
+  :root[data-type-size="l"] {
+    --essay-size: 1.06rem;
+    --essay-leading: 1.62;
+  }
+
+  * {
+    box-sizing: border-box;
+  }
+
+  html,
+  body {
+    margin: 0;
+    padding: 0;
+    min-height: 100%;
+    background-color: var(--spread-bg);
+    color: var(--spread-ink);
+    font-family: var(--font-serif);
+    transition: background-color var(--dur-fast) var(--ease-cut), color var(--dur-fast) var(--ease-cut);
+  }
+
+  :focus-visible {
+    outline: 3px solid var(--crimson);
+    outline-offset: 2px;
+  }
+
+  .skip-link {
+    position: absolute;
+    inset-inline-start: 16px;
+    inset-block-start: -48px;
+    z-index: 30;
+    padding: 8px 14px;
+    background-color: var(--ochre);
+    color: var(--ochre-ink);
+    font-family: var(--font-mono);
+    font-size: 12px;
+    font-weight: 500;
+    text-decoration: none;
+  }
+
+  .skip-link:focus {
+    inset-block-start: 12px;
+  }
+
+  /* Full-bleed colliding asymmetric magazine spread */
+  .magazine-spread {
+    display: grid;
+    grid-template-columns: minmax(440px, 44%) 1fr;
+    min-height: 100vh;
+    width: 100%;
+  }
+
+  /* LEFT 44%: Full-Bleed Obsidian & Crimson Constructivist Cover Plate */
+  .cover-plate {
+    display: flex;
+    flex-direction: column;
+    justify-content: space-between;
+    padding: 20px 26px 18px;
+    background-color: var(--cover-bg);
+    color: var(--cover-ink);
+    border-inline-end: 4px solid var(--crimson);
+  }
+
+  .cover-plate :focus-visible {
+    outline: 3px solid var(--ochre);
+    outline-offset: 2px;
+  }
+
+  .cover-folio {
+    display: flex;
+    flex-wrap: wrap;
+    justify-content: space-between;
+    align-items: center;
+    gap: 6px 12px;
+    padding-bottom: 10px;
+    border-bottom: 1px solid var(--cover-rule);
+    font-family: var(--font-mono);
+    font-size: 10.5px;
+    letter-spacing: 0.08em;
+    text-transform: uppercase;
+    color: var(--cover-muted);
+  }
+
+  .folio-issue {
+    color: var(--ochre);
+    font-weight: 500;
+  }
+
+  .masthead-block {
+    padding: 12px 0 12px;
+    border-bottom: 3px solid var(--crimson);
+  }
+
+  .masthead-row {
+    display: flex;
+    align-items: flex-start;
+    justify-content: space-between;
+    gap: 12px;
+  }
+
+  .masthead-wordmark {
+    margin: 0;
+    font-family: var(--font-display);
+    font-weight: 800;
+    font-size: clamp(92px, 8.6vw, 126px);
+    line-height: 0.78;
+    letter-spacing: -0.02em;
+    text-transform: uppercase;
+    color: var(--cover-ink);
+  }
+
+  .issue-badge-stack {
+    display: flex;
+    flex-direction: column;
+    align-items: stretch;
+    flex-shrink: 0;
+    min-width: 112px;
+  }
+
+  .issue-stamp-red {
+    padding: 8px 11px;
+    background-color: var(--crimson);
+    color: var(--crimson-ink);
+    font-family: var(--font-display);
+    font-weight: 800;
+    font-size: 34px;
+    line-height: 0.88;
+    letter-spacing: 0.04em;
+    text-transform: uppercase;
+  }
+
+  .issue-stamp-ochre {
+    padding: 4px 11px;
+    background-color: var(--ochre);
+    color: var(--ochre-ink);
+    font-family: var(--font-mono);
+    font-size: 10px;
+    font-weight: 500;
+    letter-spacing: 0.08em;
+    text-transform: uppercase;
+  }
+
+  /* Neo-Constructivist Cinema Poster Frame */
+  .poster-stage {
+    flex: 1;
+    display: flex;
+    flex-direction: column;
+    margin: 12px 0;
+    border: 1px solid var(--cover-rule);
+    background-color: var(--cover-bg);
+    overflow: hidden;
+  }
+
+  .poster-svg {
+    display: block;
+    width: 100%;
+    height: auto;
+    flex: 1;
+    min-height: 360px;
+  }
+
+  .poster-caption {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    gap: 10px;
+    padding: 7px 12px;
+    background-color: var(--cover-surface);
+    border-top: 1px solid var(--cover-rule);
+    font-family: var(--font-mono);
+    font-size: 10px;
+    letter-spacing: 0.07em;
+    text-transform: uppercase;
+    color: var(--cover-muted);
+  }
+
+  .poster-caption strong {
+    color: var(--ochre);
+    font-weight: 500;
+  }
+
+  .cover-controls {
+    display: flex;
+    flex-direction: column;
+    gap: 8px;
+  }
+
+  /* RIGHT 56%: Stark Gallery White Editorial Feature Spread */
+  .feature-spread {
+    display: flex;
+    flex-direction: column;
+    justify-content: space-between;
+    padding: 22px 34px 18px;
+    background-color: var(--spread-bg);
+    color: var(--spread-ink);
+    transition: background-color var(--dur-fast) var(--ease-cut), color var(--dur-fast) var(--ease-cut);
+  }
+
+  .feature-top {
+    display: flex;
+    flex-direction: column;
+  }
+
+  .kicker-strip {
+    display: flex;
+    flex-wrap: wrap;
+    justify-content: space-between;
+    align-items: center;
+    gap: 6px 16px;
+    margin-bottom: 10px;
+  }
+
+  .kicker-label {
+    display: inline-flex;
+    align-items: center;
+    gap: 8px;
+    font-family: var(--font-mono);
+    font-size: 11px;
+    font-weight: 500;
+    letter-spacing: 0.08em;
+    text-transform: uppercase;
+    color: var(--spread-accent);
+  }
+
+  .kicker-block {
+    display: inline-block;
+    width: 10px;
+    height: 10px;
+    background-color: var(--crimson);
+  }
+
+  .reel-coord {
+    font-family: var(--font-mono);
+    font-size: 10.5px;
+    letter-spacing: 0.07em;
+    text-transform: uppercase;
+    color: var(--spread-muted);
+  }
+
+  .feature-headline {
+    margin: 0 0 8px;
+    font-family: var(--font-serif);
+    font-weight: 400;
+    font-size: clamp(34px, 3.25vw, 48px);
+    line-height: 1.03;
+    letter-spacing: -0.02em;
+    color: var(--spread-ink);
+  }
+
+  .feature-deck {
+    margin: 0 0 12px;
+    font-family: var(--font-serif);
+    font-size: 15.5px;
+    line-height: 1.44;
+    color: var(--spread-muted);
+    max-width: 68ch;
+  }
+
+  .byline-strip {
+    display: flex;
+    flex-wrap: wrap;
+    justify-content: space-between;
+    align-items: baseline;
+    gap: 6px 16px;
+    padding: 7px 0;
+    margin-bottom: 14px;
+    border-top: 2px solid var(--spread-rule);
+    border-bottom: 1px solid var(--spread-hairline);
+    font-family: var(--font-mono);
+    font-size: 11px;
+    color: var(--spread-muted);
+  }
+
+  .byline-strip strong {
+    color: var(--spread-ink);
+    font-weight: 500;
+  }
+
+  /* Two-Column Long-Form Essay */
+  .essay-body {
+    column-count: 2;
+    column-gap: 28px;
+    column-rule: 1px solid var(--spread-hairline);
+    font-size: var(--essay-size);
+    line-height: var(--essay-leading);
+    color: var(--spread-ink);
+    margin-bottom: 16px;
+  }
+
+  .essay-body p {
+    margin: 0 0 11px;
+    hyphens: auto;
+  }
+
+  .essay-body p:last-child {
+    margin-bottom: 0;
+  }
+
+  .opening-para::first-letter {
+    float: inline-start;
+    padding: 5px 10px 4px;
+    margin-inline-end: 9px;
+    margin-top: 3px;
+    background-color: var(--crimson);
+    color: var(--crimson-ink);
+    font-family: var(--font-display);
+    font-weight: 800;
+    font-size: 3.1em;
+    line-height: 0.84;
+  }
+
+  /* Editorial Pull-Quote Strip (Sharp 0px Constructivist Band) */
+  .pull-quote-band {
+    display: grid;
+    grid-template-columns: auto 1fr;
+    gap: 16px;
+    align-items: start;
+    padding: 13px 18px;
+    margin-bottom: 16px;
+    background-color: var(--quote-bg);
+    color: var(--quote-ink);
+    border-top: 4px solid var(--crimson);
+    transition: background-color var(--dur-fast) var(--ease-cut);
+  }
+
+  .quote-stamp {
+    display: inline-flex;
+    flex-direction: column;
+    gap: 2px;
+    padding: 5px 9px;
+    background-color: var(--ochre);
+    color: var(--ochre-ink);
+    font-family: var(--font-mono);
+    font-size: 10px;
+    font-weight: 500;
+    letter-spacing: 0.07em;
+    text-transform: uppercase;
+    white-space: nowrap;
+  }
+
+  .pull-quote-band blockquote {
+    margin: 0;
+    font-family: var(--font-serif);
+    font-style: italic;
+    font-size: 16.5px;
+    line-height: 1.38;
+    color: var(--quote-ink);
+  }
+
+  .pull-quote-band footer {
+    margin-top: 5px;
+    font-family: var(--font-mono);
+    font-style: normal;
+    font-size: 10.5px;
+    letter-spacing: 0.04em;
+    color: var(--quote-muted);
+  }
+
+  /* Bottom Horizontal Issue 09 Dispatches Index */
+  .dispatches-dock {
+    border-top: 2px solid var(--spread-rule);
+    padding-top: 10px;
+  }
+
+  .dispatches-header {
+    display: flex;
+    flex-wrap: wrap;
+    justify-content: space-between;
+    align-items: baseline;
+    gap: 6px 12px;
+    margin-bottom: 8px;
+  }
+
+  .dispatches-title {
+    margin: 0;
+    font-family: var(--font-display);
+    font-weight: 800;
+    font-size: 18px;
+    letter-spacing: 0.08em;
+    text-transform: uppercase;
+    color: var(--spread-ink);
+  }
+
+  .dispatches-hint {
+    font-family: var(--font-mono);
+    font-size: 10px;
+    letter-spacing: 0.07em;
+    text-transform: uppercase;
+    color: var(--spread-muted);
+  }
+
+  .dispatch-grid {
+    display: grid;
+    grid-template-columns: repeat(3, minmax(0, 1fr));
+    border: 1px solid var(--spread-hairline);
+    margin-bottom: 10px;
+  }
+
+  .dispatch-btn {
+    appearance: none;
+    display: flex;
+    flex-direction: column;
+    align-items: flex-start;
+    gap: 4px;
+    width: 100%;
+    padding: 9px 12px 10px;
+    margin: 0;
+    border: 0;
+    border-inline-end: 1px solid var(--spread-hairline);
+    border-top: 3px solid transparent;
+    background-color: var(--spread-bg);
+    color: var(--spread-ink);
+    text-align: start;
+    cursor: pointer;
+    font-family: inherit;
+    transition: background-color var(--dur-fast) var(--ease-cut), border-color var(--dur-fast) var(--ease-cut);
+  }
+
+  .dispatch-btn:last-child {
+    border-inline-end: 0;
+  }
+
+  .dispatch-btn:hover {
+    background-color: var(--spread-tint);
+  }
+
+  .dispatch-btn[aria-pressed="true"] {
+    background-color: var(--spread-tint);
+    border-top-color: var(--crimson);
+  }
+
+  .dispatch-head {
+    display: flex;
+    justify-content: space-between;
+    align-items: baseline;
+    width: 100%;
+    gap: 8px;
+  }
+
+  .dispatch-num {
+    font-family: var(--font-display);
+    font-weight: 800;
+    font-size: 22px;
+    line-height: 1;
+    color: var(--spread-muted);
+    font-variant-numeric: tabular-nums;
+  }
+
+  .dispatch-btn[aria-pressed="true"] .dispatch-num {
+    color: var(--spread-accent);
+  }
+
+  .dispatch-tc {
+    font-family: var(--font-mono);
+    font-size: 10px;
+    letter-spacing: 0.05em;
+    color: var(--spread-muted);
+    text-transform: uppercase;
+  }
+
+  .dispatch-name {
+    font-family: var(--font-serif);
+    font-size: 13.5px;
+    line-height: 1.25;
+    color: var(--spread-ink);
+  }
+
+  /* Live Screening Note Preview */
+  .screening-preview {
+    padding: 10px 14px;
+    background-color: var(--spread-tint);
+    border: 1px solid var(--spread-hairline);
+    border-top: 2px solid var(--spread-accent);
+    transition: background-color var(--dur-fast) var(--ease-cut), border-color var(--dur-fast) var(--ease-cut);
+  }
+
+  .screening-meta {
+    display: flex;
+    flex-wrap: wrap;
+    justify-content: space-between;
+    gap: 4px 12px;
+    margin: 0 0 4px;
+    font-family: var(--font-mono);
+    font-size: 10px;
+    font-weight: 500;
+    letter-spacing: 0.07em;
+    text-transform: uppercase;
+    color: var(--spread-accent);
+  }
+
+  .screening-meta .screening-loc {
+    color: var(--spread-muted);
+  }
+
+  .screening-title {
+    margin: 0 0 4px;
+    font-family: var(--font-serif);
+    font-size: 15px;
+    font-weight: 400;
+    color: var(--spread-ink);
+  }
+
+  .screening-note {
+    margin: 0;
+    font-family: var(--font-serif);
+    font-size: 13px;
+    line-height: 1.46;
+    color: var(--spread-muted);
+  }
+
+  .colophon-line {
+    margin: 8px 0 0;
+    display: flex;
+    flex-wrap: wrap;
+    justify-content: space-between;
+    gap: 4px 12px;
+    font-family: var(--font-mono);
+    font-size: 10px;
+    color: var(--spread-muted);
+  }
+
+  @media (max-width: 1024px) {
+    .magazine-spread {
+      grid-template-columns: 1fr;
+      min-height: auto;
+    }
+
+    .cover-plate {
+      border-inline-end: 0;
+      border-bottom: 4px solid var(--crimson);
+      padding: 20px 20px 18px;
+    }
+
+    .poster-svg {
+      min-height: 320px;
+      max-height: 460px;
+    }
+
+    .feature-spread {
+      padding: 24px 20px 28px;
+    }
+  }
+
+  @media (max-width: 720px) {
+    .essay-body {
+      column-count: 1;
+    }
+
+    .pull-quote-band {
+      grid-template-columns: 1fr;
+      gap: 10px;
+    }
+
+    .dispatch-grid {
+      grid-template-columns: 1fr;
+    }
+
+    .dispatch-btn {
+      border-inline-end: 0;
+      border-bottom: 1px solid var(--spread-hairline);
+    }
+
+    .dispatch-btn:last-child {
+      border-bottom: 0;
+    }
+  }
+
+  @media (prefers-reduced-motion: reduce) {
+    *,
+    *::before,
+    *::after {
+      transition-duration: 0.01ms !important;
+      animation-duration: 0.01ms !important;
+      scroll-behavior: auto !important;
+    }
+  }
+</style>
+</head>
+<body>
+  <a class="skip-link" href="#cover-dossier">Skip to cover dossier</a>
+
+  <div class="magazine-spread">
+    <!-- LEFT 44%: Full-Bleed Obsidian & Cinema Crimson Constructivist Cover Plate -->
+    <header class="cover-plate" aria-label="SOLARIS Issue 09 Cover Plate">
+      <div>
+        <div class="cover-folio">
+          <span><span class="folio-issue">ISSUE 09</span> · CINEMA &amp; ACOUSTICS</span>
+          <span>LIT WEB COMPONENTS · FICTIONAL QUARTERLY</span>
+        </div>
+
+        <div class="masthead-block">
+          <div class="masthead-row">
+            <p class="masthead-wordmark">SOLARIS</p>
+            <div class="issue-badge-stack">
+              <span class="issue-stamp-red">№ 09</span>
+              <span class="issue-stamp-ochre">AUTUMN REEL</span>
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <figure class="poster-stage" aria-labelledby="poster-caption-text">
+        <svg class="poster-svg" viewBox="0 0 580 572" preserveAspectRatio="xMidYMid meet" role="img" aria-labelledby="poster-title poster-desc">
+          <title id="poster-title">Neo-Constructivist architectural cinema poster for SOLARIS Issue 09</title>
+          <desc id="poster-desc">High-contrast modernist poster depicting brutalist concrete stairwell beams sliced by a vivid diagonal cinema crimson projection shaft, a suspended ribbon microphone, acoustic decay arcs radiating from a lit white doorway, ochre registration markers, and a 35mm Dolby optical film-sprocket timecode strip.</desc>
+
+          <!-- Obsidian darkroom plate -->
+          <rect x="0" y="0" width="580" height="572" fill="var(--cover-bg)"/>
+
+          <!-- Subtle structural darkroom grid -->
+          <g stroke="var(--cover-rule)" stroke-width="0.9">
+            <line x1="96" y1="0" x2="96" y2="572"/>
+            <line x1="256" y1="0" x2="256" y2="572"/>
+            <line x1="416" y1="0" x2="416" y2="572"/>
+            <line x1="0" y1="146" x2="512" y2="146"/>
+            <line x1="0" y1="336" x2="512" y2="336"/>
+          </g>
+
+          <!-- Constructivist cropped crimson aperture sun -->
+          <circle cx="152" cy="194" r="108" fill="var(--crimson-deep)" opacity="0.6"/>
+          <circle cx="152" cy="194" r="76" fill="none" stroke="var(--crimson)" stroke-width="2.5"/>
+
+          <!-- Brutalist left vertical acoustic concrete piers -->
+          <polygon points="0,0 78,0 78,572 0,572" fill="var(--concrete-dark)"/>
+          <polygon points="78,0 104,22 104,550 78,572" fill="var(--concrete-mid)"/>
+          <rect x="18" y="66" width="38" height="196" fill="var(--cover-bg)"/>
+          <rect x="18" y="294" width="38" height="224" fill="var(--cover-bg)"/>
+
+          <!-- Monumental cantilevered concrete ceiling beam -->
+          <polygon points="0,0 442,0 318,132 0,76" fill="var(--concrete-mid)"/>
+          <polygon points="0,76 318,132 318,150 0,94" fill="var(--concrete-light)"/>
+          <line x1="0" y1="94" x2="318" y2="150" stroke="var(--concrete-edge)" stroke-width="1.4"/>
+
+          <!-- Stark lit doorway monolith in middle distance -->
+          <rect x="270" y="188" width="84" height="172" fill="var(--cover-ink)"/>
+          <!-- Deep interior door reveal -->
+          <polygon points="270,188 292,204 292,360 270,360" fill="var(--concrete-mid)"/>
+          <!-- Cast doorway threshold shadow -->
+          <polygon points="270,360 354,360 472,480 328,480" fill="var(--concrete-dark)"/>
+
+          <!-- Diagonal Cinema Crimson projection light shaft slicing the concrete stairwell -->
+          <polygon points="484,18 512,18 512,130 164,572 0,572 0,446" fill="var(--crimson)" opacity="0.88"/>
+          <!-- Inner hot core of the crimson cinema gel beam -->
+          <polygon points="494,18 512,18 512,74 106,572 26,572" fill="var(--crimson)" opacity="0.96"/>
+
+          <!-- Brutalist stepped concrete staircase cutting diagonally across the crimson beam -->
+          <g>
+            <!-- Upper concrete stair wall -->
+            <polygon points="104,242 226,242 226,274 266,274 266,308 308,308 308,342 352,342 352,378 398,378 398,414 446,414 446,452 512,452 512,572 104,572" fill="var(--concrete-dark)"/>
+            <!-- Stepped treads catching light -->
+            <polygon points="104,242 226,242 206,254 104,254" fill="var(--concrete-light)"/>
+            <polygon points="226,274 266,274 250,286 212,286" fill="var(--concrete-light)"/>
+            <polygon points="266,308 308,308 292,320 250,320" fill="var(--crimson)"/>
+            <polygon points="308,342 352,342 336,354 292,354" fill="var(--crimson)"/>
+            <polygon points="352,378 398,378 382,390 336,390" fill="var(--concrete-light)"/>
+            <polygon points="398,414 446,414 430,426 382,426" fill="var(--concrete-light)"/>
+            <polygon points="446,452 512,452 512,466 430,466" fill="var(--concrete-light)"/>
+            <!-- Razor white nosing highlights on risers -->
+            <g stroke="var(--cover-ink)" stroke-width="2">
+              <line x1="104" y1="242" x2="226" y2="242"/>
+              <line x1="226" y1="274" x2="266" y2="274"/>
+              <line x1="266" y1="308" x2="308" y2="308"/>
+              <line x1="308" y1="342" x2="352" y2="342"/>
+              <line x1="352" y1="378" x2="398" y2="378"/>
+              <line x1="398" y1="414" x2="446" y2="414"/>
+              <line x1="446" y1="452" x2="512" y2="452"/>
+            </g>
+          </g>
+
+          <!-- Diagonal crimson shadow-slice re-projecting across lower concrete wall -->
+          <polygon points="104,418 358,418 238,572 104,572" fill="var(--crimson)" opacity="0.82"/>
+          <polygon points="104,474 290,474 216,572 104,572" fill="var(--cover-bg)" opacity="0.45"/>
+
+          <!-- Suspended ribbon microphone plumb line + capsule -->
+          <line x1="216" y1="98" x2="216" y2="218" stroke="var(--ochre)" stroke-width="1.6"/>
+          <rect x="208" y="218" width="16" height="34" fill="var(--cover-bg)" stroke="var(--ochre)" stroke-width="2"/>
+          <line x1="212" y1="226" x2="220" y2="226" stroke="var(--ochre)" stroke-width="1.2"/>
+          <line x1="212" y1="232" x2="220" y2="232" stroke="var(--ochre)" stroke-width="1.2"/>
+          <line x1="212" y1="238" x2="220" y2="238" stroke="var(--ochre)" stroke-width="1.2"/>
+          <line x1="212" y1="244" x2="220" y2="244" stroke="var(--ochre)" stroke-width="1.2"/>
+
+          <!-- Acoustic standing-wave reverberation arcs radiating from lit hallway -->
+          <g fill="none" stroke="var(--cover-ink)" stroke-width="1.3">
+            <path d="M 216 194 A 42 42 0 0 1 258 236" stroke-dasharray="4 4"/>
+            <path d="M 216 170 A 66 66 0 0 1 282 236" stroke-dasharray="7 5"/>
+            <path d="M 216 144 A 92 92 0 0 1 308 236" opacity="0.65"/>
+            <path d="M 354 224 A 56 56 0 0 1 404 300" stroke="var(--ochre)" stroke-width="1.5" stroke-dasharray="3 4"/>
+            <path d="M 354 198 A 84 84 0 0 1 428 314" stroke="var(--ochre)" stroke-width="1.1" opacity="0.7"/>
+          </g>
+
+          <!-- Constructivist Ochre geometric index arrow & telemetry -->
+          <polygon points="374,118 404,118 389,144" fill="var(--ochre)"/>
+          <g font-family="IBM Plex Mono, monospace" font-size="10" letter-spacing="0.8">
+            <rect x="18" y="18" width="172" height="22" fill="var(--cover-bg)" stroke="var(--cover-rule)"/>
+            <text x="27" y="33" fill="var(--ochre)">REEL 09A · HALLWAY IV</text>
+
+            <rect x="20" y="514" width="224" height="36" fill="var(--cover-bg)" stroke="var(--cover-ink)" stroke-width="1.2"/>
+            <text x="30" y="530" fill="var(--cover-ink)" font-weight="500">RT60 2.4S · CONCRETE DECAY</text>
+            <text x="30" y="543" fill="var(--ochre)">RIBBON CAPSULE @ +3.20M</text>
+          </g>
+
+          <!-- Registration crop crosshairs -->
+          <g stroke="var(--cover-ink)" stroke-width="1.2">
+            <line x1="454" y1="44" x2="472" y2="44"/>
+            <line x1="463" y1="35" x2="463" y2="53"/>
+            <line x1="126" y1="484" x2="144" y2="484"/>
+            <line x1="135" y1="475" x2="135" y2="493"/>
+          </g>
+
+          <!-- RIGHT EDGE: 35MM Film-Sprocket & Dolby Optical Soundtrack Strip -->
+          <g>
+            <rect x="512" y="0" width="68" height="572" fill="var(--cover-bg)"/>
+            <line x1="512" y1="0" x2="512" y2="572" stroke="var(--cover-ink)" stroke-width="1.5"/>
+
+            <!-- Dolby Optical analog sound waveform track -->
+            <path d="M 526 0 L 526 26 L 522 32 L 530 38 L 519 46 L 533 54 L 524 62 L 528 70 L 526 88 L 521 96 L 531 104 L 518 112 L 534 120 L 523 128 L 529 136 L 526 154 L 524 166 L 528 178 L 520 188 L 532 198 L 517 210 L 535 220 L 522 232 L 530 244 L 526 264 L 523 276 L 529 286 L 519 296 L 533 306 L 524 318 L 528 330 L 526 356 L 520 368 L 532 378 L 518 390 L 534 402 L 523 414 L 529 426 L 526 452 L 522 464 L 530 476 L 521 490 L 531 504 L 524 522 L 526 572" fill="none" stroke="var(--cover-ink)" stroke-width="1.4"/>
+
+            <!-- 35mm sprocket perforations -->
+            <g fill="var(--cover-surface-hi)" stroke="var(--cover-muted)" stroke-width="1">
+              <rect x="550" y="14" width="18" height="24"/>
+              <rect x="550" y="58" width="18" height="24"/>
+              <rect x="550" y="102" width="18" height="24"/>
+              <rect x="550" y="146" width="18" height="24"/>
+              <rect x="550" y="190" width="18" height="24"/>
+              <rect x="550" y="234" width="18" height="24"/>
+              <rect x="550" y="278" width="18" height="24"/>
+              <rect x="550" y="322" width="18" height="24"/>
+              <rect x="550" y="366" width="18" height="24"/>
+              <rect x="550" y="410" width="18" height="24"/>
+              <rect x="550" y="454" width="18" height="24"/>
+              <rect x="550" y="498" width="18" height="24"/>
+              <rect x="550" y="540" width="18" height="22"/>
+            </g>
+
+            <!-- Vertical edge-code telemetry -->
+            <text x="541" y="286" fill="var(--ochre)" font-family="IBM Plex Mono, monospace" font-size="9.5" letter-spacing="1.4" text-anchor="middle" transform="rotate(-90 541 286)">35MM · 24 FPS · DOLBY OPTICAL · 00:14:08:19</text>
+          </g>
+        </svg>
+
+        <figcaption class="poster-caption" id="poster-caption-text">
+          <span><strong>PLATE 01</strong> · CONCRETE STAIRWELL STUDY (E. VARGA)</span>
+          <span>35MM · 24 FPS</span>
+        </figcaption>
+      </figure>
+
+      <div class="cover-controls">
+        <solaris-reader-bar size="m" spread="print"></solaris-reader-bar>
+      </div>
+    </header>
+
+    <!-- RIGHT 56%: Stark Gallery White Editorial Feature Spread -->
+    <main class="feature-spread" id="cover-dossier">
+      <article class="feature-top" aria-labelledby="dossier-title">
+        <div class="kicker-strip">
+          <span class="kicker-label">
+            <span class="kicker-block" aria-hidden="true"></span>
+            COVER DOSSIER · 11 MIN READ · TIMECODE 00:14:08
+          </span>
+          <span class="reel-coord">FOLIO 09 / REEL A · TOKYO—VIENNA</span>
+        </div>
+
+        <h1 class="feature-headline" id="dossier-title">Scoring the Empty Hallway</h1>
+        <p class="feature-deck">Before a single cello bow touches rosin, contemporary sound designers and foley artists turn raw concrete corridors, steel fire doors, and vacant stairwells into cinema’s quietest emotional instruments.</p>
+
+        <div class="byline-strip">
+          <span><strong>By Mina Kurosawa</strong> · Sound Plate by E. Varga</span>
+          <span>Fictional essay · Illustrative cinema specimen</span>
+        </div>
+
+        <div class="essay-body">
+          <p class="opening-para">Walk onto a concrete stairwell after the lighting truck has rolled away and the building still holds a memory of the shoot. Most viewers treat film sound as dialogue painted over music, yet the scenes that linger longest often strip both away. A radiator ticks in an adjacent flat; a shoe pivots on swept terrazzo; an iron latch settles back into its strike plate. Captured with patience, architectural air becomes a dramatic score.<solaris-footnote num="01" tag="ROOM TONE" tc="00:14:08">On a 35mm shoot, recording two uninterrupted minutes of empty hallway room tone preserves building pressure, distant street rumble, and fluorescent ballast hum—giving sound editors natural acoustic glue across dialogue cuts.</solaris-footnote></p>
+
+          <p>Digital reverb plug-ins promise cathedral tail at the twist of a dial, yet ears recognize synthesized decay within half a second. Real corridors are stubbornly asymmetrical. A poured stairwell wall scatters footsteps unevenly across three landings while a recessed metal elevator door rings at a narrow harmonic pitch that shifts whenever someone leans against the frame.</p>
+
+          <p>Foley artists working in this idiom behave less like percussionists and more like chamber recordists.<solaris-footnote num="02" tag="RIBBON MIC" tc="00:26:41">Hanging a figure-eight ribbon capsule 3.2 meters above a concrete landing rejects harsh direct heel click while capturing the stairwell’s warm 180 Hz structural bloom.</solaris-footnote> Instead of close-miking every prop until it snaps at the screen, they step back down the corridor and let the plaster and concrete filter the gesture—leaving the audience inside a room they can feel in their sternum.</p>
+        </div>
+
+        <div class="pull-quote-band">
+          <span class="quote-stamp">
+            <span>00:42:18</span>
+            <span>STUDIO NOTE</span>
+          </span>
+          <div>
+            <blockquote>“An empty concrete stairwell is never silent; hang a ribbon mic two floors above the landing and the building begins to breathe like a cello.”</blockquote>
+            <footer>— Mina Kurosawa, <em>Scoring the Empty Hallway</em> (fictional quarterly essay)</footer>
+          </div>
+        </div>
+      </article>
+
+      <section class="dispatches-dock" aria-labelledby="dispatches-heading">
+        <div class="dispatches-header">
+          <h2 class="dispatches-title" id="dispatches-heading">Issue 09 Dispatches</h2>
+          <span class="dispatches-hint">Select a reel to inspect screening notes</span>
+        </div>
+
+        <div class="dispatch-grid" role="group" aria-label="Issue 09 dispatches">
+          <button type="button" class="dispatch-btn" data-dispatch="02" aria-pressed="true">
+            <span class="dispatch-head">
+              <span class="dispatch-num">02</span>
+              <span class="dispatch-tc">00:28:14 · SOUND</span>
+            </span>
+            <span class="dispatch-name">Magnetic Tape Loops in Taipei</span>
+          </button>
+
+          <button type="button" class="dispatch-btn" data-dispatch="03" aria-pressed="false">
+            <span class="dispatch-head">
+              <span class="dispatch-num">03</span>
+              <span class="dispatch-tc">00:51:03 · OPTICS</span>
+            </span>
+            <span class="dispatch-name">The Red Gel of 1970s Giallo</span>
+          </button>
+
+          <button type="button" class="dispatch-btn" data-dispatch="04" aria-pressed="false">
+            <span class="dispatch-head">
+              <span class="dispatch-num">04</span>
+              <span class="dispatch-tc">01:09:42 · SPACE</span>
+            </span>
+            <span class="dispatch-name">Brutalist Foyers as Reverb Chambers</span>
+          </button>
+        </div>
+
+        <div class="screening-preview" id="screening-preview" aria-live="polite">
+          <p class="screening-meta">
+            <span id="screening-code">DISPATCH 02 · SOUND ARCHIVE · 00:28:14</span>
+            <span class="screening-loc" id="screening-loc">BY L. CHEN-HAO · TAIPEI</span>
+          </p>
+          <h3 class="screening-title" id="screening-title">Magnetic Tape Loops in Taipei</h3>
+          <p class="screening-note" id="screening-note">Splicing four-meter loops of quarter-inch oxide tape around brass mic stands, late-night Taipei sound stages built humid rain drones that subtly degraded with every pass over the pinch roller.</p>
+        </div>
+
+        <footer class="colophon-line">
+          <span>SOLARIS ISSUE 09 · FICTIONAL QUARTERLY SPECIMEN</span>
+          <span>NATIVE LIT-IDIOM SHADOW DOM: &lt;solaris-reader-bar&gt; &amp; &lt;solaris-footnote&gt;</span>
+        </footer>
+      </section>
+    </main>
+  </div>
+
+  <script>
+    (() => {
+      /**
+       * Lit-idiom reactive base class for native Shadow DOM Web Components.
+       */
+      class SolarisElement extends HTMLElement {
+        constructor() {
+          super();
+          this.attachShadow({ mode: 'open' });
+        }
+
+        connectedCallback() {
+          this.requestUpdate();
+        }
+
+        attributeChangedCallback(name, oldVal, newVal) {
+          if (oldVal !== newVal) this.requestUpdate();
+        }
+
+        requestUpdate() {
+          this.render();
+        }
+
+        emit(name, detail) {
+          this.dispatchEvent(new CustomEvent(name, {
+            detail,
+            bubbles: true,
+            composed: true
+          }));
+        }
+      }
+
+      /**
+       * <solaris-reader-bar>
+       * Native Shadow DOM control bar for Type (S/M/L) and Spread (Print/Noir).
+       */
+      class SolarisReaderBar extends SolarisElement {
+        static get observedAttributes() {
+          return ['size', 'spread'];
+        }
+
+        get size() {
+          return this.getAttribute('size') || 'm';
+        }
+
+        set size(value) {
+          this.setAttribute('size', value);
+        }
+
+        get spread() {
+          return this.getAttribute('spread') || 'print';
+        }
+
+        set spread(value) {
+          this.setAttribute('spread', value);
+        }
+
+        connectedCallback() {
+          this._syncDocument();
+          super.connectedCallback();
+        }
+
+        attributeChangedCallback(name, oldVal, newVal) {
+          if (oldVal !== newVal) {
+            this._syncDocument();
+            this.requestUpdate();
+          }
+        }
+
+        _syncDocument() {
+          document.documentElement.dataset.typeSize = this.size;
+          document.documentElement.dataset.spread = this.spread;
+        }
+
+        _selectSize(nextSize) {
+          if (this.size === nextSize) return;
+          this.size = nextSize;
+          this.emit('solaris-size-change', { size: nextSize });
+          const target = this.shadowRoot.querySelector(`[data-size="${nextSize}"]`);
+          if (target) target.focus();
+        }
+
+        _selectSpread(nextSpread) {
+          if (this.spread === nextSpread) return;
+          this.spread = nextSpread;
+          this.emit('solaris-spread-change', { spread: nextSpread });
+          const target = this.shadowRoot.querySelector(`[data-spread="${nextSpread}"]`);
+          if (target) target.focus();
+        }
+
+        render() {
+          const activeSize = this.size;
+          const activeSpread = this.spread;
+
+          this.shadowRoot.innerHTML = `
+            <style>
+              :host {
+                display: block;
+                font-family: var(--font-mono);
+                color: var(--cover-ink);
+              }
+              .dock {
+                display: flex;
+                flex-wrap: wrap;
+                align-items: center;
+                justify-content: space-between;
+                gap: 10px 14px;
+                padding: 9px 12px;
+                background-color: var(--cover-surface);
+                border: 1px solid var(--cover-rule);
+                border-top: 2px solid var(--ochre);
+              }
+              .group {
+                display: inline-flex;
+                align-items: center;
+                gap: 8px;
+              }
+              .label {
+                font-size: 10px;
+                letter-spacing: 0.09em;
+                text-transform: uppercase;
+                color: var(--cover-muted);
+              }
+              .segmented {
+                display: inline-flex;
+                border: 1px solid var(--cover-rule);
+              }
+              button {
+                appearance: none;
+                margin: 0;
+                border: 0;
+                border-inline-end: 1px solid var(--cover-rule);
+                background-color: var(--cover-bg);
+                color: var(--cover-ink);
+                font-family: var(--font-mono);
+                font-size: 10.5px;
+                font-weight: 500;
+                letter-spacing: 0.07em;
+                text-transform: uppercase;
+                padding: 6px 11px;
+                min-height: 30px;
+                cursor: pointer;
+                transition: background-color 150ms ease, color 150ms ease;
+              }
+              button:last-child {
+                border-inline-end: 0;
+              }
+              button:hover {
+                background-color: var(--cover-surface-hi);
+              }
+              button[aria-pressed="true"] {
+                background-color: var(--crimson);
+                color: var(--crimson-ink);
+              }
+              button:focus-visible {
+                outline: 3px solid var(--ochre);
+                outline-offset: 2px;
+                position: relative;
+                z-index: 2;
+              }
+              @media (prefers-reduced-motion: reduce) {
+                button {
+                  transition-duration: 0.01ms !important;
+                }
+              }
+            </style>
+            <div class="dock" role="region" aria-label="SOLARIS reader controls">
+              <div class="group">
+                <span class="label" id="type-label">Type</span>
+                <div class="segmented" role="group" aria-labelledby="type-label">
+                  <button type="button" data-size="s" aria-pressed="${activeSize === 's'}" aria-label="Small essay type">S</button>
+                  <button type="button" data-size="m" aria-pressed="${activeSize === 'm'}" aria-label="Medium essay type">M</button>
+                  <button type="button" data-size="l" aria-pressed="${activeSize === 'l'}" aria-label="Large essay type">L</button>
+                </div>
+              </div>
+              <div class="group">
+                <span class="label" id="spread-label">Spread</span>
+                <div class="segmented" role="group" aria-labelledby="spread-label">
+                  <button type="button" data-spread="print" aria-pressed="${activeSpread === 'print'}">Print</button>
+                  <button type="button" data-spread="noir" aria-pressed="${activeSpread === 'noir'}">Noir</button>
+                </div>
+              </div>
+            </div>
+          `;
+
+          this.shadowRoot.querySelectorAll('[data-size]').forEach((btn) => {
+            btn.addEventListener('click', () => this._selectSize(btn.dataset.size));
+          });
+          this.shadowRoot.querySelectorAll('[data-spread]').forEach((btn) => {
+            btn.addEventListener('click', () => this._selectSpread(btn.dataset.spread));
+          });
+        }
+      }
+
+      /**
+       * <solaris-footnote>
+       * Native Shadow DOM inline studio note expander for long-form essays.
+       */
+      class SolarisFootnote extends SolarisElement {
+        static get observedAttributes() {
+          return ['open', 'num', 'tag', 'tc'];
+        }
+
+        get open() {
+          return this.hasAttribute('open');
+        }
+
+        set open(val) {
+          if (val) this.setAttribute('open', '');
+          else this.removeAttribute('open');
+        }
+
+        _toggle() {
+          this.open = !this.open;
+          this.emit('solaris-footnote-toggle', {
+            num: this.getAttribute('num') || '01',
+            open: this.open
+          });
+          const btn = this.shadowRoot.querySelector('.note-btn');
+          if (btn) btn.focus();
+        }
+
+        render() {
+          const num = this.getAttribute('num') || '01';
+          const tag = this.getAttribute('tag') || 'STUDIO NOTE';
+          const tc = this.getAttribute('tc') || '00:00:00';
+          const isOpen = this.open;
+
+          this.shadowRoot.innerHTML = `
+            <style>
+              :host {
+                display: inline;
+              }
+              .note-btn {
+                display: inline-flex;
+                align-items: center;
+                gap: 4px;
+                margin-inline: 3px 2px;
+                padding: 1px 6px;
+                border: 1px solid var(--spread-accent);
+                background-color: var(--spread-accent-bg);
+                color: var(--spread-accent);
+                font-family: var(--font-mono);
+                font-size: 0.72em;
+                font-weight: 500;
+                line-height: 1.35;
+                letter-spacing: 0.04em;
+                vertical-align: 0.08em;
+                cursor: pointer;
+                transition: background-color 150ms ease, color 150ms ease;
+              }
+              .note-btn:hover,
+              .note-btn[aria-expanded="true"] {
+                background-color: var(--crimson);
+                border-color: var(--crimson);
+                color: var(--crimson-ink);
+              }
+              .note-btn:focus-visible {
+                outline: 3px solid var(--crimson);
+                outline-offset: 2px;
+              }
+              .note-box {
+                display: block;
+                margin: 9px 0 11px;
+                padding: 9px 11px;
+                background-color: var(--spread-tint);
+                border: 1px solid var(--spread-hairline);
+                border-top: 2px solid var(--crimson);
+                break-inside: avoid;
+              }
+              .note-box[hidden] {
+                display: none;
+              }
+              .note-meta {
+                display: flex;
+                justify-content: space-between;
+                gap: 8px;
+                margin-bottom: 4px;
+                font-family: var(--font-mono);
+                font-size: 10px;
+                font-weight: 500;
+                letter-spacing: 0.07em;
+                text-transform: uppercase;
+                color: var(--spread-accent);
+              }
+              .note-copy {
+                display: block;
+                font-family: var(--font-serif);
+                font-size: 0.88em;
+                line-height: 1.48;
+                color: var(--spread-muted);
+              }
+              @media (prefers-reduced-motion: reduce) {
+                .note-btn {
+                  transition-duration: 0.01ms !important;
+                }
+              }
+            </style>
+            <button type="button" class="note-btn" aria-expanded="${isOpen}" aria-controls="fn-${num}">
+              <span>[${num}]</span>
+              <span aria-hidden="true">${isOpen ? '−' : '+'}</span>
+            </button>
+            <span class="note-box" id="fn-${num}" role="note" ${isOpen ? '' : 'hidden'}>
+              <span class="note-meta">
+                <span>NOTE ${num} · ${tag}</span>
+                <span>TC ${tc}</span>
+              </span>
+              <span class="note-copy"><slot></slot></span>
+            </span>
+          `;
+
+          const btn = this.shadowRoot.querySelector('.note-btn');
+          if (btn) btn.addEventListener('click', () => this._toggle());
+        }
+      }
+
+      if (!customElements.get('solaris-reader-bar')) {
+        customElements.define('solaris-reader-bar', SolarisReaderBar);
+      }
+      if (!customElements.get('solaris-footnote')) {
+        customElements.define('solaris-footnote', SolarisFootnote);
+      }
+
+      // Issue 09 Dispatches inline screening note swapper
+      const dispatches = {
+        '02': {
+          code: 'DISPATCH 02 · SOUND ARCHIVE · 00:28:14',
+          loc: 'BY L. CHEN-HAO · TAIPEI',
+          title: 'Magnetic Tape Loops in Taipei',
+          note: 'Splicing four-meter loops of quarter-inch oxide tape around brass mic stands, late-night Taipei sound stages built humid rain drones that subtly degraded with every pass over the pinch roller.'
+        },
+        '03': {
+          code: 'DISPATCH 03 · OPTICS & COLOR · 00:51:03',
+          loc: 'BY MARCO BELLINI · ROME',
+          title: 'The Red Gel of 1970s Giallo',
+          note: 'By pushing tungsten Fresnel lamps through double-stacked theatrical ruby acetate onto wet travertine corridors, Cinecitta gaffers turned architectural shadows into saturated graphic blocks.'
+        },
+        '04': {
+          code: 'DISPATCH 04 · ARCHITECTURAL SPACE · 01:09:42',
+          loc: 'BY H. KOWALSKI · VIENNA',
+          title: 'Brutalist Foyers as Reverb Chambers',
+          note: 'Board-formed concrete lobbies from the late 1960s hold a 2.8-second low-mid bloom that foley engineers still re-amp dialogue through whenever a studio mix feels dangerously sterile.'
+        }
+      };
+
+      const dispatchBtns = document.querySelectorAll('.dispatch-btn');
+      const codeEl = document.getElementById('screening-code');
+      const locEl = document.getElementById('screening-loc');
+      const titleEl = document.getElementById('screening-title');
+      const noteEl = document.getElementById('screening-note');
+
+      dispatchBtns.forEach((btn) => {
+        btn.addEventListener('click', () => {
+          const entry = dispatches[btn.dataset.dispatch];
+          if (!entry) return;
+
+          dispatchBtns.forEach((other) => {
+            other.setAttribute('aria-pressed', String(other === btn));
+          });
+
+          codeEl.textContent = entry.code;
+          locEl.textContent = entry.loc;
+          titleEl.textContent = entry.title;
+          noteEl.textContent = entry.note;
+        });
+      });
+    })();
+  </script>
+</body>
+</html>

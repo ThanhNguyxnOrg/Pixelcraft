@@ -1,0 +1,581 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1, user-scalable=no, maximum-scale=1.0" />
+  <title>KubeTrace AI Terminal Cloud (default agent output)</title>
+  <style>
+    * {
+      box-sizing: border-box;
+    }
+
+    body {
+      margin: 0;
+      min-height: 900px;
+      font-family: Inter, sans-serif;
+      background: linear-gradient(135deg, violet, blue);
+      color: #f8fafc;
+      padding: 16px 24px 20px;
+      overflow-x: hidden;
+    }
+
+    .app-shell {
+      max-width: 1392px;
+      margin: 0 auto;
+      background: #0f172a;
+      border: 1px solid #334155;
+      border-radius: 24px;
+      padding: 16px 22px 20px;
+      box-shadow: 0 24px 50px rgba(15, 23, 42, 0.55);
+      display: flex;
+      flex-direction: column;
+      gap: 16px;
+    }
+
+    .rounded-2xl {
+      border-radius: 16px;
+    }
+
+    .shadow-lg {
+      box-shadow: 0 14px 30px rgba(15, 23, 42, 0.45);
+    }
+
+    /* Top Marketing + Fake Console Navbar */
+    .topnav {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      padding: 10px 16px;
+      background: #1e293b;
+      border-radius: 16px;
+      border: 1px solid #334155;
+      transition: all 0.2s;
+    }
+
+    .brand {
+      display: flex;
+      align-items: center;
+      gap: 10px;
+      font-weight: 800;
+      font-size: 17px;
+      color: #ffffff;
+    }
+
+    .brand-icon {
+      width: 34px;
+      height: 34px;
+      border-radius: 10px;
+      background: linear-gradient(135deg, #8b5cf6, #3b82f6);
+      display: inline-flex;
+      align-items: center;
+      justify-content: center;
+      font-size: 18px;
+    }
+
+    .nav-links {
+      display: flex;
+      align-items: center;
+      gap: 18px;
+    }
+
+    .nav-links a {
+      color: #cbd5e1;
+      text-decoration: none;
+      font-size: 13px;
+      font-weight: 600;
+      transition: all 0.2s;
+    }
+
+    .nav-links a:focus {
+      outline: none;
+    }
+
+    .nav-right {
+      display: flex;
+      align-items: center;
+      gap: 10px;
+    }
+
+    .quick-input {
+      font-family: Inter, sans-serif;
+      background: #0f172a;
+      border: 1px solid #475569;
+      border-radius: 10px;
+      padding: 8px 12px;
+      color: #f8fafc;
+      font-size: 13px;
+      width: 190px;
+      transition: all 0.2s;
+    }
+
+    .quick-input:focus,
+    .pod-filter-input:focus,
+    button:focus {
+      outline: none;
+    }
+
+    .upgrade-pill {
+      font-family: Inter, sans-serif;
+      background: linear-gradient(135deg, #8b5cf6, #3b82f6);
+      border: none;
+      color: #ffffff;
+      font-weight: 700;
+      font-size: 12px;
+      padding: 8px 14px;
+      border-radius: 999px;
+      cursor: pointer;
+      transition: all 0.2s;
+    }
+
+    /* Centered Hero Banner crammed above DevOps Console */
+    .hero.text-center {
+      text-align: center;
+      padding: 20px 28px;
+      background: linear-gradient(135deg, rgba(139, 92, 246, 0.22), rgba(59, 130, 246, 0.18));
+      border: 1px solid #4c1d95;
+      border-radius: 20px;
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      gap: 8px;
+      transition: all 0.2s;
+    }
+
+    .ai-badge {
+      display: inline-block;
+      padding: 4px 12px;
+      border-radius: 999px;
+      background: rgba(139, 92, 246, 0.28);
+      color: #ddd6fe;
+      font-size: 12px;
+      font-weight: 700;
+    }
+
+    .hero-heading {
+      margin: 2px 0;
+      font-size: 32px;
+      font-weight: 900;
+      letter-spacing: -0.02em;
+      background: linear-gradient(135deg, #a78bfa, #60a5fa, #38bdf8);
+      -webkit-background-clip: text;
+      background-clip: text;
+      color: transparent;
+    }
+
+    .hero-sub {
+      margin: 0;
+      max-width: 720px;
+      font-size: 14px;
+      color: #cbd5e1;
+      line-height: 1.45;
+    }
+
+    .hero-actions {
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      gap: 12px;
+      margin-top: 6px;
+    }
+
+    .btn-cta-primary {
+      font-family: Inter, sans-serif;
+      padding: 10px 22px;
+      border: none;
+      border-radius: 12px;
+      background: linear-gradient(135deg, #8b5cf6, #3b82f6);
+      color: #ffffff;
+      font-size: 14px;
+      font-weight: 700;
+      cursor: pointer;
+      transition: all 0.2s;
+    }
+
+    .btn-cta-secondary {
+      font-family: Inter, sans-serif;
+      padding: 10px 22px;
+      border: 1px solid #64748b;
+      border-radius: 12px;
+      background: #1e293b;
+      color: #e2e8f0;
+      font-size: 14px;
+      font-weight: 700;
+      cursor: pointer;
+      transition: all 0.2s;
+    }
+
+    /* 4 Identical Accent-Rail KPI Cards */
+    .kpi-row {
+      display: grid;
+      grid-template-columns: repeat(4, 1fr);
+      gap: 14px;
+    }
+
+    .metric-card {
+      background: #1e293b;
+      border: 1px solid #334155;
+      border-left: 4px solid #8b5cf6;
+      border-radius: 12px;
+      padding: 14px 16px;
+      transition: all 0.2s;
+    }
+
+    .metric-top {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      margin-bottom: 8px;
+    }
+
+    .metric-title {
+      font-size: 12px;
+      font-weight: 700;
+      text-transform: uppercase;
+      color: #94a3b8;
+    }
+
+    .metric-emoji {
+      width: 32px;
+      height: 32px;
+      border-radius: 10px;
+      background: rgba(139, 92, 246, 0.2);
+      display: inline-flex;
+      align-items: center;
+      justify-content: center;
+      font-size: 16px;
+    }
+
+    .metric-value {
+      font-size: 26px;
+      font-weight: 800;
+      color: #ffffff;
+      margin: 0 0 4px;
+    }
+
+    .metric-foot {
+      font-size: 12px;
+      color: #a5b4fc;
+    }
+
+    /* Lower Split: Fake Emoji Terminal + Violet-Blue Promo Card */
+    .console-grid {
+      display: grid;
+      grid-template-columns: 1.85fr 1fr;
+      gap: 16px;
+      align-items: stretch;
+    }
+
+    .terminal-panel {
+      background: #090d16;
+      border: 1px solid #334155;
+      border-left: 4px solid #8b5cf6;
+      border-radius: 12px;
+      padding: 14px 16px;
+      display: flex;
+      flex-direction: column;
+      gap: 10px;
+      transition: all 0.2s;
+    }
+
+    .term-topbar {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      padding-bottom: 10px;
+      border-bottom: 1px solid #1e293b;
+    }
+
+    .window-dots {
+      display: flex;
+      align-items: center;
+      gap: 7px;
+    }
+
+    .dot {
+      width: 11px;
+      height: 11px;
+      border-radius: 50%;
+      display: inline-block;
+    }
+
+    .term-window-label {
+      font-size: 12px;
+      font-weight: 700;
+      color: #94a3b8;
+      margin-left: 8px;
+    }
+
+    .pod-filter-input {
+      font-family: Inter, sans-serif;
+      background: #1e293b;
+      border: 1px solid #6366f1;
+      border-radius: 10px;
+      padding: 7px 12px;
+      color: #ffffff;
+      font-size: 13px;
+      width: 230px;
+      outline: none;
+      transition: all 0.2s;
+    }
+
+    .fake-log-stream {
+      display: flex;
+      flex-direction: column;
+      gap: 7px;
+      font-size: 13px;
+    }
+
+    .fake-line {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      padding: 8px 11px;
+      border-radius: 10px;
+      background: #111827;
+      border: 1px solid #1f2937;
+      color: #e2e8f0;
+      transition: all 0.2s;
+    }
+
+    .fake-tag {
+      padding: 2px 9px;
+      border-radius: 999px;
+      font-size: 11px;
+      font-weight: 700;
+    }
+
+    .tag-red { background: rgba(239, 68, 68, 0.22); color: #fca5a5; }
+    .tag-amber { background: rgba(245, 158, 11, 0.22); color: #fcd34d; }
+    .tag-green { background: rgba(16, 185, 129, 0.22); color: #6ee7b7; }
+
+    .term-prompt-bar {
+      display: flex;
+      gap: 8px;
+      margin-top: auto;
+      padding-top: 6px;
+    }
+
+    .magic-cmd-input {
+      flex: 1;
+      font-family: Inter, sans-serif;
+      background: #111827;
+      border: 1px solid #374151;
+      border-radius: 10px;
+      padding: 8px 12px;
+      color: #f8fafc;
+      font-size: 13px;
+      outline: none;
+    }
+
+    .magic-btn {
+      font-family: Inter, sans-serif;
+      background: linear-gradient(135deg, #8b5cf6, #3b82f6);
+      color: #ffffff;
+      border: none;
+      border-radius: 10px;
+      padding: 8px 14px;
+      font-size: 12px;
+      font-weight: 700;
+      cursor: pointer;
+      transition: all 0.2s;
+    }
+
+    .ai-copilot-card {
+      background: linear-gradient(135deg, #7c3aed, #2563eb);
+      padding: 18px 20px;
+      color: #ffffff;
+      display: flex;
+      flex-direction: column;
+      justify-content: space-between;
+      gap: 12px;
+      transition: all 0.2s;
+    }
+
+    .ai-copilot-card h2 {
+      margin: 0;
+      font-size: 19px;
+      font-weight: 800;
+    }
+
+    .ai-copilot-card p {
+      margin: 0;
+      font-size: 13px;
+      line-height: 1.45;
+      color: #e0e7ff;
+    }
+
+    .ai-score-box {
+      background: rgba(15, 23, 42, 0.38);
+      border-radius: 14px;
+      padding: 12px 14px;
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+    }
+
+    .ai-ring {
+      font-size: 28px;
+      font-weight: 900;
+      color: #ffffff;
+    }
+
+    .ai-bullets {
+      margin: 0;
+      padding-left: 18px;
+      font-size: 12px;
+      color: #ede9fe;
+      line-height: 1.6;
+    }
+
+    .ai-action-btn {
+      width: 100%;
+      padding: 10px 14px;
+      border: none;
+      border-radius: 12px;
+      background: #ffffff;
+      color: #4f46e5;
+      font-family: Inter, sans-serif;
+      font-size: 13px;
+      font-weight: 800;
+      cursor: pointer;
+      outline: none;
+      transition: all 0.2s;
+    }
+  </style>
+</head>
+<body>
+  <div class="app-shell">
+    <header class="topnav">
+      <div class="brand">
+        <span class="brand-icon" data-slop="emoji-as-icon">🚀</span>
+        <span>KubeTrace Cloud TUI</span>
+      </div>
+      <nav class="nav-links">
+        <a href="#clusters" tabindex="2" data-slop="positive-tabindex"><span>🔥 Clusters</span></a>
+        <a href="#traces" tabindex="3"><span>⚡ Live Traces</span></a>
+        <a href="#copilot" tabindex="4"><span>✨ AI Auto-Heal</span></a>
+        <a href="#pricing" tabindex="5"><span>💎 Enterprise</span></a>
+      </nav>
+      <div class="nav-right">
+        <input class="quick-input" type="text" placeholder="Search anything..." style="outline: none;" />
+        <button type="button" class="upgrade-pill" style="outline: none;"><span>✨ Upgrade Pro</span></button>
+      </div>
+    </header>
+
+    <section class="hero text-center" data-slop="centered-hero-two-ctas">
+      <span class="ai-badge">✨ Cutting-Edge Cloud-Native AI Multiplexer</span>
+      <h1 class="hero-heading" data-slop="gradient-text-treatment">Revolutionize Seamless Terminal Observability 🚀🔥</h1>
+      <p class="hero-sub" data-slop="generic-copy">
+        Unlock supercharged Kubernetes velocity and elevate pod troubleshooting seamlessly across every cloud cluster in seconds.
+      </p>
+      <div class="hero-actions">
+        <button type="button" class="btn-cta-primary" tabindex="1" style="outline: none;" data-slop="outline-removed">Get Started</button>
+        <button type="button" class="btn-cta-secondary" style="outline: none;">Learn More</button>
+      </div>
+    </section>
+
+    <section class="kpi-row">
+      <div class="metric-card rounded-2xl shadow-lg" data-slop="rounded-accent-rail">
+        <div class="metric-top">
+          <span class="metric-title">Cluster Health</span>
+          <span class="metric-emoji">🔥</span>
+        </div>
+        <p class="metric-value">99.98%</p>
+        <div class="metric-foot">✨ Supercharge uptime score</div>
+      </div>
+
+      <div class="metric-card rounded-2xl shadow-lg" data-slop="rounded-2xl-repetition">
+        <div class="metric-top">
+          <span class="metric-title">AI Trace Speed</span>
+          <span class="metric-emoji">⚡</span>
+        </div>
+        <p class="metric-value">10x Faster</p>
+        <div class="metric-foot">🚀 Seamless span magic</div>
+      </div>
+
+      <div class="metric-card rounded-2xl shadow-lg" data-slop="uniform-shadow">
+        <div class="metric-top">
+          <span class="metric-title">Active Pods</span>
+          <span class="metric-emoji">🚀</span>
+        </div>
+        <p class="metric-value">1,420</p>
+        <div class="metric-foot">✨ Prod-EU auto-scaled</div>
+      </div>
+
+      <div class="metric-card rounded-2xl shadow-lg">
+        <div class="metric-top">
+          <span class="metric-title">Incidents Healed</span>
+          <span class="metric-emoji">💀</span>
+        </div>
+        <p class="metric-value">48 Today</p>
+        <div class="metric-foot">🔥 Zero human ops needed</div>
+      </div>
+    </section>
+
+    <section class="console-grid">
+      <div class="terminal-panel rounded-2xl shadow-lg">
+        <div class="term-topbar">
+          <div class="window-dots">
+            <span class="dot" style="background: #ef4444;"></span>
+            <span class="dot" style="background: #f59e0b;"></span>
+            <span class="dot" style="background: #10b981;"></span>
+            <span class="term-window-label">💻 kubetrace-web-tty — prod-eu-central ✨</span>
+          </div>
+          <input class="pod-filter-input" type="text" placeholder="Filter pods" style="outline: none;" data-slop="placeholder-as-label" />
+        </div>
+
+        <div class="fake-log-stream">
+          <div class="fake-line">
+            <span>💀 🔥 <strong>checkout-api-7f9b</strong> crashed in BackOff loop!! Click AI Fix to heal pod 🚀</span>
+            <span class="fake-tag tag-red">💀 CRITICAL</span>
+          </div>
+          <div class="fake-line">
+            <span>🔥 ⚡ <strong>ledger-worker-2c4d</strong> latency spike 238ms — DB vibes look slow ✨</span>
+            <span class="fake-tag tag-amber">🔥 SLOW</span>
+          </div>
+          <div class="fake-line">
+            <span>🚀 ✨ <strong>otel-ingestor-9a1e</strong> streaming cutting-edge telemetry seamlessly!</span>
+            <span class="fake-tag tag-green">✨ HEALTHY</span>
+          </div>
+          <div class="fake-line">
+            <span>⚡ 🚀 <strong>auth-signer-4d8c</strong> JWT keys rotated with zero downtime magic 🔥</span>
+            <span class="fake-tag tag-green">🚀 GREAT</span>
+          </div>
+          <div class="fake-line">
+            <span>✨ ⚡ <strong>inventory-rpc-6b2f</strong> gRPC mesh elevated to turbo throughput!</span>
+            <span class="fake-tag tag-green">⚡ TURBO</span>
+          </div>
+        </div>
+
+        <div class="term-prompt-bar">
+          <input class="magic-cmd-input" type="text" placeholder="Ask AI Copilot to magically fix checkout-api... ✨" style="outline: none;" />
+          <button type="button" class="magic-btn" style="outline: none;"><span>🚀 Auto-Fix Now</span></button>
+        </div>
+      </div>
+
+      <aside class="ai-copilot-card rounded-2xl shadow-lg" data-slop="purple-blue-gradient">
+        <div>
+          <h2>✨ KubeTrace AI Copilot</h2>
+          <p>Unlock seamless root-cause remediation and revolutionize your SRE on-call experience with one click.</p>
+        </div>
+
+        <div class="ai-score-box">
+          <div>
+            <div style="font-size: 11px; text-transform: uppercase; color: #c7d2fe; font-weight: 700;">AI Confidence</div>
+            <div style="font-size: 12px; color: #e0e7ff;">✨ Neural Anomaly Engine</div>
+          </div>
+          <div class="ai-ring">98.4% 🔥</div>
+        </div>
+
+        <ul class="ai-bullets">
+          <li>💀 Detected pod crash in prod-eu-central</li>
+          <li>⚡ Ready to restart 6 pods automatically</li>
+          <li>🚀 Unlock Enterprise Tier for full trace tree</li>
+        </ul>
+
+        <button type="button" class="ai-action-btn" style="outline: none;">Elevate Cluster Health 🚀</button>
+      </aside>
+    </section>
+  </div>
+</body>
+</html>

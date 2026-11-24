@@ -26,20 +26,19 @@ The live site is deployed at https://thanhnguyxnorg.github.io/Pixelcraft/. [`.gi
 The showcase is structured as **7 focused, instant-render sections**—Hero, Multi-Stack Proof Gallery, Process & Authority Order, Searchable Skill Index, Tooling & QA CLIs, Interactive Installer Builder, and FAQ—without external animation runtimes (`motion` / `gsap`), autonomous background loops, or video payloads:
 
 - **Visible at frame 0:** Every section renders immediately in HTML/CSS with zero opacity-0 scroll-reveal traps and native browser scrolling.
-- **6 multi-stack proof exhibits:** Paired before/after HTML fixtures under `public/gallery/` cover six distinct domains and surfaces:
-  1. `coffee` — Specialty roaster web app
-  2. `clinic` — Accessible healthcare appointment booking form
-  3. `grid` — High-density power grid telemetry dashboard
-  4. `tui` — Rust Ratatui terminal workbench (`120×36` + `80×24 NO_COLOR=1`)
-  5. `mobile` — SwiftUI iOS screen (Standard vs Dynamic Type `AX3` `ViewThatFits` + safe areas)
-  6. `document` — Typst A4 PDF/UA invoice + MJML dark-mode/plaintext email
+- **22 multi-stack proof exhibits:** Paired before/after HTML fixtures under `public/gallery/` span five ecosystems with direct `Open demo ↗` standalone views and inspectable Prompt & Code tabs:
+  - **Mobile (`4`):** `swiftui` (SwiftUI Liquid Glass), `compose` (Jetpack Compose M3E + Wear OS), `flutter` (Flutter Impeller), `mobile` (SwiftUI Dynamic Type `AX3`)
+  - **TUI & Desktop (`3`):** `kubetrace` (Rust Ratatui span waterfall), `tui` (Rust Ratatui `80×24 NO_COLOR=1`), `desktop` (Tauri v2 + Rust encrypted workspace)
+  - **Data & Server (`4`):** `python` (Python 3.12 / marimo RAG bench), `dashboard` (SolidJS avionics board), `grid` (linear SVG power telemetry), `liveview` (Elixir Phoenix LiveView floor plan)
+  - **Web Apps (`7`):** `saas` (Next.js 15), `store` (Nuxt 4), `booking` (SvelteKit 2), `learning` (Angular Signals), `magazine` (Lit Web Components), `coffee` (HTML/CSS Baseline 2026), `clinic` (accessible WCAG healthcare form)
+  - **Channels & Game (`4`):** `email` (MJML dark-mode + plaintext slip), `proposal` (Typst 0.13 + `@page` dossier), `document` (Typst + MJML statement), `gamehud` (Godot 4.5 Control hangar HUD)
 - **Interactive issue pins & honest metrics:** Every exhibit pairs real `slop-scan.mjs --json` scores (`website/src/generated/gallery.json`) with inspectable before/after annotations. Gallery fixtures are authored demonstrations; no live AI inference is implied, and scanner scores measure known fingerprints rather than total design quality.
 - **Dogfooded quality gates:** `npm test --prefix website` runs `slop-scan.mjs` against both every gallery fixture and `website/src/` itself, verifies `repo-meta.json` matches the canonical root `skills/` and `bin/pixelcraft.mjs`, and checks asset paths and bundle integrity.
 - **Local typography & accessible tokens:** Archivo, IBM Plex Mono (Latin), and Silkscreen (Latin) ship locally via Fontsource (SIL Open Font License). Interactive borders meet WCAG 2.2 AA 3:1 non-text contrast (`>= 3:1`), and focus outlines remain intact for keyboard navigation.
 
 ## Regenerating gallery captures
 
-When editing any exhibit under `public/gallery/<id>/{before,after}.html`, recapture all 12 WebP assets and regenerate `src/generated/gallery.json`:
+When editing any exhibit under `public/gallery/<id>/{before,after}.html`, recapture all 44 WebP assets and regenerate `src/generated/gallery.json`:
 
 ```sh
 node website/scripts/capture-gallery.mjs

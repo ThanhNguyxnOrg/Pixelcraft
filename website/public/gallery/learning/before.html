@@ -1,0 +1,350 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Cadence — Gamified Music Learning Portal (Default Agent Output)</title>
+<style>
+  * { box-sizing: border-box; }
+  body {
+    margin: 0;
+    font-family: Inter;
+    background: #f1f5f9;
+    color: #1e293b;
+  }
+  .topbar {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    gap: 16px;
+    padding: 14px 32px;
+    background: #ffffff;
+    border-bottom: 1px solid #e2e8f0;
+  }
+  .brand {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    font-size: 20px;
+    font-weight: 800;
+    color: #4f46e5;
+  }
+  .ai-search {
+    width: 310px;
+    padding: 10px 16px;
+    border-radius: 999px;
+    border: 1px solid #cbd5e1;
+    background: #f8fafc;
+    color: #334155;
+    font-size: 14px;
+    transition: all .3s;
+  }
+  button:focus,
+  input:focus,
+  a:focus {
+    outline: none;
+  }
+  .gamify-bar {
+    display: flex;
+    align-items: center;
+    gap: 10px;
+    flex-wrap: wrap;
+  }
+  .xp-pill {
+    display: inline-flex;
+    align-items: center;
+    gap: 6px;
+    padding: 7px 13px;
+    border-radius: 999px;
+    background: #eef2ff;
+    color: #4338ca;
+    font-size: 13px;
+    font-weight: 700;
+    border: 1px solid #c7d2fe;
+    transition: all .3s;
+  }
+  .xp-pill.streak {
+    background: #fff7ed;
+    color: #c2410c;
+    border-color: #fed7aa;
+  }
+  .xp-pill.pro {
+    background: linear-gradient(135deg, #7c3aed, #2563eb);
+    color: #ffffff;
+    border-color: #6366f1;
+  }
+  .hero {
+    background: linear-gradient(135deg, purple 0%, #6366f1 48%, blue 100%);
+    color: #ffffff;
+    padding: 38px 32px 54px;
+    text-align: center;
+  }
+  .text-center {
+    text-align: center;
+  }
+  .hero-badge {
+    display: inline-block;
+    padding: 6px 14px;
+    border-radius: 999px;
+    background: rgba(255, 255, 255, 0.2);
+    font-size: 13px;
+    font-weight: 600;
+    margin-bottom: 14px;
+  }
+  .hero h1 {
+    margin: 0 auto 12px;
+    max-width: 780px;
+    font-size: 42px;
+    line-height: 1.12;
+    letter-spacing: -0.02em;
+  }
+  .hero p {
+    margin: 0 auto 24px;
+    max-width: 600px;
+    font-size: 17px;
+    line-height: 1.5;
+    color: #e0e7ff;
+  }
+  .cta-row {
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    gap: 14px;
+  }
+  .btn-primary {
+    padding: 13px 28px;
+    border: 0;
+    border-radius: 14px;
+    background: #ffffff;
+    color: #4f46e5;
+    font-size: 15px;
+    font-weight: 700;
+    cursor: pointer;
+    box-shadow: 0 12px 24px rgba(15, 23, 42, 0.2);
+    transition: all .3s;
+  }
+  .btn-secondary {
+    padding: 13px 28px;
+    border: 1px solid rgba(255, 255, 255, 0.45);
+    border-radius: 14px;
+    background: rgba(255, 255, 255, 0.14);
+    color: #ffffff;
+    font-size: 15px;
+    font-weight: 600;
+    cursor: pointer;
+    transition: all .3s;
+  }
+  .wrap {
+    max-width: 1220px;
+    margin: -28px auto 32px;
+    padding: 0 28px;
+  }
+  .quest-banner {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    background: #ffffff;
+    padding: 16px 22px;
+    margin-bottom: 22px;
+    border: 1px solid #e2e8f0;
+  }
+  .quest-meta {
+    display: flex;
+    align-items: center;
+    gap: 14px;
+  }
+  .quest-title {
+    font-size: 15px;
+    font-weight: 700;
+    color: #1e1b4b;
+  }
+  .quest-sub {
+    font-size: 13px;
+    color: #64748b;
+    margin-top: 2px;
+  }
+  .xp-track {
+    width: 240px;
+    height: 10px;
+    border-radius: 999px;
+    background: #e2e8f0;
+    overflow: hidden;
+  }
+  .xp-fill {
+    width: 72%;
+    height: 100%;
+    background: linear-gradient(90deg, #8b5cf6, #3b82f6);
+  }
+  .section-head {
+    display: flex;
+    align-items: baseline;
+    justify-content: space-between;
+    margin-bottom: 14px;
+  }
+  .section-head h2 {
+    margin: 0;
+    font-size: 20px;
+    color: #0f172a;
+  }
+  .section-head span {
+    font-size: 13px;
+    font-weight: 600;
+    color: #6366f1;
+  }
+  .upsell-grid {
+    display: grid;
+    grid-template-columns: repeat(3, 1fr);
+    gap: 20px;
+  }
+  .rounded-2xl {
+    border-radius: 16px;
+  }
+  .shadow-xl {
+    box-shadow: 0 18px 34px rgba(15, 23, 42, 0.1);
+  }
+  .course-card {
+    background: #ffffff;
+    border: 1px solid #e2e8f0;
+    padding: 22px;
+    display: flex;
+    flex-direction: column;
+    justify-content: space-between;
+    transition: all .3s;
+  }
+  .lock-chip {
+    display: inline-flex;
+    align-items: center;
+    gap: 6px;
+    align-self: flex-start;
+    padding: 5px 11px;
+    border-radius: 999px;
+    background: #f5f3ff;
+    color: #6d28d9;
+    font-size: 12px;
+    font-weight: 700;
+    margin-bottom: 12px;
+  }
+  .course-card h3 {
+    margin: 0 0 8px;
+    font-size: 18px;
+    color: #0f172a;
+  }
+  .course-card p {
+    margin: 0 0 16px;
+    font-size: 14px;
+    line-height: 1.55;
+    color: #64748b;
+  }
+  .course-meta {
+    display: flex;
+    justify-content: space-between;
+    font-size: 12px;
+    color: #94a3b8;
+    padding-top: 12px;
+    border-top: 1px solid #f1f5f9;
+    margin-bottom: 14px;
+  }
+  .unlock-btn {
+    width: 100%;
+    padding: 11px 16px;
+    border: 0;
+    border-radius: 12px;
+    background: linear-gradient(135deg, #7c3aed, #2563eb);
+    color: #ffffff;
+    font-size: 14px;
+    font-weight: 700;
+    cursor: pointer;
+    transition: all .3s;
+  }
+</style>
+</head>
+<body>
+  <header class="topbar">
+    <div class="brand">
+      <span data-slop="emoji-as-icon">🎵 Cadence</span>
+    </div>
+    <input class="ai-search" type="text" placeholder="Ask AI Tutor anything..." data-slop="placeholder-as-label">
+    <nav class="gamify-bar">
+      <span class="xp-pill streak" data-slop="emoji-as-icon">🔥 14 Day Streak</span>
+      <span class="xp-pill" data-slop="emoji-as-icon">🏆 2,450 XP</span>
+      <span class="xp-pill pro" data-slop="emoji-as-icon">💎 Go Pro!</span>
+      <span class="xp-pill" data-slop="emoji-as-icon">🎓 Level 9</span>
+    </nav>
+  </header>
+
+  <section class="hero text-center" data-slop="purple-blue-gradient">
+    <div class="hero-badge"><span data-slop="emoji-as-icon">✨</span> AI-Powered Rhythm &amp; Harmony Platform</div>
+    <h1 data-slop="generic-copy">Unlock your musical genius seamlessly!</h1>
+    <p data-slop="generic-copy">Elevate your skills today with gamified daily streaks, AI tutor tips, and leaderboard rewards built to revolutionize practice.</p>
+    <div class="cta-row" data-slop="centered-hero-two-ctas">
+      <button type="button" class="btn-primary" data-slop="outline-removed">Get started</button>
+      <button type="button" class="btn-secondary">Learn more</button>
+    </div>
+  </section>
+
+  <main class="wrap">
+    <div class="quest-banner rounded-2xl shadow-xl" data-slop="uniform-shadow">
+      <div class="quest-meta">
+        <span data-slop="emoji-as-icon">⚡</span>
+        <div>
+          <div class="quest-title">Daily XP Chest: 2x Multiplier Active — #4 on Global Rhythm League</div>
+          <div class="quest-sub">Complete 3 more Pro drills before midnight to protect your 14-day flame!</div>
+        </div>
+      </div>
+      <div class="xp-track"><div class="xp-fill"></div></div>
+    </div>
+
+    <div class="section-head">
+      <h2>Recommended Pro Modules</h2>
+      <span>Upgrade to access interactive ear training</span>
+    </div>
+
+    <section class="upsell-grid">
+      <article class="course-card rounded-2xl shadow-xl" data-slop="rounded-2xl-repetition">
+        <div>
+          <span class="lock-chip" data-slop="emoji-as-icon">🔒 Pro Locked</span>
+          <h3>Syncopation Mastery Pro</h3>
+          <p data-slop="generic-copy">Elevate your skills today and master off-beat timing seamlessly with unlimited AI coaching.</p>
+        </div>
+        <div>
+          <div class="course-meta">
+            <span>12 Video Lessons</span>
+            <span>+800 Bonus XP</span>
+          </div>
+          <button type="button" class="unlock-btn" data-slop="generic-copy">Get started with Pro — $29/mo</button>
+        </div>
+      </article>
+
+      <article class="course-card rounded-2xl shadow-xl" data-slop="rounded-2xl-repetition">
+        <div>
+          <span class="lock-chip" data-slop="emoji-as-icon">🔒 Pro Locked</span>
+          <h3>3-over-2 Polyrhythm Lab</h3>
+          <p data-slop="generic-copy">Unlock cross-rhythm secrets that revolutionize your musical timing across every genre.</p>
+        </div>
+        <div>
+          <div class="course-meta">
+            <span>9 Interactive Drills</span>
+            <span>+1,200 Bonus XP</span>
+          </div>
+          <button type="button" class="unlock-btn" data-slop="generic-copy">Get started with Pro — $29/mo</button>
+        </div>
+      </article>
+
+      <article class="course-card rounded-2xl shadow-xl" data-slop="rounded-2xl-repetition">
+        <div>
+          <span class="lock-chip" data-slop="emoji-as-icon">🔒 Pro Locked</span>
+          <h3>Chord Voicing &amp; Ear Genius</h3>
+          <p data-slop="generic-copy">Elevate your harmony instincts seamlessly with gamified chord quizzes and weekly badges.</p>
+        </div>
+        <div>
+          <div class="course-meta">
+            <span>15 Guided Workshops</span>
+            <span>+950 Bonus XP</span>
+          </div>
+          <button type="button" class="unlock-btn" data-slop="generic-copy">Get started with Pro — $29/mo</button>
+        </div>
+      </article>
+    </section>
+  </main>
+</body>
+</html>

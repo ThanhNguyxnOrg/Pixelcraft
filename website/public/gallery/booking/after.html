@@ -1,0 +1,1641 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Aomori Thermal · Twilight Coast Sanctuary (SvelteKit · Pixelcraft)</title>
+<link rel="stylesheet" href="../../fonts/gallery.css">
+<style>
+  :root {
+    --dusk-deep: #141c2b;
+    --dusk-mid: #1d293d;
+    --dusk-horizon: #243146;
+    --dusk-glow: #6d4a3a;
+    --dusk-water: #0e1624;
+    --dusk-ridge-far: #182336;
+    --dusk-ridge-mid: #131c2c;
+    --dusk-ridge-near: #0f1520;
+    --dusk-cliff: #161414;
+    --dusk-cliff-edge: #282321;
+
+    --cedar: #1c1816;
+    --cedar-elevated: #26201d;
+    --cedar-rule: #38302b;
+    --cedar-soft-ink: #cfc5b8;
+
+    --hinoki: #f6efe4;
+    --hinoki-tint: #efe5d5;
+    --hinoki-rule: #ddd1be;
+    --hinoki-strong: #b9a992;
+    --cream: #fdfaf4;
+    --cream-muted: #f4ecdf;
+
+    --ink: #1c1816;
+    --ink-muted: #594f46;
+    --ink-light: #fdfaf4;
+    --ink-dusk: #e2dcd1;
+
+    --amber: #c97b38;
+    --amber-glow: #f2b76e;
+    --amber-bright: #fde0ad;
+    --amber-on-dark: #ebb06d;
+    --amber-on-light: #874913;
+    --amber-tint: #faeedf;
+    --amber-rule: #e0b98e;
+
+    --pine: #1f5446;
+    --pine-hover: #184438;
+    --pine-edge: #357664;
+    --pine-tint: #e8f1ee;
+    --pine-rule: #b5cfc7;
+    --on-pine: #ffffff;
+
+    --onsen-water: #2a4a52;
+    --onsen-sheen: #5a7b7e;
+
+    --terracotta: #9c3328;
+    --terracotta-tint: #faece9;
+    --terracotta-rule: #dfaba4;
+
+    --font-serif: Georgia, "Iowan Old Style", "Palatino Linotype", serif;
+    --font-sans: "Public Sans", system-ui, -apple-system, sans-serif;
+    --font-mono: "IBM Plex Mono", ui-monospace, monospace;
+
+    --radius-card: 16px;
+    --radius-control: 10px;
+    --radius-pill: 8px;
+  }
+
+  * {
+    box-sizing: border-box;
+  }
+
+  html,
+  body {
+    margin: 0;
+    padding: 0;
+    background: var(--hinoki);
+    color: var(--ink);
+    font-family: var(--font-sans);
+    line-height: 1.45;
+    -webkit-font-smoothing: antialiased;
+  }
+
+  .sr-only {
+    position: absolute;
+    width: 1px;
+    height: 1px;
+    padding: 0;
+    margin: -1px;
+    overflow: hidden;
+    clip: rect(0, 0, 0, 0);
+    white-space: nowrap;
+    border: 0;
+  }
+
+  /* Top 46%: Full-bleed twilight architectural panorama */
+  .twilight-band {
+    position: relative;
+    width: 100%;
+    overflow: hidden;
+    background: linear-gradient(180deg, var(--dusk-deep) 0%, var(--dusk-horizon) 100%);
+    color: var(--ink-light);
+    isolation: isolate;
+  }
+
+  .twilight-art {
+    position: absolute;
+    inset: 0;
+    width: 100%;
+    height: 100%;
+    z-index: -2;
+    display: block;
+  }
+
+  .twilight-scrim {
+    position: absolute;
+    inset: 0;
+    z-index: -1;
+    background:
+      linear-gradient(
+        90deg,
+        rgba(14, 21, 34, 0.9) 0%,
+        rgba(16, 24, 38, 0.72) 42%,
+        rgba(20, 28, 43, 0.16) 72%,
+        rgba(14, 20, 32, 0.34) 100%
+      ),
+      linear-gradient(
+        180deg,
+        rgba(12, 18, 30, 0.56) 0%,
+        rgba(12, 18, 30, 0.05) 30%,
+        rgba(14, 20, 32, 0.18) 76%,
+        rgba(20, 24, 32, 0.72) 100%
+      );
+    pointer-events: none;
+  }
+
+  .twilight-inner {
+    max-width: 1344px;
+    margin: 0 auto;
+    padding: 16px 44px 18px;
+    display: flex;
+    flex-direction: column;
+    justify-content: space-between;
+    min-height: 368px;
+    gap: 16px;
+  }
+
+  .topbar {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    gap: 16px;
+    flex-wrap: wrap;
+    padding-bottom: 10px;
+    border-bottom: 1px solid rgba(253, 250, 244, 0.14);
+  }
+
+  .brand-lockup {
+    display: flex;
+    align-items: center;
+    gap: 10px;
+    flex-wrap: wrap;
+  }
+
+  .brand-emblem {
+    width: 24px;
+    height: 24px;
+    flex-shrink: 0;
+  }
+
+  .brand-wordmark {
+    font-family: var(--font-serif);
+    font-size: 16px;
+    letter-spacing: 0.12em;
+    color: var(--ink-light);
+  }
+
+  .brand-sep {
+    color: rgba(253, 250, 244, 0.38);
+  }
+
+  .brand-sub {
+    font-size: 13px;
+    color: var(--ink-dusk);
+  }
+
+  .stack-chip {
+    font-family: var(--font-mono);
+    font-size: 11px;
+    letter-spacing: 0.04em;
+    color: var(--amber-on-dark);
+    background: rgba(28, 24, 22, 0.62);
+    border: 1px solid rgba(235, 176, 109, 0.36);
+    padding: 3px 9px;
+    border-radius: 999px;
+  }
+
+  .topbar-policy {
+    font-family: var(--font-mono);
+    font-size: 12px;
+    color: var(--ink-dusk);
+    letter-spacing: 0.01em;
+  }
+
+  .sanctuary-lead {
+    max-width: 540px;
+    padding: 2px 0;
+  }
+
+  .sanctuary-eyebrow {
+    margin: 0 0 7px;
+    font-family: var(--font-mono);
+    font-size: 11px;
+    letter-spacing: 0.12em;
+    text-transform: uppercase;
+    color: var(--amber-on-dark);
+  }
+
+  .sanctuary-lead h1 {
+    margin: 0 0 9px;
+    font-family: var(--font-serif);
+    font-size: 40px;
+    font-weight: 400;
+    line-height: 1.08;
+    letter-spacing: -0.015em;
+    color: var(--ink-light);
+    text-shadow: 0 2px 18px rgba(10, 14, 22, 0.45);
+  }
+
+  .sanctuary-note {
+    margin: 0;
+    font-size: 14.5px;
+    color: var(--ink-dusk);
+  }
+
+  /* Floating twilight Stay Control bar anchored to bottom edge of panorama */
+  .stay-bar {
+    background: var(--cream);
+    color: var(--ink);
+    border: 1px solid var(--hinoki-rule);
+    border-radius: var(--radius-card);
+    padding: 12px 18px;
+    box-shadow: 0 16px 36px rgba(10, 14, 22, 0.34);
+    display: grid;
+    grid-template-columns: minmax(0, 1.65fr) auto auto;
+    gap: 20px;
+    align-items: end;
+  }
+
+  .stay-bar fieldset {
+    border: 0;
+    margin: 0;
+    padding: 0;
+    min-width: 0;
+  }
+
+  .stay-group-divider {
+    padding-inline-start: 20px;
+    border-inline-start: 1px solid var(--hinoki-rule);
+  }
+
+  .control-label {
+    display: block;
+    font-family: var(--font-mono);
+    font-size: 11px;
+    font-weight: 500;
+    letter-spacing: 0.08em;
+    text-transform: uppercase;
+    color: var(--ink-muted);
+    margin-bottom: 7px;
+  }
+
+  .date-pills {
+    display: grid;
+    grid-template-columns: repeat(4, minmax(0, 1fr));
+    gap: 8px;
+  }
+
+  .date-pill {
+    appearance: none;
+    border: 1px solid var(--hinoki-strong);
+    border-radius: var(--radius-control);
+    background: var(--cream);
+    color: var(--ink);
+    padding: 8px 11px;
+    font-family: var(--font-mono);
+    font-size: 12.5px;
+    font-weight: 500;
+    font-variant-numeric: tabular-nums;
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    gap: 6px;
+    cursor: pointer;
+    transition: background-color 160ms ease, border-color 160ms ease, color 160ms ease;
+  }
+
+  .date-pill:hover:not(:disabled) {
+    background: var(--hinoki);
+    border-color: var(--pine);
+  }
+
+  .date-pill[aria-pressed="true"] {
+    background: var(--pine);
+    border-color: var(--pine);
+    color: var(--on-pine);
+  }
+
+  .date-pill-tag {
+    font-size: 10px;
+    text-transform: uppercase;
+    letter-spacing: 0.05em;
+    opacity: 0.85;
+  }
+
+  .date-pill.is-full {
+    background: var(--terracotta-tint);
+    border-color: var(--terracotta-rule);
+    color: var(--terracotta);
+    cursor: not-allowed;
+  }
+
+  .date-pill.is-full .date-pill-day {
+    text-decoration: line-through;
+  }
+
+  .nights-group {
+    display: inline-flex;
+    gap: 6px;
+  }
+
+  .night-pill {
+    appearance: none;
+    border: 1px solid var(--hinoki-strong);
+    border-radius: var(--radius-control);
+    background: var(--cream);
+    color: var(--ink);
+    padding: 8px 13px;
+    font-family: var(--font-mono);
+    font-size: 12.5px;
+    font-weight: 500;
+    font-variant-numeric: tabular-nums;
+    cursor: pointer;
+    transition: background-color 160ms ease, border-color 160ms ease, color 160ms ease;
+  }
+
+  .night-pill:hover {
+    background: var(--hinoki);
+    border-color: var(--pine);
+  }
+
+  .night-pill[aria-pressed="true"] {
+    background: var(--pine);
+    border-color: var(--pine);
+    color: var(--on-pine);
+  }
+
+  .stepper {
+    display: inline-flex;
+    align-items: center;
+    border: 1px solid var(--hinoki-strong);
+    border-radius: var(--radius-control);
+    background: var(--cream);
+    overflow: hidden;
+  }
+
+  .step-btn {
+    appearance: none;
+    width: 36px;
+    height: 36px;
+    border: 0;
+    background: var(--cream);
+    color: var(--ink);
+    font-family: var(--font-mono);
+    font-size: 17px;
+    line-height: 1;
+    cursor: pointer;
+    transition: background-color 150ms ease, color 150ms ease;
+  }
+
+  .step-btn:hover:not(:disabled) {
+    background: var(--hinoki);
+    color: var(--pine);
+  }
+
+  .step-btn:disabled {
+    color: var(--hinoki-strong);
+    cursor: not-allowed;
+  }
+
+  .step-value {
+    min-width: 82px;
+    padding: 0 10px;
+    text-align: center;
+    font-family: var(--font-mono);
+    font-size: 12.5px;
+    font-weight: 500;
+    font-variant-numeric: tabular-nums;
+    color: var(--ink);
+    border-inline: 1px solid var(--hinoki-rule);
+    line-height: 36px;
+  }
+
+  /* Bottom 54%: Hinoki Sanctuary Suite Selector + Dark Charred-Cedar Slip */
+  .sanctuary-deck {
+    max-width: 1344px;
+    margin: 0 auto;
+    padding: 18px 44px 20px;
+    display: grid;
+    grid-template-columns: minmax(0, 1.7fr) minmax(372px, 1fr);
+    gap: 24px;
+    align-items: start;
+  }
+
+  .suites-column {
+    min-width: 0;
+  }
+
+  .suites-header {
+    display: flex;
+    justify-content: space-between;
+    align-items: baseline;
+    gap: 12px;
+    margin-bottom: 10px;
+    flex-wrap: wrap;
+  }
+
+  .suites-title {
+    margin: 0;
+    font-family: var(--font-serif);
+    font-size: 21px;
+    font-weight: 400;
+    color: var(--ink);
+  }
+
+  .live-summary {
+    margin: 0;
+    font-family: var(--font-mono);
+    font-size: 12px;
+    color: var(--ink-muted);
+    font-variant-numeric: tabular-nums;
+  }
+
+  .suite-list {
+    display: grid;
+    gap: 11px;
+  }
+
+  .suite-option {
+    width: 100%;
+    text-align: start;
+    appearance: none;
+    border: 1px solid var(--hinoki-rule);
+    border-radius: var(--radius-card);
+    background: var(--cream);
+    color: var(--ink);
+    padding: 11px 16px 11px 11px;
+    display: grid;
+    grid-template-columns: 160px minmax(0, 1fr) 128px;
+    gap: 16px;
+    align-items: center;
+    cursor: pointer;
+    font-family: var(--font-sans);
+    box-shadow: 0 3px 10px rgba(28, 24, 22, 0.04);
+    transition: border-color 160ms ease, background-color 160ms ease, box-shadow 160ms ease;
+  }
+
+  .suite-option:hover:not(:disabled) {
+    border-color: var(--pine);
+    box-shadow: 0 8px 20px rgba(28, 24, 22, 0.08);
+  }
+
+  .suite-option[aria-pressed="true"] {
+    border: 2px solid var(--pine);
+    padding: 10px 15px 10px 10px;
+    background: var(--cream);
+    box-shadow: 0 10px 24px rgba(31, 84, 70, 0.12);
+  }
+
+  .suite-option:disabled {
+    background: var(--cream-muted);
+    border-color: var(--hinoki-rule);
+    cursor: not-allowed;
+    box-shadow: none;
+  }
+
+  .vignette-frame {
+    width: 160px;
+    height: 98px;
+    border-radius: 10px;
+    overflow: hidden;
+    background: var(--dusk-deep);
+    border: 1px solid rgba(28, 24, 22, 0.12);
+    flex-shrink: 0;
+  }
+
+  .suite-option:disabled .vignette-frame {
+    opacity: 0.72;
+  }
+
+  .vignette-svg {
+    display: block;
+    width: 100%;
+    height: 100%;
+  }
+
+  .suite-copy {
+    min-width: 0;
+  }
+
+  .suite-top-row {
+    display: flex;
+    align-items: center;
+    gap: 9px;
+    flex-wrap: wrap;
+    margin-bottom: 4px;
+  }
+
+  .suite-name {
+    font-family: var(--font-serif);
+    font-size: 20px;
+    font-weight: 400;
+    color: var(--ink);
+    line-height: 1.2;
+  }
+
+  .suite-option:disabled .suite-name {
+    color: var(--ink-muted);
+    text-decoration: line-through;
+  }
+
+  .avail-tag {
+    font-family: var(--font-mono);
+    font-size: 11px;
+    font-weight: 500;
+    padding: 2px 8px;
+    border-radius: 999px;
+    border: 1px solid var(--pine-rule);
+    background: var(--pine-tint);
+    color: var(--pine);
+  }
+
+  .avail-tag.scarce {
+    border-color: var(--amber-rule);
+    background: var(--amber-tint);
+    color: var(--amber-on-light);
+  }
+
+  .avail-tag.booked {
+    border-color: var(--terracotta-rule);
+    background: var(--terracotta-tint);
+    color: var(--terracotta);
+  }
+
+  .suite-specs {
+    margin: 0 0 5px;
+    font-family: var(--font-mono);
+    font-size: 12px;
+    color: var(--ink-muted);
+    font-variant-numeric: tabular-nums;
+  }
+
+  .suite-desc {
+    margin: 0;
+    font-size: 13px;
+    color: var(--ink-muted);
+    line-height: 1.4;
+  }
+
+  .suite-rate-col {
+    display: flex;
+    flex-direction: column;
+    align-items: flex-end;
+    text-align: end;
+    gap: 8px;
+  }
+
+  .rate-stack {
+    display: flex;
+    flex-direction: column;
+    align-items: flex-end;
+    gap: 2px;
+  }
+
+  .rate-num {
+    font-family: var(--font-mono);
+    font-size: 21px;
+    font-weight: 500;
+    font-variant-numeric: tabular-nums;
+    color: var(--ink);
+    line-height: 1.05;
+  }
+
+  .suite-option:disabled .rate-num {
+    color: var(--ink-muted);
+    text-decoration: line-through;
+  }
+
+  .rate-per {
+    font-family: var(--font-mono);
+    font-size: 11px;
+    color: var(--ink-muted);
+  }
+
+  .pick-indicator {
+    font-family: var(--font-mono);
+    font-size: 11px;
+    font-weight: 500;
+    padding: 4px 10px;
+    border-radius: var(--radius-pill);
+    border: 1px solid var(--hinoki-strong);
+    color: var(--ink);
+    background: var(--hinoki);
+  }
+
+  .suite-option[aria-pressed="true"] .pick-indicator {
+    background: var(--pine);
+    border-color: var(--pine);
+    color: var(--on-pine);
+  }
+
+  .suite-option:disabled .pick-indicator {
+    border-color: var(--terracotta-rule);
+    background: var(--terracotta-tint);
+    color: var(--terracotta);
+  }
+
+  /* Dark Charred-Cedar Reservation Slip */
+  .reservation-slip {
+    background: var(--cedar);
+    color: var(--hinoki);
+    border: 1px solid var(--cedar-rule);
+    border-radius: var(--radius-card);
+    padding: 18px 22px 16px;
+    box-shadow: 0 18px 36px rgba(28, 24, 22, 0.22);
+  }
+
+  .slip-top {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    padding-bottom: 10px;
+    margin-bottom: 11px;
+    border-bottom: 1px solid var(--cedar-rule);
+  }
+
+  .slip-eyebrow {
+    margin: 0;
+    font-family: var(--font-mono);
+    font-size: 11px;
+    letter-spacing: 0.1em;
+    text-transform: uppercase;
+    color: var(--amber-on-dark);
+  }
+
+  .slip-code {
+    font-family: var(--font-mono);
+    font-size: 11px;
+    color: var(--cedar-soft-ink);
+    background: var(--cedar-elevated);
+    border: 1px solid var(--cedar-rule);
+    padding: 2px 8px;
+    border-radius: 999px;
+  }
+
+  .slip-suite-name {
+    margin: 0 0 3px;
+    font-family: var(--font-serif);
+    font-size: 23px;
+    font-weight: 400;
+    color: var(--hinoki);
+    line-height: 1.15;
+  }
+
+  .slip-dates {
+    margin: 0 0 11px;
+    font-family: var(--font-mono);
+    font-size: 12px;
+    color: var(--cedar-soft-ink);
+    font-variant-numeric: tabular-nums;
+  }
+
+  .slip-meta-band {
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    gap: 10px;
+    background: var(--cedar-elevated);
+    border: 1px solid var(--cedar-rule);
+    border-radius: var(--radius-control);
+    padding: 9px 12px;
+    margin: 0 0 11px;
+  }
+
+  .slip-meta-band dt {
+    font-family: var(--font-mono);
+    font-size: 10px;
+    letter-spacing: 0.08em;
+    text-transform: uppercase;
+    color: var(--amber-on-dark);
+    margin-bottom: 2px;
+  }
+
+  .slip-meta-band dd {
+    margin: 0;
+    font-family: var(--font-mono);
+    font-size: 12px;
+    color: var(--hinoki);
+    font-variant-numeric: tabular-nums;
+  }
+
+  .rate-ledger {
+    width: 100%;
+    border-collapse: collapse;
+    font-variant-numeric: tabular-nums;
+    margin-bottom: 8px;
+  }
+
+  .rate-ledger th,
+  .rate-ledger td {
+    padding: 6px 0;
+    font-size: 13.5px;
+    border-bottom: 1px solid var(--cedar-rule);
+  }
+
+  .rate-ledger th {
+    text-align: start;
+    font-weight: 400;
+    color: var(--cedar-soft-ink);
+  }
+
+  .rate-ledger td {
+    text-align: end;
+    font-family: var(--font-mono);
+    font-weight: 500;
+    color: var(--hinoki);
+  }
+
+  .rate-ledger tfoot th,
+  .rate-ledger tfoot td {
+    border-bottom: 0;
+    padding-top: 9px;
+    padding-bottom: 2px;
+  }
+
+  .rate-ledger tfoot th {
+    font-family: var(--font-serif);
+    font-size: 17px;
+    color: var(--hinoki);
+  }
+
+  .rate-ledger tfoot td {
+    font-family: var(--font-mono);
+    font-size: 22px;
+    font-weight: 500;
+    color: var(--amber-bright);
+  }
+
+  .zero-fee-line {
+    margin: 0 0 12px;
+    font-family: var(--font-mono);
+    font-size: 11.5px;
+    color: var(--amber-on-dark);
+  }
+
+  .reserve-cta {
+    width: 100%;
+    appearance: none;
+    border: 1px solid var(--pine-edge);
+    border-radius: var(--radius-control);
+    background: var(--pine);
+    color: var(--on-pine);
+    padding: 12px 16px;
+    font-family: var(--font-sans);
+    font-size: 14.5px;
+    font-weight: 600;
+    font-variant-numeric: tabular-nums;
+    cursor: pointer;
+    transition: background-color 160ms ease, border-color 160ms ease;
+  }
+
+  .reserve-cta:hover {
+    background: var(--pine-hover);
+    border-color: var(--amber-on-dark);
+  }
+
+  .hold-box {
+    margin-top: 12px;
+    padding: 12px 14px;
+    background: var(--cedar-elevated);
+    border: 1px solid var(--amber);
+    border-radius: var(--radius-control);
+    color: var(--hinoki);
+    font-size: 12.5px;
+  }
+
+  .hold-box[hidden] {
+    display: none;
+  }
+
+  .hold-box p {
+    margin: 0 0 9px;
+    line-height: 1.45;
+  }
+
+  .hold-ref {
+    font-family: var(--font-mono);
+    color: var(--amber-on-dark);
+    font-weight: 500;
+  }
+
+  .hold-actions {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    gap: 10px;
+    flex-wrap: wrap;
+  }
+
+  .release-btn {
+    appearance: none;
+    border: 1px solid var(--amber-on-dark);
+    background: transparent;
+    color: var(--amber-bright);
+    border-radius: var(--radius-pill);
+    padding: 6px 12px;
+    font-family: var(--font-mono);
+    font-size: 11.5px;
+    cursor: pointer;
+    transition: background-color 150ms ease, color 150ms ease;
+  }
+
+  .release-btn:hover {
+    background: rgba(201, 123, 56, 0.2);
+  }
+
+  .slip-footnote {
+    margin: 12px 0 0;
+    font-family: var(--font-mono);
+    font-size: 11px;
+    color: var(--cedar-soft-ink);
+    line-height: 1.45;
+  }
+
+  button:focus-visible,
+  a:focus-visible {
+    outline: 3px solid var(--amber-glow);
+    outline-offset: 2px;
+  }
+
+  .stay-bar button:focus-visible,
+  .suites-column button:focus-visible {
+    outline: 3px solid var(--pine);
+    outline-offset: 2px;
+  }
+
+  @media (max-width: 1024px) {
+    .twilight-inner {
+      padding: 16px 20px 20px;
+      min-height: auto;
+    }
+
+    .sanctuary-lead h1 {
+      font-size: 32px;
+    }
+
+    .stay-bar {
+      grid-template-columns: 1fr;
+      gap: 14px;
+    }
+
+    .stay-group-divider {
+      padding-inline-start: 0;
+      border-inline-start: 0;
+      padding-top: 12px;
+      border-top: 1px solid var(--hinoki-rule);
+    }
+
+    .date-pills {
+      grid-template-columns: repeat(2, minmax(0, 1fr));
+    }
+
+    .sanctuary-deck {
+      grid-template-columns: 1fr;
+      padding: 20px 20px 28px;
+    }
+
+    .suite-option {
+      grid-template-columns: 132px minmax(0, 1fr);
+      grid-template-rows: auto auto;
+    }
+
+    .vignette-frame {
+      width: 132px;
+      height: 88px;
+    }
+
+    .suite-rate-col {
+      grid-column: 1 / -1;
+      flex-direction: row;
+      justify-content: space-between;
+      align-items: center;
+      padding-top: 8px;
+      border-top: 1px solid var(--hinoki-rule);
+    }
+
+    .rate-stack {
+      flex-direction: row;
+      align-items: baseline;
+      gap: 6px;
+    }
+  }
+
+  @media (prefers-reduced-motion: reduce) {
+    *,
+    *::before,
+    *::after {
+      transition: none !important;
+      animation: none !important;
+    }
+  }
+</style>
+</head>
+<body>
+  <header class="twilight-band">
+    <svg class="twilight-art" viewBox="0 0 1440 420" preserveAspectRatio="xMidYMid slice" aria-hidden="true">
+      <defs>
+        <linearGradient id="sky-dusk" x1="0" y1="0" x2="0" y2="1">
+          <stop offset="0%" style="stop-color: var(--dusk-deep);"></stop>
+          <stop offset="42%" style="stop-color: var(--dusk-mid);"></stop>
+          <stop offset="68%" style="stop-color: var(--dusk-horizon);"></stop>
+          <stop offset="86%" style="stop-color: var(--dusk-glow);"></stop>
+          <stop offset="100%" style="stop-color: var(--amber); stop-opacity: 0.72;"></stop>
+        </linearGradient>
+
+        <radialGradient id="horizon-afterglow" cx="68%" cy="62%" r="36%">
+          <stop offset="0%" style="stop-color: var(--amber-glow); stop-opacity: 0.52;"></stop>
+          <stop offset="45%" style="stop-color: var(--amber); stop-opacity: 0.22;"></stop>
+          <stop offset="100%" style="stop-color: var(--dusk-horizon); stop-opacity: 0;"></stop>
+        </radialGradient>
+
+        <linearGradient id="sea-dusk" x1="0" y1="0" x2="0" y2="1">
+          <stop offset="0%" style="stop-color: var(--dusk-horizon);"></stop>
+          <stop offset="28%" style="stop-color: var(--dusk-deep);"></stop>
+          <stop offset="100%" style="stop-color: var(--dusk-water);"></stop>
+        </linearGradient>
+
+        <radialGradient id="lantern-halo" cx="50%" cy="50%" r="50%">
+          <stop offset="0%" style="stop-color: var(--amber-bright); stop-opacity: 0.9;"></stop>
+          <stop offset="45%" style="stop-color: var(--amber); stop-opacity: 0.36;"></stop>
+          <stop offset="100%" style="stop-color: var(--amber); stop-opacity: 0;"></stop>
+        </radialGradient>
+
+        <linearGradient id="shoji-warm" x1="0" y1="0" x2="0" y2="1">
+          <stop offset="0%" style="stop-color: var(--amber-bright);"></stop>
+          <stop offset="55%" style="stop-color: var(--amber-glow);"></stop>
+          <stop offset="100%" style="stop-color: var(--amber);"></stop>
+        </linearGradient>
+
+        <linearGradient id="pool-mineral" x1="0" y1="0" x2="1" y2="0">
+          <stop offset="0%" style="stop-color: var(--onsen-water);"></stop>
+          <stop offset="52%" style="stop-color: var(--onsen-sheen);"></stop>
+          <stop offset="100%" style="stop-color: var(--amber); stop-opacity: 0.78;"></stop>
+        </linearGradient>
+
+        <linearGradient id="mist-veil" x1="0" y1="0" x2="0" y2="1">
+          <stop offset="0%" style="stop-color: var(--cream); stop-opacity: 0;"></stop>
+          <stop offset="50%" style="stop-color: var(--cream); stop-opacity: 0.14;"></stop>
+          <stop offset="100%" style="stop-color: var(--cream); stop-opacity: 0;"></stop>
+        </linearGradient>
+
+        <linearGradient id="steam-plume" x1="0" y1="1" x2="0" y2="0">
+          <stop offset="0%" style="stop-color: var(--cream); stop-opacity: 0.38;"></stop>
+          <stop offset="55%" style="stop-color: var(--hinoki); stop-opacity: 0.16;"></stop>
+          <stop offset="100%" style="stop-color: var(--cream); stop-opacity: 0;"></stop>
+        </linearGradient>
+      </defs>
+
+      <!-- Dusk sky + warm coastal afterglow -->
+      <rect width="1440" height="252" fill="url(#sky-dusk)"></rect>
+      <rect width="1440" height="260" fill="url(#horizon-afterglow)"></rect>
+
+      <!-- Delicate crescent moon & quiet twilight stars -->
+      <g opacity="0.72">
+        <circle cx="980" cy="64" r="11" fill="var(--amber-bright)"></circle>
+        <circle cx="986" cy="61" r="10" fill="var(--dusk-deep)"></circle>
+        <circle cx="826" cy="48" r="1.2" fill="var(--cream)" opacity="0.6"></circle>
+        <circle cx="894" cy="86" r="1" fill="var(--cream)" opacity="0.5"></circle>
+        <circle cx="1095" cy="52" r="1.4" fill="var(--amber-bright)" opacity="0.6"></circle>
+        <circle cx="1184" cy="74" r="1.1" fill="var(--cream)" opacity="0.45"></circle>
+        <circle cx="718" cy="58" r="1.1" fill="var(--cream)" opacity="0.4"></circle>
+        <circle cx="1302" cy="44" r="1.2" fill="var(--cream)" opacity="0.45"></circle>
+      </g>
+
+      <!-- Layered misty fjord headlands across the strait -->
+      <path d="M0 226 Q175 186 355 204 T715 196 Q880 176 1045 208 L1045 252 L0 252 Z" fill="var(--dusk-ridge-far)" opacity="0.88"></path>
+      <rect x="0" y="206" width="1120" height="44" fill="url(#mist-veil)"></rect>
+      <path d="M0 242 Q140 208 295 224 Q465 236 625 212 Q780 198 920 232 L920 256 L0 256 Z" fill="var(--dusk-ridge-mid)" opacity="0.92"></path>
+      <path d="M510 248 Q640 222 775 236 Q875 246 995 228 L995 258 L510 258 Z" fill="var(--dusk-ridge-near)" opacity="0.76"></path>
+
+      <!-- Calm twilight sea plane -->
+      <rect x="0" y="246" width="1440" height="174" fill="url(#sea-dusk)"></rect>
+
+      <!-- Soft dusk sky sheen on bay horizon -->
+      <ellipse cx="835" cy="252" rx="340" ry="18" fill="var(--amber-glow)" opacity="0.18"></ellipse>
+      <line x1="0" y1="247" x2="1440" y2="247" stroke="var(--amber-glow)" stroke-opacity="0.22" stroke-width="1"></line>
+
+      <!-- Subtle sea ripples across left/center bay -->
+      <g stroke="var(--cream)" stroke-opacity="0.09" stroke-linecap="round">
+        <line x1="480" y1="274" x2="575" y2="274" stroke-width="1"></line>
+        <line x1="612" y1="286" x2="740" y2="286" stroke-width="1.2"></line>
+        <line x1="538" y1="304" x2="646" y2="304" stroke-width="1"></line>
+        <line x1="690" y1="322" x2="812" y2="322" stroke-width="1.2"></line>
+        <line x1="418" y1="336" x2="528" y2="336" stroke-width="1"></line>
+      </g>
+
+      <!-- Silhouetted coastal basalt cliff promontory (right half) -->
+      <path d="M848 278 L905 242 L978 228 L1080 218 L1245 204 L1440 192 L1440 420 L928 420 L890 344 L858 308 Z" fill="var(--dusk-cliff)"></path>
+      <path d="M890 344 L942 292 L1030 278 L1132 284 L1254 274 L1440 256 L1440 420 L928 420 Z" fill="var(--cedar)" opacity="0.92"></path>
+      <path d="M905 242 L978 228 L1080 218 L1245 204 L1440 192" fill="none" stroke="var(--amber-glow)" stroke-opacity="0.24" stroke-width="1.5"></path>
+
+      <!-- Ambient lantern light bloom around the thermal pavilion -->
+      <ellipse cx="1142" cy="188" rx="188" ry="86" fill="url(#lantern-halo)" opacity="0.58"></ellipse>
+
+      <!-- Cantilevered Infinity Hot-Spring Pool overlooking the twilight sea -->
+      <polygon points="882,232 1068,232 1068,246 894,246" fill="var(--cedar-elevated)" stroke="var(--cedar-rule)" stroke-width="1"></polygon>
+      <polygon points="890,226 1064,226 1064,234 886,234" fill="url(#pool-mineral)"></polygon>
+      <line x1="894" y1="229" x2="1052" y2="229" stroke="var(--amber-bright)" stroke-opacity="0.55" stroke-width="1.2"></line>
+
+      <!-- Stone lantern (toro) beside the infinity pool -->
+      <g transform="translate(918, 200)">
+        <rect x="6" y="18" width="6" height="9" fill="var(--dusk-cliff-edge)"></rect>
+        <rect x="4" y="10" width="10" height="8" rx="1" fill="var(--amber-bright)"></rect>
+        <polygon points="1,11 9,4 17,11" fill="var(--dusk-cliff-edge)"></polygon>
+        <circle cx="9" cy="14" r="18" fill="url(#lantern-halo)" opacity="0.52"></circle>
+      </g>
+
+      <!-- Rising translucent mineral steam wisps from the hot-spring pool -->
+      <g fill="url(#steam-plume)">
+        <path d="M944 226 C936 202 958 186 948 160 C942 142 956 128 964 112 C956 136 966 156 960 180 C954 198 964 212 956 226 Z"></path>
+        <path d="M982 226 C974 198 1002 182 990 152 C982 134 996 116 1006 100 C998 124 1012 146 1002 174 C994 196 1004 210 996 226 Z" opacity="0.88"></path>
+        <path d="M1022 226 C1016 204 1036 192 1028 168 C1022 152 1034 138 1042 126 C1036 146 1046 164 1038 186 C1032 204 1038 214 1032 226 Z" opacity="0.72"></path>
+      </g>
+
+      <!-- Charred-cedar cliffside thermal pavilion with glowing shoji windows -->
+      <g>
+        <!-- Deck platform & cantilevered timber beam -->
+        <rect x="1032" y="218" width="276" height="10" fill="var(--cedar)"></rect>
+        <rect x="1044" y="228" width="254" height="6" fill="var(--dusk-cliff-edge)"></rect>
+        <!-- Supporting cliff posts -->
+        <rect x="1056" y="228" width="6" height="44" fill="var(--cedar)"></rect>
+        <rect x="1142" y="228" width="6" height="40" fill="var(--cedar)"></rect>
+        <rect x="1228" y="228" width="6" height="36" fill="var(--cedar)"></rect>
+
+        <!-- Pavilion walls -->
+        <rect x="1052" y="156" width="228" height="62" fill="var(--cedar)"></rect>
+
+        <!-- Glowing Shoji lantern windows (3 bays with cedar mullions) -->
+        <rect x="1066" y="168" width="54" height="46" fill="url(#shoji-warm)"></rect>
+        <rect x="1132" y="168" width="68" height="46" fill="url(#shoji-warm)"></rect>
+        <rect x="1212" y="168" width="54" height="46" fill="url(#shoji-warm)"></rect>
+
+        <!-- Fine shoji cedar latticework -->
+        <g stroke="var(--cedar)" stroke-width="2">
+          <line x1="1084" y1="168" x2="1084" y2="214"></line>
+          <line x1="1102" y1="168" x2="1102" y2="214"></line>
+          <line x1="1066" y1="184" x2="1120" y2="184"></line>
+          <line x1="1066" y1="200" x2="1120" y2="200"></line>
+
+          <line x1="1154" y1="168" x2="1154" y2="214"></line>
+          <line x1="1178" y1="168" x2="1178" y2="214"></line>
+          <line x1="1132" y1="184" x2="1200" y2="184"></line>
+          <line x1="1132" y1="200" x2="1200" y2="200"></line>
+
+          <line x1="1230" y1="168" x2="1230" y2="214"></line>
+          <line x1="1248" y1="168" x2="1248" y2="214"></line>
+          <line x1="1212" y1="184" x2="1266" y2="184"></line>
+          <line x1="1212" y1="200" x2="1266" y2="200"></line>
+        </g>
+
+        <!-- Low-pitched Japanese-Nordic sweeping roof eaves -->
+        <polygon points="1018,158 1166,126 1314,158 1296,164 1166,138 1036,164" fill="var(--dusk-cliff)"></polygon>
+        <polygon points="1036,158 1166,133 1296,158 1286,162 1166,139 1046,162" fill="var(--amber-glow)" opacity="0.28"></polygon>
+      </g>
+
+      <!-- Silhouetted coastal Japanese black pines framing right cliff -->
+      <g fill="var(--dusk-ridge-near)">
+        <path d="M1324 202 L1328 148 L1334 202 Z"></path>
+        <ellipse cx="1316" cy="148" rx="34" ry="10"></ellipse>
+        <ellipse cx="1346" cy="138" rx="38" ry="11"></ellipse>
+        <ellipse cx="1330" cy="126" rx="26" ry="9"></ellipse>
+        <path d="M1384 196 L1388 122 L1395 196 Z"></path>
+        <ellipse cx="1388" cy="126" rx="44" ry="12"></ellipse>
+        <ellipse cx="1410" cy="112" rx="36" ry="11"></ellipse>
+      </g>
+
+      <!-- Shimmering warm amber water reflections rippling beneath the cliff pavilion -->
+      <g stroke-linecap="round">
+        <line x1="874" y1="266" x2="942" y2="266" stroke="var(--amber-glow)" stroke-opacity="0.52" stroke-width="2.2"></line>
+        <line x1="890" y1="276" x2="932" y2="276" stroke="var(--amber-bright)" stroke-opacity="0.46" stroke-width="1.8"></line>
+        <line x1="862" y1="286" x2="946" y2="286" stroke="var(--amber)" stroke-opacity="0.42" stroke-width="2"></line>
+        <line x1="884" y1="298" x2="928" y2="298" stroke="var(--amber-glow)" stroke-opacity="0.34" stroke-width="1.6"></line>
+        <line x1="850" y1="312" x2="914" y2="312" stroke="var(--amber)" stroke-opacity="0.28" stroke-width="1.8"></line>
+        <line x1="866" y1="326" x2="906" y2="326" stroke="var(--amber-glow)" stroke-opacity="0.22" stroke-width="1.5"></line>
+        <line x1="838" y1="342" x2="884" y2="342" stroke="var(--amber)" stroke-opacity="0.18" stroke-width="1.4"></line>
+      </g>
+    </svg>
+
+    <div class="twilight-scrim" aria-hidden="true"></div>
+
+    <div class="twilight-inner">
+      <div class="topbar">
+        <div class="brand-lockup">
+          <svg class="brand-emblem" viewBox="0 0 24 24" aria-hidden="true">
+            <rect x="2.5" y="2.5" width="19" height="19" rx="5" fill="none" stroke="var(--amber-on-dark)" stroke-width="1.4"></rect>
+            <path d="M6.5 16.5 Q12 13.5 17.5 16.5" fill="none" stroke="var(--ink-light)" stroke-width="1.4" stroke-linecap="round"></path>
+            <path d="M9.5 12 C9 10 10.5 9.2 10 7.2 M14.5 12 C14 10 15.5 9.2 15 7.2" fill="none" stroke="var(--amber-bright)" stroke-width="1.3" stroke-linecap="round"></path>
+          </svg>
+          <span class="brand-wordmark">AOMORI THERMAL</span>
+          <span class="brand-sep" aria-hidden="true">·</span>
+          <span class="brand-sub">Coast Sanctuary</span>
+          <span class="stack-chip">SvelteKit</span>
+        </div>
+        <div class="topbar-policy">Check-in 15:00 · Free cancellation 48 h · Fictional retreat</div>
+      </div>
+
+      <div class="sanctuary-lead">
+        <p class="sanctuary-eyebrow">Tsugaru Strait · Mineral Spring Reserve</p>
+        <h1>Warm mineral water above the cold sea.</h1>
+        <p class="sanctuary-note">Six cliffside cedar suites · Private outdoor onsen · Itemized rates with zero resort fees</p>
+      </div>
+
+      <section class="stay-bar" aria-label="Stay dates, duration, and guests">
+        <fieldset>
+          <legend class="control-label">
+            <span>Arrival date</span>
+            <span class="control-hint">Sat 17 Oct full</span>
+          </legend>
+          <div class="date-pills" id="date-pills" role="group" aria-label="Choose arrival date">
+            <button type="button" class="date-pill" data-date="2026-10-16" aria-pressed="true">
+              <span class="date-pill-day">Fri 16 Oct</span>
+              <span class="date-pill-tag">Open</span>
+            </button>
+            <button type="button" class="date-pill is-full" data-date="2026-10-17" disabled aria-disabled="true">
+              <span class="date-pill-day">Sat 17 Oct</span>
+              <span class="date-pill-tag">Full</span>
+            </button>
+            <button type="button" class="date-pill" data-date="2026-10-18" aria-pressed="false">
+              <span class="date-pill-day">Sun 18 Oct</span>
+              <span class="date-pill-tag">Open</span>
+            </button>
+            <button type="button" class="date-pill" data-date="2026-10-19" aria-pressed="false">
+              <span class="date-pill-day">Mon 19 Oct</span>
+              <span class="date-pill-tag">Open</span>
+            </button>
+          </div>
+        </fieldset>
+
+        <fieldset class="stay-group-divider">
+          <legend class="control-label">Nights</legend>
+          <div class="nights-group" id="nights-group" role="group" aria-label="Number of nights">
+            <button type="button" class="night-pill" data-nights="2" aria-pressed="true">2</button>
+            <button type="button" class="night-pill" data-nights="3" aria-pressed="false">3</button>
+            <button type="button" class="night-pill" data-nights="4" aria-pressed="false">4</button>
+          </div>
+        </fieldset>
+
+        <fieldset class="stay-group-divider">
+          <legend class="control-label">Guests</legend>
+          <div class="stepper" role="group" aria-label="Guest count">
+            <button type="button" class="step-btn" id="guest-minus" aria-label="Decrease guests">−</button>
+            <span class="step-value" id="guest-value" aria-live="polite">2 guests</span>
+            <button type="button" class="step-btn" id="guest-plus" aria-label="Increase guests">+</button>
+          </div>
+        </fieldset>
+      </section>
+    </div>
+  </header>
+
+  <main class="sanctuary-deck">
+    <section class="suites-column" aria-labelledby="suites-heading">
+      <div class="suites-header">
+        <h2 class="suites-title" id="suites-heading">Cliffside Suites</h2>
+        <p class="live-summary" id="live-summary" aria-live="polite">2 of 3 suites available for Fri 16 Oct · 2 nights · 2 guests</p>
+      </div>
+
+      <div class="suite-list" id="suite-list" role="group" aria-label="Select a suite">
+        <!-- Suite 1: Cedar Cliff Suite -->
+        <button type="button" class="suite-option" data-suite="cedar" aria-pressed="true">
+          <span class="vignette-frame" aria-hidden="true">
+            <svg class="vignette-svg" viewBox="0 0 180 116">
+              <defs>
+                <linearGradient id="v1-sky" x1="0" y1="0" x2="0" y2="1">
+                  <stop offset="0%" style="stop-color: var(--dusk-deep);"></stop>
+                  <stop offset="62%" style="stop-color: var(--dusk-horizon);"></stop>
+                  <stop offset="100%" style="stop-color: var(--amber); stop-opacity: 0.68;"></stop>
+                </linearGradient>
+                <linearGradient id="v1-shoji" x1="0" y1="0" x2="1" y2="1">
+                  <stop offset="0%" style="stop-color: var(--amber-bright);"></stop>
+                  <stop offset="100%" style="stop-color: var(--amber);"></stop>
+                </linearGradient>
+              </defs>
+              <!-- Distant sea & twilight sky through open cedar terrace -->
+              <rect width="180" height="74" fill="url(#v1-sky)"></rect>
+              <rect x="0" y="64" width="180" height="52" fill="var(--dusk-water)"></rect>
+              <line x1="48" y1="64" x2="148" y2="64" stroke="var(--amber-glow)" stroke-opacity="0.45" stroke-width="1.2"></line>
+              <!-- Warm cedar veranda floor -->
+              <polygon points="0,84 180,84 180,116 0,116" fill="var(--cedar-elevated)"></polygon>
+              <!-- Hinoki slatted tub on veranda -->
+              <rect x="66" y="74" width="70" height="24" rx="4" fill="var(--amber-on-light)"></rect>
+              <rect x="70" y="76" width="62" height="8" rx="2" fill="var(--onsen-sheen)"></rect>
+              <!-- Rising steam wisps -->
+              <path d="M88 74 C84 62 94 56 90 44" fill="none" stroke="var(--cream)" stroke-opacity="0.46" stroke-width="2" stroke-linecap="round"></path>
+              <path d="M108 74 C104 60 116 54 111 40" fill="none" stroke="var(--cream)" stroke-opacity="0.38" stroke-width="1.8" stroke-linecap="round"></path>
+              <!-- Left warm shoji interior screen -->
+              <rect x="0" y="0" width="46" height="116" fill="var(--cedar)"></rect>
+              <rect x="8" y="14" width="30" height="74" fill="url(#v1-shoji)" opacity="0.92"></rect>
+              <line x1="23" y1="14" x2="23" y2="88" stroke="var(--cedar)" stroke-width="1.8"></line>
+              <line x1="8" y1="38" x2="38" y2="38" stroke="var(--cedar)" stroke-width="1.8"></line>
+              <line x1="8" y1="63" x2="38" y2="63" stroke="var(--cedar)" stroke-width="1.8"></line>
+              <!-- Right charred-cedar roof beam & post -->
+              <rect x="156" y="0" width="24" height="116" fill="var(--cedar)"></rect>
+              <rect x="0" y="0" width="180" height="12" fill="var(--cedar)"></rect>
+            </svg>
+          </span>
+          <span class="suite-copy">
+            <span class="suite-top-row">
+              <span class="suite-name">Cedar Cliff Suite</span>
+              <span class="avail-tag" data-avail-tag>Available</span>
+            </span>
+            <span class="suite-specs">48 m² · 2 guests · Private outdoor bath · East cliff</span>
+            <span class="suite-desc">Cantilevered hinoki soaking tub with direct Tsugaru Strait horizon.</span>
+          </span>
+          <span class="suite-rate-col">
+            <span class="rate-stack">
+              <span class="rate-num">$280</span>
+              <span class="rate-per">per night</span>
+            </span>
+            <span class="pick-indicator" data-pick-label>Selected</span>
+          </span>
+        </button>
+
+        <!-- Suite 2: Basalt Bath Pavilion -->
+        <button type="button" class="suite-option" data-suite="basalt" aria-pressed="false">
+          <span class="vignette-frame" aria-hidden="true">
+            <svg class="vignette-svg" viewBox="0 0 180 116">
+              <defs>
+                <linearGradient id="v2-sky" x1="0" y1="0" x2="0" y2="1">
+                  <stop offset="0%" style="stop-color: var(--dusk-deep);"></stop>
+                  <stop offset="65%" style="stop-color: var(--dusk-horizon);"></stop>
+                  <stop offset="100%" style="stop-color: var(--dusk-glow);"></stop>
+                </linearGradient>
+                <radialGradient id="v2-lantern" cx="50%" cy="50%" r="50%">
+                  <stop offset="0%" style="stop-color: var(--amber-bright); stop-opacity: 0.9;"></stop>
+                  <stop offset="100%" style="stop-color: var(--amber); stop-opacity: 0;"></stop>
+                </radialGradient>
+              </defs>
+              <rect width="180" height="68" fill="url(#v2-sky)"></rect>
+              <!-- Crescent moon -->
+              <circle cx="140" cy="24" r="6" fill="var(--amber-bright)"></circle>
+              <circle cx="143" cy="22" r="5.5" fill="var(--dusk-deep)"></circle>
+              <!-- Calm sea & stone deck -->
+              <rect x="0" y="56" width="180" height="24" fill="var(--dusk-water)"></rect>
+              <polygon points="0,72 180,72 180,116 0,116" fill="var(--dusk-cliff)"></polygon>
+              <!-- Carved basalt stone outdoor pool -->
+              <ellipse cx="94" cy="92" rx="64" ry="17" fill="var(--cedar-rule)"></ellipse>
+              <ellipse cx="94" cy="92" rx="55" ry="12" fill="var(--onsen-water)"></ellipse>
+              <ellipse cx="88" cy="91" rx="34" ry="5" fill="var(--amber-glow)" opacity="0.28"></ellipse>
+              <!-- Stone lantern & warm pool reflection -->
+              <circle cx="34" cy="64" r="22" fill="url(#v2-lantern)" opacity="0.62"></circle>
+              <rect x="30" y="68" width="8" height="12" fill="var(--cedar-rule)"></rect>
+              <rect x="28" y="60" width="12" height="8" rx="1" fill="var(--amber-bright)"></rect>
+              <polygon points="24,61 34,53 44,61" fill="var(--cedar-elevated)"></polygon>
+              <!-- Rising mineral steam -->
+              <path d="M76 86 C70 72 86 64 78 46" fill="none" stroke="var(--cream)" stroke-opacity="0.48" stroke-width="2.2" stroke-linecap="round"></path>
+              <path d="M104 86 C98 70 114 60 106 42" fill="none" stroke="var(--cream)" stroke-opacity="0.4" stroke-width="2" stroke-linecap="round"></path>
+              <path d="M126 88 C122 76 132 68 128 56" fill="none" stroke="var(--cream)" stroke-opacity="0.3" stroke-width="1.6" stroke-linecap="round"></path>
+            </svg>
+          </span>
+          <span class="suite-copy">
+            <span class="suite-top-row">
+              <span class="suite-name">Basalt Bath Pavilion</span>
+              <span class="avail-tag scarce" data-avail-tag>1 suite left</span>
+            </span>
+            <span class="suite-specs">64 m² · Up to 4 guests · Heated basalt pool · Sea deck</span>
+            <span class="suite-desc">Sunken stone mineral pool, cedar cold-plunge, and tatami lounge.</span>
+          </span>
+          <span class="suite-rate-col">
+            <span class="rate-stack">
+              <span class="rate-num">$340</span>
+              <span class="rate-per">per night</span>
+            </span>
+            <span class="pick-indicator" data-pick-label>Select</span>
+          </span>
+        </button>
+
+        <!-- Suite 3: Tidepool Loft -->
+        <button type="button" class="suite-option" data-suite="tidepool" disabled aria-disabled="true" aria-pressed="false">
+          <span class="vignette-frame" aria-hidden="true">
+            <svg class="vignette-svg" viewBox="0 0 180 116">
+              <defs>
+                <linearGradient id="v3-sky" x1="0" y1="0" x2="0" y2="1">
+                  <stop offset="0%" style="stop-color: var(--dusk-deep);"></stop>
+                  <stop offset="70%" style="stop-color: var(--dusk-horizon);"></stop>
+                  <stop offset="100%" style="stop-color: var(--dusk-glow);"></stop>
+                </linearGradient>
+              </defs>
+              <rect width="180" height="66" fill="url(#v3-sky)"></rect>
+              <rect x="0" y="60" width="180" height="56" fill="var(--dusk-water)"></rect>
+              <!-- Basalt tidepool ledges & reflections -->
+              <ellipse cx="122" cy="96" rx="40" ry="9" fill="var(--dusk-cliff)"></ellipse>
+              <ellipse cx="122" cy="96" rx="28" ry="5" fill="var(--onsen-water)" opacity="0.7"></ellipse>
+              <line x1="104" y1="96" x2="136" y2="96" stroke="var(--amber-glow)" stroke-opacity="0.45" stroke-width="1.2"></line>
+              <!-- Elevated loft terrace & warm glass interior -->
+              <rect x="0" y="14" width="66" height="72" fill="var(--cedar)"></rect>
+              <rect x="10" y="24" width="44" height="54" fill="var(--amber-glow)" opacity="0.86"></rect>
+              <line x1="32" y1="24" x2="32" y2="78" stroke="var(--cedar)" stroke-width="2"></line>
+              <!-- Terrace railing -->
+              <rect x="0" y="84" width="108" height="7" fill="var(--cedar-elevated)"></rect>
+              <line x1="66" y1="68" x2="108" y2="68" stroke="var(--cedar-soft-ink)" stroke-opacity="0.5" stroke-width="1.5"></line>
+              <line x1="84" y1="68" x2="84" y2="84" stroke="var(--cedar-soft-ink)" stroke-opacity="0.4" stroke-width="1.4"></line>
+              <line x1="104" y1="68" x2="104" y2="84" stroke="var(--cedar-soft-ink)" stroke-opacity="0.4" stroke-width="1.4"></line>
+            </svg>
+          </span>
+          <span class="suite-copy">
+            <span class="suite-top-row">
+              <span class="suite-name">Tidepool Loft</span>
+              <span class="avail-tag booked" data-avail-tag>Booked Oct 16–18</span>
+            </span>
+            <span class="suite-specs">52 m² · 2 guests · Private outdoor bath · Tide terrace</span>
+            <span class="suite-desc">Upper timber loft overlooking coastal basalt tidepools.</span>
+          </span>
+          <span class="suite-rate-col">
+            <span class="rate-stack">
+              <span class="rate-num">$260</span>
+              <span class="rate-per">per night</span>
+            </span>
+            <span class="pick-indicator" data-pick-label>Unavailable</span>
+          </span>
+        </button>
+      </div>
+    </section>
+
+    <!-- Right 37%: Dark charred-cedar Reservation Slip -->
+    <aside class="reservation-slip" aria-labelledby="slip-heading">
+      <div class="slip-top">
+        <p class="slip-eyebrow" id="slip-heading">Reservation Slip</p>
+        <span class="slip-code" id="slip-code">Suite 02 · Onsen</span>
+      </div>
+
+      <h2 class="slip-suite-name" id="slip-suite-name">Cedar Cliff Suite</h2>
+      <p class="slip-dates" id="slip-dates">Fri 16 Oct – Sun 18 Oct · 2 nights · 2 guests</p>
+
+      <dl class="slip-meta-band">
+        <div>
+          <dt>Check-in / Out</dt>
+          <dd>15:00 · 11:00</dd>
+        </div>
+        <div>
+          <dt>Cancellation</dt>
+          <dd id="slip-cancel">Free until 14 Oct</dd>
+        </div>
+      </dl>
+
+      <table class="rate-ledger" aria-label="Itemized stay rate breakdown">
+        <tbody>
+          <tr>
+            <th scope="row" id="row-room-label">$280 × 2 nights</th>
+            <td id="row-room-val">$560</td>
+          </tr>
+          <tr>
+            <th scope="row">Thermal bath upkeep</th>
+            <td id="row-upkeep-val">$40</td>
+          </tr>
+          <tr>
+            <th scope="row">Local stay tax</th>
+            <td id="row-tax-val">$36</td>
+          </tr>
+        </tbody>
+        <tfoot>
+          <tr>
+            <th scope="row">Total</th>
+            <td id="row-total-val">$636</td>
+          </tr>
+        </tfoot>
+      </table>
+
+      <p class="zero-fee-line">Zero hidden resort fees · All local bath charges included</p>
+
+      <button type="button" class="reserve-cta" id="reserve-cta">
+        Reserve Cedar Cliff · 2 nights · $636
+      </button>
+
+      <div class="hold-box" id="hold-box" role="status" aria-live="polite" hidden>
+        <p>
+          <span class="hold-ref" id="hold-ref">Hold #AT-4821</span> active for 15 minutes.
+          <span id="hold-summary">Cedar Cliff Suite held for Fri 16 Oct (2 nights · $636 total).</span>
+        </p>
+        <div class="hold-actions">
+          <span>No card charged during hold.</span>
+          <button type="button" class="release-btn" id="release-btn">Undo / Release hold</button>
+        </div>
+      </div>
+
+      <p class="slip-footnote">
+        Fictional coastal retreat built to demonstrate SvelteKit stay controls, explicit availability states, and itemized pricing.
+      </p>
+    </aside>
+  </main>
+
+  <script>
+    const SUITES = {
+      cedar: {
+        id: 'cedar',
+        name: 'Cedar Cliff Suite',
+        shortName: 'Cedar Cliff',
+        code: 'Suite 02 · Onsen',
+        rate: 280,
+        maxGuests: 2,
+        baseTag: 'Available',
+        tagClass: ''
+      },
+      basalt: {
+        id: 'basalt',
+        name: 'Basalt Bath Pavilion',
+        shortName: 'Basalt Pavilion',
+        code: 'Suite 05 · Stone Pool',
+        rate: 340,
+        maxGuests: 4,
+        baseTag: '1 suite left',
+        tagClass: 'scarce'
+      },
+      tidepool: {
+        id: 'tidepool',
+        name: 'Tidepool Loft',
+        shortName: 'Tidepool Loft',
+        code: 'Suite 06 · Tide Deck',
+        rate: 260,
+        maxGuests: 2,
+        baseTag: 'Available',
+        tagClass: ''
+      }
+    };
+
+    const ARRIVALS = {
+      '2026-10-16': { label: 'Fri 16 Oct', day: 16, cancelLabel: 'Free until 14 Oct' },
+      '2026-10-18': { label: 'Sun 18 Oct', day: 18, cancelLabel: 'Free until 16 Oct' },
+      '2026-10-19': { label: 'Mon 19 Oct', day: 19, cancelLabel: 'Free until 17 Oct' }
+    };
+
+    const WEEKDAYS = ['Sun', 'Mon', 'Tue', 'Wed', 'Thu', 'Fri', 'Sat'];
+    const UPKEEP_FEE = 40;
+
+    const state = {
+      arrival: '2026-10-16',
+      nights: 2,
+      guests: 2,
+      suite: 'cedar',
+      holdActive: false,
+      holdCounter: 4821
+    };
+
+    const dateButtons = Array.from(document.querySelectorAll('#date-pills .date-pill:not(:disabled)'));
+    const nightButtons = Array.from(document.querySelectorAll('#nights-group .night-pill'));
+    const suiteButtons = Array.from(document.querySelectorAll('#suite-list .suite-option'));
+    const guestMinus = document.getElementById('guest-minus');
+    const guestPlus = document.getElementById('guest-plus');
+    const guestValue = document.getElementById('guest-value');
+    const liveSummary = document.getElementById('live-summary');
+
+    const slipCode = document.getElementById('slip-code');
+    const slipSuiteName = document.getElementById('slip-suite-name');
+    const slipDates = document.getElementById('slip-dates');
+    const slipCancel = document.getElementById('slip-cancel');
+    const rowRoomLabel = document.getElementById('row-room-label');
+    const rowRoomVal = document.getElementById('row-room-val');
+    const rowUpkeepVal = document.getElementById('row-upkeep-val');
+    const rowTaxVal = document.getElementById('row-tax-val');
+    const rowTotalVal = document.getElementById('row-total-val');
+    const reserveCta = document.getElementById('reserve-cta');
+    const holdBox = document.getElementById('hold-box');
+    const holdRef = document.getElementById('hold-ref');
+    const holdSummary = document.getElementById('hold-summary');
+    const releaseBtn = document.getElementById('release-btn');
+
+    function formatCheckout(arrivalDay, nights) {
+      const date = new Date(2026, 9, arrivalDay + nights);
+      return `${WEEKDAYS[date.getDay()]} ${date.getDate()} Oct`;
+    }
+
+    function suiteAvailability(suiteId) {
+      const suite = SUITES[suiteId];
+      if (suiteId === 'tidepool' && state.arrival === '2026-10-16') {
+        return { open: false, tag: 'Booked Oct 16–18', tagClass: 'booked', pick: 'Unavailable' };
+      }
+      if (state.guests > suite.maxGuests) {
+        return { open: false, tag: `Max ${suite.maxGuests} guests`, tagClass: 'booked', pick: 'Capacity limit' };
+      }
+      return { open: true, tag: suite.baseTag, tagClass: suite.tagClass, pick: 'Select' };
+    }
+
+    function computeTotals(suite) {
+      const roomSubtotal = suite.rate * state.nights;
+      const tax = Math.round((roomSubtotal + UPKEEP_FEE) * 0.06);
+      const total = roomSubtotal + UPKEEP_FEE + tax;
+      return { roomSubtotal, upkeep: UPKEEP_FEE, tax, total };
+    }
+
+    function render() {
+      // Ensure active suite is still open under current filters
+      if (!suiteAvailability(state.suite).open) {
+        const fallback = Object.keys(SUITES).find((id) => suiteAvailability(id).open);
+        if (fallback) state.suite = fallback;
+      }
+
+      dateButtons.forEach((btn) => {
+        btn.setAttribute('aria-pressed', String(btn.dataset.date === state.arrival));
+      });
+
+      nightButtons.forEach((btn) => {
+        btn.setAttribute('aria-pressed', String(Number(btn.dataset.nights) === state.nights));
+      });
+
+      guestValue.textContent = `${state.guests} ${state.guests === 1 ? 'guest' : 'guests'}`;
+      guestMinus.disabled = state.guests <= 1;
+      guestPlus.disabled = state.guests >= 4;
+
+      let openCount = 0;
+      suiteButtons.forEach((btn) => {
+        const id = btn.dataset.suite;
+        const avail = suiteAvailability(id);
+        if (avail.open) openCount += 1;
+
+        const isSelected = avail.open && state.suite === id;
+        btn.disabled = !avail.open;
+        if (!avail.open) {
+          btn.setAttribute('aria-disabled', 'true');
+        } else {
+          btn.removeAttribute('aria-disabled');
+        }
+        btn.setAttribute('aria-pressed', String(isSelected));
+
+        const tagEl = btn.querySelector('[data-avail-tag]');
+        if (tagEl) {
+          tagEl.textContent = avail.tag;
+          tagEl.className = `avail-tag${avail.tagClass ? ` ${avail.tagClass}` : ''}`;
+        }
+
+        const pickEl = btn.querySelector('[data-pick-label]');
+        if (pickEl) {
+          pickEl.textContent = isSelected ? 'Selected' : avail.pick;
+        }
+      });
+
+      const arrivalInfo = ARRIVALS[state.arrival];
+      const checkoutLabel = formatCheckout(arrivalInfo.day, state.nights);
+      const activeSuite = SUITES[state.suite];
+      const totals = computeTotals(activeSuite);
+      const guestWord = state.guests === 1 ? '1 guest' : `${state.guests} guests`;
+
+      liveSummary.textContent = `${openCount} of 3 suites available for ${arrivalInfo.label} · ${state.nights} nights · ${guestWord}`;
+
+      slipCode.textContent = activeSuite.code;
+      slipSuiteName.textContent = activeSuite.name;
+      slipDates.textContent = `${arrivalInfo.label} – ${checkoutLabel} · ${state.nights} nights · ${guestWord}`;
+      slipCancel.textContent = arrivalInfo.cancelLabel;
+
+      rowRoomLabel.textContent = `$${activeSuite.rate} × ${state.nights} nights`;
+      rowRoomVal.textContent = `$${totals.roomSubtotal}`;
+      rowUpkeepVal.textContent = `$${totals.upkeep}`;
+      rowTaxVal.textContent = `$${totals.tax}`;
+      rowTotalVal.textContent = `$${totals.total}`;
+
+      reserveCta.textContent = `Reserve ${activeSuite.shortName} · ${state.nights} nights · $${totals.total}`;
+
+      if (state.holdActive) {
+        holdBox.hidden = false;
+        holdRef.textContent = `Hold #AT-${state.holdCounter}`;
+        holdSummary.textContent = `${activeSuite.name} held for ${arrivalInfo.label} (${state.nights} nights · $${totals.total} total).`;
+      } else {
+        holdBox.hidden = true;
+      }
+    }
+
+    dateButtons.forEach((btn) => {
+      btn.addEventListener('click', () => {
+        state.arrival = btn.dataset.date;
+        state.holdActive = false;
+        render();
+      });
+    });
+
+    nightButtons.forEach((btn) => {
+      btn.addEventListener('click', () => {
+        state.nights = Number(btn.dataset.nights);
+        state.holdActive = false;
+        render();
+      });
+    });
+
+    guestMinus.addEventListener('click', () => {
+      if (state.guests > 1) {
+        state.guests -= 1;
+        state.holdActive = false;
+        render();
+      }
+    });
+
+    guestPlus.addEventListener('click', () => {
+      if (state.guests < 4) {
+        state.guests += 1;
+        state.holdActive = false;
+        render();
+      }
+    });
+
+    suiteButtons.forEach((btn) => {
+      btn.addEventListener('click', () => {
+        if (btn.disabled) return;
+        state.suite = btn.dataset.suite;
+        state.holdActive = false;
+        render();
+      });
+    });
+
+    reserveCta.addEventListener('click', () => {
+      state.holdActive = true;
+      state.holdCounter += 1;
+      render();
+      releaseBtn.focus();
+    });
+
+    releaseBtn.addEventListener('click', () => {
+      state.holdActive = false;
+      render();
+      reserveCta.focus();
+    });
+
+    render();
+  </script>
+</body>
+</html>

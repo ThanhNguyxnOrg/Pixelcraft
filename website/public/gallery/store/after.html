@@ -1,0 +1,1670 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>SORI — Sculptural Direct-Drive Audio Flagship (Nuxt 3)</title>
+<link rel="stylesheet" href="../../fonts/gallery.css">
+<style>
+  :root {
+    --surface-gallery: #ffffff;
+    --surface-aluminum: #f0f2f7;
+    --surface-aluminum-deep: #e4e8f1;
+    --cobalt-stage: #1835b8;
+    --cobalt-spot: #2244d6;
+    --cobalt-depth: #10258a;
+    --cobalt-pill-bg: rgba(255, 255, 255, 0.13);
+    --cobalt-pill-hover: rgba(255, 255, 255, 0.22);
+    --cobalt-hairline: rgba(255, 255, 255, 0.22);
+    --terracotta: #d94f2b;
+    --terracotta-text: #b33818;
+    --terracotta-soft: #faeae5;
+    --ink-deep: #10131a;
+    --ink-slate: #525866;
+    --ink-on-cobalt: #ffffff;
+    --ink-on-cobalt-muted: #dbe3ff;
+    --line-hairline: #e6e9f0;
+    --stock-ok-ink: #135d3b;
+    --stock-ok-bg: #e6f4ec;
+    --focus-on-light: #1835b8;
+    --focus-on-cobalt: #ffffff;
+    --shadow-ground: rgba(7, 18, 72, 0.44);
+    --shadow-card-ground: rgba(16, 19, 26, 0.14);
+
+    /* Product studio render materials */
+    --vinyl-a: #242831;
+    --vinyl-b: #101217;
+    --vinyl-groove: #2f3440;
+    --metal-light: #f4f6fa;
+    --metal-mid: #cfd6e3;
+    --metal-dark: #7d8799;
+    --metal-deep: #3b4252;
+    --brass-spindle: #d9c498;
+    --obsidian-a: #343a47;
+    --obsidian-b: #171b23;
+    --obsidian-c: #0d1016;
+    --swatch-silver: #d4dbe6;
+    --swatch-terracotta: #d94f2b;
+    --swatch-obsidian: #232833;
+
+    /* Active T-01 chassis theme (default: Raw Silver) */
+    --chassis-top-a: #eff2f7;
+    --chassis-top-b: #cfd6e3;
+    --chassis-front-a: #b3bccb;
+    --chassis-front-b: #8d97aa;
+    --chassis-rim: #ffffff;
+    --chassis-well: #151922;
+    --chassis-badge: #464e5f;
+    --chassis-btn-a: #e7ebf2;
+    --chassis-btn-b: #bcc5d4;
+    --ring-accent: #d94f2b;
+    --label-bg: #f7f8fb;
+    --label-band: #1835b8;
+
+    --radius-card: 20px;
+    --radius-pill: 999px;
+    --font-display: 'Archivo', 'Work Sans', system-ui, sans-serif;
+    --font-body: 'Work Sans', system-ui, sans-serif;
+    --font-mono: 'IBM Plex Mono', ui-monospace, monospace;
+  }
+
+  [data-finish="terracotta"] {
+    --chassis-top-a: #e6633f;
+    --chassis-top-b: #c7411e;
+    --chassis-front-a: #a83214;
+    --chassis-front-b: #82240c;
+    --chassis-rim: #f79e83;
+    --chassis-well: #211412;
+    --chassis-badge: #ffe6de;
+    --chassis-btn-a: #ef7957;
+    --chassis-btn-b: #b93b1a;
+    --ring-accent: #f4f6fa;
+    --label-bg: #ffffff;
+    --label-band: #d94f2b;
+  }
+
+  [data-finish="obsidian"] {
+    --chassis-top-a: #343a46;
+    --chassis-top-b: #1a1e26;
+    --chassis-front-a: #151820;
+    --chassis-front-b: #0b0d12;
+    --chassis-rim: #576073;
+    --chassis-well: #090b0f;
+    --chassis-badge: #a7b0c2;
+    --chassis-btn-a: #3b4250;
+    --chassis-btn-b: #1e222b;
+    --ring-accent: #d94f2b;
+    --label-bg: #f0f2f7;
+    --label-band: #10131a;
+  }
+
+  *, *::before, *::after {
+    box-sizing: border-box;
+  }
+
+  html, body {
+    margin: 0;
+    padding: 0;
+    background: var(--surface-gallery);
+    color: var(--ink-deep);
+    font-family: var(--font-body);
+    -webkit-font-smoothing: antialiased;
+  }
+
+  button {
+    font-family: inherit;
+    cursor: pointer;
+  }
+
+  button:focus-visible,
+  a:focus-visible {
+    outline: 2px solid var(--focus-on-light);
+    outline-offset: 2px;
+  }
+
+  .stage-cobalt button:focus-visible {
+    outline: 2px solid var(--focus-on-cobalt);
+    outline-offset: 3px;
+  }
+
+  .tabular {
+    font-family: var(--font-mono);
+    font-variant-numeric: tabular-nums;
+  }
+
+  /* Page Shell */
+  .flagship-shell {
+    min-height: 100vh;
+    display: flex;
+    flex-direction: column;
+    background: var(--surface-gallery);
+  }
+
+  @media (min-width: 1024px) {
+    .flagship-shell {
+      height: 100vh;
+      max-height: 960px;
+      overflow: hidden;
+    }
+  }
+
+  /* Top Gallery Header */
+  .gallery-header {
+    height: 66px;
+    flex-shrink: 0;
+    padding: 0 32px;
+    background: var(--surface-gallery);
+    border-bottom: 1px solid var(--line-hairline);
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    gap: 20px;
+  }
+
+  .brand-cluster {
+    display: flex;
+    align-items: center;
+    gap: 14px;
+    min-width: 0;
+  }
+
+  .brand-mark {
+    display: inline-flex;
+    align-items: center;
+    gap: 9px;
+    text-decoration: none;
+    color: var(--ink-deep);
+  }
+
+  .brand-wordmark {
+    font-family: var(--font-display);
+    font-weight: 800;
+    font-size: 20px;
+    letter-spacing: -0.04em;
+    line-height: 1;
+  }
+
+  .studio-meta {
+    font-family: var(--font-mono);
+    font-size: 11.5px;
+    color: var(--ink-slate);
+    padding-left: 14px;
+    border-left: 1px solid var(--line-hairline);
+    white-space: nowrap;
+  }
+
+  .filter-bar {
+    display: inline-flex;
+    align-items: center;
+    gap: 4px;
+    padding: 4px;
+    background: var(--surface-aluminum);
+    border-radius: var(--radius-pill);
+  }
+
+  .filter-pill {
+    border: 0;
+    background: transparent;
+    color: var(--ink-slate);
+    font-size: 13px;
+    font-weight: 600;
+    padding: 7px 15px;
+    border-radius: var(--radius-pill);
+    transition: background-color 160ms ease, color 160ms ease;
+  }
+
+  .filter-pill:hover {
+    color: var(--ink-deep);
+  }
+
+  .filter-pill[aria-pressed="true"] {
+    background: var(--ink-deep);
+    color: var(--surface-gallery);
+  }
+
+  .bag-trigger {
+    border: 0;
+    background: var(--surface-aluminum);
+    color: var(--ink-deep);
+    border-radius: var(--radius-pill);
+    padding: 9px 18px;
+    font-size: 13px;
+    font-weight: 600;
+    display: inline-flex;
+    align-items: center;
+    gap: 9px;
+    transition: background-color 160ms ease, color 160ms ease;
+    white-space: nowrap;
+  }
+
+  .bag-trigger:hover {
+    background: var(--surface-aluminum-deep);
+  }
+
+  .bag-trigger.has-items {
+    background: var(--cobalt-stage);
+    color: var(--ink-on-cobalt);
+  }
+
+  .bag-dot {
+    width: 8px;
+    height: 8px;
+    border-radius: var(--radius-pill);
+    background: var(--terracotta);
+    flex-shrink: 0;
+  }
+
+  /* 48/52 Full-Bleed Split Stage */
+  .split-stage {
+    flex: 1;
+    min-height: 0;
+    display: grid;
+    grid-template-columns: 48fr 52fr;
+  }
+
+  /* Left 48% — Yves Klein Cobalt Flagship Stage */
+  .stage-cobalt {
+    background:
+      radial-gradient(ellipse 84% 62% at 50% 44%, var(--cobalt-spot) 0%, var(--cobalt-stage) 58%, var(--cobalt-depth) 100%);
+    color: var(--ink-on-cobalt);
+    padding: 28px 38px 26px;
+    display: flex;
+    flex-direction: column;
+    justify-content: space-between;
+    gap: 14px;
+    min-height: 0;
+    position: relative;
+  }
+
+  .stage-head {
+    display: flex;
+    flex-direction: column;
+    gap: 8px;
+  }
+
+  .stage-eyebrow {
+    font-family: var(--font-mono);
+    font-size: 11.5px;
+    font-weight: 500;
+    letter-spacing: 0.12em;
+    text-transform: uppercase;
+    color: var(--ink-on-cobalt-muted);
+    display: inline-flex;
+    align-items: center;
+    gap: 8px;
+  }
+
+  .eyebrow-pip {
+    width: 7px;
+    height: 7px;
+    border-radius: var(--radius-pill);
+    background: var(--terracotta);
+    display: inline-block;
+  }
+
+  .stage-title {
+    margin: 0;
+    font-family: var(--font-display);
+    font-weight: 800;
+    font-size: clamp(32px, 2.9vw, 44px);
+    line-height: 1.02;
+    letter-spacing: -0.03em;
+    max-width: 15ch;
+    color: var(--ink-on-cobalt);
+  }
+
+  .stage-specs {
+    margin: 0;
+    font-size: 14px;
+    line-height: 1.45;
+    color: var(--ink-on-cobalt-muted);
+    max-width: 48ch;
+  }
+
+  /* Turntable Sculptural Studio Stage */
+  .turntable-plinth-stage {
+    flex: 1;
+    min-height: 0;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    padding: 4px 0;
+  }
+
+  .turntable-svg {
+    width: 100%;
+    max-width: 560px;
+    height: auto;
+    max-height: 396px;
+    display: block;
+    overflow: visible;
+  }
+
+  /* SVG Material Stops wired to semantic tokens */
+  .s-top-a { stop-color: var(--chassis-top-a); }
+  .s-top-b { stop-color: var(--chassis-top-b); }
+  .s-front-a { stop-color: var(--chassis-front-a); }
+  .s-front-b { stop-color: var(--chassis-front-b); }
+  .s-btn-a { stop-color: var(--chassis-btn-a); }
+  .s-btn-b { stop-color: var(--chassis-btn-b); }
+  .s-metal-light { stop-color: var(--metal-light); }
+  .s-metal-mid { stop-color: var(--metal-mid); }
+  .s-metal-dark { stop-color: var(--metal-dark); }
+  .s-metal-deep { stop-color: var(--metal-deep); }
+  .s-vinyl-a { stop-color: var(--vinyl-a); }
+  .s-vinyl-b { stop-color: var(--vinyl-b); }
+  .s-obsidian-a { stop-color: var(--obsidian-a); }
+  .s-obsidian-b { stop-color: var(--obsidian-b); }
+  .s-obsidian-c { stop-color: var(--obsidian-c); }
+  .s-terra { stop-color: var(--terracotta); }
+  .s-cobalt { stop-color: var(--cobalt-stage); }
+  .s-shadow { stop-color: var(--shadow-ground); }
+  .s-card-shadow { stop-color: var(--shadow-card-ground); }
+  .s-white { stop-color: var(--surface-gallery); }
+
+  /* Finish Colorway Pills & Primary CTA */
+  .stage-controls {
+    display: flex;
+    flex-direction: column;
+    gap: 14px;
+  }
+
+  .colorway-group {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 8px;
+  }
+
+  .colorway-pill {
+    border: 1px solid var(--cobalt-hairline);
+    background: var(--cobalt-pill-bg);
+    color: var(--ink-on-cobalt);
+    border-radius: var(--radius-pill);
+    padding: 8px 14px 8px 10px;
+    font-size: 12.5px;
+    font-weight: 600;
+    display: inline-flex;
+    align-items: center;
+    gap: 8px;
+    transition: background-color 160ms ease, border-color 160ms ease, color 160ms ease, transform 160ms ease;
+  }
+
+  .colorway-pill:hover {
+    background: var(--cobalt-pill-hover);
+  }
+
+  .colorway-pill[aria-checked="true"] {
+    background: var(--surface-gallery);
+    color: var(--ink-deep);
+    border-color: var(--surface-gallery);
+  }
+
+  .swatch {
+    width: 15px;
+    height: 15px;
+    border-radius: var(--radius-pill);
+    border: 1px solid rgba(16, 19, 26, 0.22);
+    flex-shrink: 0;
+  }
+
+  .swatch-silver { background: var(--swatch-silver); }
+  .swatch-terracotta { background: var(--swatch-terracotta); }
+  .swatch-obsidian { background: var(--swatch-obsidian); }
+
+  .pill-price {
+    font-family: var(--font-mono);
+    font-size: 12px;
+    opacity: 0.86;
+  }
+
+  .cta-row {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    gap: 16px;
+    flex-wrap: wrap;
+  }
+
+  .primary-pill-cta {
+    border: 0;
+    background: var(--surface-gallery);
+    color: var(--cobalt-stage);
+    border-radius: var(--radius-pill);
+    padding: 14px 26px;
+    font-family: var(--font-display);
+    font-size: 15px;
+    font-weight: 700;
+    letter-spacing: -0.01em;
+    display: inline-flex;
+    align-items: center;
+    gap: 10px;
+    transition: background-color 160ms ease, color 160ms ease, transform 160ms ease;
+  }
+
+  .primary-pill-cta:hover {
+    background: var(--terracotta);
+    color: var(--ink-on-cobalt);
+    transform: translateY(-1px);
+  }
+
+  .primary-pill-cta.just-added {
+    background: var(--terracotta);
+    color: var(--ink-on-cobalt);
+  }
+
+  .dispatch-note {
+    margin: 0;
+    font-family: var(--font-mono);
+    font-size: 11.5px;
+    color: var(--ink-on-cobalt-muted);
+    line-height: 1.45;
+  }
+
+  /* Right 52% — Gallery White Curated Collection & Live Bag */
+  .stage-gallery {
+    background: var(--surface-gallery);
+    padding: 26px 34px 24px;
+    display: flex;
+    flex-direction: column;
+    justify-content: space-between;
+    gap: 18px;
+    min-height: 0;
+  }
+
+  .collection-top {
+    display: flex;
+    align-items: flex-end;
+    justify-content: space-between;
+    gap: 16px;
+  }
+
+  .collection-eyebrow {
+    font-family: var(--font-mono);
+    font-size: 11px;
+    font-weight: 500;
+    letter-spacing: 0.11em;
+    text-transform: uppercase;
+    color: var(--cobalt-stage);
+    margin-bottom: 4px;
+  }
+
+  .collection-title {
+    margin: 0;
+    font-family: var(--font-display);
+    font-weight: 700;
+    font-size: 25px;
+    letter-spacing: -0.025em;
+    line-height: 1.1;
+    color: var(--ink-deep);
+  }
+
+  .collection-count {
+    font-family: var(--font-mono);
+    font-size: 12px;
+    color: var(--ink-slate);
+    white-space: nowrap;
+  }
+
+  .object-grid {
+    display: grid;
+    grid-template-columns: repeat(3, minmax(0, 1fr));
+    gap: 16px;
+    flex: 1;
+    min-height: 0;
+  }
+
+  .object-card {
+    background: var(--surface-aluminum);
+    border-radius: var(--radius-card);
+    padding: 16px;
+    display: flex;
+    flex-direction: column;
+    justify-content: space-between;
+    gap: 12px;
+    transition: background-color 180ms ease, transform 180ms ease;
+    min-height: 0;
+  }
+
+  .object-card:hover {
+    background: var(--surface-aluminum-deep);
+    transform: translateY(-2px);
+  }
+
+  .object-card.is-hidden {
+    display: none;
+  }
+
+  .object-visual {
+    background: var(--surface-gallery);
+    border-radius: 14px;
+    padding: 10px 8px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    flex: 1;
+    min-height: 150px;
+  }
+
+  .object-svg {
+    width: 100%;
+    max-width: 196px;
+    height: auto;
+    max-height: 158px;
+    display: block;
+  }
+
+  .object-body {
+    display: flex;
+    flex-direction: column;
+    gap: 6px;
+  }
+
+  .stock-badge {
+    display: inline-flex;
+    align-items: center;
+    gap: 5px;
+    width: fit-content;
+    font-family: var(--font-mono);
+    font-size: 11px;
+    font-weight: 500;
+    padding: 3px 9px;
+    border-radius: var(--radius-pill);
+  }
+
+  .stock-badge.in-stock {
+    background: var(--stock-ok-bg);
+    color: var(--stock-ok-ink);
+  }
+
+  .stock-badge.small-batch {
+    background: var(--terracotta-soft);
+    color: var(--terracotta-text);
+  }
+
+  .object-name {
+    margin: 2px 0 0;
+    font-family: var(--font-display);
+    font-weight: 700;
+    font-size: 16.5px;
+    line-height: 1.18;
+    letter-spacing: -0.02em;
+    color: var(--ink-deep);
+  }
+
+  .object-spec {
+    margin: 0;
+    font-size: 12.5px;
+    line-height: 1.4;
+    color: var(--ink-slate);
+  }
+
+  .object-footer {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    gap: 8px;
+    padding-top: 6px;
+  }
+
+  .object-price {
+    font-family: var(--font-mono);
+    font-size: 16px;
+    font-weight: 500;
+    color: var(--ink-deep);
+    font-variant-numeric: tabular-nums;
+  }
+
+  .add-pill {
+    border: 0;
+    background: var(--ink-deep);
+    color: var(--surface-gallery);
+    border-radius: var(--radius-pill);
+    padding: 8px 14px;
+    font-size: 12.5px;
+    font-weight: 600;
+    transition: background-color 150ms ease, transform 150ms ease;
+    white-space: nowrap;
+  }
+
+  .add-pill:hover {
+    background: var(--cobalt-stage);
+  }
+
+  .add-pill.added-flash {
+    background: var(--terracotta);
+  }
+
+  /* Live Bag & Parcel Summary Bar */
+  .parcel-strip {
+    background: var(--surface-aluminum);
+    border-radius: var(--radius-card);
+    padding: 16px 20px;
+    display: flex;
+    flex-direction: column;
+    gap: 12px;
+    flex-shrink: 0;
+  }
+
+  .parcel-top {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    gap: 14px;
+    flex-wrap: wrap;
+  }
+
+  .parcel-title-wrap {
+    display: flex;
+    align-items: baseline;
+    gap: 10px;
+  }
+
+  .parcel-heading {
+    margin: 0;
+    font-family: var(--font-display);
+    font-weight: 700;
+    font-size: 15px;
+    letter-spacing: -0.015em;
+    color: var(--ink-deep);
+  }
+
+  .parcel-freight-label {
+    font-family: var(--font-mono);
+    font-size: 11.5px;
+    color: var(--ink-slate);
+  }
+
+  .parcel-freight-label.qualified {
+    color: var(--stock-ok-ink);
+    font-weight: 500;
+  }
+
+  .freight-track {
+    width: 100%;
+    height: 6px;
+    background: var(--surface-aluminum-deep);
+    border-radius: var(--radius-pill);
+    overflow: hidden;
+  }
+
+  .freight-fill {
+    height: 100%;
+    width: 0%;
+    background: var(--cobalt-stage);
+    border-radius: var(--radius-pill);
+    transition: width 240ms ease, background-color 240ms ease;
+  }
+
+  .freight-fill.qualified {
+    background: var(--terracotta);
+  }
+
+  .parcel-items {
+    display: flex;
+    flex-direction: column;
+    gap: 8px;
+    max-height: 92px;
+    overflow-y: auto;
+  }
+
+  .parcel-empty {
+    font-size: 13px;
+    color: var(--ink-slate);
+    line-height: 1.45;
+    padding: 4px 0;
+  }
+
+  .parcel-row {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    gap: 12px;
+    background: var(--surface-gallery);
+    border-radius: 12px;
+    padding: 8px 12px;
+  }
+
+  .parcel-item-info {
+    display: flex;
+    flex-direction: column;
+    gap: 1px;
+    min-width: 0;
+  }
+
+  .parcel-item-name {
+    font-size: 13px;
+    font-weight: 600;
+    color: var(--ink-deep);
+    white-space: nowrap;
+    overflow: hidden;
+    text-overflow: ellipsis;
+  }
+
+  .parcel-item-unit {
+    font-family: var(--font-mono);
+    font-size: 11px;
+    color: var(--ink-slate);
+  }
+
+  .parcel-row-actions {
+    display: flex;
+    align-items: center;
+    gap: 10px;
+    flex-shrink: 0;
+  }
+
+  .stepper {
+    display: inline-flex;
+    align-items: center;
+    gap: 6px;
+    background: var(--surface-aluminum);
+    border-radius: var(--radius-pill);
+    padding: 2px 4px;
+  }
+
+  .step-btn {
+    width: 24px;
+    height: 24px;
+    border: 0;
+    border-radius: var(--radius-pill);
+    background: var(--surface-gallery);
+    color: var(--ink-deep);
+    font-size: 14px;
+    font-weight: 600;
+    line-height: 1;
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    transition: background-color 140ms ease, color 140ms ease;
+  }
+
+  .step-btn:hover {
+    background: var(--ink-deep);
+    color: var(--surface-gallery);
+  }
+
+  .step-qty {
+    font-family: var(--font-mono);
+    font-size: 12px;
+    min-width: 18px;
+    text-align: center;
+  }
+
+  .parcel-line-total {
+    font-family: var(--font-mono);
+    font-size: 13px;
+    font-weight: 500;
+    min-width: 52px;
+    text-align: right;
+    color: var(--ink-deep);
+  }
+
+  .parcel-bottom {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    gap: 14px;
+    padding-top: 6px;
+    border-top: 1px solid var(--surface-aluminum-deep);
+  }
+
+  .subtotal-group {
+    display: flex;
+    align-items: baseline;
+    gap: 10px;
+  }
+
+  .subtotal-label {
+    font-size: 12.5px;
+    color: var(--ink-slate);
+    font-weight: 500;
+  }
+
+  .subtotal-amount {
+    font-family: var(--font-mono);
+    font-size: 19px;
+    font-weight: 500;
+    color: var(--ink-deep);
+    font-variant-numeric: tabular-nums;
+  }
+
+  .parcel-status-note {
+    font-size: 12px;
+    color: var(--ink-slate);
+    margin: 0;
+  }
+
+  .dispatch-btn {
+    border: 0;
+    background: var(--cobalt-stage);
+    color: var(--ink-on-cobalt);
+    border-radius: var(--radius-pill);
+    padding: 10px 20px;
+    font-size: 13px;
+    font-weight: 600;
+    transition: background-color 160ms ease, opacity 160ms ease;
+    white-space: nowrap;
+  }
+
+  .dispatch-btn:hover:not(:disabled) {
+    background: var(--terracotta);
+  }
+
+  .dispatch-btn:disabled {
+    background: var(--surface-aluminum-deep);
+    color: var(--ink-slate);
+    cursor: not-allowed;
+  }
+
+  /* Responsive below 1024px */
+  @media (max-width: 1023px) {
+    .gallery-header {
+      height: auto;
+      padding: 14px 20px;
+      flex-wrap: wrap;
+    }
+
+    .studio-meta {
+      display: none;
+    }
+
+    .split-stage {
+      grid-template-columns: 1fr;
+    }
+
+    .stage-cobalt {
+      padding: 28px 20px 26px;
+    }
+
+    .stage-gallery {
+      padding: 24px 20px 32px;
+    }
+
+    .object-grid {
+      grid-template-columns: repeat(auto-fit, minmax(220px, 1fr));
+    }
+
+    .parcel-items {
+      max-height: none;
+    }
+  }
+
+  @media (max-width: 600px) {
+    .filter-bar {
+      order: 3;
+      width: 100%;
+      justify-content: space-between;
+    }
+
+    .filter-pill {
+      padding: 7px 10px;
+      font-size: 12px;
+    }
+
+    .parcel-bottom {
+      flex-direction: column;
+      align-items: flex-start;
+    }
+
+    .dispatch-btn {
+      width: 100%;
+    }
+  }
+
+  @media (prefers-reduced-motion: reduce) {
+    *, *::before, *::after {
+      animation-duration: 0.01ms !important;
+      animation-iteration-count: 1 !important;
+      transition-duration: 0.01ms !important;
+      scroll-behavior: auto !important;
+    }
+  }
+</style>
+</head>
+<body>
+  <div class="flagship-shell">
+    <header class="gallery-header">
+      <div class="brand-cluster">
+        <a class="brand-mark" href="#stage-t01" aria-label="SORI Home">
+          <svg width="24" height="24" viewBox="0 0 24 24" aria-hidden="true">
+            <circle cx="12" cy="12" r="11" fill="var(--cobalt-stage)"/>
+            <circle cx="12" cy="12" r="5" fill="var(--surface-gallery)"/>
+            <circle cx="12" cy="12" r="2" fill="var(--terracotta)"/>
+          </svg>
+          <span class="brand-wordmark">SORI</span>
+        </a>
+        <span class="studio-meta">Nuxt 3 · Fictional Audio Studio</span>
+      </div>
+
+      <nav class="filter-bar" aria-label="Filter acoustic objects by category">
+        <button class="filter-pill" type="button" data-filter="all" aria-pressed="true">All</button>
+        <button class="filter-pill" type="button" data-filter="turntables" aria-pressed="false">Turntables</button>
+        <button class="filter-pill" type="button" data-filter="monitors" aria-pressed="false">Monitors</button>
+        <button class="filter-pill" type="button" data-filter="stands" aria-pressed="false">Stands</button>
+      </nav>
+
+      <button class="bag-trigger" id="header-bag-btn" type="button" aria-controls="parcel-summary">
+        <span class="bag-dot" aria-hidden="true"></span>
+        <span id="header-bag-label">Bag (0) · $0</span>
+      </button>
+    </header>
+
+    <main class="split-stage">
+      <!-- Left 48%: Yves Klein Cobalt Sculptural Flagship Stage -->
+      <section class="stage-cobalt" id="stage-t01" data-finish="silver" aria-labelledby="t01-heading">
+        <div class="stage-head">
+          <div class="stage-eyebrow">
+            <span class="eyebrow-pip" aria-hidden="true"></span>
+            <span>SORI T-01 · DIRECT-DRIVE TURNTABLE</span>
+          </div>
+          <h1 class="stage-title" id="t01-heading">Machined aluminum. Zero belt drift.</h1>
+          <p class="stage-specs" id="t01-finish-spec">
+            Raw Silver bead-blasted billet plinth · 1.8 kg quartz-locked platter · 0.04% WRMS flutter.
+          </p>
+        </div>
+
+        <div class="turntable-plinth-stage">
+          <svg class="turntable-svg" viewBox="0 0 600 384" role="img" aria-label="Studio render of the SORI T-01 direct-drive turntable showing chamfered aluminum plinth, brushed platter, vinyl record, and precision studio tonearm">
+            <defs>
+              <radialGradient id="floor-shadow" cx="50%" cy="50%" r="50%">
+                <stop offset="0%" class="s-shadow" stop-opacity="0.95"/>
+                <stop offset="68%" class="s-shadow" stop-opacity="0.48"/>
+                <stop offset="100%" class="s-shadow" stop-opacity="0"/>
+              </radialGradient>
+
+              <linearGradient id="plinth-top-grad" x1="8%" y1="6%" x2="92%" y2="96%">
+                <stop offset="0%" class="s-top-a"/>
+                <stop offset="100%" class="s-top-b"/>
+              </linearGradient>
+
+              <linearGradient id="plinth-front-grad" x1="0%" y1="0%" x2="100%" y2="0%">
+                <stop offset="0%" class="s-front-b"/>
+                <stop offset="22%" class="s-front-a"/>
+                <stop offset="76%" class="s-front-a"/>
+                <stop offset="100%" class="s-front-b"/>
+              </linearGradient>
+
+              <linearGradient id="platter-rim-grad" x1="0%" y1="0%" x2="100%" y2="0%">
+                <stop offset="0%" class="s-metal-dark"/>
+                <stop offset="24%" class="s-metal-light"/>
+                <stop offset="56%" class="s-metal-mid"/>
+                <stop offset="84%" class="s-metal-light"/>
+                <stop offset="100%" class="s-metal-dark"/>
+              </linearGradient>
+
+              <radialGradient id="platter-deck-grad" cx="38%" cy="32%" r="68%">
+                <stop offset="0%" class="s-metal-light"/>
+                <stop offset="62%" class="s-metal-mid"/>
+                <stop offset="100%" class="s-metal-dark"/>
+              </radialGradient>
+
+              <radialGradient id="vinyl-grad" cx="42%" cy="36%" r="64%">
+                <stop offset="0%" class="s-vinyl-a"/>
+                <stop offset="55%" class="s-vinyl-b"/>
+                <stop offset="100%" class="s-obsidian-c"/>
+              </radialGradient>
+
+              <linearGradient id="vinyl-sheen" x1="15%" y1="10%" x2="85%" y2="90%">
+                <stop offset="0%" class="s-white" stop-opacity="0.22"/>
+                <stop offset="32%" class="s-white" stop-opacity="0"/>
+                <stop offset="68%" class="s-white" stop-opacity="0"/>
+                <stop offset="100%" class="s-white" stop-opacity="0.16"/>
+              </linearGradient>
+
+              <linearGradient id="arm-tube-grad" x1="0%" y1="0%" x2="100%" y2="100%">
+                <stop offset="0%" class="s-metal-light"/>
+                <stop offset="48%" class="s-metal-mid"/>
+                <stop offset="100%" class="s-metal-deep"/>
+              </linearGradient>
+
+              <linearGradient id="btn-grad" x1="15%" y1="10%" x2="85%" y2="90%">
+                <stop offset="0%" class="s-btn-a"/>
+                <stop offset="100%" class="s-btn-b"/>
+              </linearGradient>
+
+              <linearGradient id="foot-grad" x1="0%" y1="0%" x2="100%" y2="0%">
+                <stop offset="0%" class="s-obsidian-c"/>
+                <stop offset="45%" class="s-obsidian-a"/>
+                <stop offset="100%" class="s-obsidian-c"/>
+              </linearGradient>
+
+              <radialGradient id="strobe-glow" cx="50%" cy="50%" r="50%">
+                <stop offset="0%" class="s-terra" stop-opacity="0.95"/>
+                <stop offset="50%" class="s-terra" stop-opacity="0.35"/>
+                <stop offset="100%" class="s-terra" stop-opacity="0"/>
+              </radialGradient>
+
+              <filter id="arm-shadow" x="-20%" y="-20%" width="140%" height="140%">
+                <feDropShadow dx="5" dy="8" stdDeviation="4" flood-color="#090e26" flood-opacity="0.36"/>
+              </filter>
+            </defs>
+
+            <!-- Grounded Studio Floor Ambient Shadow -->
+            <ellipse cx="300" cy="348" rx="268" ry="30" fill="url(#floor-shadow)"/>
+
+            <!-- Anodized Isolation Feet with Terracotta Damping Ring -->
+            <g aria-hidden="true">
+              <rect x="86" y="322" width="44" height="22" rx="6" fill="url(#foot-grad)"/>
+              <rect x="88" y="330" width="40" height="4" rx="2" fill="var(--ring-accent)"/>
+              <rect x="470" y="322" width="44" height="22" rx="6" fill="url(#foot-grad)"/>
+              <rect x="472" y="330" width="40" height="4" rx="2" fill="var(--ring-accent)"/>
+            </g>
+
+            <!-- 3D Plinth Front Wall Extrusion -->
+            <rect x="48" y="64" width="504" height="268" rx="26" fill="url(#plinth-front-grad)"/>
+            <!-- Bottom front bevel lip -->
+            <path d="M 74 332 H 526" stroke="var(--obsidian-c)" stroke-opacity="0.45" stroke-width="2"/>
+            <!-- Subtle Front Fascia Brand Mark & Power Slit -->
+            <rect x="84" y="314" width="38" height="4" rx="2" fill="var(--chassis-badge)" opacity="0.55"/>
+            <rect x="498" y="313" width="18" height="4" rx="2" fill="var(--ring-accent)"/>
+
+            <!-- Plinth Top Machined Deck -->
+            <rect x="48" y="24" width="504" height="280" rx="26" fill="url(#plinth-top-grad)"/>
+            <!-- Crisp Studio Top-Left Specular Chamfer Rim -->
+            <rect x="49" y="25" width="502" height="278" rx="25" fill="none" stroke="var(--chassis-rim)" stroke-opacity="0.65" stroke-width="1.6"/>
+
+            <!-- Recessed Platter Moat -->
+            <circle cx="246" cy="166" r="126" fill="var(--chassis-well)"/>
+            <circle cx="246" cy="166" r="124" fill="none" stroke="var(--metal-dark)" stroke-opacity="0.35" stroke-width="1.5"/>
+
+            <!-- 3D Beveled Billet Aluminum Platter Skirt -->
+            <circle cx="246" cy="173" r="118" fill="url(#platter-rim-grad)"/>
+            <!-- Machined Strobe Dots along lower platter bevel -->
+            <g fill="var(--metal-deep)" opacity="0.65">
+              <circle cx="145" cy="222" r="2.1"/>
+              <circle cx="154" cy="233" r="2.1"/>
+              <circle cx="165" cy="244" r="2.1"/>
+              <circle cx="177" cy="253" r="2.1"/>
+              <circle cx="190" cy="261" r="2.1"/>
+              <circle cx="204" cy="267" r="2.1"/>
+              <circle cx="219" cy="272" r="2.1"/>
+              <circle cx="234" cy="274" r="2.1"/>
+            </g>
+
+            <!-- Platter Top Rim -->
+            <circle cx="246" cy="165" r="118" fill="url(#platter-deck-grad)"/>
+            <circle cx="246" cy="165" r="116.5" fill="none" stroke="var(--surface-gallery)" stroke-opacity="0.55" stroke-width="1.2"/>
+
+            <!-- 180g Matte Vinyl LP Disc -->
+            <circle cx="246" cy="165" r="111" fill="url(#vinyl-grad)"/>
+            <!-- Realistic Groove Texture Rings -->
+            <g fill="none" stroke="var(--vinyl-groove)" stroke-width="0.9" opacity="0.62">
+              <circle cx="246" cy="165" r="103"/>
+              <circle cx="246" cy="165" r="95"/>
+              <circle cx="246" cy="165" r="87"/>
+              <circle cx="246" cy="165" r="79"/>
+              <circle cx="246" cy="165" r="71"/>
+              <circle cx="246" cy="165" r="63"/>
+              <circle cx="246" cy="165" r="55"/>
+              <circle cx="246" cy="165" r="47"/>
+            </g>
+            <!-- Vinyl Diagonal Specular Light Cone -->
+            <circle cx="246" cy="165" r="110" fill="url(#vinyl-sheen)"/>
+
+            <!-- Editorial Record Center Label -->
+            <circle cx="246" cy="165" r="37" fill="var(--label-bg)"/>
+            <path d="M 209 165 A 37 37 0 0 1 283 165 Z" fill="var(--label-band)"/>
+            <text x="246" y="154" text-anchor="middle" font-family="Archivo, sans-serif" font-weight="800" font-size="9.5" letter-spacing="1.8" fill="var(--surface-gallery)">SORI</text>
+            <text x="246" y="185" text-anchor="middle" font-family="IBM Plex Mono, monospace" font-weight="500" font-size="7.2" fill="var(--ink-deep)">33⅓ RPM · T-01</text>
+
+            <!-- Machined Center Spindle -->
+            <circle cx="246" cy="165" r="8.5" fill="url(#platter-deck-grad)" stroke="var(--metal-dark)" stroke-width="1"/>
+            <circle cx="246" cy="165" r="4.2" fill="var(--brass-spindle)"/>
+            <circle cx="244.8" cy="163.8" r="1.3" fill="var(--surface-gallery)"/>
+
+            <!-- Recessed Illuminated Strobe Pitch Dot Housing -->
+            <circle cx="131" cy="240" r="17" fill="url(#strobe-glow)"/>
+            <rect x="119" y="232" width="18" height="14" rx="5" transform="rotate(-38 128 239)" fill="var(--obsidian-b)" stroke="var(--metal-dark)" stroke-width="1"/>
+            <circle cx="132" cy="240" r="3.4" fill="var(--terracotta)"/>
+
+            <!-- Bottom-Left Start/Stop Tactile Button & 33/45 Selectors -->
+            <g>
+              <circle cx="88" cy="264" r="21" fill="var(--chassis-well)" opacity="0.22"/>
+              <circle cx="88" cy="263" r="18" fill="url(#btn-grad)" stroke="var(--chassis-rim)" stroke-opacity="0.7" stroke-width="1.2"/>
+              <circle cx="88" cy="263" r="4.2" fill="none" stroke="var(--ring-accent)" stroke-width="2"/>
+              <rect x="118" y="256" width="20" height="14" rx="7" fill="var(--obsidian-b)"/>
+              <circle cx="128" cy="263" r="2.2" fill="var(--ring-accent)"/>
+              <rect x="142" y="256" width="20" height="14" rx="7" fill="url(#btn-grad)" stroke="var(--metal-dark)" stroke-opacity="0.45" stroke-width="1"/>
+            </g>
+
+            <!-- Right-Side Calibrated Pitch Slider -->
+            <g>
+              <rect x="506" y="198" width="14" height="82" rx="7" fill="var(--chassis-well)" opacity="0.78"/>
+              <rect x="511.5" y="205" width="3" height="68" rx="1.5" fill="var(--obsidian-c)"/>
+              <!-- Calibrated Tick Marks -->
+              <g stroke="var(--chassis-badge)" stroke-width="1.2" opacity="0.72">
+                <line x1="496" y1="208" x2="502" y2="208"/>
+                <line x1="496" y1="223" x2="502" y2="223"/>
+                <line x1="493" y1="239" x2="502" y2="239" stroke="var(--ring-accent)" stroke-width="1.8"/>
+                <line x1="496" y1="255" x2="502" y2="255"/>
+                <line x1="496" y1="270" x2="502" y2="270"/>
+              </g>
+              <!-- Machined Slider Cap -->
+              <rect x="500" y="229" width="26" height="19" rx="5" fill="url(#btn-grad)" stroke="var(--metal-dark)" stroke-width="1"/>
+              <line x1="504" y1="238.5" x2="522" y2="238.5" stroke="var(--ring-accent)" stroke-width="2" stroke-linecap="round"/>
+            </g>
+
+            <!-- Precision Gimbal Tonearm Base & Assembly -->
+            <g filter="url(#arm-shadow)">
+              <!-- Recessed Tonearm Collar -->
+              <circle cx="446" cy="108" r="40" fill="var(--chassis-well)" opacity="0.88"/>
+              <circle cx="446" cy="108" r="35" fill="url(#platter-deck-grad)"/>
+              <circle cx="446" cy="108" r="29" fill="none" stroke="var(--ring-accent)" stroke-width="2.4"/>
+              <circle cx="446" cy="108" r="21" fill="url(#foot-grad)"/>
+
+              <!-- Anti-skate knurled dial -->
+              <circle cx="496" cy="140" r="11" fill="url(#foot-grad)" stroke="var(--metal-mid)" stroke-width="1.2"/>
+              <line x1="496" y1="140" x2="503" y2="136" stroke="var(--ring-accent)" stroke-width="2" stroke-linecap="round"/>
+
+              <!-- Counterweight Cylinder -->
+              <g transform="rotate(24 446 108)">
+                <rect x="435" y="42" width="22" height="32" rx="4" fill="url(#platter-rim-grad)" stroke="var(--metal-deep)" stroke-width="1"/>
+                <rect x="435" y="64" width="22" height="5" fill="var(--obsidian-b)"/>
+                <rect x="441" y="72" width="10" height="20" fill="url(#arm-tube-grad)"/>
+              </g>
+
+              <!-- Gimbal Bridge Housing -->
+              <rect x="431" y="96" width="30" height="24" rx="7" fill="url(#platter-deck-grad)" stroke="var(--metal-deep)" stroke-width="1.2"/>
+              <circle cx="446" cy="108" r="6" fill="var(--obsidian-b)"/>
+              <circle cx="446" cy="108" r="2.4" fill="var(--ring-accent)"/>
+
+              <!-- Precision Studio Arm Tube -->
+              <path d="M 442 117 L 385 244 L 352 269" fill="none" stroke="url(#arm-tube-grad)" stroke-width="8.5" stroke-linecap="round" stroke-linejoin="round"/>
+              <path d="M 440 117 L 383 242 L 351 267" fill="none" stroke="var(--surface-gallery)" stroke-opacity="0.6" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"/>
+
+              <!-- Machined Headshell & Cartridge over Vinyl -->
+              <g transform="translate(342 268) rotate(-36)">
+                <rect x="-26" y="-8" width="36" height="16" rx="4" fill="var(--obsidian-a)" stroke="var(--metal-mid)" stroke-width="1"/>
+                <rect x="-22" y="-5" width="12" height="10" rx="2" fill="var(--ring-accent)"/>
+                <!-- Finger Lift -->
+                <path d="M -2 -8 Q 6 -16 14 -13" fill="none" stroke="var(--metal-light)" stroke-width="2.2" stroke-linecap="round"/>
+              </g>
+            </g>
+
+            <!-- Arm Rest Clamp -->
+            <rect x="424" y="176" width="14" height="10" rx="4" fill="var(--obsidian-b)" stroke="var(--metal-mid)" stroke-width="1"/>
+          </svg>
+        </div>
+
+        <div class="stage-controls">
+          <div class="colorway-group" role="radiogroup" aria-label="Choose SORI T-01 finish colorway">
+            <button class="colorway-pill" type="button" role="radio" aria-checked="true" data-choice="silver">
+              <span class="swatch swatch-silver" aria-hidden="true"></span>
+              <span>Raw Silver</span>
+              <span class="pill-price">$540</span>
+            </button>
+            <button class="colorway-pill" type="button" role="radio" aria-checked="false" data-choice="terracotta">
+              <span class="swatch swatch-terracotta" aria-hidden="true"></span>
+              <span>Kiln Terracotta</span>
+              <span class="pill-price">$560</span>
+            </button>
+            <button class="colorway-pill" type="button" role="radio" aria-checked="false" data-choice="obsidian">
+              <span class="swatch swatch-obsidian" aria-hidden="true"></span>
+              <span>Matte Obsidian</span>
+              <span class="pill-price">$580</span>
+            </button>
+          </div>
+
+          <div class="cta-row">
+            <button class="primary-pill-cta" id="add-t01-btn" type="button">
+              <span id="add-t01-label">Add T-01 to bag — $540</span>
+            </button>
+            <p class="dispatch-note">In stock · Ships in molded pulp · 5-year motor warranty</p>
+          </div>
+        </div>
+      </section>
+
+      <!-- Right 52%: Gallery White Curated Audio Collection + Live Bag Strip -->
+      <section class="stage-gallery" aria-labelledby="companions-heading">
+        <div class="collection-top">
+          <div>
+            <div class="collection-eyebrow">ACOUSTIC COMPANIONS</div>
+            <h2 class="collection-title" id="companions-heading">Sculpted for the same plinth.</h2>
+          </div>
+          <span class="collection-count" id="collection-count">3 objects · Kyoto &amp; Rotterdam</span>
+        </div>
+
+        <div class="object-grid" id="object-grid">
+          <!-- Product 1: S-02 Nearfield Monitor -->
+          <article class="object-card" data-category="monitors">
+            <div class="object-visual">
+              <svg class="object-svg" viewBox="0 0 220 164" role="img" aria-label="Studio render of the S-02 Nearfield Monitor in cast aluminum with woven woofer cone and terracotta tweeter trim">
+                <defs>
+                  <radialGradient id="mon-shadow" cx="50%" cy="50%" r="50%">
+                    <stop offset="0%" class="s-card-shadow" stop-opacity="0.8"/>
+                    <stop offset="100%" class="s-card-shadow" stop-opacity="0"/>
+                  </radialGradient>
+                  <linearGradient id="mon-front" x1="10%" y1="5%" x2="90%" y2="95%">
+                    <stop offset="0%" class="s-metal-light"/>
+                    <stop offset="100%" class="s-metal-mid"/>
+                  </linearGradient>
+                  <linearGradient id="mon-side" x1="0%" y1="0%" x2="100%" y2="100%">
+                    <stop offset="0%" class="s-metal-mid"/>
+                    <stop offset="100%" class="s-metal-dark"/>
+                  </linearGradient>
+                  <radialGradient id="woofer-cone" cx="38%" cy="32%" r="65%">
+                    <stop offset="0%" class="s-obsidian-a"/>
+                    <stop offset="68%" class="s-obsidian-b"/>
+                    <stop offset="100%" class="s-obsidian-c"/>
+                  </radialGradient>
+                </defs>
+                <!-- Studio Ground Shadow -->
+                <ellipse cx="110" cy="146" rx="68" ry="12" fill="url(#mon-shadow)"/>
+                <!-- 3/4 Perspective Side Enclosure Depth -->
+                <path d="M 152 20 L 170 30 L 170 132 L 152 142 Z" fill="url(#mon-side)"/>
+                <!-- Top Bevel Plane -->
+                <path d="M 56 20 L 152 20 L 170 30 L 74 30 Z" fill="var(--surface-gallery)" opacity="0.72"/>
+                <!-- Main Cast Aluminum Front Baffle -->
+                <rect x="52" y="18" width="104" height="124" rx="16" fill="url(#mon-front)" stroke="var(--surface-gallery)" stroke-width="1.5"/>
+                <!-- Upper Silk Dome Tweeter + Terracotta Acoustic Ring -->
+                <circle cx="104" cy="48" r="17" fill="var(--obsidian-b)"/>
+                <circle cx="104" cy="48" r="14.5" fill="none" stroke="var(--terracotta)" stroke-width="2.4"/>
+                <circle cx="104" cy="48" r="7.5" fill="url(#woofer-cone)"/>
+                <circle cx="101.5" cy="45.5" r="2" fill="var(--surface-gallery)" opacity="0.55"/>
+                <!-- Recessed Waveguide Woofer -->
+                <circle cx="104" cy="100" r="30" fill="var(--metal-dark)" opacity="0.35"/>
+                <circle cx="104" cy="100" r="27" fill="var(--obsidian-c)"/>
+                <circle cx="104" cy="100" r="22" fill="url(#woofer-cone)"/>
+                <circle cx="104" cy="100" r="10.5" fill="var(--obsidian-a)"/>
+                <path d="M 98 96 A 7 7 0 0 1 108 94" fill="none" stroke="var(--surface-gallery)" stroke-opacity="0.45" stroke-width="1.8" stroke-linecap="round"/>
+                <!-- Bottom Slotted Reflex Port & Cobalt LED -->
+                <rect x="86" y="132" width="36" height="4" rx="2" fill="var(--obsidian-c)"/>
+                <circle cx="67" cy="134" r="2.2" fill="var(--cobalt-stage)"/>
+              </svg>
+            </div>
+            <div class="object-body">
+              <span class="stock-badge in-stock">● In stock</span>
+              <h3 class="object-name">S-02 Nearfield Monitor</h3>
+              <p class="object-spec">Active 45W Class-D · Cast aluminum pair</p>
+            </div>
+            <div class="object-footer">
+              <span class="object-price">$380</span>
+              <button class="add-pill" type="button" data-add-id="s02" data-add-name="S-02 Nearfield Monitor" data-add-price="380">+ Add</button>
+            </div>
+          </article>
+
+          <!-- Product 2: C-04 Weighted Record Clamp -->
+          <article class="object-card" data-category="turntables">
+            <div class="object-visual">
+              <svg class="object-svg" viewBox="0 0 220 164" role="img" aria-label="Studio render of the C-04 Weighted Record Clamp in turned billet steel with knurled grip and spirit-level center">
+                <defs>
+                  <radialGradient id="clamp-shadow" cx="50%" cy="50%" r="50%">
+                    <stop offset="0%" class="s-card-shadow" stop-opacity="0.85"/>
+                    <stop offset="100%" class="s-card-shadow" stop-opacity="0"/>
+                  </radialGradient>
+                  <linearGradient id="clamp-body" x1="0%" y1="0%" x2="100%" y2="0%">
+                    <stop offset="0%" class="s-obsidian-c"/>
+                    <stop offset="28%" class="s-obsidian-a"/>
+                    <stop offset="68%" class="s-obsidian-b"/>
+                    <stop offset="100%" class="s-obsidian-c"/>
+                  </linearGradient>
+                  <linearGradient id="clamp-crown" x1="0%" y1="0%" x2="100%" y2="0%">
+                    <stop offset="0%" class="s-metal-dark"/>
+                    <stop offset="32%" class="s-metal-light"/>
+                    <stop offset="72%" class="s-metal-mid"/>
+                    <stop offset="100%" class="s-metal-dark"/>
+                  </linearGradient>
+                </defs>
+                <!-- Studio Ground Shadow -->
+                <ellipse cx="110" cy="134" rx="74" ry="18" fill="url(#clamp-shadow)"/>
+                <!-- Lower Machined Base Cylinder -->
+                <path d="M 46 84 L 46 116 A 64 22 0 0 0 174 116 L 174 84 Z" fill="url(#clamp-body)"/>
+                <!-- Precision Vertical Knurling Ribs -->
+                <g stroke="var(--metal-mid)" stroke-opacity="0.22" stroke-width="1.4">
+                  <line x1="60" y1="92" x2="60" y2="122"/>
+                  <line x1="72" y1="96" x2="72" y2="126"/>
+                  <line x1="84" y1="99" x2="84" y2="129"/>
+                  <line x1="96" y1="101" x2="96" y2="131"/>
+                  <line x1="110" y1="102" x2="110" y2="132"/>
+                  <line x1="124" y1="101" x2="124" y2="131"/>
+                  <line x1="136" y1="99" x2="136" y2="129"/>
+                  <line x1="148" y1="96" x2="148" y2="126"/>
+                  <line x1="160" y1="92" x2="160" y2="122"/>
+                </g>
+                <!-- Upper Beveled Billet Shoulder -->
+                <ellipse cx="110" cy="84" rx="64" ry="22" fill="url(#clamp-crown)"/>
+                <!-- Upper Knurled Grip Crown -->
+                <path d="M 68 58 L 68 80 A 42 14 0 0 0 152 80 L 152 58 Z" fill="url(#clamp-crown)"/>
+                <ellipse cx="110" cy="58" rx="42" ry="14" fill="var(--metal-light)" stroke="var(--metal-mid)" stroke-width="1.2"/>
+                <!-- Recessed Cobalt & Terracotta Spirit Level Ring -->
+                <ellipse cx="110" cy="58" rx="22" ry="7.4" fill="var(--cobalt-stage)"/>
+                <ellipse cx="110" cy="58" rx="14" ry="4.6" fill="none" stroke="var(--surface-gallery)" stroke-opacity="0.65" stroke-width="1"/>
+                <circle cx="112" cy="57.5" r="3.4" fill="var(--terracotta)"/>
+              </svg>
+            </div>
+            <div class="object-body">
+              <span class="stock-badge small-batch">◆ Small batch · 5 left</span>
+              <h3 class="object-name">C-04 Weighted Record Clamp</h3>
+              <p class="object-spec">420g billet steel · Cork damping base</p>
+            </div>
+            <div class="object-footer">
+              <span class="object-price">$110</span>
+              <button class="add-pill" type="button" data-add-id="c04" data-add-name="C-04 Weighted Record Clamp" data-add-price="110">+ Add</button>
+            </div>
+          </article>
+
+          <!-- Product 3: A-08 Vibration Isolation Feet -->
+          <article class="object-card" data-category="stands">
+            <div class="object-visual">
+              <svg class="object-svg" viewBox="0 0 220 164" role="img" aria-label="Studio render of A-08 Vibration Isolation Feet showing layered aluminum caps and terracotta elastomer decoupling rings">
+                <defs>
+                  <radialGradient id="iso-shadow" cx="50%" cy="50%" r="50%">
+                    <stop offset="0%" class="s-card-shadow" stop-opacity="0.82"/>
+                    <stop offset="100%" class="s-card-shadow" stop-opacity="0"/>
+                  </radialGradient>
+                  <linearGradient id="iso-alum" x1="0%" y1="0%" x2="100%" y2="0%">
+                    <stop offset="0%" class="s-metal-dark"/>
+                    <stop offset="30%" class="s-metal-light"/>
+                    <stop offset="72%" class="s-metal-mid"/>
+                    <stop offset="100%" class="s-metal-dark"/>
+                  </linearGradient>
+                  <linearGradient id="iso-dark" x1="0%" y1="0%" x2="100%" y2="0%">
+                    <stop offset="0%" class="s-obsidian-c"/>
+                    <stop offset="42%" class="s-obsidian-a"/>
+                    <stop offset="100%" class="s-obsidian-c"/>
+                  </linearGradient>
+                </defs>
+                <!-- Rear Puck -->
+                <g transform="translate(38 -16) scale(0.86)">
+                  <ellipse cx="122" cy="118" rx="48" ry="13" fill="url(#iso-shadow)"/>
+                  <path d="M 78 96 L 78 110 A 44 13 0 0 0 166 110 L 166 96 Z" fill="url(#iso-dark)"/>
+                  <path d="M 80 86 L 80 96 A 42 12 0 0 0 164 96 L 164 86 Z" fill="var(--terracotta)"/>
+                  <path d="M 78 72 L 78 86 A 44 13 0 0 0 166 86 L 166 72 Z" fill="url(#iso-alum)"/>
+                  <ellipse cx="122" cy="72" rx="44" ry="13" fill="var(--metal-light)" stroke="var(--metal-mid)" stroke-width="1"/>
+                  <ellipse cx="122" cy="72" rx="22" ry="6.4" fill="var(--obsidian-b)"/>
+                </g>
+                <!-- Foreground Sculptural Puck -->
+                <g transform="translate(-26 16)">
+                  <ellipse cx="110" cy="122" rx="54" ry="15" fill="url(#iso-shadow)"/>
+                  <path d="M 62 98 L 62 114 A 48 14 0 0 0 158 114 L 158 98 Z" fill="url(#iso-dark)"/>
+                  <path d="M 65 86 L 65 98 A 45 13 0 0 0 155 98 L 155 86 Z" fill="var(--terracotta)"/>
+                  <path d="M 62 72 L 62 86 A 48 14 0 0 0 158 86 L 158 72 Z" fill="url(#iso-alum)"/>
+                  <ellipse cx="110" cy="72" rx="48" ry="14" fill="var(--metal-light)" stroke="var(--surface-gallery)" stroke-width="1.2"/>
+                  <ellipse cx="110" cy="72" rx="24" ry="7" fill="var(--obsidian-b)"/>
+                  <ellipse cx="110" cy="72" rx="10" ry="2.8" fill="var(--cobalt-stage)"/>
+                </g>
+              </svg>
+            </div>
+            <div class="object-body">
+              <span class="stock-badge in-stock">● In stock</span>
+              <h3 class="object-name">A-08 Vibration Isolation Feet</h3>
+              <p class="object-spec">Set of 4 · Decoupled elastomer</p>
+            </div>
+            <div class="object-footer">
+              <span class="object-price">$85</span>
+              <button class="add-pill" type="button" data-add-id="a08" data-add-name="A-08 Vibration Isolation Feet" data-add-price="85">+ Add</button>
+            </div>
+          </article>
+        </div>
+
+        <!-- Bottom Rounded Live Bag & Parcel Summary Bar -->
+        <aside class="parcel-strip" id="parcel-summary" aria-label="Live bag and parcel summary" tabindex="-1">
+          <div class="parcel-top">
+            <div class="parcel-title-wrap">
+              <h3 class="parcel-heading">Parcel Summary</h3>
+              <span class="parcel-freight-label" id="freight-label">$600 away from complimentary insured freight</span>
+            </div>
+            <span class="parcel-status-note" id="parcel-dispatch-feedback" aria-live="polite">30-day studio audition · Molded pulp transit</span>
+          </div>
+
+          <div class="freight-track" role="progressbar" aria-label="Progress toward $600 complimentary freight" aria-valuemin="0" aria-valuemax="600" aria-valuenow="0" id="freight-bar">
+            <div class="freight-fill" id="freight-fill"></div>
+          </div>
+
+          <div class="parcel-items" id="parcel-items" aria-live="polite">
+            <div class="parcel-empty">
+              Your parcel is empty. Choose a T-01 colorway on the cobalt stage or add an acoustic companion above.
+            </div>
+          </div>
+
+          <div class="parcel-bottom">
+            <div class="subtotal-group">
+              <span class="subtotal-label">Subtotal</span>
+              <span class="subtotal-amount" id="subtotal-amount">$0</span>
+            </div>
+            <button class="dispatch-btn" id="dispatch-btn" type="button" disabled>Prepare dispatch</button>
+          </div>
+        </aside>
+      </section>
+    </main>
+  </div>
+
+  <script>
+    (function () {
+      const FREE_SHIPPING_THRESHOLD = 600;
+      const FINISHES = {
+        silver: {
+          id: 't01-silver',
+          name: 'SORI T-01 · Raw Silver',
+          label: 'Raw Silver',
+          price: 540,
+          spec: 'Raw Silver bead-blasted billet plinth · 1.8 kg quartz-locked platter · 0.04% WRMS flutter.'
+        },
+        terracotta: {
+          id: 't01-terracotta',
+          name: 'SORI T-01 · Kiln Terracotta',
+          label: 'Kiln Terracotta',
+          price: 560,
+          spec: 'Kiln Terracotta satin ceramic-coated plinth · 1.8 kg quartz-locked platter · 0.04% WRMS flutter.'
+        },
+        obsidian: {
+          id: 't01-obsidian',
+          name: 'SORI T-01 · Matte Obsidian',
+          label: 'Matte Obsidian',
+          price: 580,
+          spec: 'Matte Obsidian hard-anodized plinth · 1.8 kg quartz-locked platter · 0.04% WRMS flutter.'
+        }
+      };
+
+      let activeFinish = 'silver';
+      const bag = new Map();
+
+      const stageCobalt = document.getElementById('stage-t01');
+      const finishSpecEl = document.getElementById('t01-finish-spec');
+      const addT01Btn = document.getElementById('add-t01-btn');
+      const addT01Label = document.getElementById('add-t01-label');
+      const headerBagBtn = document.getElementById('header-bag-btn');
+      const headerBagLabel = document.getElementById('header-bag-label');
+      const parcelSummary = document.getElementById('parcel-summary');
+      const parcelItemsEl = document.getElementById('parcel-items');
+      const subtotalAmountEl = document.getElementById('subtotal-amount');
+      const freightLabelEl = document.getElementById('freight-label');
+      const freightBarEl = document.getElementById('freight-bar');
+      const freightFillEl = document.getElementById('freight-fill');
+      const dispatchBtn = document.getElementById('dispatch-btn');
+      const feedbackEl = document.getElementById('parcel-dispatch-feedback');
+      const collectionCountEl = document.getElementById('collection-count');
+
+      function formatUSD(amount) {
+        return '$' + amount.toLocaleString('en-US');
+      }
+
+      function addToBag(id, name, price) {
+        const current = bag.get(id);
+        if (current) {
+          current.qty += 1;
+        } else {
+          bag.set(id, { id, name, price, qty: 1 });
+        }
+        feedbackEl.textContent = '30-day studio audition · Molded pulp transit';
+        renderBag();
+      }
+
+      function stepItem(id, delta) {
+        const item = bag.get(id);
+        if (!item) return;
+        item.qty += delta;
+        if (item.qty <= 0) bag.delete(id);
+        renderBag();
+      }
+
+      function renderBag() {
+        let count = 0;
+        let subtotal = 0;
+        bag.forEach((item) => {
+          count += item.qty;
+          subtotal += item.qty * item.price;
+        });
+
+        headerBagLabel.textContent = `Bag (${count}) · ${formatUSD(subtotal)}`;
+        headerBagBtn.classList.toggle('has-items', count > 0);
+        subtotalAmountEl.textContent = formatUSD(subtotal);
+        dispatchBtn.disabled = count === 0;
+
+        const pct = Math.min(100, Math.round((subtotal / FREE_SHIPPING_THRESHOLD) * 100));
+        freightFillEl.style.width = pct + '%';
+        freightBarEl.setAttribute('aria-valuenow', String(Math.min(subtotal, FREE_SHIPPING_THRESHOLD)));
+
+        const qualified = subtotal >= FREE_SHIPPING_THRESHOLD;
+        freightFillEl.classList.toggle('qualified', qualified);
+        freightLabelEl.classList.toggle('qualified', qualified);
+        if (qualified) {
+          freightLabelEl.textContent = '● Complimentary insured freight applied';
+        } else {
+          const remaining = FREE_SHIPPING_THRESHOLD - subtotal;
+          freightLabelEl.textContent = `${formatUSD(remaining)} away from complimentary insured freight`;
+        }
+
+        if (count === 0) {
+          parcelItemsEl.innerHTML = '<div class="parcel-empty">Your parcel is empty. Choose a T-01 colorway on the cobalt stage or add an acoustic companion above.</div>';
+          return;
+        }
+
+        parcelItemsEl.innerHTML = '';
+        bag.forEach((item) => {
+          const row = document.createElement('div');
+          row.className = 'parcel-row';
+
+          const info = document.createElement('div');
+          info.className = 'parcel-item-info';
+
+          const nameEl = document.createElement('span');
+          nameEl.className = 'parcel-item-name';
+          nameEl.textContent = item.name;
+
+          const unitEl = document.createElement('span');
+          unitEl.className = 'parcel-item-unit';
+          unitEl.textContent = `${formatUSD(item.price)} each`;
+
+          info.appendChild(nameEl);
+          info.appendChild(unitEl);
+
+          const actions = document.createElement('div');
+          actions.className = 'parcel-row-actions';
+
+          const stepper = document.createElement('div');
+          stepper.className = 'stepper';
+
+          const decBtn = document.createElement('button');
+          decBtn.type = 'button';
+          decBtn.className = 'step-btn';
+          decBtn.textContent = '−';
+          decBtn.setAttribute('aria-label', `Decrease quantity of ${item.name}`);
+          decBtn.addEventListener('click', () => stepItem(item.id, -1));
+
+          const qtyEl = document.createElement('span');
+          qtyEl.className = 'step-qty';
+          qtyEl.textContent = String(item.qty);
+
+          const incBtn = document.createElement('button');
+          incBtn.type = 'button';
+          incBtn.className = 'step-btn';
+          incBtn.textContent = '+';
+          incBtn.setAttribute('aria-label', `Increase quantity of ${item.name}`);
+          incBtn.addEventListener('click', () => stepItem(item.id, 1));
+
+          stepper.appendChild(decBtn);
+          stepper.appendChild(qtyEl);
+          stepper.appendChild(incBtn);
+
+          const totalEl = document.createElement('span');
+          totalEl.className = 'parcel-line-total';
+          totalEl.textContent = formatUSD(item.qty * item.price);
+
+          actions.appendChild(stepper);
+          actions.appendChild(totalEl);
+
+          row.appendChild(info);
+          row.appendChild(actions);
+          parcelItemsEl.appendChild(row);
+        });
+      }
+
+      // Colorway switching
+      const colorwayBtns = document.querySelectorAll('.colorway-pill');
+      colorwayBtns.forEach((btn) => {
+        btn.addEventListener('click', () => {
+          const choice = btn.dataset.choice;
+          if (!FINISHES[choice]) return;
+          activeFinish = choice;
+          stageCobalt.setAttribute('data-finish', choice);
+          colorwayBtns.forEach((b) => b.setAttribute('aria-checked', String(b === btn)));
+          const data = FINISHES[choice];
+          finishSpecEl.textContent = data.spec;
+          addT01Label.textContent = `Add T-01 to bag — ${formatUSD(data.price)}`;
+        });
+      });
+
+      // Add T-01 CTA
+      addT01Btn.addEventListener('click', () => {
+        const data = FINISHES[activeFinish];
+        addToBag(data.id, data.name, data.price);
+        addT01Btn.classList.add('just-added');
+        addT01Label.textContent = `Added ${data.label} — ${formatUSD(data.price)}`;
+        window.setTimeout(() => {
+          addT01Btn.classList.remove('just-added');
+          addT01Label.textContent = `Add T-01 to bag — ${formatUSD(FINISHES[activeFinish].price)}`;
+        }, 900);
+      });
+
+      // Companion + Add buttons
+      document.querySelectorAll('[data-add-id]').forEach((btn) => {
+        btn.addEventListener('click', () => {
+          addToBag(btn.dataset.addId, btn.dataset.addName, Number(btn.dataset.addPrice));
+          btn.classList.add('added-flash');
+          btn.textContent = 'Added';
+          window.setTimeout(() => {
+            btn.classList.remove('added-flash');
+            btn.textContent = '+ Add';
+          }, 800);
+        });
+      });
+
+      // Category filter pills
+      const filterBtns = document.querySelectorAll('.filter-pill');
+      const cards = document.querySelectorAll('.object-card');
+      filterBtns.forEach((btn) => {
+        btn.addEventListener('click', () => {
+          const cat = btn.dataset.filter;
+          filterBtns.forEach((b) => b.setAttribute('aria-pressed', String(b === btn)));
+          let visible = 0;
+          cards.forEach((card) => {
+            const match = cat === 'all' || card.dataset.category === cat;
+            card.classList.toggle('is-hidden', !match);
+            if (match) visible += 1;
+          });
+          collectionCountEl.textContent = cat === 'all'
+            ? '3 objects · Kyoto & Rotterdam'
+            : `${visible} object in ${btn.textContent} · T-01 stage fixed`;
+        });
+      });
+
+      // Header bag button scrolls/focuses parcel summary
+      headerBagBtn.addEventListener('click', () => {
+        parcelSummary.scrollIntoView({ behavior: 'smooth', block: 'nearest' });
+        parcelSummary.focus();
+      });
+
+      // Prepare dispatch simulation
+      dispatchBtn.addEventListener('click', () => {
+        let count = 0;
+        let subtotal = 0;
+        bag.forEach((item) => { count += item.qty; subtotal += item.qty * item.price; });
+        feedbackEl.textContent = `Parcel reserved (${count} items · ${formatUSD(subtotal)}) · Demo checkout`;
+      });
+
+      renderBag();
+    })();
+  </script>
+</body>
+</html>

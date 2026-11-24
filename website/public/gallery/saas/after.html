@@ -1,0 +1,1780 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Keel — Next.js 15 RSC Edge Cloud Console (with Pixelcraft)</title>
+<link rel="stylesheet" href="../../fonts/gallery.css">
+<style>
+  :root {
+    --obsidian: #0b0c0e;
+    --chassis: #14161b;
+    --chassis-raised: #1b1e25;
+    --recess: #0e1014;
+    --land: #171a21;
+    --milled: #262a33;
+    --milled-strong: #373d4a;
+    --bone: #f1f2ee;
+    --titanium: #98a0ad;
+    --titanium-muted: #7f8897;
+    --lime: #c8f53b;
+    --lime-hover: #d7ff59;
+    --lime-tint: rgba(200, 245, 59, 0.12);
+    --lime-line: rgba(200, 245, 59, 0.42);
+    --ink-on-lime: #0b0c0e;
+    --mint: #34d399;
+    --mint-tint: rgba(52, 211, 153, 0.13);
+    --coral: #fb7185;
+    --coral-tint: rgba(251, 113, 133, 0.14);
+    --spec-top: rgba(255, 255, 255, 0.06);
+    --spec-strong: rgba(255, 255, 255, 0.12);
+    --recess-shadow: rgba(0, 0, 0, 0.42);
+    --panel-radius: 10px;
+    --bay-radius: 8px;
+    --pill-radius: 999px;
+    --font-display: "Archivo", system-ui, sans-serif;
+    --font-ui: "Work Sans", system-ui, sans-serif;
+    --font-mono: "IBM Plex Mono", ui-monospace, monospace;
+  }
+
+  * { box-sizing: border-box; }
+
+  html, body {
+    margin: 0;
+    padding: 0;
+    background: var(--obsidian);
+    color: var(--bone);
+    font-family: var(--font-ui);
+    -webkit-font-smoothing: antialiased;
+  }
+
+  body {
+    min-height: 100vh;
+    display: grid;
+    grid-template-rows: auto 1fr auto;
+    background-color: var(--obsidian);
+  }
+
+  a { color: inherit; }
+
+  :focus-visible {
+    outline: 2px solid var(--lime);
+    outline-offset: 2px;
+  }
+
+  .skip-link {
+    position: absolute;
+    left: -9999px;
+    top: 8px;
+    background: var(--lime);
+    color: var(--ink-on-lime);
+    padding: 8px 14px;
+    border-radius: 6px;
+    font-family: var(--font-mono);
+    font-size: 12px;
+    font-weight: 500;
+    text-decoration: none;
+    z-index: 40;
+  }
+
+  .skip-link:focus { left: 16px; }
+
+  /* Top Hardware Bar */
+  .topbar {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    gap: 20px;
+    padding: 11px 32px;
+    background: var(--chassis);
+    border-bottom: 1px solid var(--milled);
+    box-shadow: inset 0 1px 0 var(--spec-top);
+  }
+
+  .brand-group {
+    display: inline-flex;
+    align-items: center;
+    gap: 14px;
+  }
+
+  .brand {
+    display: inline-flex;
+    align-items: center;
+    gap: 10px;
+    text-decoration: none;
+  }
+
+  .brand-mark {
+    display: block;
+    width: 24px;
+    height: 24px;
+    flex-shrink: 0;
+  }
+
+  .brand-name {
+    font-family: var(--font-display);
+    font-weight: 800;
+    font-size: 17px;
+    letter-spacing: 0.1em;
+    color: var(--bone);
+  }
+
+  .brand-divider {
+    width: 1px;
+    height: 18px;
+    background: var(--milled-strong);
+  }
+
+  .brand-meta {
+    font-family: var(--font-mono);
+    font-size: 11px;
+    letter-spacing: 0.05em;
+    color: var(--titanium);
+    text-transform: uppercase;
+  }
+
+  .nav-list {
+    display: flex;
+    align-items: center;
+    gap: 24px;
+    list-style: none;
+    margin: 0;
+    padding: 0;
+  }
+
+  .nav-list a {
+    font-size: 13px;
+    font-weight: 500;
+    color: var(--titanium);
+    text-decoration: none;
+    padding: 4px 2px;
+    border-bottom: 1px solid transparent;
+    transition: color 140ms ease, border-color 140ms ease;
+  }
+
+  .nav-list a:hover {
+    color: var(--bone);
+    border-bottom-color: var(--milled-strong);
+  }
+
+  .topbar-right {
+    display: flex;
+    align-items: center;
+    gap: 14px;
+  }
+
+  .status-chip {
+    display: inline-flex;
+    align-items: center;
+    gap: 7px;
+    padding: 5px 11px;
+    border-radius: var(--pill-radius);
+    background: var(--recess);
+    border: 1px solid var(--milled);
+    font-family: var(--font-mono);
+    font-size: 11px;
+    color: var(--titanium);
+  }
+
+  .status-led {
+    width: 7px;
+    height: 7px;
+    border-radius: 2px;
+    background: var(--mint);
+    flex-shrink: 0;
+  }
+
+  .btn-hardware {
+    appearance: none;
+    font-family: var(--font-ui);
+    font-size: 13px;
+    font-weight: 600;
+    padding: 7px 14px;
+    border-radius: 8px;
+    background: var(--chassis-raised);
+    color: var(--bone);
+    border: 1px solid var(--milled-strong);
+    box-shadow: inset 0 1px 0 var(--spec-strong);
+    cursor: pointer;
+    transition: border-color 140ms ease, background-color 140ms ease;
+  }
+
+  .btn-hardware:hover {
+    border-color: var(--titanium);
+    background: var(--milled);
+  }
+
+  /* Main Asymmetric Dark Workbench */
+  .workbench {
+    width: 100%;
+    max-width: 1440px;
+    margin: 0 auto;
+    padding: 20px 32px 18px;
+    display: grid;
+    grid-template-columns: minmax(0, 1.38fr) minmax(0, 1fr);
+    gap: 22px;
+    align-items: stretch;
+  }
+
+  .col-primary {
+    display: flex;
+    flex-direction: column;
+    justify-content: space-between;
+    gap: 18px;
+    min-width: 0;
+  }
+
+  /* Left Pitch Zone */
+  .pitch-block {
+    position: relative;
+    padding: 4px 2px 0;
+  }
+
+  .eyebrow-row {
+    display: flex;
+    align-items: center;
+    gap: 10px;
+    margin-bottom: 12px;
+  }
+
+  .eyebrow-tag {
+    display: inline-flex;
+    align-items: center;
+    gap: 6px;
+    padding: 4px 10px;
+    border-radius: var(--pill-radius);
+    background: var(--chassis);
+    border: 1px solid var(--milled);
+    box-shadow: inset 0 1px 0 var(--spec-top);
+    font-family: var(--font-mono);
+    font-size: 11px;
+    letter-spacing: 0.06em;
+    color: var(--lime);
+    text-transform: uppercase;
+  }
+
+  .eyebrow-rev {
+    font-family: var(--font-mono);
+    font-size: 11px;
+    color: var(--titanium-muted);
+    letter-spacing: 0.04em;
+  }
+
+  h1.display-title {
+    margin: 0 0 12px;
+    font-family: var(--font-display);
+    font-weight: 800;
+    font-size: clamp(36px, 3.35vw, 49px);
+    line-height: 0.98;
+    letter-spacing: -0.035em;
+    color: var(--bone);
+    max-width: 16.5ch;
+  }
+
+  .pitch-copy {
+    margin: 0 0 18px;
+    max-width: 58ch;
+    font-size: 15px;
+    line-height: 1.5;
+    color: var(--titanium);
+  }
+
+  .action-bar {
+    display: flex;
+    align-items: center;
+    flex-wrap: wrap;
+    gap: 16px;
+  }
+
+  .btn-primary-lime {
+    appearance: none;
+    display: inline-flex;
+    align-items: center;
+    gap: 10px;
+    padding: 11px 20px;
+    border-radius: var(--panel-radius);
+    background: var(--lime);
+    color: var(--ink-on-lime);
+    border: 1px solid var(--lime);
+    font-family: var(--font-display);
+    font-weight: 800;
+    font-size: 14px;
+    letter-spacing: 0.01em;
+    cursor: pointer;
+    box-shadow: inset 0 1px 0 var(--spec-strong);
+    transition: background-color 140ms ease, transform 140ms ease;
+  }
+
+  .btn-primary-lime:hover {
+    background: var(--lime-hover);
+    transform: translateY(-1px);
+  }
+
+  .btn-disclosure {
+    appearance: none;
+    display: inline-flex;
+    align-items: center;
+    gap: 7px;
+    padding: 8px 2px;
+    background: transparent;
+    border: 0;
+    border-bottom: 1px dashed var(--milled-strong);
+    color: var(--titanium);
+    font-family: var(--font-mono);
+    font-size: 12px;
+    cursor: pointer;
+    transition: color 140ms ease, border-color 140ms ease;
+  }
+
+  .btn-disclosure:hover {
+    color: var(--bone);
+    border-bottom-color: var(--lime);
+  }
+
+  .disclosure-chevron {
+    display: inline-block;
+    transition: transform 160ms ease;
+  }
+
+  .btn-disclosure[aria-expanded="true"] .disclosure-chevron {
+    transform: rotate(90deg);
+  }
+
+  .action-feedback {
+    font-family: var(--font-mono);
+    font-size: 11px;
+    color: var(--mint);
+  }
+
+  .config-popover {
+    position: absolute;
+    left: 0;
+    top: calc(100% + 10px);
+    z-index: 25;
+    width: min(520px, 100%);
+    padding: 14px 16px;
+    border-radius: var(--panel-radius);
+    background: var(--recess);
+    border: 1px solid var(--milled-strong);
+    box-shadow: 0 16px 36px var(--recess-shadow), inset 0 1px 0 var(--spec-top);
+  }
+
+  .config-popover[hidden] { display: none; }
+
+  .config-head {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    margin-bottom: 8px;
+    font-family: var(--font-mono);
+    font-size: 11px;
+    color: var(--titanium);
+  }
+
+  .config-close {
+    appearance: none;
+    background: var(--chassis-raised);
+    color: var(--bone);
+    border: 1px solid var(--milled);
+    border-radius: 6px;
+    padding: 2px 8px;
+    font-family: var(--font-mono);
+    font-size: 11px;
+    cursor: pointer;
+  }
+
+  .config-code {
+    margin: 0;
+    font-family: var(--font-mono);
+    font-size: 12px;
+    line-height: 1.55;
+    color: var(--bone);
+    overflow-x: auto;
+  }
+
+  .code-accent { color: var(--lime); }
+  .code-muted { color: var(--titanium); }
+
+  /* Machined Chassis Panels */
+  .chassis-module {
+    background: var(--chassis);
+    border: 1px solid var(--milled);
+    border-radius: var(--panel-radius);
+    box-shadow: inset 0 1px 0 var(--spec-top);
+  }
+
+  /* Signature Element: Global Edge Topology & RSC Stream Map */
+  .topology-module {
+    flex: 1;
+    display: flex;
+    flex-direction: column;
+    padding: 14px 16px 15px;
+    gap: 11px;
+  }
+
+  .module-header {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    gap: 12px;
+  }
+
+  .module-title-group {
+    display: flex;
+    align-items: center;
+    gap: 10px;
+    min-width: 0;
+  }
+
+  .module-label {
+    font-family: var(--font-mono);
+    font-size: 11px;
+    font-weight: 500;
+    letter-spacing: 0.08em;
+    color: var(--bone);
+    text-transform: uppercase;
+  }
+
+  .route-chip {
+    padding: 3px 8px;
+    border-radius: 6px;
+    background: var(--recess);
+    border: 1px solid var(--milled);
+    font-family: var(--font-mono);
+    font-size: 11px;
+    color: var(--titanium);
+    white-space: nowrap;
+  }
+
+  .toggle-pill {
+    appearance: none;
+    display: inline-flex;
+    align-items: center;
+    gap: 7px;
+    padding: 5px 12px;
+    border-radius: var(--pill-radius);
+    background: var(--recess);
+    border: 1px solid var(--milled-strong);
+    color: var(--titanium);
+    font-family: var(--font-mono);
+    font-size: 11px;
+    cursor: pointer;
+    box-shadow: inset 0 1px 2px var(--recess-shadow);
+    transition: border-color 140ms ease, color 140ms ease;
+  }
+
+  .toggle-pill:hover {
+    border-color: var(--titanium);
+    color: var(--bone);
+  }
+
+  .toggle-pill[aria-pressed="true"] {
+    border-color: var(--lime-line);
+    color: var(--lime);
+  }
+
+  .pulse-dot {
+    width: 6px;
+    height: 6px;
+    border-radius: 50%;
+    background: var(--lime);
+  }
+
+  .topology-module.is-paused .pulse-dot {
+    background: var(--titanium-muted);
+  }
+
+  .map-bay {
+    position: relative;
+    flex: 1;
+    min-height: 274px;
+    border-radius: var(--bay-radius);
+    background: var(--recess);
+    border: 1px solid var(--milled);
+    box-shadow: inset 0 2px 10px var(--recess-shadow);
+    overflow: hidden;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+  }
+
+  .map-svg {
+    width: 100%;
+    height: 100%;
+    display: block;
+  }
+
+  .map-land {
+    fill: var(--land);
+    stroke: var(--milled);
+    stroke-width: 1;
+    stroke-linejoin: round;
+  }
+
+  .map-grid-line {
+    stroke: var(--milled);
+    stroke-opacity: 0.45;
+    stroke-width: 0.75;
+    stroke-dasharray: 2 5;
+  }
+
+  .map-coord {
+    font-family: var(--font-mono);
+    font-size: 9px;
+    fill: var(--titanium-muted);
+    letter-spacing: 0.05em;
+  }
+
+  .arc-base {
+    fill: none;
+    stroke: var(--milled-strong);
+    stroke-width: 1.25;
+    stroke-opacity: 0.65;
+    transition: stroke 180ms ease, stroke-opacity 180ms ease;
+  }
+
+  .arc-base.is-active {
+    stroke: var(--lime);
+    stroke-opacity: 0.55;
+    stroke-width: 1.6;
+  }
+
+  .arc-flow {
+    fill: none;
+    stroke: var(--lime);
+    stroke-width: 2;
+    stroke-linecap: round;
+    stroke-dasharray: 6 26;
+    stroke-dashoffset: 0;
+    opacity: 0;
+    transition: opacity 180ms ease;
+  }
+
+  .arc-flow.is-active {
+    opacity: 0.95;
+    animation: rsc-stream 2.2s linear infinite;
+  }
+
+  .topology-module.is-paused .arc-flow.is-active {
+    animation: none;
+    stroke-dasharray: 4 10;
+    opacity: 0.55;
+  }
+
+  @keyframes rsc-stream {
+    from { stroke-dashoffset: 64; }
+    to { stroke-dashoffset: 0; }
+  }
+
+  .pop-node {
+    cursor: pointer;
+    outline: none;
+  }
+
+  .pop-ring {
+    fill: none;
+    stroke: var(--lime);
+    stroke-width: 1.2;
+    opacity: 0;
+  }
+
+  .pop-node.is-selected .pop-ring {
+    opacity: 0.85;
+    animation: node-beacon 2.4s ease-out infinite;
+    transform-box: fill-box;
+    transform-origin: center;
+  }
+
+  .topology-module.is-paused .pop-node.is-selected .pop-ring {
+    animation: none;
+    opacity: 0.45;
+  }
+
+  @keyframes node-beacon {
+    0% { transform: scale(1); opacity: 0.85; }
+    100% { transform: scale(2.1); opacity: 0; }
+  }
+
+  .pop-pad {
+    fill: var(--chassis-raised);
+    stroke: var(--titanium);
+    stroke-width: 1.5;
+    transition: fill 150ms ease, stroke 150ms ease;
+  }
+
+  .pop-node:hover .pop-pad {
+    stroke: var(--bone);
+  }
+
+  .pop-node.is-selected .pop-pad {
+    fill: var(--lime);
+    stroke: var(--lime);
+  }
+
+  .pop-core {
+    fill: var(--bone);
+  }
+
+  .pop-node.is-selected .pop-core {
+    fill: var(--ink-on-lime);
+  }
+
+  .pop-tag-bg {
+    fill: var(--chassis);
+    stroke: var(--milled-strong);
+    stroke-width: 1;
+  }
+
+  .pop-node.is-selected .pop-tag-bg {
+    fill: var(--obsidian);
+    stroke: var(--lime);
+  }
+
+  .pop-tag-code {
+    font-family: var(--font-mono);
+    font-size: 10px;
+    font-weight: 500;
+    fill: var(--bone);
+  }
+
+  .pop-node.is-selected .pop-tag-code {
+    fill: var(--lime);
+  }
+
+  .pop-tag-ms {
+    font-family: var(--font-mono);
+    font-size: 9.5px;
+    fill: var(--titanium);
+  }
+
+  .pop-node:focus-visible .pop-tag-bg {
+    stroke: var(--lime);
+    stroke-width: 2;
+  }
+
+  /* 5-PoP Hardware Selector Strip */
+  .pop-selector-row {
+    display: grid;
+    grid-template-columns: repeat(5, minmax(0, 1fr));
+    gap: 8px;
+  }
+
+  .pop-key {
+    appearance: none;
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    padding: 7px 10px;
+    border-radius: var(--bay-radius);
+    background: var(--recess);
+    border: 1px solid var(--milled);
+    color: var(--titanium);
+    font-family: var(--font-mono);
+    font-size: 11px;
+    font-variant-numeric: tabular-nums;
+    cursor: pointer;
+    transition: border-color 140ms ease, color 140ms ease, background-color 140ms ease;
+  }
+
+  .pop-key:hover {
+    border-color: var(--milled-strong);
+    color: var(--bone);
+  }
+
+  .pop-key[aria-pressed="true"] {
+    background: var(--lime-tint);
+    border-color: var(--lime);
+    color: var(--bone);
+  }
+
+  .pop-key-code { font-weight: 500; }
+  .pop-key[aria-pressed="true"] .pop-key-code { color: var(--lime); }
+
+  /* Live Telemetry Readout Footer */
+  .telemetry-bar {
+    display: grid;
+    grid-template-columns: repeat(3, minmax(0, 1fr)) minmax(0, 2.05fr);
+    gap: 8px;
+  }
+
+  .tel-cell {
+    padding: 9px 11px;
+    border-radius: var(--bay-radius);
+    background: var(--recess);
+    border: 1px solid var(--milled);
+    display: flex;
+    flex-direction: column;
+    gap: 3px;
+    min-width: 0;
+  }
+
+  .tel-label {
+    font-family: var(--font-mono);
+    font-size: 10px;
+    letter-spacing: 0.06em;
+    color: var(--titanium-muted);
+    text-transform: uppercase;
+  }
+
+  .tel-val {
+    font-family: var(--font-mono);
+    font-size: 16px;
+    font-weight: 500;
+    font-variant-numeric: tabular-nums;
+    color: var(--bone);
+  }
+
+  .tel-val-accent { color: var(--lime); }
+
+  .tel-url-row {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    gap: 8px;
+  }
+
+  .tel-url {
+    font-family: var(--font-mono);
+    font-size: 12px;
+    color: var(--bone);
+    white-space: nowrap;
+    overflow: hidden;
+    text-overflow: ellipsis;
+  }
+
+  .btn-copy-mini {
+    appearance: none;
+    flex-shrink: 0;
+    padding: 3px 8px;
+    border-radius: 5px;
+    background: var(--chassis-raised);
+    border: 1px solid var(--milled-strong);
+    color: var(--titanium);
+    font-family: var(--font-mono);
+    font-size: 10px;
+    cursor: pointer;
+    transition: border-color 140ms ease, color 140ms ease;
+  }
+
+  .btn-copy-mini:hover {
+    border-color: var(--lime);
+    color: var(--lime);
+  }
+
+  /* Right Column: Capacity & Gate Estimator Machined Pod */
+  .estimator-pod {
+    display: flex;
+    flex-direction: column;
+    justify-content: space-between;
+    gap: 14px;
+    padding: 18px 20px 16px;
+    min-width: 0;
+  }
+
+  .pod-head {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    gap: 10px;
+    padding-bottom: 10px;
+    border-bottom: 1px solid var(--milled);
+  }
+
+  .pod-rev {
+    font-family: var(--font-mono);
+    font-size: 10.5px;
+    color: var(--titanium-muted);
+    letter-spacing: 0.05em;
+  }
+
+  /* Recessed Giant Cost Window */
+  .cost-bay {
+    padding: 15px 16px 13px;
+    border-radius: var(--bay-radius);
+    background: var(--recess);
+    border: 1px solid var(--milled);
+    box-shadow: inset 0 2px 8px var(--recess-shadow);
+  }
+
+  .cost-top {
+    display: flex;
+    align-items: baseline;
+    justify-content: space-between;
+    gap: 12px;
+    margin-bottom: 4px;
+  }
+
+  .cost-figure {
+    font-family: var(--font-mono);
+    font-size: 40px;
+    font-weight: 500;
+    line-height: 1;
+    letter-spacing: -0.03em;
+    font-variant-numeric: tabular-nums;
+    color: var(--lime);
+  }
+
+  .cost-unit {
+    font-family: var(--font-mono);
+    font-size: 14px;
+    color: var(--bone);
+    margin-left: 4px;
+  }
+
+  .cost-badge {
+    padding: 3px 9px;
+    border-radius: var(--pill-radius);
+    background: var(--mint-tint);
+    border: 1px solid var(--mint);
+    font-family: var(--font-mono);
+    font-size: 10.5px;
+    color: var(--mint);
+    white-space: nowrap;
+  }
+
+  .cost-summary {
+    margin: 0 0 12px;
+    font-family: var(--font-mono);
+    font-size: 11.5px;
+    color: var(--titanium);
+    font-variant-numeric: tabular-nums;
+  }
+
+  .cost-lines {
+    display: grid;
+    gap: 6px;
+    padding-top: 10px;
+    border-top: 1px dashed var(--milled);
+    margin: 0;
+    list-style: none;
+    padding-left: 0;
+  }
+
+  .cost-line {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    font-family: var(--font-mono);
+    font-size: 11.5px;
+    font-variant-numeric: tabular-nums;
+    color: var(--titanium);
+  }
+
+  .cost-line strong {
+    font-weight: 500;
+    color: var(--bone);
+  }
+
+  /* Tactile Controls */
+  .controls-stack {
+    display: flex;
+    flex-direction: column;
+    gap: 13px;
+  }
+
+  .control-group {
+    display: flex;
+    flex-direction: column;
+    gap: 7px;
+  }
+
+  .control-row {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    gap: 10px;
+  }
+
+  .control-label {
+    font-family: var(--font-mono);
+    font-size: 11px;
+    letter-spacing: 0.06em;
+    color: var(--bone);
+    text-transform: uppercase;
+  }
+
+  .control-readout {
+    font-family: var(--font-mono);
+    font-size: 12px;
+    font-variant-numeric: tabular-nums;
+    color: var(--lime);
+  }
+
+  .preset-pills {
+    display: inline-flex;
+    align-items: center;
+    gap: 5px;
+    padding: 3px;
+    border-radius: var(--pill-radius);
+    background: var(--recess);
+    border: 1px solid var(--milled);
+  }
+
+  .pill-btn {
+    appearance: none;
+    padding: 4px 12px;
+    border-radius: var(--pill-radius);
+    border: 0;
+    background: transparent;
+    color: var(--titanium);
+    font-family: var(--font-mono);
+    font-size: 11.5px;
+    font-variant-numeric: tabular-nums;
+    cursor: pointer;
+    transition: background-color 140ms ease, color 140ms ease;
+  }
+
+  .pill-btn:hover { color: var(--bone); }
+
+  .pill-btn[aria-pressed="true"] {
+    background: var(--chassis-raised);
+    color: var(--lime);
+    box-shadow: inset 0 1px 0 var(--spec-strong);
+  }
+
+  /* Custom Machined Range Slider */
+  .machined-range {
+    -webkit-appearance: none;
+    appearance: none;
+    width: 100%;
+    height: 6px;
+    border-radius: var(--pill-radius);
+    background: var(--recess);
+    border: 1px solid var(--milled);
+    cursor: pointer;
+  }
+
+  .machined-range::-webkit-slider-thumb {
+    -webkit-appearance: none;
+    appearance: none;
+    width: 18px;
+    height: 18px;
+    border-radius: 5px;
+    background: var(--lime);
+    border: 2px solid var(--obsidian);
+    box-shadow: 0 0 0 1px var(--lime);
+    cursor: pointer;
+  }
+
+  .machined-range::-moz-range-thumb {
+    width: 18px;
+    height: 18px;
+    border-radius: 5px;
+    background: var(--lime);
+    border: 2px solid var(--obsidian);
+    box-shadow: 0 0 0 1px var(--lime);
+    cursor: pointer;
+  }
+
+  /* Billing Segmented Hardware Pill */
+  .billing-row {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    gap: 12px;
+    padding-top: 2px;
+  }
+
+  .segmented-track {
+    display: inline-grid;
+    grid-template-columns: 1fr 1fr;
+    padding: 3px;
+    border-radius: var(--pill-radius);
+    background: var(--recess);
+    border: 1px solid var(--milled);
+    box-shadow: inset 0 1px 2px var(--recess-shadow);
+  }
+
+  .seg-option {
+    position: relative;
+    cursor: pointer;
+  }
+
+  .seg-option input {
+    position: absolute;
+    opacity: 0;
+    width: 1px;
+    height: 1px;
+  }
+
+  .seg-face {
+    display: block;
+    padding: 6px 14px;
+    border-radius: var(--pill-radius);
+    font-family: var(--font-mono);
+    font-size: 11.5px;
+    color: var(--titanium);
+    white-space: nowrap;
+    transition: background-color 140ms ease, color 140ms ease;
+  }
+
+  .seg-option input:checked + .seg-face {
+    background: var(--chassis-raised);
+    color: var(--bone);
+    box-shadow: inset 0 1px 0 var(--spec-strong);
+  }
+
+  .seg-option input:focus-visible + .seg-face {
+    outline: 2px solid var(--lime);
+    outline-offset: 1px;
+  }
+
+  .seg-save {
+    color: var(--lime);
+    margin-left: 3px;
+  }
+
+  /* Deterministic Gate Check List */
+  .gate-bay {
+    padding: 12px 14px;
+    border-radius: var(--bay-radius);
+    background: var(--recess);
+    border: 1px solid var(--milled);
+  }
+
+  .gate-head {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    margin-bottom: 9px;
+    font-family: var(--font-mono);
+    font-size: 10.5px;
+    letter-spacing: 0.07em;
+    color: var(--titanium-muted);
+    text-transform: uppercase;
+  }
+
+  .gate-list {
+    list-style: none;
+    margin: 0;
+    padding: 0;
+    display: grid;
+    gap: 7px;
+  }
+
+  .gate-item {
+    display: grid;
+    grid-template-columns: auto 1fr auto;
+    align-items: center;
+    gap: 10px;
+    padding: 7px 9px;
+    border-radius: 6px;
+    background: var(--chassis);
+    border: 1px solid var(--milled);
+  }
+
+  .gate-badge {
+    display: inline-flex;
+    align-items: center;
+    gap: 5px;
+    padding: 2px 7px;
+    border-radius: 5px;
+    font-family: var(--font-mono);
+    font-size: 10.5px;
+    font-weight: 500;
+    letter-spacing: 0.05em;
+  }
+
+  .gate-badge.is-pass {
+    background: var(--mint-tint);
+    color: var(--mint);
+    border: 1px solid var(--mint);
+  }
+
+  .gate-badge.is-gate {
+    background: var(--coral-tint);
+    color: var(--coral);
+    border: 1px solid var(--coral);
+  }
+
+  .gate-desc {
+    font-size: 12.5px;
+    color: var(--bone);
+    white-space: nowrap;
+    overflow: hidden;
+    text-overflow: ellipsis;
+  }
+
+  .gate-metric {
+    font-family: var(--font-mono);
+    font-size: 11px;
+    font-variant-numeric: tabular-nums;
+    color: var(--titanium);
+    white-space: nowrap;
+  }
+
+  .pod-footnote {
+    margin: 0;
+    padding-top: 8px;
+    border-top: 1px solid var(--milled);
+    font-family: var(--font-mono);
+    font-size: 10.5px;
+    line-height: 1.45;
+    color: var(--titanium-muted);
+  }
+
+  /* Bottom Machined Rail */
+  .bottom-rail {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    gap: 16px;
+    padding: 8px 32px;
+    background: var(--chassis);
+    border-top: 1px solid var(--milled);
+    font-family: var(--font-mono);
+    font-size: 10.5px;
+    color: var(--titanium-muted);
+  }
+
+  @media (prefers-reduced-motion: reduce) {
+    .arc-flow.is-active,
+    .pop-node.is-selected .pop-ring {
+      animation: none;
+    }
+    .btn-primary-lime,
+    .btn-hardware,
+    .btn-disclosure,
+    .disclosure-chevron,
+    .toggle-pill,
+    .pop-key,
+    .pill-btn,
+    .seg-face,
+    .arc-base,
+    .arc-flow,
+    .pop-pad {
+      transition: none;
+    }
+  }
+
+  @media (max-width: 1024px) {
+    .topbar {
+      padding: 12px 18px;
+      flex-wrap: wrap;
+    }
+    .nav-list { display: none; }
+    .workbench {
+      grid-template-columns: 1fr;
+      padding: 18px;
+    }
+    .pop-selector-row {
+      grid-template-columns: repeat(3, minmax(0, 1fr));
+    }
+    .telemetry-bar {
+      grid-template-columns: repeat(2, minmax(0, 1fr));
+    }
+    .bottom-rail {
+      padding: 10px 18px;
+      flex-direction: column;
+      align-items: flex-start;
+    }
+  }
+</style>
+</head>
+<body>
+  <a class="skip-link" href="#main-console">Skip to edge console</a>
+
+  <header class="topbar">
+    <div class="brand-group">
+      <a class="brand" href="#main-console" aria-label="Keel Next.js Edge Cloud">
+        <svg class="brand-mark" viewBox="0 0 24 24" aria-hidden="true">
+          <polygon points="3,1 21,1 23,3 23,21 21,23 3,23 1,21 1,3" fill="var(--recess)" stroke="var(--milled-strong)" stroke-width="1.5"/>
+          <rect x="5" y="5" width="4" height="14" fill="var(--bone)"/>
+          <polygon points="11,12 18,5 19,5 19,8 14,12 19,16 19,19 18,19" fill="var(--lime)"/>
+        </svg>
+        <span class="brand-name">KEEL</span>
+      </a>
+      <span class="brand-divider" aria-hidden="true"></span>
+      <span class="brand-meta">Next.js 15 · RSC Edge Cloud</span>
+    </div>
+
+    <nav aria-label="Primary navigation">
+      <ul class="nav-list">
+        <li><a href="#edge-topology">Edge Map</a></li>
+        <li><a href="#capacity-pod">Estimator</a></li>
+        <li><a href="#gate-checks">Release Gates</a></li>
+        <li><a href="#main-console">Changelog</a></li>
+      </ul>
+    </nav>
+
+    <div class="topbar-right">
+      <span class="status-chip">
+        <span class="status-led" aria-hidden="true"></span>
+        <span>5 / 5 POPS NOMINAL</span>
+      </span>
+      <button type="button" class="btn-hardware" id="deploy-branch-btn">Deploy a branch</button>
+    </div>
+  </header>
+
+  <main class="workbench" id="main-console">
+    <!-- Left Column (58%) -->
+    <div class="col-primary">
+      <section class="pitch-block" aria-labelledby="console-heading">
+        <div class="eyebrow-row">
+          <span class="eyebrow-tag">SYS // APP ROUTER EDGE RUNTIME</span>
+          <span class="eyebrow-rev">NODE 22 · TURBOPACK · PR #482</span>
+        </div>
+
+        <h1 class="display-title" id="console-heading">Preview every Next.js route at edge speed.</h1>
+
+        <p class="pitch-copy">
+          Keel isolates every pull request on five regional edge PoPs, streams React Server Components with sub-40&nbsp;ms cold starts, and blocks merges that breach payload or latency budgets.
+        </p>
+
+        <div class="action-bar">
+          <button type="button" class="btn-primary-lime" id="launch-gate-btn">
+            <span>Launch preview gate</span>
+            <span aria-hidden="true">&#8594;</span>
+          </button>
+
+          <button type="button" class="btn-disclosure" id="inspect-config-btn" aria-expanded="false" aria-controls="config-popover">
+            <span class="disclosure-chevron" aria-hidden="true">&#9656;</span>
+            <span>Inspect next.config.ts</span>
+          </button>
+
+          <span class="action-feedback" id="action-feedback" role="status" aria-live="polite"></span>
+        </div>
+
+        <div class="config-popover" id="config-popover" hidden>
+          <div class="config-head">
+            <span>next.config.ts · App Router Gate Adapter</span>
+            <button type="button" class="config-close" id="config-close-btn">Close</button>
+          </div>
+          <pre class="config-code"><code><span class="code-muted">// keel.build — deterministic edge preview manifest</span>
+export default {
+  experimental: { <span class="code-accent">keelEdgeGate: true</span> },
+  keel: { pops: [<span class="code-accent">'iad-1'</span>, 'fra-2', 'nrt-1', 'sin-1', 'gru-1'], rscMaxKb: 18 }
+};</code></pre>
+        </div>
+      </section>
+
+      <!-- Signature Element: Interactive Global Edge Topology & RSC Stream Map -->
+      <section class="chassis-module topology-module" id="edge-topology" aria-labelledby="topology-heading">
+        <div class="module-header">
+          <div class="module-title-group">
+            <h2 class="module-label" id="topology-heading" style="margin:0;">Global Edge Topology · RSC Stream Map</h2>
+            <span class="route-chip">GET /app/checkout/page.tsx</span>
+          </div>
+          <button type="button" class="toggle-pill" id="pulse-toggle" aria-pressed="false">
+            <span class="pulse-dot" aria-hidden="true"></span>
+            <span id="pulse-toggle-label">Pause pulse</span>
+          </button>
+        </div>
+
+        <div class="map-bay">
+          <svg class="map-svg" viewBox="0 0 760 256" role="img" aria-label="Interactive global edge topology map connecting five Next.js edge PoPs: iad-1, fra-2, nrt-1, sin-1, and gru-1">
+            <defs>
+              <pattern id="dot-matrix" width="16" height="16" patternUnits="userSpaceOnUse">
+                <circle cx="2" cy="2" r="0.85" fill="var(--milled)" opacity="0.7"/>
+              </pattern>
+            </defs>
+
+            <rect width="760" height="256" fill="url(#dot-matrix)"/>
+
+            <!-- Precision Scope Corner Brackets -->
+            <g stroke="var(--milled-strong)" stroke-width="1.2" fill="none" aria-hidden="true">
+              <polyline points="10,22 10,10 22,10"/>
+              <polyline points="738,10 750,10 750,22"/>
+              <polyline points="10,234 10,246 22,246"/>
+              <polyline points="738,246 750,246 750,234"/>
+            </g>
+
+            <!-- Coordinate Graticule -->
+            <line class="map-grid-line" x1="0" y1="64" x2="760" y2="64"/>
+            <line class="map-grid-line" x1="0" y1="136" x2="760" y2="136"/>
+            <line class="map-grid-line" x1="0" y1="204" x2="760" y2="204"/>
+            <line class="map-grid-line" x1="190" y1="0" x2="190" y2="256"/>
+            <line class="map-grid-line" x1="380" y1="0" x2="380" y2="256"/>
+            <line class="map-grid-line" x1="570" y1="0" x2="570" y2="256"/>
+
+            <text class="map-coord" x="10" y="59">45°N</text>
+            <text class="map-coord" x="10" y="131">0° EQ</text>
+            <text class="map-coord" x="10" y="199">35°S</text>
+            <text class="map-coord" x="385" y="16">0° GMT</text>
+
+            <!-- Geometric Low-Contrast World Cartography -->
+            <g aria-hidden="true">
+              <!-- North America -->
+              <polygon class="map-land" points="64,46 154,34 226,48 250,74 224,104 196,114 176,132 150,126 132,108 104,96 78,74"/>
+              <!-- Greenland -->
+              <polygon class="map-land" points="246,20 296,18 308,42 278,52 252,40"/>
+              <!-- South America -->
+              <polygon class="map-land" points="204,142 252,146 290,174 278,208 244,238 224,232 214,190 198,162"/>
+              <!-- Europe -->
+              <polygon class="map-land" points="354,48 418,38 456,52 444,86 410,94 374,92 350,78"/>
+              <!-- Africa -->
+              <polygon class="map-land" points="356,104 424,102 460,132 454,174 424,214 394,210 380,168 348,136"/>
+              <!-- Asia -->
+              <polygon class="map-land" points="454,44 584,36 672,56 664,96 626,120 584,154 552,144 516,136 472,116 446,88"/>
+              <!-- Japan / Archipelagos -->
+              <polygon class="map-land" points="650,90 666,94 658,114 644,110"/>
+              <polygon class="map-land" points="572,158 614,162 620,172 580,170"/>
+              <!-- Australia -->
+              <polygon class="map-land" points="612,184 676,182 692,212 666,232 618,224 606,202"/>
+            </g>
+
+            <!-- Curved RSC Routing Mesh Arcs -->
+            <g id="routing-arcs" aria-hidden="true">
+              <!-- iad-1 <-> fra-2 -->
+              <path class="arc-base" data-arc="iad-1,fra-2" d="M 218 92 Q 312 34 406 76"/>
+              <path class="arc-flow" data-arc="iad-1,fra-2" d="M 218 92 Q 312 34 406 76"/>
+              <!-- iad-1 <-> gru-1 -->
+              <path class="arc-base" data-arc="iad-1,gru-1" d="M 218 92 Q 214 154 274 196"/>
+              <path class="arc-flow" data-arc="iad-1,gru-1" d="M 218 92 Q 214 154 274 196"/>
+              <!-- fra-2 <-> gru-1 -->
+              <path class="arc-base" data-arc="fra-2,gru-1" d="M 406 76 Q 368 156 274 196"/>
+              <path class="arc-flow" data-arc="fra-2,gru-1" d="M 406 76 Q 368 156 274 196"/>
+              <!-- fra-2 <-> sin-1 -->
+              <path class="arc-base" data-arc="fra-2,sin-1" d="M 406 76 Q 508 82 582 154"/>
+              <path class="arc-flow" data-arc="fra-2,sin-1" d="M 406 76 Q 508 82 582 154"/>
+              <!-- fra-2 <-> nrt-1 -->
+              <path class="arc-base" data-arc="fra-2,nrt-1" d="M 406 76 Q 534 26 650 100"/>
+              <path class="arc-flow" data-arc="fra-2,nrt-1" d="M 406 76 Q 534 26 650 100"/>
+              <!-- sin-1 <-> nrt-1 -->
+              <path class="arc-base" data-arc="sin-1,nrt-1" d="M 582 154 Q 634 146 650 100"/>
+              <path class="arc-flow" data-arc="sin-1,nrt-1" d="M 582 154 Q 634 146 650 100"/>
+              <!-- iad-1 <-> sin-1 -->
+              <path class="arc-base" data-arc="iad-1,sin-1" d="M 218 92 Q 406 168 582 154"/>
+              <path class="arc-flow" data-arc="iad-1,sin-1" d="M 218 92 Q 406 168 582 154"/>
+            </g>
+
+            <!-- Clickable Edge PoP Nodes -->
+            <g class="pop-node is-selected" data-pop="iad-1" tabindex="0" role="button" aria-pressed="true" aria-label="Select Ashburn edge PoP iad-1, 18 milliseconds">
+              <circle class="pop-ring" cx="218" cy="92" r="10"/>
+              <circle class="pop-pad" cx="218" cy="92" r="6.5"/>
+              <circle class="pop-core" cx="218" cy="92" r="2.2"/>
+              <rect class="pop-tag-bg" x="144" y="64" width="76" height="20" rx="5"/>
+              <text class="pop-tag-code" x="151" y="77">iad-1</text>
+              <text class="pop-tag-ms" x="187" y="77">18ms</text>
+            </g>
+
+            <g class="pop-node" data-pop="fra-2" tabindex="0" role="button" aria-pressed="false" aria-label="Select Frankfurt edge PoP fra-2, 21 milliseconds">
+              <circle class="pop-ring" cx="406" cy="76" r="10"/>
+              <circle class="pop-pad" cx="406" cy="76" r="6.5"/>
+              <circle class="pop-core" cx="406" cy="76" r="2.2"/>
+              <rect class="pop-tag-bg" x="414" y="50" width="76" height="20" rx="5"/>
+              <text class="pop-tag-code" x="421" y="63">fra-2</text>
+              <text class="pop-tag-ms" x="457" y="63">21ms</text>
+            </g>
+
+            <g class="pop-node" data-pop="nrt-1" tabindex="0" role="button" aria-pressed="false" aria-label="Select Tokyo edge PoP nrt-1, 29 milliseconds">
+              <circle class="pop-ring" cx="650" cy="100" r="10"/>
+              <circle class="pop-pad" cx="650" cy="100" r="6.5"/>
+              <circle class="pop-core" cx="650" cy="100" r="2.2"/>
+              <rect class="pop-tag-bg" x="658" y="74" width="76" height="20" rx="5"/>
+              <text class="pop-tag-code" x="665" y="87">nrt-1</text>
+              <text class="pop-tag-ms" x="701" y="87">29ms</text>
+            </g>
+
+            <g class="pop-node" data-pop="sin-1" tabindex="0" role="button" aria-pressed="false" aria-label="Select Singapore edge PoP sin-1, 26 milliseconds">
+              <circle class="pop-ring" cx="582" cy="154" r="10"/>
+              <circle class="pop-pad" cx="582" cy="154" r="6.5"/>
+              <circle class="pop-core" cx="582" cy="154" r="2.2"/>
+              <rect class="pop-tag-bg" x="498" y="162" width="78" height="20" rx="5"/>
+              <text class="pop-tag-code" x="505" y="175">sin-1</text>
+              <text class="pop-tag-ms" x="542" y="175">26ms</text>
+            </g>
+
+            <g class="pop-node" data-pop="gru-1" tabindex="0" role="button" aria-pressed="false" aria-label="Select Sao Paulo edge PoP gru-1, 34 milliseconds">
+              <circle class="pop-ring" cx="274" cy="196" r="10"/>
+              <circle class="pop-pad" cx="274" cy="196" r="6.5"/>
+              <circle class="pop-core" cx="274" cy="196" r="2.2"/>
+              <rect class="pop-tag-bg" x="284" y="198" width="78" height="20" rx="5"/>
+              <text class="pop-tag-code" x="291" y="211">gru-1</text>
+              <text class="pop-tag-ms" x="328" y="211">34ms</text>
+            </g>
+          </svg>
+        </div>
+
+        <!-- Hardware Region Keycaps -->
+        <div class="pop-selector-row" role="group" aria-label="Edge PoP selector">
+          <button type="button" class="pop-key" data-pop="iad-1" aria-pressed="true">
+            <span class="pop-key-code">iad-1</span><span>18 ms</span>
+          </button>
+          <button type="button" class="pop-key" data-pop="fra-2" aria-pressed="false">
+            <span class="pop-key-code">fra-2</span><span>21 ms</span>
+          </button>
+          <button type="button" class="pop-key" data-pop="nrt-1" aria-pressed="false">
+            <span class="pop-key-code">nrt-1</span><span>29 ms</span>
+          </button>
+          <button type="button" class="pop-key" data-pop="sin-1" aria-pressed="false">
+            <span class="pop-key-code">sin-1</span><span>26 ms</span>
+          </button>
+          <button type="button" class="pop-key" data-pop="gru-1" aria-pressed="false">
+            <span class="pop-key-code">gru-1</span><span>34 ms</span>
+          </button>
+        </div>
+
+        <!-- Live Telemetry Readout -->
+        <div class="telemetry-bar" aria-live="polite">
+          <div class="tel-cell">
+            <span class="tel-label">Cold-start TTFB</span>
+            <span class="tel-val tel-val-accent" id="tel-ttfb">18 ms</span>
+          </div>
+          <div class="tel-cell">
+            <span class="tel-label">RSC Payload</span>
+            <span class="tel-val" id="tel-rsc">14.2 KB</span>
+          </div>
+          <div class="tel-cell">
+            <span class="tel-label">Edge Region</span>
+            <span class="tel-val" id="tel-region">Ashburn</span>
+          </div>
+          <div class="tel-cell">
+            <span class="tel-label">Active Preview URL</span>
+            <div class="tel-url-row">
+              <span class="tel-url" id="tel-url">pr-482-iad1.keel.build</span>
+              <button type="button" class="btn-copy-mini" id="copy-url-btn">Copy</button>
+            </div>
+          </div>
+        </div>
+      </section>
+    </div>
+
+    <!-- Right Column (42%): Interactive Capacity & Usage Estimator Machined Pod -->
+    <aside class="chassis-module estimator-pod" id="capacity-pod" aria-labelledby="estimator-heading">
+      <div class="pod-head">
+        <h2 class="module-label" id="estimator-heading" style="margin:0;">Capacity &amp; Usage Estimator</h2>
+        <span class="pod-rev">UNIT 02 · USD / MO</span>
+      </div>
+
+      <!-- Giant Tabular Cost Readout -->
+      <div class="cost-bay" aria-live="polite">
+        <div class="cost-top">
+          <div>
+            <span class="cost-figure" id="cost-total">$168</span>
+            <span class="cost-unit">/ mo</span>
+          </div>
+          <span class="cost-badge" id="cost-badge">SAVE 20% ANNUAL</span>
+        </div>
+        <p class="cost-summary" id="cost-summary">10 seats · 250k edge reqs · billed annually</p>
+        <ul class="cost-lines">
+          <li class="cost-line">
+            <span>Base RSC edge cluster (5 PoPs)</span>
+            <strong id="line-base">$48</strong>
+          </li>
+          <li class="cost-line">
+            <span id="line-seats-label">Team seats (10 × $14)</span>
+            <strong id="line-seats">$140</strong>
+          </li>
+          <li class="cost-line">
+            <span id="line-reqs-label">Edge invocations (250k / mo)</span>
+            <strong id="line-reqs">$22</strong>
+          </li>
+          <li class="cost-line">
+            <span>Billing cadence adjustment</span>
+            <strong id="line-discount">−$42</strong>
+          </li>
+        </ul>
+      </div>
+
+      <!-- Interactive Hardware Controls -->
+      <div class="controls-stack">
+        <div class="control-group">
+          <div class="control-row">
+            <label class="control-label" for="seats-range">Team seats</label>
+            <div class="preset-pills" role="group" aria-label="Seat presets">
+              <button type="button" class="pill-btn seat-preset" data-seats="3" aria-pressed="false">3</button>
+              <button type="button" class="pill-btn seat-preset" data-seats="10" aria-pressed="true">10</button>
+              <button type="button" class="pill-btn seat-preset" data-seats="25" aria-pressed="false">25</button>
+            </div>
+          </div>
+          <input class="machined-range" id="seats-range" type="range" min="3" max="25" step="1" value="10" aria-describedby="seats-val-hint">
+          <span id="seats-val-hint" class="control-readout">10 engineers with isolated preview gates</span>
+        </div>
+
+        <div class="control-group">
+          <div class="control-row">
+            <label class="control-label" for="reqs-range">Edge RSC requests</label>
+            <span class="control-readout" id="reqs-readout">250k / mo</span>
+          </div>
+          <input class="machined-range" id="reqs-range" type="range" min="0" max="2" step="1" value="1">
+        </div>
+
+        <div class="billing-row">
+          <span class="control-label" id="billing-label">Billing</span>
+          <div class="segmented-track" role="radiogroup" aria-labelledby="billing-label">
+            <label class="seg-option">
+              <input type="radio" name="billing" value="monthly">
+              <span class="seg-face">Monthly</span>
+            </label>
+            <label class="seg-option">
+              <input type="radio" name="billing" value="annual" checked>
+              <span class="seg-face">Annual<span class="seg-save">−20%</span></span>
+            </label>
+          </div>
+        </div>
+      </div>
+
+      <!-- Deterministic Gate Check List -->
+      <section class="gate-bay" id="gate-checks" aria-labelledby="gates-heading">
+        <div class="gate-head">
+          <span id="gates-heading">Deterministic Merge Gates · PR #482</span>
+          <span id="gate-tally">3 / 4 · 1 GATE</span>
+        </div>
+        <ul class="gate-list">
+          <li class="gate-item">
+            <span class="gate-badge is-pass">
+              <svg width="10" height="10" viewBox="0 0 10 10" aria-hidden="true">
+                <rect x="1" y="1" width="8" height="8" rx="1.5" fill="var(--mint)"/>
+                <polyline points="2.8,5.2 4.4,6.8 7.3,3.3" fill="none" stroke="var(--ink-on-lime)" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"/>
+              </svg>
+              PASS
+            </span>
+            <span class="gate-desc">RSC payload budget &le; 18 KB</span>
+            <span class="gate-metric" id="gate-rsc">14.2 KB</span>
+          </li>
+
+          <li class="gate-item">
+            <span class="gate-badge is-pass">
+              <svg width="10" height="10" viewBox="0 0 10 10" aria-hidden="true">
+                <rect x="1" y="1" width="8" height="8" rx="1.5" fill="var(--mint)"/>
+                <polyline points="2.8,5.2 4.4,6.8 7.3,3.3" fill="none" stroke="var(--ink-on-lime)" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"/>
+              </svg>
+              PASS
+            </span>
+            <span class="gate-desc">Cold-start TTFB &le; 40 ms</span>
+            <span class="gate-metric" id="gate-ttfb">18 ms · iad-1</span>
+          </li>
+
+          <li class="gate-item">
+            <span class="gate-badge is-pass">
+              <svg width="10" height="10" viewBox="0 0 10 10" aria-hidden="true">
+                <rect x="1" y="1" width="8" height="8" rx="1.5" fill="var(--mint)"/>
+                <polyline points="2.8,5.2 4.4,6.8 7.3,3.3" fill="none" stroke="var(--ink-on-lime)" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"/>
+              </svg>
+              PASS
+            </span>
+            <span class="gate-desc">Zero client hydration mismatch</span>
+            <span class="gate-metric">0 diffs</span>
+          </li>
+
+          <li class="gate-item" id="quorum-row">
+            <span class="gate-badge is-gate" id="quorum-badge">
+              <svg width="10" height="10" viewBox="0 0 10 10" aria-hidden="true" id="quorum-icon">
+                <polygon points="5,0.8 9.2,5 5,9.2 0.8,5" fill="var(--coral)"/>
+                <line x1="5" y1="3" x2="5" y2="5.6" stroke="var(--ink-on-lime)" stroke-width="1.4" stroke-linecap="round"/>
+                <circle cx="5" cy="7.2" r="0.7" fill="var(--ink-on-lime)"/>
+              </svg>
+              <span id="quorum-token">GATE</span>
+            </span>
+            <span class="gate-desc">Multi-region soak &amp; quorum</span>
+            <span class="gate-metric" id="quorum-metric">Pending · 5 PoPs</span>
+          </li>
+        </ul>
+      </section>
+
+      <p class="pod-footnote">
+        Fictional brand keel.build · illustrative telemetry &amp; pricing. No external trackers or fabricated customer logos.
+      </p>
+    </aside>
+  </main>
+
+  <footer class="bottom-rail">
+    <span>KEEL.BUILD · NEXT.JS APP ROUTER EDGE CONSOLE · FICTIONAL SPECIMEN</span>
+    <span>KEYBOARD ACCESSIBLE · TABULAR TELEMETRY · REDUCED-MOTION SAFE</span>
+  </footer>
+
+  <script>
+    (function () {
+      const popData = {
+        'iad-1': { region: 'Ashburn', ttfb: '18 ms', rsc: '14.2 KB', url: 'pr-482-iad1.keel.build' },
+        'fra-2': { region: 'Frankfurt', ttfb: '21 ms', rsc: '14.2 KB', url: 'pr-482-fra2.keel.build' },
+        'nrt-1': { region: 'Tokyo', ttfb: '29 ms', rsc: '14.5 KB', url: 'pr-482-nrt1.keel.build' },
+        'sin-1': { region: 'Singapore', ttfb: '26 ms', rsc: '14.4 KB', url: 'pr-482-sin1.keel.build' },
+        'gru-1': { region: 'Sao Paulo', ttfb: '34 ms', rsc: '14.6 KB', url: 'pr-482-gru1.keel.build' }
+      };
+
+      const reqTiers = [
+        { label: '50k / mo', short: '50k edge reqs', cost: 0 },
+        { label: '250k / mo', short: '250k edge reqs', cost: 22 },
+        { label: '1M / mo', short: '1M edge reqs', cost: 72 }
+      ];
+
+      const topology = document.getElementById('edge-topology');
+      const pulseToggle = document.getElementById('pulse-toggle');
+      const pulseLabel = document.getElementById('pulse-toggle-label');
+      const popNodes = Array.from(document.querySelectorAll('.pop-node'));
+      const popKeys = Array.from(document.querySelectorAll('.pop-key'));
+      const arcPaths = Array.from(document.querySelectorAll('[data-arc]'));
+
+      const telTtfb = document.getElementById('tel-ttfb');
+      const telRsc = document.getElementById('tel-rsc');
+      const telRegion = document.getElementById('tel-region');
+      const telUrl = document.getElementById('tel-url');
+      const gateTtfb = document.getElementById('gate-ttfb');
+      const gateRsc = document.getElementById('gate-rsc');
+
+      let activePop = 'iad-1';
+      let gateLaunched = false;
+
+      function selectPop(code) {
+        if (!popData[code]) return;
+        activePop = code;
+        const info = popData[code];
+
+        popNodes.forEach((node) => {
+          const match = node.dataset.pop === code;
+          node.classList.toggle('is-selected', match);
+          node.setAttribute('aria-pressed', String(match));
+        });
+
+        popKeys.forEach((btn) => {
+          btn.setAttribute('aria-pressed', String(btn.dataset.pop === code));
+        });
+
+        arcPaths.forEach((path) => {
+          const endpoints = (path.dataset.arc || '').split(',');
+          path.classList.toggle('is-active', endpoints.includes(code));
+        });
+
+        telTtfb.textContent = info.ttfb;
+        telRsc.textContent = info.rsc;
+        telRegion.textContent = info.region;
+        telUrl.textContent = info.url;
+        gateTtfb.textContent = `${info.ttfb} · ${code}`;
+        gateRsc.textContent = info.rsc;
+      }
+
+      popNodes.forEach((node) => {
+        node.addEventListener('click', () => selectPop(node.dataset.pop));
+        node.addEventListener('keydown', (e) => {
+          if (e.key === 'Enter' || e.key === ' ') {
+            e.preventDefault();
+            selectPop(node.dataset.pop);
+          }
+        });
+      });
+
+      popKeys.forEach((btn) => {
+        btn.addEventListener('click', () => selectPop(btn.dataset.pop));
+      });
+
+      function setPaused(paused) {
+        topology.classList.toggle('is-paused', paused);
+        pulseToggle.setAttribute('aria-pressed', String(paused));
+        pulseLabel.textContent = paused ? 'Resume pulse' : 'Pause pulse';
+      }
+
+      if (window.matchMedia && window.matchMedia('(prefers-reduced-motion: reduce)').matches) {
+        setPaused(true);
+      }
+
+      pulseToggle.addEventListener('click', () => {
+        setPaused(!topology.classList.contains('is-paused'));
+      });
+
+      /* Config disclosure */
+      const inspectBtn = document.getElementById('inspect-config-btn');
+      const configPopover = document.getElementById('config-popover');
+      const configClose = document.getElementById('config-close-btn');
+
+      function setConfigOpen(open) {
+        configPopover.hidden = !open;
+        inspectBtn.setAttribute('aria-expanded', String(open));
+      }
+
+      inspectBtn.addEventListener('click', () => setConfigOpen(configPopover.hidden));
+      configClose.addEventListener('click', () => {
+        setConfigOpen(false);
+        inspectBtn.focus();
+      });
+
+      /* Primary & secondary button feedback */
+      const feedback = document.getElementById('action-feedback');
+      document.getElementById('launch-gate-btn').addEventListener('click', () => {
+        gateLaunched = true;
+        feedback.textContent = `Gate passed on ${activePop} · PR #482`;
+        updateEstimator();
+      });
+      document.getElementById('deploy-branch-btn').addEventListener('click', () => {
+        feedback.textContent = `Branch hook armed on ${activePop}`;
+      });
+
+      const copyBtn = document.getElementById('copy-url-btn');
+      copyBtn.addEventListener('click', () => {
+        if (navigator.clipboard && navigator.clipboard.writeText) {
+          navigator.clipboard.writeText(`https://${telUrl.textContent}`).catch(() => {});
+        }
+        copyBtn.textContent = 'Copied';
+        setTimeout(() => { copyBtn.textContent = 'Copy'; }, 1400);
+      });
+
+      /* Live Capacity & Usage Estimator */
+      const seatsRange = document.getElementById('seats-range');
+      const seatsHint = document.getElementById('seats-val-hint');
+      const seatPresets = Array.from(document.querySelectorAll('.seat-preset'));
+      const reqsRange = document.getElementById('reqs-range');
+      const reqsReadout = document.getElementById('reqs-readout');
+      const billingRadios = Array.from(document.querySelectorAll('input[name="billing"]'));
+
+      const costTotal = document.getElementById('cost-total');
+      const costBadge = document.getElementById('cost-badge');
+      const costSummary = document.getElementById('cost-summary');
+      const lineSeatsLabel = document.getElementById('line-seats-label');
+      const lineSeats = document.getElementById('line-seats');
+      const lineReqsLabel = document.getElementById('line-reqs-label');
+      const lineReqs = document.getElementById('line-reqs');
+      const lineDiscount = document.getElementById('line-discount');
+
+      const gateTally = document.getElementById('gate-tally');
+      const quorumBadge = document.getElementById('quorum-badge');
+      const quorumToken = document.getElementById('quorum-token');
+      const quorumIcon = document.getElementById('quorum-icon');
+      const quorumMetric = document.getElementById('quorum-metric');
+
+      function updateEstimator() {
+        const seats = Number(seatsRange.value);
+        const tier = reqTiers[Number(reqsRange.value)] || reqTiers[1];
+        const billing = (billingRadios.find((r) => r.checked) || { value: 'annual' }).value;
+
+        const base = 48;
+        const seatCost = seats * 14;
+        const subtotal = base + seatCost + tier.cost;
+        const discount = billing === 'annual' ? Math.round(subtotal * 0.2) : 0;
+        const finalMonthly = subtotal - discount;
+
+        costTotal.textContent = `$${finalMonthly}`;
+        costBadge.textContent = billing === 'annual' ? 'SAVE 20% ANNUAL' : 'STANDARD MONTHLY';
+        costSummary.textContent = `${seats} seats · ${tier.short} · billed ${billing === 'annual' ? 'annually' : 'monthly'}`;
+        lineSeatsLabel.textContent = `Team seats (${seats} × $14)`;
+        lineSeats.textContent = `$${seatCost}`;
+        lineReqsLabel.textContent = `Edge invocations (${tier.label})`;
+        lineReqs.textContent = `$${tier.cost}`;
+        lineDiscount.textContent = discount > 0 ? `−$${discount}` : '$0';
+
+        seatsHint.textContent = `${seats} engineers with isolated preview gates`;
+        reqsReadout.textContent = tier.label;
+
+        seatPresets.forEach((btn) => {
+          btn.setAttribute('aria-pressed', String(Number(btn.dataset.seats) === seats));
+        });
+
+        /* Couple multi-region soak gate with launch action or 25-seat cluster quorum */
+        const quorumPass = gateLaunched || seats >= 25;
+        quorumBadge.classList.toggle('is-pass', quorumPass);
+        quorumBadge.classList.toggle('is-gate', !quorumPass);
+        quorumToken.textContent = quorumPass ? 'PASS' : 'GATE';
+        quorumMetric.textContent = quorumPass ? '5 / 5 PoPs' : 'Pending · 5 PoPs';
+        gateTally.textContent = quorumPass ? '4 / 4 READY' : '3 / 4 · 1 GATE';
+
+        quorumIcon.innerHTML = quorumPass
+          ? '<rect x="1" y="1" width="8" height="8" rx="1.5" fill="var(--mint)"/><polyline points="2.8,5.2 4.4,6.8 7.3,3.3" fill="none" stroke="var(--ink-on-lime)" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"/>'
+          : '<polygon points="5,0.8 9.2,5 5,9.2 0.8,5" fill="var(--coral)"/><line x1="5" y1="3" x2="5" y2="5.6" stroke="var(--ink-on-lime)" stroke-width="1.4" stroke-linecap="round"/><circle cx="5" cy="7.2" r="0.7" fill="var(--ink-on-lime)"/>';
+      }
+
+      seatsRange.addEventListener('input', updateEstimator);
+      reqsRange.addEventListener('input', updateEstimator);
+      billingRadios.forEach((r) => r.addEventListener('change', updateEstimator));
+      seatPresets.forEach((btn) => {
+        btn.addEventListener('click', () => {
+          seatsRange.value = btn.dataset.seats;
+          updateEstimator();
+        });
+      });
+
+      selectPop('iad-1');
+      updateEstimator();
+    })();
+  </script>
+</body>
+</html>

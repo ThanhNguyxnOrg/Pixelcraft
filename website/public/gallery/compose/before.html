@@ -1,0 +1,472 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no" />
+  <title>MetroLine Pass — Smart AI Commute SuperApp</title>
+  <style>
+    * {
+      box-sizing: border-box;
+    }
+
+    body {
+      margin: 0;
+      font-family: Inter, Roboto, sans-serif;
+      background: linear-gradient(135deg, purple, blue);
+      color: #0f172a;
+      min-height: 900px;
+      overflow-x: hidden;
+    }
+
+    button,
+    input,
+    a {
+      font-family: Inter, sans-serif;
+      transition: all 0.3s ease;
+    }
+
+    button:focus,
+    input:focus,
+    a:focus {
+      outline: none;
+    }
+
+    .topbar {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      gap: 16px;
+      padding: 14px 36px;
+      background: rgba(15, 23, 42, 0.88);
+      border-bottom: 1px solid rgba(255, 255, 255, 0.14);
+      color: #ffffff;
+    }
+
+    .brand {
+      display: flex;
+      align-items: center;
+      gap: 10px;
+      font-size: 20px;
+      font-weight: 800;
+      letter-spacing: -0.02em;
+      color: #ffffff;
+    }
+
+    .brand-tag {
+      padding: 3px 9px;
+      border-radius: 999px;
+      background: linear-gradient(90deg, #a855f7, #3b82f6);
+      font-size: 11px;
+      font-weight: 700;
+      text-transform: uppercase;
+    }
+
+    .nav-controls {
+      display: flex;
+      align-items: center;
+      gap: 12px;
+    }
+
+    .station-input {
+      width: 250px;
+      padding: 9px 15px;
+      border-radius: 999px;
+      border: 1px solid rgba(255, 255, 255, 0.25);
+      background: rgba(255, 255, 255, 0.12);
+      color: #ffffff;
+      font-size: 13px;
+      outline: none;
+      transition: all 0.3s;
+    }
+
+    .station-input::placeholder {
+      color: #cbd5e1;
+    }
+
+    .streak-pill {
+      display: inline-flex;
+      align-items: center;
+      gap: 6px;
+      padding: 7px 13px;
+      border-radius: 999px;
+      background: rgba(139, 92, 246, 0.28);
+      border: 1px solid rgba(196, 181, 253, 0.38);
+      color: #f5f3ff;
+      font-size: 12px;
+      font-weight: 700;
+      transition: all 0.3s;
+    }
+
+    .pro-btn {
+      padding: 8px 16px;
+      border-radius: 999px;
+      border: 0;
+      background: linear-gradient(135deg, #ec4899, #6366f1);
+      color: #ffffff;
+      font-size: 12px;
+      font-weight: 700;
+      cursor: pointer;
+      outline: none;
+      transition: all 0.3s;
+    }
+
+    .hero {
+      background: linear-gradient(135deg, purple 0%, #4f46e5 52%, blue 100%);
+      padding: 38px 36px 46px;
+      color: #ffffff;
+      position: relative;
+    }
+
+    .text-center {
+      text-align: center;
+    }
+
+    .ai-pill {
+      display: inline-flex;
+      align-items: center;
+      gap: 6px;
+      padding: 6px 15px;
+      border-radius: 999px;
+      background: rgba(255, 255, 255, 0.16);
+      border: 1px solid rgba(255, 255, 255, 0.28);
+      font-size: 12px;
+      font-weight: 700;
+      margin-bottom: 14px;
+    }
+
+    .gradient-headline {
+      margin: 0 auto 12px;
+      max-width: 880px;
+      font-size: 44px;
+      line-height: 1.12;
+      font-weight: 900;
+      letter-spacing: -0.03em;
+      background: linear-gradient(90deg, #f0abfc 0%, #ffffff 46%, #7dd3fc 100%);
+      -webkit-background-clip: text;
+      background-clip: text;
+      color: transparent;
+    }
+
+    .hero-sub {
+      margin: 0 auto 22px;
+      max-width: 650px;
+      font-size: 16px;
+      line-height: 1.5;
+      color: #e0e7ff;
+    }
+
+    .cta-row {
+      display: inline-flex;
+      align-items: center;
+      justify-content: center;
+      gap: 14px;
+      margin-bottom: 24px;
+    }
+
+    .btn-primary {
+      padding: 13px 28px;
+      border-radius: 14px;
+      border: 0;
+      background: #ffffff;
+      color: #4338ca;
+      font-size: 15px;
+      font-weight: 800;
+      cursor: pointer;
+      box-shadow: 0 12px 28px rgba(15, 23, 42, 0.28);
+      transition: all 0.3s;
+    }
+
+    .btn-secondary {
+      padding: 13px 28px;
+      border-radius: 14px;
+      border: 1px solid rgba(255, 255, 255, 0.45);
+      background: rgba(255, 255, 255, 0.14);
+      color: #ffffff;
+      font-size: 15px;
+      font-weight: 700;
+      cursor: pointer;
+      transition: all 0.3s;
+    }
+
+    .quick-bar {
+      max-width: 980px;
+      margin: 0 auto;
+      padding: 14px;
+      background: rgba(255, 255, 255, 0.95);
+      border-radius: 18px;
+      display: grid;
+      grid-template-columns: 1.2fr 1.2fr 1fr auto;
+      gap: 10px;
+      box-shadow: 0 20px 40px rgba(15, 23, 42, 0.26);
+    }
+
+    .quick-bar input {
+      padding: 12px 14px;
+      border-radius: 12px;
+      border: 1px solid #cbd5e1;
+      background: #f8fafc;
+      color: #0f172a;
+      font-size: 13px;
+      transition: all 0.3s;
+    }
+
+    .quick-submit {
+      padding: 12px 22px;
+      border-radius: 12px;
+      border: 0;
+      background: linear-gradient(135deg, #7c3aed, #2563eb);
+      color: #ffffff;
+      font-size: 13px;
+      font-weight: 800;
+      cursor: pointer;
+      transition: all 0.3s;
+    }
+
+    .main-shell {
+      max-width: 1320px;
+      margin: 0 auto;
+      padding: 24px 36px 28px;
+      background: #f8fafc;
+      min-height: 430px;
+    }
+
+    .status-strip {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      padding: 12px 18px;
+      margin-bottom: 20px;
+      background: #eef2ff;
+      border: 1px solid #c7d2fe;
+      border-radius: 14px;
+      color: #312e81;
+      font-size: 13px;
+      font-weight: 700;
+    }
+
+    .dot-legend {
+      display: flex;
+      align-items: center;
+      gap: 10px;
+    }
+
+    .crowd-dot {
+      width: 12px;
+      height: 12px;
+      border-radius: 999px;
+      display: inline-block;
+    }
+
+    .cards-grid {
+      display: grid;
+      grid-template-columns: repeat(4, 1fr);
+      gap: 18px;
+      margin-bottom: 20px;
+    }
+
+    .rounded-2xl {
+      border-radius: 16px;
+    }
+
+    .shadow-lg {
+      box-shadow: 0 14px 30px rgba(79, 70, 229, 0.14);
+    }
+
+    .feature-card {
+      background: #ffffff;
+      border: 1px solid #e2e8f0;
+      border-left: 5px solid #7c3aed;
+      border-radius: 16px;
+      padding: 20px;
+      display: flex;
+      flex-direction: column;
+      justify-content: space-between;
+      transition: all 0.3s;
+    }
+
+    .card-emoji {
+      width: 44px;
+      height: 44px;
+      border-radius: 12px;
+      background: linear-gradient(135deg, #ede9fe, #dbeafe);
+      display: inline-flex;
+      align-items: center;
+      justify-content: center;
+      font-size: 22px;
+      margin-bottom: 12px;
+    }
+
+    .feature-card h3 {
+      margin: 0 0 8px;
+      font-size: 17px;
+      font-weight: 800;
+      color: #1e1b4b;
+    }
+
+    .feature-card p {
+      margin: 0 0 16px;
+      font-size: 13px;
+      line-height: 1.5;
+      color: #64748b;
+    }
+
+    .card-action {
+      width: 100%;
+      padding: 10px 14px;
+      border-radius: 10px;
+      border: 0;
+      background: linear-gradient(135deg, #6d28d9, #2563eb);
+      color: #ffffff;
+      font-size: 13px;
+      font-weight: 700;
+      cursor: pointer;
+      transition: all 0.3s;
+    }
+
+    .upsell-footer {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      padding: 14px 20px;
+      background: linear-gradient(90deg, #312e81, #1d4ed8);
+      color: #ffffff;
+      font-size: 13px;
+    }
+
+    .upsell-price {
+      font-size: 18px;
+      font-weight: 900;
+      background: linear-gradient(90deg, #fde047, #f472b6);
+      -webkit-background-clip: text;
+      background-clip: text;
+      color: transparent;
+    }
+  </style>
+</head>
+<body>
+  <header class="topbar">
+    <div class="brand">
+      <span>🚇 MetroLine Pass</span>
+      <span class="brand-tag">AI Transit 3.0</span>
+    </div>
+    <div class="nav-controls">
+      <input
+        class="station-input"
+        type="text"
+        placeholder="Search station"
+        tabindex="3"
+        style="outline: none;"
+        data-slop="placeholder-as-label"
+      />
+      <span class="streak-pill">🔥 21 Day Streak</span>
+      <span class="streak-pill">⚡ 4,850 XP</span>
+      <button type="button" class="pro-btn" tabindex="1" style="outline: none;" data-slop="positive-tabindex">
+        ✨ Upgrade VIP
+      </button>
+    </div>
+  </header>
+
+  <section class="hero text-center" data-slop="purple-blue-gradient">
+    <div class="ai-pill">
+      <span>🚀 Next-Gen Neural Rail &amp; Watch Ecosystem</span>
+    </div>
+    <h1 class="gradient-headline" data-slop="gradient-text-treatment">
+      Elevate Your Seamless Daily Commute 🚆✨🚀
+    </h1>
+    <p class="hero-sub" data-slop="generic-copy">
+      Unlock cutting-edge train predictions, supercharge every platform transfer, and revolutionize urban travel seamlessly with AI-powered pass magic.
+    </p>
+    <div class="cta-row" data-slop="centered-hero-two-ctas">
+      <button type="button" class="btn-primary" tabindex="2" style="outline: none;" data-slop="outline-removed">
+        Get Started
+      </button>
+      <button type="button" class="btn-secondary" tabindex="4" style="outline: none;">
+        Learn More
+      </button>
+    </div>
+
+    <form class="quick-bar" onsubmit="return false;">
+      <input type="text" placeholder="Origin station or zone" style="outline: none;" />
+      <input type="text" placeholder="Destination terminal" style="outline: none;" />
+      <input
+        id="pass-code-input"
+        type="text"
+        placeholder="Paste commuter pass code"
+        style="outline: none;"
+        data-slop="paste-blocked"
+      />
+      <button type="submit" class="quick-submit" tabindex="5" style="outline: none;">
+        🔮 Predict Ride
+      </button>
+    </form>
+  </section>
+
+  <main class="main-shell">
+    <div class="status-strip">
+      <span>🤖 AI Crowd Mood Engine: Live Train Vibes Detected</span>
+      <div class="dot-legend">
+        <span>Car Load:</span>
+        <span class="crowd-dot" style="background: #22c55e;"></span>
+        <span class="crowd-dot" style="background: #eab308;"></span>
+        <span class="crowd-dot" style="background: #ef4444;"></span>
+        <span class="crowd-dot" style="background: #ef4444;"></span>
+        <span class="crowd-dot" style="background: #eab308;"></span>
+        <span class="crowd-dot" style="background: #22c55e;"></span>
+      </div>
+    </div>
+
+    <section class="cards-grid">
+      <article class="feature-card rounded-2xl shadow-lg">
+        <div>
+          <span class="card-emoji" data-slop="emoji-as-icon">🚇</span>
+          <h3>Smart Rail Radar</h3>
+          <p>Revolutionize your boarding experience seamlessly with color-coded AI car vibes and predictive route magic.</p>
+        </div>
+        <button type="button" class="card-action" style="outline: none;">Unlock Radar</button>
+      </article>
+
+      <article class="feature-card rounded-2xl shadow-lg" data-slop="rounded-2xl-repetition">
+        <div>
+          <span class="card-emoji">🎫</span>
+          <h3>Infinite Cloud Pass</h3>
+          <p>Elevate your ticket wallet and get started with one-click subscription bundles across unlimited city zones.</p>
+        </div>
+        <button type="button" class="card-action" style="outline: none;">Get Started — $39/mo</button>
+      </article>
+
+      <article class="feature-card rounded-2xl shadow-lg" data-slop="uniform-shadow">
+        <div>
+          <span class="card-emoji">⚡</span>
+          <h3>Wrist AI Companion</h3>
+          <p>Supercharge your smartwatch with cutting-edge animated notifications, daily commute streaks, and VIP alerts.</p>
+        </div>
+        <button type="button" class="card-action" style="outline: none;">Sync Pro Watch</button>
+      </article>
+
+      <article class="feature-card rounded-2xl shadow-lg">
+        <div>
+          <span class="card-emoji">🔥</span>
+          <h3>Commuter Leaderboard</h3>
+          <p>Unlock diamond badges and elevate your rank seamlessly against 50,000+ daily riders across the metro network.</p>
+        </div>
+        <button type="button" class="card-action" style="outline: none;">Join Challenge</button>
+      </article>
+    </section>
+
+    <div class="upsell-footer rounded-2xl shadow-lg">
+      <span>💎 Limited Flash Offer: Unlock MetroLine Ultra AI Pass + Smartwatch Sync before timer expires!</span>
+      <span class="upsell-price">SAVE 65% TODAY — $19.99/mo</span>
+    </div>
+  </main>
+
+  <script>
+    const passInput = document.getElementById('pass-code-input');
+    if (passInput) {
+      passInput.addEventListener('paste', e => e.preventDefault());
+    }
+    document.querySelectorAll('input').forEach(el => {
+      el.addEventListener('paste', e => e.preventDefault());
+    });
+  </script>
+</body>
+</html>
