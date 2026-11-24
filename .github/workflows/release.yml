@@ -1,25 +1,31 @@
-name: release
+name: Package and Publish Pixelcraft
 
 on:
-  push:
-    tags:
-      - 'v*'
+  create:
+  workflow_dispatch:
 
 permissions:
-  contents: write
+  contents: read
+
+concurrency:
+  group: pixelcraft-release-${{ github.ref }}
+  cancel-in-progress: false
 
 jobs:
   package:
+    if: github.repository == 'ThanhNguyxnOrg/Pixelcraft' && github.ref_type == 'tag' && startsWith(github.ref_name, 'v')
     runs-on: ubuntu-latest
     steps:
       - uses: actions/checkout@v7
+        with:
+          ref: ${{ github.ref }}
+          persist-credentials: false
       - uses: actions/setup-node@v7
         with:
           node-version: 24
           package-manager-cache: false
       - run: node scripts/validate-skills.mjs
       - name: Verify release tag and npm package
-        if: github.repository == 'ThanhNguyxnOrg/Pixelcraft'
         run: npm run test:distribution -- --release
       - run: node scripts/build-adapters.mjs
       - name: Package skills and adapters
@@ -28,18 +34,28 @@ jobs:
           mkdir -p release-package
           cp -R skills release-package/skills
           cp -R dist release-package/adapters
-          mkdir -p dist
-          (cd release-package && zip -qr "$GITHUB_WORKSPACE/dist/pixelcraft-skills.zip" skills adapters)
-          tar -czf dist/pixelcraft-skills.tar.gz -C release-package skills adapters
-          ls -lh dist/pixelcraft-skills.zip dist/pixelcraft-skills.tar.gz
-      - name: Attach release assets
-        env:
-          GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
-        run: gh release create "${GITHUB_REF_NAME}" dist/pixelcraft-skills.zip dist/pixelcraft-skills.tar.gz --generate-notes
+          mkdir -p dist/release
+          (cd release-package && zip -qr "$GITHUB_WORKSPACE/dist/release/pixelcraft-skills.zip" skills adapters)
+          tar -czf dist/release/pixelcraft-skills.tar.gz -C release-package skills adapters
+      - uses: actions/upload-artifact@v7
+        with:
+          name: release-assets-pixelcraft
+          path: dist/release/
+          if-no-files-found: error
+
+  assets:
+    needs: package
+    permissions:
+      actions: read
+      contents: read
+    uses: ThanhNguyxnOrg/.github/.github/workflows/release-publish.yml@release-v1
+    with:
+      tag: ${{ github.ref_name }}
+    secrets:
+      BOT_PRIVATE_KEY: ${{ secrets.BOT_PRIVATE_KEY }}
 
   npm:
-    needs: package
-    if: github.repository == 'ThanhNguyxnOrg/Pixelcraft'
+    needs: assets
     permissions:
       contents: read
       id-token: write

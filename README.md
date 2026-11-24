@@ -249,7 +249,7 @@ Parameters mirror the shell script: `-Agent`, `-Skill`, `-Global`, `-Force`, `-D
 
 ### GitHub Release download
 
-The release workflow runs when a `v*` tag is pushed. It validates the skills, builds the adapter fragments, packages `pixelcraft-skills.zip` and `pixelcraft-skills.tar.gz`, creates the GitHub Release for that tag, and attaches both archives. After a tagged release exists, download it manually from the repository's Releases page, or with GitHub CLI:
+After a published release, download `pixelcraft-skills.zip` or `pixelcraft-skills.tar.gz` from the repository's Releases page, or with GitHub CLI:
 
 ```bash
 gh release download <tag> --repo ThanhNguyxnOrg/Pixelcraft --pattern pixelcraft-skills.zip
@@ -268,7 +268,7 @@ pixelcraft add all --agent cursor
 
 Pi can then also install it with `pi install npm:pixelcraft`. Until release, use the Git-based or local installers above.
 
-Maintainers: use `npm run test:distribution` to inspect the package without publishing. After explicit release approval, push the matching `v<package.json version>` tag from the approved revision in `ThanhNguyxnOrg/Pixelcraft`; the workflow rejects mismatched tags before creating a GitHub Release. After the GitHub Release job succeeds, the org's reusable workflow publishes to npm with provenance. The repository must have access to an `NPM_TOKEN` authorized to publish the unscoped `pixelcraft` package. No per-release variable is needed.
+Maintainers: use `npm run test:distribution` to inspect the package without publishing. The [organization Release Controller](https://github.com/ThanhNguyxnOrg/.github/blob/main/docs/agent-automation.md#release-safety) opens a release PR with the version changes and changelog. Merge it to approve the release (keep the release PR title if squashing). The controller creates the tag, and this repository's adapter checks that it matches the package version, builds the archives, and calls the shared GitHub Release publisher. Only after that succeeds does the shared npm publisher upload the package with provenance. The repository still needs an `NPM_TOKEN` authorized to publish the unscoped `pixelcraft` package. No per-release variable or manual tag is required.
 
 ### Manual git clone/copy
 
