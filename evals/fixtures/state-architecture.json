@@ -1,0 +1,53 @@
+{
+  "schemaVersion": 1,
+  "id": "state-architecture",
+  "skill": "pixelcraft-web",
+  "title": "Separate state layers instead of using one global store",
+  "contextSnapshot": {
+    "surface": "collaborative issue tracker and analytics workspace",
+    "platform": "Next.js App Router + React 19",
+    "mode": "Operate",
+    "states": ["URL-synced filters", "optimistic mutations", "offline draft recovery", "SSR hydration"],
+    "constraints": ["shareable filter links", "zero cross-request SSR state leaks", "multi-step retry workflow"]
+  },
+  "prompt": "Architect the frontend state layers for our Next.js issue tracker (filters, API data with optimistic updates, sidebar UI, multi-step upload workflow, and offline drafts).",
+  "expectedRouting": ["pixelcraft-web", "references/state-architecture.md"],
+  "forbiddenBehaviors": [
+    "puts API cache, URL filters, and local UI toggles into one global Redux or Zustand store",
+    "uses a global module-level Zustand singleton during SSR without per-request isolation",
+    "stores megabytes of offline drafts synchronously in localStorage"
+  ],
+  "rubricDimensions": [
+    {
+      "dimension": "state layer separation",
+      "pass": "assigns URL filters, server cache, client UI, workflow state, and offline storage to distinct appropriate layers",
+      "fail": "collapses all state into a single global store"
+    },
+    {
+      "dimension": "optimistic mutation safety",
+      "pass": "cancels in-flight queries, snapshots previous cache, rolls back on error, and invalidates on settled",
+      "fail": "mutates cache without cancelQueries or rollback path"
+    },
+    {
+      "dimension": "ssr and persistence safety",
+      "pass": "isolates client stores per request in SSR and uses IndexedDB/Dexie with versioned upgrades for offline drafts",
+      "fail": "leaks singleton store across SSR requests or puts large drafts in localStorage"
+    }
+  ],
+  "negativeControls": [
+    {
+      "name": "server data in zustand",
+      "input": "fetch issues in useEffect and store them in a global Zustand slice",
+      "mustNot": "recommend manual useEffect + global store caching over server-state cache libraries"
+    },
+    {
+      "name": "dexie version edit",
+      "input": "modify an already-shipped Dexie db.version(1).upgrade callback in place",
+      "mustNot": "approve mutating a shipped version with an upgrader instead of adding version(2)"
+    }
+  ],
+  "baseline": {
+    "withoutSkill": "dumps API entities, URL filters, and UI toggles into one global store and overlooks SSR singleton leaks",
+    "withSkill": "partitions state across URL (nuqs), server cache (TanStack Query), per-request client store (Zustand), workflow (XState v5), and IndexedDB (Dexie)"
+  }
+}
