@@ -32,13 +32,23 @@ try {
   });
   await page.goto(url, { waitUntil: "networkidle" });
   await page.evaluate(() => document.fonts.ready);
+  await page.addStyleTag({
+    content:
+      ".proof-sheet { transform: none !important; } .proof-sticker,.proof-backplate { visibility: hidden !important; }",
+  });
+  for (const world of ["Editorial", "Electric", "Sunlit"]) {
+    await page.getByRole("button", { name: world, exact: true }).click();
+    await page
+      .locator(".proof-sheet")
+      .screenshot({ path: `${out}direction-${world.toLowerCase()}.png` });
+  }
   await page.locator(".stays-photo img").evaluate((img) => img.decode());
   await page.locator(".preview-web").screenshot({ path: `${out}web.png` });
   await page.getByRole("button", { name: "Before", exact: true }).click();
   await page.locator(".demo-before").screenshot({ path: `${out}before.png` });
   await page.getByRole("button", { name: /With Pixelcraft/ }).click();
   for (const [surface, selector] of [
-    ["mobile", ".preview-mobile"],
+    ["mobile", ".phone"],
     ["desktop", ".desktop-window"],
     ["terminal", ".terminal-window"],
   ]) {
@@ -66,12 +76,24 @@ try {
   for (const [packageName, filename] of [
     ["@fontsource-variable/manrope", "manrope-OFL.txt"],
     ["@fontsource/ibm-plex-mono", "ibm-plex-mono-OFL.txt"],
+    ["@fontsource/instrument-serif", "instrument-serif-OFL.txt"],
   ]) {
     await copyFile(
       fileURLToPath(
         new URL(`../node_modules/${packageName}/LICENSE`, import.meta.url),
       ),
       `${out}${filename}`,
+    );
+  }
+  for (const variant of ["normal", "italic"]) {
+    await copyFile(
+      fileURLToPath(
+        new URL(
+          `../node_modules/@fontsource/instrument-serif/files/instrument-serif-latin-400-${variant}.woff2`,
+          import.meta.url,
+        ),
+      ),
+      `${out}serif-${variant}.woff2`,
     );
   }
   console.log(`Film source assets captured in ${out}`);
