@@ -5,6 +5,7 @@ param(
   [switch]$Global,
   [switch]$Force,
   [switch]$DryRun,
+  [switch]$DocsMcp,
   [string]$Ref = 'main',
   [string]$Repo = 'ThanhNguyxn07/Pixelcraft',
   [string]$Archive
@@ -275,6 +276,9 @@ try {
       & $copySkill ($entry.Name) $target ($entry.Auto)
     }
     Write-PixelcraftAdapter $agentName $target
+  }
+  if ($DocsMcp) {
+    Write-Output 'Optional Context7 docs MCP: follow the instructions for your host at https://github.com/upstash/context7#readme. Pixelcraft does not configure MCP or request credentials. If unavailable, use versioned official docs and the package registry.'
   }
 } finally {
   Remove-Item -LiteralPath $tmpRoot -Recurse -Force -ErrorAction SilentlyContinue

@@ -90,7 +90,7 @@ many stacks via progressive disclosure.
 
 ```
 skills/<skill>/SKILL.md, references/, scripts/, assets/
-bin/pixelcraft.mjs          # installer CLI: npx pixelcraft add [skills…] --agent <host>
+bin/pixelcraft.mjs          # installer CLI: node <checkout>/bin/pixelcraft.mjs add [skills…] --agent <host>
 scripts/validate-skills.mjs # CI lint for skills
 .claude-plugin/marketplace.json
 docs/ARCHITECTURE.md, docs/DESIGN-RATIONALE.md

@@ -9,6 +9,7 @@ skills_arg="all"
 scope="project"
 force=0
 dry_run=0
+docs_mcp=0
 
 usage() {
   cat <<'USAGE'
@@ -27,6 +28,7 @@ Options:
   --force          Replace explicitly requested existing skills. Auto-added
                    core skills install only when missing.
   --dry-run        Print copies without writing files.
+  --docs-mcp       Print optional Context7 setup guidance without configuring any host.
   --ref REF        Git branch, tag, or commit archive to download (default: main).
   --repo OWNER/REPO  GitHub repository (default: ThanhNguyxn07/Pixelcraft).
   --archive PATH   Use a local repository .tar.gz instead of downloading.
@@ -62,6 +64,7 @@ while [[ $# -gt 0 ]]; do
     --project) scope="project" ;;
     --force) force=1 ;;
     --dry-run) dry_run=1 ;;
+    --docs-mcp) docs_mcp=1 ;;
     --ref)
       shift
       [[ $# -gt 0 ]] || die "--ref requires a value"
@@ -421,3 +424,7 @@ for index in "${!targets[@]}"; do
   done
   write_shell_adapters "$agent" "$target"
 done
+
+if (( docs_mcp )); then
+  printf '%s\n' 'Optional Context7 docs MCP: follow the instructions for your host at https://github.com/upstash/context7#readme. Pixelcraft does not configure MCP or request credentials. If unavailable, use versioned official docs and the package registry.'
+fi

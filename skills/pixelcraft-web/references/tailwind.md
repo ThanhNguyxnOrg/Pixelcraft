@@ -65,7 +65,6 @@ Utility verbosity hiding architecture, arbitrary-value sprawl, purple/blue gradi
 ```sh
 npm run lint
 npm run build
-node node_modules/pixelcraft/skills/pixelcraft-review/scripts/slop-scan.mjs . 2>/dev/null || true
 npx playwright test
 ```
 

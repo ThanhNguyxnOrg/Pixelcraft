@@ -128,7 +128,7 @@ git clone https://github.com/ThanhNguyxnOrg/Pixelcraft.git "$HOME/Pixelcraft"
 node "$HOME/Pixelcraft/bin/pixelcraft.mjs"
 ```
 
-The wizard asks for one or more agents, all skills or a numbered subset, and project or user-level scope. It uses Node's `readline` only; there are no package dependencies. Non-interactive flags remain available for automation:
+The wizard asks for one or more agents, all skills or a numbered subset, project or user-level scope, and whether to show optional Context7 setup guidance. It uses Node's `readline` only; there are no package dependencies. Prefer a supported Node.js LTS release; `>=18` is a compatibility floor, not a recommendation to run an end-of-life runtime. Non-interactive flags remain available for automation:
 
 ```bash
 # Everything for one agent in the current project
@@ -161,6 +161,8 @@ Installer agent names are `claude`, `codex`, `agents`, `devin`, `cursor`, `gemin
 | Kiro | `.kiro` | `~/.kiro` | Adapter-only skill payload under `pixelcraft/skills` plus steering router |
 
 `--agent all` installs every target and deduplicates shared `.agents/skills` destinations.
+
+For version-sensitive work, Pixelcraft asks the agent to check the resolved version against official docs and the relevant registry. [Context7](https://github.com/upstash/context7#readme) can help retrieve docs when a host supports it. Use `--docs-mcp` (Node or Bash) or `-DocsMcp` (PowerShell) to print setup guidance, including with dry-run. This does not install tools, edit MCP config, or request keys. Reuse an approved existing MCP connection; otherwise use official docs and registry lookup. Never send secrets or proprietary code in lookup queries.
 
 ### Vercel `skills` CLI
 
@@ -223,7 +225,7 @@ Pass parameters by invoking the downloaded script as a script block:
 iex "& { $(irm https://raw.githubusercontent.com/ThanhNguyxn07/Pixelcraft/main/install.ps1) } -Agent claude -Skill pixelcraft-web"
 ```
 
-Parameters mirror the shell script: `-Agent`, `-Skill`, `-Global`, `-Force`, `-DryRun`, `-Ref`, `-Repo`, and `-Archive` (`-Archive` expects a local `.zip`; the shell script's `--archive` expects `.tar.gz`). The script downloads the repository zip with `Invoke-WebRequest`, expands it with `Expand-Archive`, never uses sudo/elevation, refuses reparse-point targets, and preserves existing folders unless `-Force` is passed for explicitly selected skills.
+Parameters mirror the shell script: `-Agent`, `-Skill`, `-Global`, `-Force`, `-DryRun`, `-DocsMcp`, `-Ref`, `-Repo`, and `-Archive` (`-Archive` expects a local `.zip`; the shell script's `--archive` expects `.tar.gz`). The script downloads the repository zip with `Invoke-WebRequest`, expands it with `Expand-Archive`, never uses sudo/elevation, refuses reparse-point targets, and preserves existing folders unless `-Force` is passed for explicitly selected skills.
 
 ### GitHub Release download
 

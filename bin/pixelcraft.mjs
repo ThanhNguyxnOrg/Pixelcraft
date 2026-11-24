@@ -85,7 +85,7 @@ function help() {
 Run with no arguments to start the interactive install wizard.
 
 Commands:
-  add <skill...|all> --agent <name|all> [--global] [--dry-run] [--force]
+  add <skill...|all> --agent <name|all> [--global] [--dry-run] [--force] [--docs-mcp]
       Copy self-contained skill folders into one or more agent skills directories.
       Repeat --agent or use comma-separated names for multiple targets.
   list
@@ -100,6 +100,7 @@ Options:
   --agent NAME   Target host. Required for non-interactive add.
   --global       Install in the user-level skills directory instead of the current project.
   --dry-run      Print destination copies without writing files.
+  --docs-mcp     Print optional Context7 setup guidance without configuring any host.
   --force        Replace existing explicitly requested skill directories. Auto-added core skills install only when missing.
 
 Symlink safety: installation refuses a symlinked target skills directory or skill
@@ -127,6 +128,7 @@ function parse(args) {
     const arg = args[index];
     if (arg === '--global') options.global = true;
     else if (arg === '--dry-run') options.dryRun = true;
+    else if (arg === '--docs-mcp') options.docsMcp = true;
     else if (arg === '--force') options.force = true;
     else if (arg === '--agent') {
       index += 1;
@@ -308,6 +310,9 @@ function runAdd({ positional, options }) {
     }
     writeAgentAdapters(target, options.dryRun, options.force, selected);
   }
+  if (options.docsMcp) {
+    console.log(`Optional docs MCP for ${expandAgents(options.agents).join(', ')}: follow the Context7 instructions for your host at https://github.com/upstash/context7#readme. Pixelcraft does not configure MCP or request credentials. If unavailable or unsupported, use versioned official docs and the package registry.`);
+  }
 }
 
 function numberedSelection(answer, names) {
@@ -376,13 +381,14 @@ async function wizard() {
 
     const scope = (await ask('Scope: project or global? [project]: ', 'project')).toLowerCase();
     if (scope !== 'project' && scope !== 'global') throw new Error(`scope must be project or global, got '${scope}'`);
+    const docsMcp = /^(y|yes)$/i.test(await ask('Show optional Context7 docs MCP setup guidance? [y/N]: ', 'n'));
     console.log(`\nReady to install ${positional.join(', ')} for ${agents.join(', ')} in ${scope} scope.`);
     const confirm = (await ask('Continue? [Y/n]: ', 'y')).toLowerCase();
     if (confirm.startsWith('n')) throw new Error('installation cancelled');
 
     return {
       positional,
-      options: { global: scope === 'global', dryRun: false, force: false, agents },
+      options: { global: scope === 'global', dryRun: false, force: false, agents, docsMcp },
     };
   } finally {
     prompter.close();
