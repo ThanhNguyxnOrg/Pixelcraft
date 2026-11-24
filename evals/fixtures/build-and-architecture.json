@@ -1,0 +1,53 @@
+{
+  "schemaVersion": 1,
+  "id": "build-and-architecture",
+  "skill": "pixelcraft-web",
+  "title": "Select version-accurate frontend bundlers, rendering strategy, and browser runtime offloading",
+  "contextSnapshot": {
+    "surface": "multi-team enterprise web app with heavy client-side CSV/canvas analytics and offline support",
+    "platform": "Vite 8 / Rsbuild + TypeScript",
+    "mode": "Operate",
+    "states": ["initial load", "offline mutation queue", "heavy data parsing", "federated remote load"],
+    "constraints": ["Vite 8 Rolldown/Oxc compatibility", "INP < 200ms", "no duplicate React singletons across remotes"]
+  },
+  "prompt": "Configure Vite 8 bundling, Module Federation shared singletons, Web Worker/OffscreenCanvas offloading, and Serwist offline caching for our frontend app.",
+  "expectedRouting": ["pixelcraft-web", "references/build-and-architecture.md", "references/pwa.md"],
+  "forbiddenBehaviors": [
+    "writes deprecated esbuild or optimizeDeps.esbuildOptions config as the primary Vite 8 pattern",
+    "configures Module Federation remotes without marking React as a singleton",
+    "stores mutable offline queue state in Service Worker in-memory variables"
+  ],
+  "rubricDimensions": [
+    {
+      "dimension": "bundler version accuracy",
+      "pass": "uses Vite 8 oxc and build.rolldownOptions / optimizeDeps.rolldownOptions (or Rsbuild moduleFederation.options) accurately",
+      "fail": "copies outdated Vite 5/6 esbuild or Rollup-only config into a Vite 8 setup"
+    },
+    {
+      "dimension": "architecture and federation safety",
+      "pass": "matches rendering strategy to route needs and pins singleton shared dependencies with version ranges in Module Federation",
+      "fail": "recommends microfrontends without deployment justification or omits singleton constraints"
+    },
+    {
+      "dimension": "runtime and offline resilience",
+      "pass": "offloads heavy compute/canvas to Web Workers/OffscreenCanvas and uses Serwist/Workbox with persistent storage and BackgroundSyncPlugin",
+      "fail": "blocks the main thread or relies on ephemeral Service Worker memory"
+    }
+  ],
+  "negativeControls": [
+    {
+      "name": "vite 8 deprecated esbuild config",
+      "input": "add optimizeDeps.esbuildOptions and build.minify: 'esbuild' for a new Vite 8 project",
+      "mustNot": "recommend deprecated esbuild options as default in Vite 8"
+    },
+    {
+      "name": "ephemeral sw memory",
+      "input": "keep failed POST requests in a let queue = [] array inside sw.ts",
+      "mustNot": "approve in-memory Service Worker arrays for offline persistence"
+    }
+  ],
+  "baseline": {
+    "withoutSkill": "writes outdated Vite/esbuild config, omits Module Federation singleton pins, and blocks the main thread",
+    "withSkill": "uses Vite 8 Rolldown/Oxc options, enforces Module Federation singletons, offloads heavy work to Workers/OffscreenCanvas, and wires Serwist caching safely"
+  }
+}

@@ -1,0 +1,53 @@
+{
+  "schemaVersion": 1,
+  "id": "i18n-engineering",
+  "skill": "pixelcraft-web",
+  "title": "Architect localization libraries, ICU formatting, lazy catalogs, RTL, and script fallback",
+  "contextSnapshot": {
+    "surface": "multilingual SaaS dashboard supporting English, German, Vietnamese, Japanese, and Arabic (RTL)",
+    "platform": "Next.js / Vite + TypeScript",
+    "mode": "Operate",
+    "states": ["locale switch", "pluralized counts", "currency/date formatting", "RTL layout and diacritics"],
+    "constraints": ["lazy-loaded locale bundles", "CLDR-accurate plurals", "no clipped Vietnamese/Arabic glyphs"]
+  },
+  "prompt": "Implement i18n architecture with lazy-loaded catalogs, ICU plural/currency formatting, locale routing, RTL layout support, and script/font fallback across EN, DE, VI, JA, and AR.",
+  "expectedRouting": ["pixelcraft-web", "references/i18n-engineering.md", "pixelcraft-ux"],
+  "forbiddenBehaviors": [
+    "bundles all locale JSON catalogs eagerly into the initial JS bundle",
+    "implements pluralization with English-only count === 1 ternaries or hardcoded currency concatenation",
+    "omits html lang/dir updates or mirrors non-directional icons like clocks and media scrubbers in RTL"
+  ],
+  "rubricDimensions": [
+    {
+      "dimension": "library and catalog loading",
+      "pass": "selects an appropriate library (i18next, FormatJS, Lingui v5+, Paraglide JS, Vue I18n, or Angular localize) with lazy-loaded catalogs and explicit fallback chains",
+      "fail": "bundles all languages eagerly or uses deprecated macro imports / top-level frozen t() calls"
+    },
+    {
+      "dimension": "ICU and Intl formatting",
+      "pass": "uses ICU MessageFormat plurals/selects (with required other branch) and Intl.NumberFormat/DateTimeFormat/Collator",
+      "fail": "hardcodes English ternary plurals, currency symbols, or MM/DD/YYYY dates"
+    },
+    {
+      "dimension": "RTL and script typography",
+      "pass": "syncs html lang and dir, uses CSS logical properties, mirrors only directional icons, and defines unicode-range font fallbacks with diacritic line-height headroom",
+      "fail": "leaves physical left/right layout or clips tall Arabic/Vietnamese scripts"
+    }
+  ],
+  "negativeControls": [
+    {
+      "name": "english ternary plural",
+      "input": "format item count as `${count} ${count === 1 ? 'item' : 'items'}` for Arabic and Polish",
+      "mustNot": "approve English-only ternary pluralization for multilingual UI"
+    },
+    {
+      "name": "eager all-locales import",
+      "input": "statically import all 12 locale JSON files into main.tsx",
+      "mustNot": "recommend eagerly bundling every locale into the initial entrypoint"
+    }
+  ],
+  "baseline": {
+    "withoutSkill": "bundles all translation JSONs upfront, uses English-only plural ternaries, hardcodes currency formatting, and forgets dir=rtl and font fallbacks",
+    "withSkill": "lazy-loads compiled/namespaced catalogs, uses ICU MessageFormat and Intl formatters, syncs lang/dir with logical CSS, and configures script-aware font fallbacks"
+  }
+}

@@ -1,0 +1,53 @@
+{
+  "schemaVersion": 1,
+  "id": "canvas-and-node-editors",
+  "skill": "pixelcraft-web",
+  "title": "Select and implement node-graph, 2D canvas, whiteboard, and drag-and-drop editors safely",
+  "contextSnapshot": {
+    "surface": "visual workflow builder and kanban board with custom canvas annotation",
+    "platform": "React + TypeScript",
+    "mode": "Operate",
+    "states": ["node drag/connect", "large 2D canvas drag", "keyboard list reorder", "cleanup on unmount"],
+    "constraints": ["60fps drag without node remounts", "WCAG keyboard alternative for drag-and-drop", "no leaked DnD listeners"]
+  },
+  "prompt": "Build a React Flow workflow editor, a Konva 2D annotation stage, and an accessible drag-and-drop kanban board without frame drops or keyboard barriers.",
+  "expectedRouting": ["pixelcraft-web", "references/canvas-and-node-editors.md", "pixelcraft-accessibility"],
+  "forbiddenBehaviors": [
+    "passes an unmemoized inline nodeTypes object literal to ReactFlow on every render",
+    "omits KeyboardSensor in dnd-kit or ships pointer-only Pragmatic DnD without a keyboard reorder alternative",
+    "omits cleanup functions when registering Pragmatic Drag and Drop draggable or dropTargetForElements"
+  ],
+  "rubricDimensions": [
+    {
+      "dimension": "engine fit and memoization",
+      "pass": "selects React Flow/XYFlow for DOM node workflows, Konva/Fabric for 2D canvas, tldraw/Excalidraw for whiteboards, and memoizes nodeTypes/edgeTypes and callbacks",
+      "fail": "creates inline nodeTypes on every render or picks the wrong rendering model for the object count"
+    },
+    {
+      "dimension": "2D canvas performance",
+      "pass": "minimizes Konva layers, sets listening=false on static layers, caches complex shapes, and uses a dedicated drag layer",
+      "fail": "redraws all uncached shapes on one listening layer during drag"
+    },
+    {
+      "dimension": "drag-and-drop accessibility and cleanup",
+      "pass": "preserves KeyboardSensor in dnd-kit or adds keyboard reorder actions + ARIA live announcements with Pragmatic DnD combine() cleanup",
+      "fail": "ships pointer-only DnD or leaks listeners on unmount"
+    }
+  ],
+  "negativeControls": [
+    {
+      "name": "inline reactflow nodeTypes",
+      "input": "render <ReactFlow nodeTypes={{ trigger: TriggerNode }} /> directly inside the component body",
+      "mustNot": "accept unmemoized inline nodeTypes objects inside render"
+    },
+    {
+      "name": "pointer-only dnd",
+      "input": "pass sensors={[PointerSensor]} to DragDropProvider and remove KeyboardSensor",
+      "mustNot": "approve removing keyboard drag-and-drop without an accessible keyboard alternative"
+    }
+  ],
+  "baseline": {
+    "withoutSkill": "creates inline React Flow nodeTypes, redraws uncached Konva layers, and implements pointer-only drag-and-drop",
+    "withSkill": "memoizes React Flow types, applies Konva layer/cache/drag-layer optimization, and pairs DnD with keyboard accessibility and clean listener teardown"
+  }
+}
