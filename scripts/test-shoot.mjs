@@ -51,6 +51,14 @@ try {
     assert.ok(!has(dialog, 'text-occlusion', 'readable-modal'));
     assert.ok(!has(dialog, 'text-occlusion', 'behind-modal'));
     console.log('ok 2 - visible modal detects internal occlusion without flagging its intentional background coverage');
+    const ariaModal = run('shoot-aria-modal.html');
+    assert.equal(ariaModal.status, 0, `${ariaModal.error ?? ''}\n${ariaModal.stdout}\n${ariaModal.stderr}`);
+    const [hiddenAriaDialog, ariaDialog] = JSON.parse(fs.readFileSync(path.join(dir, 'report.json'), 'utf8')).captures;
+    assert.ok(has(hiddenAriaDialog, 'text-occlusion', 'behind-aria-modal'), 'fixed overlay is a defect when the sibling modal is hidden');
+    assert.ok(has(ariaDialog, 'text-occlusion', 'occluded-aria-modal'));
+    assert.ok(!has(ariaDialog, 'text-occlusion', 'readable-aria-modal'));
+    assert.ok(!has(ariaDialog, 'text-occlusion', 'behind-aria-modal'), 'sibling backdrop intentionally covers background text');
+    console.log('ok 3 - open ARIA modal distinguishes sibling backdrop from internal occlusion');
   }
 } finally {
   fs.rmSync(dir, { recursive: true, force: true });

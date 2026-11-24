@@ -271,6 +271,23 @@ const auditSource = `() => {
       return withinDocument && !clippedByAncestor(parent, rect);
     });
   };
+  const isModalBackdrop = (overlay, owner, style) => {
+    if (style.position !== 'fixed' || !overlay.parentElement) return false;
+    const bounds = overlay.getBoundingClientRect();
+    if (bounds.left > 0 || bounds.top > 0 || bounds.right < vw || bounds.bottom < innerHeight) return false;
+    return Array.from(overlay.parentElement.children).some((dialog) => {
+      if (dialog === overlay || !dialog.matches('[aria-modal="true"]') || dialog.contains(owner)
+          || dialog.closest('[hidden], [aria-hidden="true"], [inert]')
+          || !dialog.checkVisibility({ opacityProperty: true, visibilityProperty: true })) return false;
+      const rect = dialog.getBoundingClientRect();
+      const left = Math.max(0, rect.left), right = Math.min(vw, rect.right);
+      const top = Math.max(0, rect.top), bottom = Math.min(innerHeight, rect.bottom);
+      if (left >= right || top >= bottom) return false;
+      const stack = document.elementsFromPoint((left + right) / 2, (top + bottom) / 2);
+      const dialogIndex = stack.findIndex((hit) => dialog.contains(hit));
+      return dialogIndex !== -1 && stack.indexOf(overlay) > dialogIndex;
+    });
+  };
   const coveringElement = (owner, rect) => {
     if (rect.left < 0 || rect.right > vw || rect.top < 0 || rect.bottom > innerHeight
         || rect.width < 8 || rect.height < 8) return null;
@@ -288,7 +305,7 @@ const auditSource = `() => {
         for (let ancestor = current.parentElement; ancestor; ancestor = ancestor.parentElement) {
           if (Number.parseFloat(getComputedStyle(ancestor).opacity) !== 1) return null;
         }
-        return current;
+        return isModalBackdrop(current, owner, style) ? null : current;
       }
       current = current.parentElement;
     }
