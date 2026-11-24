@@ -1,0 +1,20 @@
+{
+  "name": "pixelcraft",
+  "interface": {
+    "displayName": "Pixelcraft"
+  },
+  "plugins": [
+    {
+      "name": "pixelcraft",
+      "source": {
+        "source": "local",
+        "path": "./"
+      },
+      "policy": {
+        "installation": "AVAILABLE",
+        "authentication": "ON_INSTALL"
+      },
+      "category": "Productivity"
+    }
+  ]
+}
