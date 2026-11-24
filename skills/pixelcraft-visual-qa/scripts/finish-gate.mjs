@@ -29,16 +29,19 @@ export function evaluateEvidence(manifest, hasArtifact) {
   }
 
   if (manifest.rounds.length > 3) throw new Error('at most three repair rounds are allowed');
+  const repaired = new Set();
   for (const round of manifest.rounds) {
     if (!record(round) || ![round.failure, round.reproduction, round.change, round.rerun].every(present)
         || !hasArtifact(round.before) || !hasArtifact(round.after)
         || round.before === round.after) {
       throw new Error('every repair round needs a failure, reproduction, change, rerun and distinct before/after artifacts');
     }
+    repaired.add(round.failure);
+    skipped.delete(round.failure);
   }
 
-  for (const id of new Set([...required, ...Object.keys(manifest.checks)])) {
-    const entry = manifest.checks[id];
+  for (const id of new Set([...required, ...repaired, ...Object.keys(manifest.checks)])) {
+    const entry = Object.hasOwn(manifest.checks, id) ? manifest.checks[id] : undefined;
     if (skipped.has(id) && entry?.result !== 'fail') continue;
     if (!record(entry) || !['pass', 'fail'].includes(entry.result) || entry.label !== 'rendered'
         || ![entry.method, entry.expected, entry.observed].every(present) || !hasArtifact(entry.artifact)

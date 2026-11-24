@@ -43,7 +43,15 @@ const open = evaluateEvidence({ ...failed, rounds: [round, round, round] }, hasA
 assert.equal(open.status, 'OPEN');
 assert.equal(open.failures['critical-overflow'].artifact, 'evidence.txt');
 assert.throws(() => evaluateEvidence({ ...failed, rounds: [round, round, round, round] }, hasArtifact), /at most three/);
-assert.equal(evaluateEvidence({ ...manifest, rounds: [round, round, round] }, hasArtifact).status, 'PASS');
+const omittedRerun = evaluateEvidence({ ...manifest, rounds: [round, round, round] }, hasArtifact);
+assert.equal(omittedRerun.status, 'NOT CHECKED');
+assert.ok(omittedRerun.notChecked['critical-overflow']);
+const repaired = { ...manifest, checks: { ...manifest.checks, 'critical-overflow': evidence }, rounds: [round, round, round] };
+assert.equal(evaluateEvidence(repaired, hasArtifact).status, 'PASS');
+const skippedRerun = evaluateEvidence({ ...manifest, rounds: [{ ...round, failure: 'theme' }] }, hasArtifact);
+assert.equal(skippedRerun.status, 'NOT CHECKED');
+assert.ok(skippedRerun.notChecked.theme);
+assert.ok(!Object.hasOwn(skippedRerun.notApplicable, 'theme'));
 assert.throws(() => evaluateEvidence({ ...failed, rounds: [{ ...round, after: 'before.txt' }] }, hasArtifact), /distinct before\/after/);
 console.log('ok 2 - gate keeps confirmed failures open after three rounds and requires rerun evidence');
 
