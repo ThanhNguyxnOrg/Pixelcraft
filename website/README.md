@@ -18,6 +18,8 @@ PORT=4321 npm start --prefix website
 
 Publish `website/dist/` on any static host. The zero-dependency production server supports HEAD, gzip and seekable MP4/WebM media. For immutable releases, copy `dist/` to a release directory and start with `SITE_ROOT=/absolute/path/to/release`. No API, database, analytics, remote fonts, or runtime model call is needed.
 
+The live site is https://thanhnguyxnorg.github.io/Pixelcraft/. `.github/workflows/website.yml` rebuilds and deploys it to GitHub Pages on every push to `main` that touches `website/` or `skills/`, after the checks pass. Pages serves the site under `/Pixelcraft/`, so that build sets `SITE_BASE=/Pixelcraft/` (Vite's `base`; default `/`). Reference anything in `public/` through `publicUrl()` from `src/lib/publicUrl.ts`, never as a root-relative `/…` path; `npm test` fails on one.
+
 ## Design and motion
 
 The supplied pixel identity, actual gallery specimens, installation builder and searchable skill index are retained. Deep ink, mint, soft violet and a light gallery table replace the more saturated navy/neon palette. The gallery's compact dossier keeps its process and scanner details in an optional disclosure instead of a long column. Queued examples never pretend to be completed work.
