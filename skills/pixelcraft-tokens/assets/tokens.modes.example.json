@@ -1,5 +1,5 @@
 {
-  "$schema": "https://www.designtokens.org/TR/2025.10/format/",
+  "$description": "Example mode tokens in W3C DTCG 2025.10 format",
   "color": {
     "$type": "color",
     "brand": {

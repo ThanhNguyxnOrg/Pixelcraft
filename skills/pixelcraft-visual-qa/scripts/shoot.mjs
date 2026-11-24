@@ -12,25 +12,29 @@ only when already installed; otherwise install guidance is printed and nothing
 is captured.
 
 Options:
-  --out DIR             Artifact directory (default: visual-qa)
-  --breakpoints LIST    Width x height list (default: 390x844,768x1024,1440x900)
-  --project DIR         Dependency resolution root (default: current directory)
-  --root DIR            Static server root for local targets (default: the
-                        file/directory itself; exposes everything beneath it)
-  --timeout MS          Navigation timeout in milliseconds (default: 30000)
-  --wait-for SELECTOR   Wait for a selector after page load
-  --wait-ms MS          Maximum post-load selector/network/font settle time
-                        (default: 5000)
-  --allow-http-error    Capture HTTP 4xx/5xx pages without failing the run
-  --keyboard            Probe the first eight real Tab stops on a safe fixture
-  --light-only          Skip dark-mode captures
-  --no-reduced-motion   Skip reduced-motion captures
-  --help                Show this help
+  --out DIR              Artifact directory (default: visual-qa)
+  --breakpoints LIST     Width x height list (default: 390x844,768x1024,1440x900)
+  --project DIR          Dependency resolution root (default: current directory)
+  --root DIR             Static server root for local targets (default: the
+                         file/directory itself; exposes everything beneath it)
+  --executable-path FILE Use a specific Chromium/Chrome executable
+  --timeout MS           Navigation timeout in milliseconds (default: 30000)
+  --wait-for SELECTOR    Wait for a selector after page load
+  --wait-ms MS           Maximum post-load selector/network/font settle time
+                         (default: 5000)
+  --forced-colors MODE   Emulate forced-colors media feature: none or active
+  --locale TAG           Emulate browser locale (e.g. de-DE, ar-EG, ja-JP)
+  --allow-http-error     Capture HTTP 4xx/5xx pages without failing the run
+  --keyboard             Probe the first eight real Tab stops on a safe fixture
+                         (including WCAG 2.4.11 focus-not-obscured checks)
+  --light-only           Skip dark-mode captures
+  --no-reduced-motion    Skip reduced-motion captures
+  --help                 Show this help
 
 Outputs PNG captures plus report.json. Audits are heuristic leads for human
 inspection: overflow, clipping, low contrast, broken images, hidden essential
-content, text occlusion, and optional keyboard focus. They are not proof of
-accessibility or visual quality.
+content, text occlusion, target size (<24x24 CSS px), and optional keyboard
+focus. They are not proof of accessibility or visual quality.
 
 Install Playwright in the target project when capture is desired, for example:
   npm install --save-dev playwright
@@ -38,8 +42,36 @@ Install Playwright in the target project when capture is desired, for example:
 `;
 }
 
+function optionValue(args, index, name) {
+  const value = args[index + 1];
+  if (value === undefined || value === '') throw new Error(`${name} requires a value`);
+  return value;
+}
+
+function inlineValue(arg, prefix, name) {
+  const value = arg.slice(prefix.length);
+  if (value === '') throw new Error(`${name} requires a value`);
+  return value;
+}
+
 function parse(args) {
-  const options = { out: 'visual-qa', breakpoints: '390x844,768x1024,1440x900', timeout: 30000, waitFor: null, waitMs: 5000, allowHttpError: false, project: process.cwd(), root: null, lightOnly: false, reducedMotion: true };
+  const options = {
+    out: 'visual-qa',
+    breakpoints: '390x844,768x1024,1440x900',
+    timeout: 30000,
+    waitFor: null,
+    waitMs: 5000,
+    allowHttpError: false,
+    project: process.cwd(),
+    root: null,
+    executablePath: null,
+    forcedColors: null,
+    locale: null,
+    lightOnly: false,
+    reducedMotion: true,
+    keyboard: false,
+    help: false,
+  };
   const positional = [];
   for (let index = 0; index < args.length; index += 1) {
     const arg = args[index];
@@ -48,24 +80,34 @@ function parse(args) {
     else if (arg === '--no-reduced-motion') options.reducedMotion = false;
     else if (arg === '--allow-http-error') options.allowHttpError = true;
     else if (arg === '--keyboard') options.keyboard = true;
-    else if (arg === '--out') options.out = args[++index];
-    else if (arg.startsWith('--out=')) options.out = arg.slice(6);
-    else if (arg === '--breakpoints') options.breakpoints = args[++index];
-    else if (arg.startsWith('--breakpoints=')) options.breakpoints = arg.slice(14);
-    else if (arg === '--project') options.project = args[++index];
-    else if (arg.startsWith('--project=')) options.project = arg.slice(10);
-    else if (arg === '--root') options.root = args[++index];
-    else if (arg.startsWith('--root=')) options.root = arg.slice(7);
-    else if (arg === '--timeout') options.timeout = Number(args[++index]);
-    else if (arg.startsWith('--timeout=')) options.timeout = Number(arg.slice(10));
-    else if (arg === '--wait-for') options.waitFor = args[++index];
-    else if (arg.startsWith('--wait-for=')) options.waitFor = arg.slice(11);
-    else if (arg === '--wait-ms') options.waitMs = Number(args[++index]);
-    else if (arg.startsWith('--wait-ms=')) options.waitMs = Number(arg.slice(10));
+    else if (arg === '--out') { options.out = optionValue(args, index, '--out'); index += 1; }
+    else if (arg.startsWith('--out=')) options.out = inlineValue(arg, '--out=', '--out');
+    else if (arg === '--breakpoints') { options.breakpoints = optionValue(args, index, '--breakpoints'); index += 1; }
+    else if (arg.startsWith('--breakpoints=')) options.breakpoints = inlineValue(arg, '--breakpoints=', '--breakpoints');
+    else if (arg === '--project') { options.project = optionValue(args, index, '--project'); index += 1; }
+    else if (arg.startsWith('--project=')) options.project = inlineValue(arg, '--project=', '--project');
+    else if (arg === '--root') { options.root = optionValue(args, index, '--root'); index += 1; }
+    else if (arg.startsWith('--root=')) options.root = inlineValue(arg, '--root=', '--root');
+    else if (arg === '--executable-path') { options.executablePath = optionValue(args, index, '--executable-path'); index += 1; }
+    else if (arg.startsWith('--executable-path=')) options.executablePath = inlineValue(arg, '--executable-path=', '--executable-path');
+    else if (arg === '--forced-colors') { options.forcedColors = optionValue(args, index, '--forced-colors'); index += 1; }
+    else if (arg.startsWith('--forced-colors=')) options.forcedColors = inlineValue(arg, '--forced-colors=', '--forced-colors');
+    else if (arg === '--locale') { options.locale = optionValue(args, index, '--locale'); index += 1; }
+    else if (arg.startsWith('--locale=')) options.locale = inlineValue(arg, '--locale=', '--locale');
+    else if (arg === '--timeout') { options.timeout = Number(optionValue(args, index, '--timeout')); index += 1; }
+    else if (arg.startsWith('--timeout=')) options.timeout = Number(inlineValue(arg, '--timeout=', '--timeout'));
+    else if (arg === '--wait-for') { options.waitFor = optionValue(args, index, '--wait-for'); index += 1; }
+    else if (arg.startsWith('--wait-for=')) options.waitFor = inlineValue(arg, '--wait-for=', '--wait-for');
+    else if (arg === '--wait-ms') { options.waitMs = Number(optionValue(args, index, '--wait-ms')); index += 1; }
+    else if (arg.startsWith('--wait-ms=')) options.waitMs = Number(inlineValue(arg, '--wait-ms=', '--wait-ms'));
     else if (arg.startsWith('-')) throw new Error(`unknown option: ${arg}`);
     else positional.push(arg);
   }
+  if (!Number.isFinite(options.timeout) || options.timeout <= 0) throw new Error('--timeout must be a positive number');
   if (!Number.isFinite(options.waitMs) || options.waitMs < 0) throw new Error('--wait-ms must be a non-negative number');
+  if (options.forcedColors !== null && options.forcedColors !== 'none' && options.forcedColors !== 'active') {
+    throw new Error(`--forced-colors must be 'none' or 'active', got '${options.forcedColors}'`);
+  }
   return { positional, options };
 }
 
@@ -150,7 +192,7 @@ async function createStaticTarget(target, options) {
   };
 }
 
-const auditSource = `() => {
+const auditSource = `(auditOptions = {}) => {
   const findings = [];
   const vw = document.documentElement.clientWidth;
   const add = (type, severity, message, element) => {
@@ -195,7 +237,7 @@ const auditSource = `() => {
   const luminance = (color) => {
     const convert = (channel) => {
       const c = channel / 255;
-      return c <= 0.03928 ? c / 12.92 : Math.pow((c + 0.055) / 1.055, 2.4);
+      return c <= 0.04045 ? c / 12.92 : Math.pow((c + 0.055) / 1.055, 2.4);
     };
     return 0.2126 * convert(color.r) + 0.7152 * convert(color.g) + 0.0722 * convert(color.b);
   };
@@ -213,22 +255,38 @@ const auditSource = `() => {
       a: alpha,
     };
   };
-  const backgroundFor = (element) => {
-    const layers = [];
+  const canvasBackdrop = auditOptions.colorScheme === 'dark'
+    ? { r: 18, g: 18, b: 18, a: 1 }
+    : { r: 255, g: 255, b: 255, a: 1 };
+  const effectiveContrastColors = (element, foregroundColor) => {
+    const chain = [];
     let node = element;
     while (node && node.nodeType === 1) {
-      const value = getComputedStyle(node).backgroundColor;
-      const color = parseColor(value);
-      if (!color) add('unchecked-contrast', 'medium', 'background color could not be parsed while compositing: ' + value, element);
-      if (color && color.a > 0) {
-        layers.push(color);
-        if (color.a >= 0.999) break;
-      }
+      chain.push(node);
       node = node.parentElement;
     }
-    let composite = { r: 255, g: 255, b: 255, a: 1 };
-    for (let index = layers.length - 1; index >= 0; index -= 1) composite = alphaBlend(layers[index], composite);
-    return composite;
+    let bg = { r: 0, g: 0, b: 0, a: 0 };
+    let fg = foregroundColor;
+    let unparsedLogged = false;
+    for (const current of chain) {
+      const nodeStyle = getComputedStyle(current);
+      const parsedBg = parseColor(nodeStyle.backgroundColor);
+      if (!parsedBg && !unparsedLogged) {
+        add('unchecked-contrast', 'medium', 'background color could not be parsed while compositing: ' + nodeStyle.backgroundColor, element);
+        unparsedLogged = true;
+      }
+      const layerBg = parsedBg || { r: 0, g: 0, b: 0, a: 0 };
+      const parsedOpacity = Number.parseFloat(nodeStyle.opacity);
+      const opacity = Number.isFinite(parsedOpacity) ? Math.max(0, Math.min(1, parsedOpacity)) : 1;
+      const innerBg = layerBg.a > 0 ? alphaBlend(bg, layerBg) : bg;
+      const innerFg = layerBg.a > 0 ? alphaBlend(fg, layerBg) : fg;
+      bg = opacity < 1 ? { ...innerBg, a: innerBg.a * opacity } : innerBg;
+      fg = opacity < 1 ? { ...innerFg, a: innerFg.a * opacity } : innerFg;
+    }
+    return {
+      background: alphaBlend(bg, canvasBackdrop),
+      foreground: alphaBlend(fg, canvasBackdrop),
+    };
   };
   const documentBounds = {
     right: Math.max(document.documentElement.scrollWidth, vw),
@@ -243,6 +301,18 @@ const auditSource = `() => {
         const clippedHorizontally = /hidden|clip/.test(nodeStyle.overflowX) && (rect.right <= clip.left || rect.left >= clip.right);
         const clippedVertically = /hidden|clip/.test(nodeStyle.overflowY) && (rect.bottom <= clip.top || rect.top >= clip.bottom);
         if (clippedHorizontally || clippedVertically) return true;
+      }
+      node = node.parentElement;
+    }
+    return false;
+  };
+  const insideHorizontalScroller = (element) => {
+    let node = element.parentElement;
+    while (node && node.nodeType === 1 && node !== document.documentElement && node !== document.body) {
+      const nodeStyle = getComputedStyle(node);
+      if (/^(?:auto|scroll)$/.test(nodeStyle.overflowX)) {
+        const scrollerRect = node.getBoundingClientRect();
+        if (scrollerRect.left >= -2 && scrollerRect.right <= vw + 2) return true;
       }
       node = node.parentElement;
     }
@@ -312,9 +382,18 @@ const auditSource = `() => {
     return null;
   };
   const closedDisclosures = Array.from(document.querySelectorAll('details:not([open])'));
+  const inClosedPopover = (element) => {
+    try {
+      return Boolean(element.closest('[popover]:not(:popover-open)'));
+    } catch {
+      return false;
+    }
+  };
   const intentionallyHidden = (element) => element.closest('[hidden], [aria-hidden="true"], [inert], dialog:not([open])')
+    || inClosedPopover(element)
     || closedDisclosures.some((details) =>
       details.contains(element) && !Array.from(details.children).find((child) => child.tagName === 'SUMMARY')?.contains(element));
+  const interactiveSelector = 'button, a[href], input:not([type="hidden"]), select, textarea, summary, [role="button"], [role="link"], [role="checkbox"], [role="radio"], [role="switch"], [role="tab"], [role="menuitem"]';
   for (const element of elements) {
     const rect = element.getBoundingClientRect();
     const style = getComputedStyle(element);
@@ -330,10 +409,19 @@ const auditSource = `() => {
       add('broken-image', 'high', 'visible image finished loading with no intrinsic width', element);
     }
     if (rect.width > 2 && rect.height > 2 && style.visibility !== 'hidden' && style.display !== 'none') {
-      if (rect.left < -2 || rect.right > vw + 2) add('outside-viewport', 'medium', 'rendered box extends outside horizontal viewport: ' + JSON.stringify({ left: Math.round(rect.left), right: Math.round(rect.right), viewport: vw }), element);
+      if ((rect.left < -2 || rect.right > vw + 2) && !insideHorizontalScroller(element)) {
+        add('outside-viewport', 'medium', 'rendered box extends outside horizontal viewport: ' + JSON.stringify({ left: Math.round(rect.left), right: Math.round(rect.right), viewport: vw }), element);
+      }
       const clippedX = element.scrollWidth > element.clientWidth + 2 && /hidden|clip/.test(style.overflowX);
       const clippedY = element.scrollHeight > element.clientHeight + 2 && /hidden|clip/.test(style.overflowY);
       if ((clippedX || clippedY) && element.textContent.trim()) add('clipped-text', 'medium', 'text content may be clipped by hidden overflow', element);
+      if (element.matches(interactiveSelector) && !intentionallyHidden(element)
+          && element.checkVisibility?.({ opacityProperty: true, visibilityProperty: true }) !== false) {
+        const inlineProseLink = element.tagName === 'A' && style.display === 'inline' && Boolean(element.closest('p, li, dd, dt, blockquote, td, th'));
+        if (!inlineProseLink && (rect.width < 24 || rect.height < 24)) {
+          add('small-touch-target', 'low', 'interactive target is ' + Math.round(rect.width) + 'x' + Math.round(rect.height) + ' CSS px (< 24x24 WCAG 2.5.8 heuristic)', element);
+        }
+      }
     }
     const textRects = Array.from(element.childNodes).flatMap((node) => node.nodeType === 3 && node.textContent.trim() ? renderedTextRects(node) : []);
     if (textRects.length) {
@@ -341,8 +429,7 @@ const auditSource = `() => {
       if (cover) add('text-occlusion', 'medium', 'visible text range is covered at three sample points by ' + describe(cover), element);
       const fg = parseColor(style.color);
       if (fg) {
-        const background = backgroundFor(element);
-        const foreground = fg.a < 1 ? alphaBlend(fg, background) : fg;
+        const { foreground, background } = effectiveContrastColors(element, fg);
         const ratio = contrast(foreground, background);
         const size = Number.parseFloat(style.fontSize) || 16;
         const weight = Number.parseInt(style.fontWeight, 10) || 400;
@@ -379,20 +466,75 @@ async function auditKeyboard(page) {
         const element = document.activeElement;
         if (!element || element === document.body || element === document.documentElement) return null;
         const name = element.localName + (element.id ? '#' + element.id : '');
+        const fixedOrStickyOwner = (node) => {
+          let cur = node;
+          while (cur && cur.nodeType === 1 && cur !== document.documentElement && cur !== document.body) {
+            const st = getComputedStyle(cur);
+            if (st.position === 'fixed' || st.position === 'sticky') return cur;
+            cur = cur.parentElement;
+          }
+          return null;
+        };
+        const checkObscured = () => {
+          const rect = element.getBoundingClientRect();
+          if (rect.width <= 0 || rect.height <= 0) return null;
+          const points = [
+            [rect.left + rect.width * 0.5, rect.top + rect.height * 0.5],
+            [rect.left + Math.min(rect.width * 0.25, rect.width - 1), rect.top + Math.min(rect.height * 0.25, rect.height - 1)],
+            [rect.left + Math.max(rect.width * 0.75, 1), rect.top + Math.max(rect.height * 0.75, 1)],
+          ].filter(([x, y]) => x >= 0 && x < innerWidth && y >= 0 && y < innerHeight);
+          if (!points.length) return null;
+          let overlay = null;
+          let coveredCount = 0;
+          for (const [x, y] of points) {
+            const hit = document.elementFromPoint(x, y);
+            if (!hit || hit === element || element.contains(hit) || hit.contains(element)) continue;
+            const pinned = fixedOrStickyOwner(hit);
+            if (pinned && !pinned.contains(element)) {
+              coveredCount += 1;
+              overlay = pinned;
+            }
+          }
+          if (!overlay || coveredCount === 0) return null;
+          const id = overlay.id ? '#' + overlay.id : '';
+          const cls = typeof overlay.className === 'string' && overlay.className.trim()
+            ? '.' + overlay.className.trim().split(/\s+/).slice(0, 2).join('.')
+            : '';
+          return { by: (overlay.tagName || 'element').toLowerCase() + id + cls, fully: coveredCount === points.length };
+        };
+        const obscured = checkObscured();
         if (!baseline.has(element) || element.shadowRoot || element.matches('iframe, :read-write')) {
-          return { element: name, indicator: 'not-checked' };
+          return { element: name, indicator: 'not-checked', obscured };
         }
         for (let node = element; node; node = node.parentElement) {
-          if (!baseline.has(node)) return { element: name, indicator: 'not-checked' };
-          if (signature(node) !== baseline.get(node)) return { element: name, indicator: 'style-change' };
+          if (!baseline.has(node)) return { element: name, indicator: 'not-checked', obscured };
+          if (signature(node) !== baseline.get(node)) return { element: name, indicator: 'style-change', obscured };
         }
         const style = getComputedStyle(element);
-        return { element: name, indicator: style.outlineStyle === 'none' || parseFloat(style.outlineWidth) === 0 ? 'not-detected' : 'not-checked' };
+        return {
+          element: name,
+          indicator: style.outlineStyle === 'none' || parseFloat(style.outlineWidth) === 0 ? 'not-detected' : 'not-checked',
+          obscured,
+        };
       }, initial);
       if (!stop) break;
-      stops.push(stop);
-      if (stop.indicator === 'not-detected') findings.push({ type: 'keyboard-focus-not-detected', severity: 'medium',
-        element: stop.element, message: 'Tab reached this element but no focus style change was detected; inspect the focused state manually' });
+      stops.push({ element: stop.element, indicator: stop.indicator });
+      if (stop.indicator === 'not-detected') {
+        findings.push({
+          type: 'keyboard-focus-not-detected',
+          severity: 'medium',
+          element: stop.element,
+          message: 'Tab reached this element but no focus style change was detected; inspect the focused state manually',
+        });
+      }
+      if (stop.obscured) {
+        findings.push({
+          type: 'focus-obscured',
+          severity: stop.obscured.fully ? 'high' : 'medium',
+          element: stop.element,
+          message: `focused element is ${stop.obscured.fully ? 'fully' : 'partially'} obscured by fixed/sticky overlay ${stop.obscured.by} (WCAG 2.4.11)`,
+        });
+      }
     }
   } finally {
     await initial.dispose();
@@ -466,15 +608,28 @@ async function main() {
 
   const out = path.resolve(options.out);
   fs.mkdirSync(out, { recursive: true });
-  const browser = await chromium.launch({ headless: true });
+  const browser = await chromium.launch({ headless: true, ...(options.executablePath ? { executablePath: options.executablePath } : {}) });
   const staticTarget = await createStaticTarget(target, options);
-  const report = { target, generatedAt: new Date().toISOString(), captures: [], heuristic: true };
+  const report = {
+    target,
+    generatedAt: new Date().toISOString(),
+    captures: [],
+    heuristic: true,
+    ...(options.forcedColors ? { forcedColors: options.forcedColors } : {}),
+    ...(options.locale ? { locale: options.locale } : {}),
+  };
   let sawHttpError = false;
   try {
     for (const viewport of breakpoints) {
       for (const colorScheme of options.lightOnly ? ['light'] : ['light', 'dark']) {
         for (const reducedMotion of options.reducedMotion ? ['no-preference', 'reduce'] : ['no-preference']) {
-          const page = await browser.newPage({ viewport, colorScheme, reducedMotion });
+          const page = await browser.newPage({
+            viewport,
+            colorScheme,
+            reducedMotion,
+            ...(options.forcedColors ? { forcedColors: options.forcedColors } : {}),
+            ...(options.locale ? { locale: options.locale } : {}),
+          });
           const pendingRequests = trackDataRequests(page);
           const response = await page.goto(staticTarget.url, { waitUntil: 'load', timeout: options.timeout });
           const status = response ? response.status() : null;
@@ -483,7 +638,7 @@ async function main() {
           const name = `${viewport.width}x${viewport.height}-${colorScheme}-${reducedMotion === 'reduce' ? 'reduced-motion' : 'motion'}.png`;
           const file = path.join(out, name);
           await page.screenshot({ path: file, fullPage: true });
-          const audit = await page.evaluate(`(${auditSource})()`);
+          const audit = await page.evaluate(`(${auditSource})(${JSON.stringify({ colorScheme })})`);
           if (options.keyboard) {
             const keyboard = await auditKeyboard(page);
             audit.keyboard = keyboard.stops;

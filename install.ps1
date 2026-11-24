@@ -105,28 +105,65 @@ function Get-WorkflowTask([string]$Name) {
   }
 }
 
-function Write-AdapterFile([string]$Path, [string[]]$Lines) {
+function Get-DisplaySkillRoot([string]$SkillRoot) {
+  $full = [System.IO.Path]::GetFullPath($SkillRoot)
+  if ($Global) {
+    $homeFull = [System.IO.Path]::GetFullPath([System.Environment]::GetFolderPath('UserProfile')).TrimEnd('\', '/')
+    if ($full.StartsWith($homeFull, [System.StringComparison]::OrdinalIgnoreCase)) {
+      return ('~' + $full.Substring($homeFull.Length)).Replace('\', '/')
+    }
+    return $full.Replace('\', '/')
+  }
+  $cwdFull = [System.IO.Path]::GetFullPath((Get-Location).Path).TrimEnd('\', '/')
+  $prefix = $cwdFull + [System.IO.Path]::DirectorySeparatorChar
+  if ($full.StartsWith($prefix, [System.StringComparison]::OrdinalIgnoreCase)) {
+    return $full.Substring($prefix.Length).Replace('\', '/')
+  }
+  return $full.Replace('\', '/')
+}
+
+function Write-AdapterFile([string]$Path, [string[]]$Lines, [switch]$Managed) {
   $parent = Split-Path -Parent $Path
   Assert-TargetPathSafe $parent ([bool]$Global)
   if (Test-ReparsePoint $Path) { throw "adapter output is a symlink or reparse point: $Path; refusing to install through it" }
   $exists = Test-AnyPath $Path
-  if ($exists -and -not $Force) {
+  if (-not $Managed -and $exists -and -not $Force) {
     $prefix = if ($DryRun) { 'dry-run: ' } else { '' }
     Write-Host "${prefix}skipped existing adapter: $Path (use -Force to replace)"
     return
   }
   if ($DryRun) {
-    Write-Host "dry-run: adapter $Path"
+    $kind = if ($Managed) { 'managed adapter' } else { 'adapter' }
+    Write-Host "dry-run: $kind $Path"
     return
   }
   if (-not (Test-AnyPath $parent)) { New-Item -ItemType Directory -Path $parent -Force | Out-Null }
   Assert-TargetPathSafe $parent ([bool]$Global)
-  Set-Content -LiteralPath $Path -Value $Lines -Encoding UTF8
+  if ($Managed) {
+    $startMarker = '<!-- pixelcraft:start -->'
+    $endMarker = '<!-- pixelcraft:end -->'
+    $block = "$startMarker`n$($Lines -join "`n")`n$endMarker"
+    $existing = if ($exists) { [System.IO.File]::ReadAllText($Path) } else { '' }
+    $pattern = '(?s)<!-- pixelcraft:start -->.*?<!-- pixelcraft:end -->'
+    if ([regex]::IsMatch($existing, $pattern)) {
+      $output = [regex]::Replace($existing, $pattern, [System.Text.RegularExpressions.MatchEvaluator]{ param($m) $block }, 1)
+    } elseif ($existing.Contains($startMarker)) {
+      throw "managed Pixelcraft block is missing its end marker: fix $Path before installing"
+    } elseif ([string]::IsNullOrWhiteSpace($existing)) {
+      $output = "$block`n"
+    } else {
+      $output = "$($existing.TrimEnd())`n`n$block`n"
+    }
+    [System.IO.File]::WriteAllText($Path, $output, [System.Text.UTF8Encoding]::new($false))
+  } else {
+    Set-Content -LiteralPath $Path -Value $Lines -Encoding UTF8
+  }
   Write-Host "installed adapter: $Path"
 }
 
 function Write-PixelcraftAdapter([string]$AgentName, [string]$SkillRoot) {
   $base = Split-Path -Parent $SkillRoot
+  $displayRoot = Get-DisplaySkillRoot $SkillRoot
   $workflowActions = @(
     @{ Name = 'pixelcraft-plan'; Task = (Get-WorkflowTask 'pixelcraft-plan') },
     @{ Name = 'pixelcraft-review'; Task = (Get-WorkflowTask 'pixelcraft-review') },
@@ -134,25 +171,34 @@ function Write-PixelcraftAdapter([string]$AgentName, [string]$SkillRoot) {
     @{ Name = 'pixelcraft-direction'; Task = (Get-WorkflowTask 'pixelcraft-direction') }
   )
   if ($AgentName -eq 'claude') {
-    $commandActions = @(@{ Name = 'pixelcraft'; Task = (Get-WorkflowTask 'pixelcraft') }) + $workflowActions
+    $commandActions = @(
+      @{ Name = 'pixelcraft'; Task = (Get-WorkflowTask 'pixelcraft') },
+      @{ Name = 'pixelcraft-plan'; Task = (Get-WorkflowTask 'pixelcraft-plan') },
+      @{ Name = 'pixelcraft-review'; Task = (Get-WorkflowTask 'pixelcraft-review') },
+      @{ Name = 'pixelcraft-visual-qa'; Task = (Get-WorkflowTask 'pixelcraft-visual-qa') }
+    )
     foreach ($action in $commandActions) {
       Write-AdapterFile (Join-Path $base ("commands/$($action.Name).md")) @('---', "description: $($action.Task)", '---', '', "$($action.Task). Read and follow the self-contained $($action.Name) skill. Preserve user requirements, project conventions, accessibility, and evidence labels.")
     }
   } elseif ($AgentName -eq 'cursor') {
-    Write-AdapterFile (Join-Path $base 'rules/pixelcraft.mdc') @('---', 'description: Route UI design and review through Pixelcraft', 'alwaysApply: true', '---', '', '# Pixelcraft router', '', "Use Pixelcraft for interface design, implementation, review, and visual QA. Start with pixelcraft-plan and read the matching self-contained skill under $SkillRoot; do not inline large generated content.")
+    Write-AdapterFile (Join-Path $base 'rules/pixelcraft.mdc') @('---', 'description: Route UI design and review through Pixelcraft', 'alwaysApply: true', '---', '', '# Pixelcraft router', '', "Use Pixelcraft for interface design, implementation, review, and visual QA. Start with pixelcraft-plan and read the matching self-contained skill under $displayRoot; do not inline large generated content.")
   } elseif ($AgentName -eq 'copilot') {
-    Write-AdapterFile (Join-Path $base 'copilot-instructions.md') @('# Pixelcraft router', '', "Use Pixelcraft for interface design, implementation, review, and visual QA. Start with pixelcraft-plan and read the matching self-contained skill under $SkillRoot; do not inline large generated content.")
-    Write-AdapterFile (Join-Path $base 'instructions/pixelcraft.instructions.md') @('---', 'applyTo: "**/*.{html,css,scss,js,jsx,ts,tsx,vue,svelte,astro,py,rb,php,cs,java,kt,swift,dart,rs,go,lua,ex,exs,clj,cljs,elm,fs,scala}"', '---', '', 'When editing interface or user-facing behavior, follow copilot-instructions.md and read the matching Pixelcraft skill before implementation or review.')
+    Write-AdapterFile (Join-Path $base 'copilot-instructions.md') @('# Pixelcraft router', '', "Use Pixelcraft for interface design, implementation, review, and visual QA. Start with pixelcraft-plan and read the matching self-contained skill under $displayRoot; do not inline large generated content.") -Managed
+    Write-AdapterFile (Join-Path $base 'instructions/pixelcraft.instructions.md') @('---', 'applyTo: "**/*.{html,css,scss,js,jsx,ts,tsx,vue,svelte,astro,mdx,razor,heex,erb,templ,mjml,typ,tex,py,rb,php,cs,java,kt,swift,dart,rs,go,lua,ex,exs,clj,cljs,elm,fs,scala,cpp,h,glsl,wgsl,qml,xaml,uxml,uss,gd,tscn,tcss,qss,r,jl}"', '---', '', 'When editing interface or user-facing behavior, follow copilot-instructions.md and read the matching Pixelcraft skill before implementation or review.')
     foreach ($action in $workflowActions) {
       Write-AdapterFile (Join-Path $base ("prompts/$($action.Name).prompt.md")) @('---', "description: $($action.Task)", '---', '', "$($action.Task). Read and follow the self-contained $($action.Name) skill. Preserve user requirements, project conventions, accessibility, and evidence labels.")
     }
   } elseif ($AgentName -eq 'windsurf') {
-    Write-AdapterFile (Join-Path $base 'rules/pixelcraft.md') @('# Pixelcraft router', '', "Use Pixelcraft for interface design, implementation, review, and visual QA. Start with pixelcraft-plan and read the matching self-contained skill under $SkillRoot.")
+    if ($Global) {
+      Write-AdapterFile (Join-Path $base 'memories/global_rules.md') @('# Pixelcraft router', '', "Use Pixelcraft for interface design, implementation, review, and visual QA. Start with pixelcraft-plan and read the matching self-contained skill under $displayRoot.") -Managed
+    } else {
+      Write-AdapterFile (Join-Path $base 'rules/pixelcraft.md') @('# Pixelcraft router', '', "Use Pixelcraft for interface design, implementation, review, and visual QA. Start with pixelcraft-plan and read the matching self-contained skill under $displayRoot.")
+    }
     foreach ($action in $workflowActions) {
-      Write-AdapterFile (Join-Path $base ("workflows/$($action.Name).md")) @("# $($action.Task)", '', "1. Read the self-contained $($action.Name) skill under $SkillRoot.", '2. Follow its workflow and references.', '3. Preserve user requirements, accessibility, and evidence labels.')
+      Write-AdapterFile (Join-Path $base ("workflows/$($action.Name).md")) @("# $($action.Task)", '', "1. Read the self-contained $($action.Name) skill under $displayRoot.", '2. Follow its workflow and references.', '3. Preserve user requirements, accessibility, and evidence labels.')
     }
   } elseif ($AgentName -eq 'kiro') {
-    Write-AdapterFile (Join-Path $base 'steering/pixelcraft.md') @('# Pixelcraft steering', '', "Use Pixelcraft for interface design, implementation, review, and visual QA. Start with pixelcraft-plan and read the matching self-contained skill under $SkillRoot.")
+    Write-AdapterFile (Join-Path $base 'steering/pixelcraft.md') @('# Pixelcraft steering', '', "Use Pixelcraft for interface design, implementation, review, and visual QA. Start with pixelcraft-plan and read the matching self-contained skill under $displayRoot.")
   }
 }
 

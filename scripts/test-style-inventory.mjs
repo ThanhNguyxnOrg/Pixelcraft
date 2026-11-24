@@ -7,6 +7,11 @@ import os from 'node:os';
 import path from 'node:path';
 import { fileURLToPath } from 'node:url';
 
+if (process.argv.includes('--help') || process.argv.includes('-h')) {
+  console.log('Usage: node scripts/test-style-inventory.mjs');
+  process.exit(0);
+}
+
 const root = path.resolve(path.dirname(fileURLToPath(import.meta.url)), '..');
 const script = path.join(root, 'skills/pixelcraft-visual-qa/scripts/style-inventory.mjs');
 const fixture = path.join(root, 'skills/pixelcraft-visual-qa/scripts/fixtures/style-inventory.html');
@@ -40,6 +45,24 @@ function runInventoryAsync(target, outPath, extra = []) {
 }
 
 try {
+  const helpRes = spawnSync(process.execPath, [script, '--help'], { encoding: 'utf8', cwd: root });
+  assert.equal(helpRes.status, 0, helpRes.stderr);
+  assert.match(helpRes.stdout, /--color-scheme/);
+  assert.match(helpRes.stdout, /--reduced-motion/);
+  assert.match(helpRes.stdout, /--allow-http-error/);
+
+  for (const [args, pattern] of [
+    [['--color-scheme', 'sepia'], /--color-scheme must be 'light' or 'dark'/],
+    [['--color-scheme='], /--color-scheme requires a value/],
+    [['--reduced-motion', 'slow'], /--reduced-motion must be 'no-preference' or 'reduce'/],
+    [['--reduced-motion='], /--reduced-motion requires a value/],
+  ]) {
+    const failed = spawnSync(process.execPath, [script, fixture, ...args], { encoding: 'utf8', cwd: root });
+    assert.notEqual(failed.status, 0, `expected failure for ${args.join(' ')}`);
+    assert.match(failed.stderr, pattern);
+  }
+  console.log('ok 0 - style-inventory CLI validates color-scheme, reduced-motion, and allow-http-error options');
+
   const out = path.join(tmp, 'inventory.json');
   const result = runInventory(fixture, out, ['--breakpoints=390x500,800x600', '--wait-ms=100']);
   const combined = `${result.stdout}\n${result.stderr}`;

@@ -6,6 +6,11 @@ import os from 'node:os';
 import path from 'node:path';
 import { fileURLToPath } from 'node:url';
 
+if (process.argv.includes('--help') || process.argv.includes('-h')) {
+  console.log('Usage: node scripts/test-build-adapters.mjs');
+  process.exit(0);
+}
+
 const root = path.resolve(path.dirname(fileURLToPath(import.meta.url)), '..');
 const script = path.join(root, 'scripts/build-adapters.mjs');
 const base = fs.mkdtempSync(path.join(os.tmpdir(), 'pixelcraft-build-adapters-'));
@@ -41,7 +46,15 @@ try {
   assert.equal(accepted.status, 0, accepted.stderr);
   assert.equal(fs.existsSync(path.join(empty, '.pixelcraft-dist')), true);
   assert.equal(fs.existsSync(path.join(empty, 'manifest.json')), true);
-  console.log('ok 3 - accepts an empty output directory');
+  const manifest = JSON.parse(fs.readFileSync(path.join(empty, 'manifest.json'), 'utf8'));
+  assert.equal(manifest.agents.length, 14);
+  assert.ok(manifest.agents.includes('agents'));
+  assert.ok(fs.existsSync(path.join(empty, 'agents/.agents/skills/pixelcraft/SKILL.md')));
+  const copilotPath = fs.readFileSync(path.join(empty, 'copilot/.github/instructions/pixelcraft.instructions.md'), 'utf8');
+  for (const ext of ['mjml', 'typ', 'tex', 'uxml', 'uss', 'gd', 'tscn', 'qml', 'xaml', 'cpp', 'h', 'glsl', 'wgsl', 'mdx', 'razor', 'heex', 'erb', 'templ', 'tcss', 'qss', 'r', 'jl']) {
+    assert.ok(copilotPath.includes(ext), `missing ${ext} in Copilot applyTo glob`);
+  }
+  console.log('ok 3 - accepts an empty output directory and builds all 14 canonical fragments with expanded Copilot applyTo glob');
   console.log('adapter output safety tests passed');
 } finally {
   fs.rmSync(base, { recursive: true, force: true });

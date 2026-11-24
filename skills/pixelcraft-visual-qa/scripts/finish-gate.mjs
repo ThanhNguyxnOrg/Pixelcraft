@@ -4,6 +4,7 @@ import path from 'node:path';
 import { fileURLToPath } from 'node:url';
 
 const optional = ['error', 'empty', 'loading', 'theme', 'reduced-motion', 'reflow-320'];
+const extendedOptional = ['i18n', 'locale', 'forced-colors', 'text-scale-200'];
 const interfaces = ['responsive-web', 'other'];
 const shortHeightLayout = 'layout-short-height';
 const shortHeightLimit = 600;
@@ -23,13 +24,20 @@ export function evaluateEvidence(manifest, hasArtifact) {
   const notChecked = new Map();
   const failures = new Map();
   const skipped = new Map();
-  for (const id of optional) {
-    if (id === 'reflow-320' && !web) continue;
+  const applyOptionalDecision = (id) => {
     const applicability = manifest.applicability[id];
     if (applicability === true) required.push(id);
     else if (record(applicability) && applicability.applies === false && present(applicability.reason)) {
       skipped.set(id, applicability.reason);
     } else notChecked.set(id, 'Applicability must be decided before verification.');
+  };
+  for (const id of optional) {
+    if (id === 'reflow-320' && !web) continue;
+    applyOptionalDecision(id);
+  }
+  for (const id of extendedOptional) {
+    if (!Object.hasOwn(manifest.applicability, id)) continue;
+    applyOptionalDecision(id);
   }
 
   const layouts = record(manifest.layoutMatrix) ? manifest.layoutMatrix : {};

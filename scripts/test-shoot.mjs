@@ -5,7 +5,7 @@ import path from 'node:path';
 import { spawnSync } from 'node:child_process';
 import { fileURLToPath } from 'node:url';
 
-if (process.argv.includes('--help')) {
+if (process.argv.includes('--help') || process.argv.includes('-h')) {
   console.log('Usage: node scripts/test-shoot.mjs');
   process.exit(0);
 }
@@ -13,6 +13,28 @@ if (process.argv.includes('--help')) {
 const dir = fs.mkdtempSync(path.join(os.tmpdir(), 'pixelcraft-shoot-test-'));
 try {
   const local = (file) => fileURLToPath(new URL(`../skills/pixelcraft-visual-qa/scripts/${file}`, import.meta.url));
+  const rawRun = (...args) => spawnSync(process.execPath, [local('shoot.mjs'), ...args], { encoding: 'utf8', timeout: 30000 });
+
+  const helpRes = rawRun('--help');
+  assert.equal(helpRes.status, 0, helpRes.stderr);
+  assert.match(helpRes.stdout, /--executable-path/);
+  assert.match(helpRes.stdout, /--forced-colors/);
+  assert.match(helpRes.stdout, /--locale/);
+
+  for (const [args, pattern] of [
+    [['--out'], /--out requires a value/],
+    [['--timeout', '0'], /--timeout must be a positive number/],
+    [['--timeout=abc'], /--timeout must be a positive number/],
+    [['--forced-colors', 'inverted'], /--forced-colors must be 'none' or 'active'/],
+    [['--locale='], /--locale requires a value/],
+    [['--executable-path'], /--executable-path requires a value/],
+  ]) {
+    const failed = rawRun('https://example.com', ...args);
+    assert.notEqual(failed.status, 0, `expected failure for ${args.join(' ')}`);
+    assert.match(failed.stderr, pattern);
+  }
+  console.log('ok 0 - shoot CLI validates flags, timeout, forced-colors, locale, and executable-path');
+
   const run = (fixture, ...options) => spawnSync(process.execPath, [
     local('shoot.mjs'), local(`fixtures/${fixture}`), '--out', dir, '--project',
     process.env.PIXELCRAFT_TEST_PLAYWRIGHT_PROJECT ?? process.cwd(), '--breakpoints=390x844,768x1024',

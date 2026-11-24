@@ -6,7 +6,7 @@ import { spawnSync } from 'node:child_process';
 import { fileURLToPath } from 'node:url';
 import { evaluateEvidence } from '../skills/pixelcraft-visual-qa/scripts/finish-gate.mjs';
 
-if (process.argv.includes('--help')) {
+if (process.argv.includes('--help') || process.argv.includes('-h')) {
   console.log('Usage: node scripts/test-finish-gate.mjs');
   process.exit(0);
 }
@@ -146,3 +146,39 @@ const reusesDesktopArtifact = evaluateEvidence({
 assert.equal(reusesDesktopArtifact.status, 'NOT CHECKED');
 assert.match(reusesDesktopArtifact.notChecked['layout-short-height'], /separate artifact/);
 console.log('ok 7 - regular desktop evidence cannot satisfy the short-height check');
+
+const extendedMissing = evaluateEvidence({
+  ...manifest,
+  applicability: {
+    ...manifest.applicability,
+    i18n: true,
+    'forced-colors': true,
+    'text-scale-200': { applies: false, reason: 'Fixed terminal grid has no browser text zoom' },
+    locale: { applies: false },
+  },
+}, hasArtifact);
+assert.equal(extendedMissing.status, 'NOT CHECKED');
+assert.ok(extendedMissing.notChecked.i18n);
+assert.ok(extendedMissing.notChecked['forced-colors']);
+assert.ok(extendedMissing.notChecked.locale);
+assert.equal(extendedMissing.notApplicable['text-scale-200'], 'Fixed terminal grid has no browser text zoom');
+
+const extendedPassing = evaluateEvidence({
+  ...manifest,
+  applicability: {
+    ...manifest.applicability,
+    i18n: true,
+    'forced-colors': true,
+    'text-scale-200': true,
+    locale: { applies: false, reason: 'Covered by i18n check' },
+  },
+  checks: {
+    ...manifest.checks,
+    i18n: evidence,
+    'forced-colors': evidence,
+    'text-scale-200': evidence,
+  },
+}, hasArtifact);
+assert.equal(extendedPassing.status, 'PASS');
+assert.equal(extendedPassing.notApplicable.locale, 'Covered by i18n check');
+console.log('ok 8 - declared extended optional keys (i18n, locale, forced-colors, text-scale-200) are enforced without breaking v1 manifests');

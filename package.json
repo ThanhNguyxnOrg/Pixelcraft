@@ -44,7 +44,8 @@
     "test:style-inventory": "node scripts/test-style-inventory.mjs",
     "test:finish-gate": "node scripts/test-finish-gate.mjs",
     "test:slop-scan": "node scripts/test-slop-scan.mjs",
-    "test:shoot": "node scripts/test-shoot.mjs"
+    "test:shoot": "node scripts/test-shoot.mjs",
+    "test:release-archives": "node scripts/test-release-archives.mjs"
   },
   "files": [
     ".agents/plugins/marketplace.json",
