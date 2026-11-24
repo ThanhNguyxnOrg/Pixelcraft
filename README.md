@@ -18,7 +18,7 @@ Portable Agent Skills for distinctive, evidence-verified UI and rigorous UX acro
 
 Pixelcraft counters generic "AI-generated" interfaces at the process level: codebase-first Socratic discovery (**Grill-Me**), 3-tier creative brainstorming with a pre-code design approval gate, a Stack Craft Gate that blocks low-craft defaults, a cross-platform accessibility/UX floor, idiomatic framework translation, and 9 zero-dependency verification CLIs with strict evidence labeling.
 
-> **[Explore the live multi-stack showcase & 6 before/after proof exhibits →](https://thanhnguyxnorg.github.io/Pixelcraft/)**
+> **[Explore the live multi-stack showcase & 22 before/after proof exhibits →](https://thanhnguyxnorg.github.io/Pixelcraft/)**
 
 ---
 
@@ -232,7 +232,7 @@ install.ps1                  PowerShell installer (no Node required; pin with -R
 scripts/                     validator, adapter & ZIP builders, offline eval runner, and contract tests
 skills/                      26 self-contained Agent Skills (247 reference docs, 9 zero-dep CLIs)
 evals/                       26 behavioral eval guides + 66 machine-readable JSON fixtures
-website/                     7-section React/Vite/Tailwind showcase + 6-exhibit multi-stack gallery
+website/                     7-section React/Vite/Tailwind showcase + 22-exhibit multi-stack gallery
 assets/                      brand artwork, banner, and icons
 docs/ARCHITECTURE.md         system architecture and loop contract
 docs/DESIGN-RATIONALE.md     contributor rationale for rules and trade-offs
@@ -249,7 +249,7 @@ gemini-extension.json        Gemini CLI extension manifest
 ## Roadmap
 
 - Live multi-model benchmark runner layered on top of the shipped 66-fixture offline harness (`npm run eval:offline`);
-- Native CI visual-regression fixtures for desktop (Qt/Slint), mobile (SwiftUI/Compose), and game UI engines alongside the 6 showcase exhibits;
+- Native CI visual-regression fixtures for desktop (Qt/Slint), mobile (SwiftUI/Compose), and game UI engines alongside the 22 showcase exhibits;
 - Expanded DTCG Resolver alias/theme compilation and Figma Code Connect bridge examples;
 - Optional localized contributor guides while preserving machine-readable English skill instructions.
 

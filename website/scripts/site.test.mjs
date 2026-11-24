@@ -54,7 +54,9 @@ test("showcase identities, version, references, and agent count stay synced with
   ).filter((f) => f.endsWith(".json")).length;
   assert.equal(meta.totalEvalFixtures, expectedFixtures);
   assert.ok(meta.totalEvalCases >= expectedSkills.length);
-  assert.equal(meta.totalGalleryExhibits, 6);
+  const gallery = JSON.parse(await read("src/generated/gallery.json"));
+  assert.equal(meta.totalGalleryExhibits, Object.keys(gallery.items).length);
+  assert.equal(meta.totalGalleryExhibits, 22);
 });
 
 test("gallery metadata matches source scanner output, covers all 22 multi-stack exhibits, and all paired assets exist", async () => {
