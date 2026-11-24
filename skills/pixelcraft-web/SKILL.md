@@ -56,6 +56,7 @@ Be explicit: browser rendering and interaction can be inspected here when a brow
 - Read [references/adaptive-layout.md](references/adaptive-layout.md) when a web surface must work across phone, tablet, desktop, split window or different input modes.
 - Read [references/component-systems.md](references/component-systems.md) when selecting or implementing headless primitives, source-first components, styled/enterprise UI libraries, or Floating UI vs native popover positioning.
 - Read [references/state-architecture.md](references/state-architecture.md) when designing client state, URL state, server-state caching, GraphQL clients, XState workflows, or IndexedDB/Dexie local persistence.
+- Read [references/forms-validation.md](references/forms-validation.md) when implementing form frameworks (TanStack Form, React Hook Form, Conform, VeeValidate), Standard Schema validation (Zod, Valibot, ArkType, Ajv), field arrays, async validation, or draft recovery.
 - Read [references/html-css.md](references/html-css.md) when working directly in HTML/CSS or framework-independent browser behavior.
 - Read [references/react-next.md](references/react-next.md) for React, Next.js, Remix-like React routing/hydration concerns.
 - Read [references/vue-nuxt.md](references/vue-nuxt.md) for Vue/Nuxt.
