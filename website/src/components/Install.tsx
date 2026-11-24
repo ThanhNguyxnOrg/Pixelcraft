@@ -60,7 +60,12 @@ function Builder() {
       ? names
       : names.filter((n) => picked.includes(n) || REQUIRED_SKILLS.includes(n));
   const ready = agents.length > 0;
-  const target = mode === "all" ? "all" : effective.join(" ");
+  // Leave core skills implicit for optional subsets so --force preserves the
+  // installer's auto-added-core protection. Core-only installs must name them.
+  const target =
+    mode === "all"
+      ? "all"
+      : (picked.length ? picked : REQUIRED_SKILLS).join(" ");
   const command = `npx ${NPM_PKG} add ${target} --agent ${agents.join(",")}${scope === "global" ? " --global" : ""}${dry ? " --dry-run" : ""}${force ? " --force" : ""}`;
 
   const targets = AGENT_TARGETS.filter((t) => agents.includes(t.id));
