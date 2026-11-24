@@ -38,6 +38,11 @@ Use web form rules inside the webview; integrate native file pickers/autofill li
 | preserve unsaved document state on close | treating window close like browser tab refresh |
 | test narrow/minimum window and high DPI | validating only fullscreen developer monitor layout |
 
+## Tauri v2 capabilities and mobile targets
+
+- **Capability-based ACLs**: declare least-privilege permissions in `src-tauri/capabilities/*.json` scoped by `windows` and `platforms` (`["linux", "macOS", "windows"]` vs `["iOS", "android"]`). By default, Tauri commands are accessible only to bundled local code—never add broad `remote.urls` wildcards unless strictly audited.
+- **Desktop + Mobile parity**: Tauri v2 supports iOS and Android targets alongside desktop; gate mobile-only plugins (biometrics, NFC, barcode scanner) behind platform-scoped capability files and adapt touch targets/safe areas when shipping mobile builds.
+
 ## Known traps
 
 Custom titlebar drag/double-click/system menu omissions, CSP/asset loading, webview version differences, updater/restart state, permissions/capability misconfiguration, tray lifecycle, multi-window focus leakage, file association/deep-link cold start, confusing dev/prod backend behavior.

@@ -61,6 +61,7 @@ Rendered verification is possible only through simulator/emulator/device tooling
 - Read [references/jetpack-compose.md](references/jetpack-compose.md) for Android Compose.
 - Read [references/flutter.md](references/flutter.md) for Flutter/Dart across mobile and embedded surfaces.
 - Read [references/react-native-expo.md](references/react-native-expo.md) for React Native/Expo.
+- Read [references/lynxjs.md](references/lynxjs.md) for Lynx / LynxJS (`@lynx-js/react`) dual-threaded native mobile/web UI.
 - Read [references/kotlin-multiplatform.md](references/kotlin-multiplatform.md) for Compose Multiplatform/KMP shared UI.
 - Read [references/ionic-capacitor.md](references/ionic-capacitor.md) for Ionic/Capacitor hybrid apps.
 - Read [references/dotnet-maui.md](references/dotnet-maui.md) for .NET MAUI.

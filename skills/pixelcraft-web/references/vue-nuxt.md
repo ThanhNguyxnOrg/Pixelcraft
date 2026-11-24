@@ -35,6 +35,11 @@ Use `useAsyncData`/`useFetch` status/error/refresh deliberately: initial loading
 
 Use correct input attributes in templates; Vue attribute casing/hyphenation preserves native semantics. Validation libraries are optional—state timing and recovery matter more than schema existence. Preserve user input across failed submission and auth redirect.
 
+## Vue 3.5+ and Nuxt 4 idioms
+
+- **Vue 3.5+**: prefer `defineModel()` for two-way component bindings and `useTemplateRef('inputEl')` for typed DOM refs.
+- **Nuxt 4**: application source lives under `app/` (`app/pages`, `app/components`, `app/composables`, `app/app.vue`), universal utilities under `shared/`, and Nitro endpoints under `server/`. Remember that `useAsyncData` / `useFetch` `data` is a **`shallowRef`** by default in Nuxt 4—replace the value immutably or opt into `{ deep: true }` explicitly when mutating nested properties.
+
 ## Do/don't pairs
 
 | Do | Don't |

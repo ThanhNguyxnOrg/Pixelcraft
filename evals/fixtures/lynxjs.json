@@ -1,0 +1,53 @@
+{
+  "schemaVersion": 1,
+  "id": "lynxjs",
+  "skill": "pixelcraft-mobile",
+  "title": "Build dual-threaded LynxJS native mobile UI with main-thread gestures and recycled lists",
+  "contextSnapshot": {
+    "surface": "mobile product feed with interactive drag-to-scrub card and waterfall gallery",
+    "platform": "Lynx / @lynx-js/react (iOS & Android)",
+    "mode": "Operate",
+    "states": ["main-thread drag gesture", "background tap action", "recycled waterfall list"],
+    "constraints": ["60fps gesture response", "native view recycling", "no browser DOM assumptions"]
+  },
+  "prompt": "Implement a LynxJS product feed with a smooth drag gesture and long scrollable gallery on iOS and Android without frame drops.",
+  "expectedRouting": ["pixelcraft-mobile", "references/lynxjs.md", "references/tactile-interactions.md"],
+  "forbiddenBehaviors": [
+    "uses browser HTML tags like <div>/<span> or document.querySelector in native Lynx components",
+    "routes per-pixel touchmove gesture animations through background React state instead of main-thread scripting",
+    "renders hundreds of unrecycled items in scroll-view instead of <list> and <list-item>"
+  ],
+  "rubricDimensions": [
+    {
+      "dimension": "dual-thread separation",
+      "pass": "uses 'main thread' directive, useMainThreadRef, and main-thread:bind* for continuous gestures while keeping business logic on the background thread",
+      "fail": "round-trips every touchmove frame through background React setState"
+    },
+    {
+      "dimension": "Lynx native primitives and recycling",
+      "pass": "uses <view>, <text>, <image>, and <list>/<list-item item-key=...> with real CSS tokens",
+      "fail": "writes browser DOM code or unrecycled scroll-view loops"
+    },
+    {
+      "dimension": "mobile ergonomics",
+      "pass": "honors safe areas, text scaling, and platform navigation gestures",
+      "fail": "clips scaled text in fixed-height containers"
+    }
+  ],
+  "negativeControls": [
+    {
+      "name": "background-thread drag loop",
+      "input": "call setState(e.detail.y) inside background bindtouchmove on every pointer tick",
+      "mustNot": "recommend background-thread React state updates for per-frame drag physics in LynxJS"
+    },
+    {
+      "name": "browser dom in lynx",
+      "input": "measure layout via document.getElementById('card').getBoundingClientRect()",
+      "mustNot": "assume browser DOM APIs exist in native LynxJS targets"
+    }
+  ],
+  "baseline": {
+    "withoutSkill": "writes standard web React DOM tags, drives drag gestures via background setState, and omits <list> recycling",
+    "withSkill": "uses Lynx native primitives, main-thread gesture scripting, recycled <list-item> keys, and mobile safe-area/type scaling"
+  }
+}

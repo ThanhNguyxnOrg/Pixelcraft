@@ -1,0 +1,53 @@
+{
+  "schemaVersion": 1,
+  "id": "file-upload-media-ui",
+  "skill": "pixelcraft-web",
+  "title": "Build resumable, accessible file upload, drag-drop, clipboard paste, and preview UI",
+  "contextSnapshot": {
+    "surface": "media asset uploader supporting 50 MB PDFs/images, drag-drop, and screenshot paste",
+    "platform": "Web (React + Uppy / FilePond / dropzone)",
+    "mode": "Operate",
+    "states": ["idle with limits", "invalid file rejection", "resumable progress/cancel", "preview cleanup"],
+    "constraints": ["no leaked object URLs", "keyboard-accessible file trigger", "authoritative server validation noted"]
+  },
+  "prompt": "Implement a multi-file media uploader with resumable progress, image previews, clipboard paste, and clear validation errors without memory leaks or keyboard barriers.",
+  "expectedRouting": ["pixelcraft-web", "references/file-upload-media-ui.md", "pixelcraft-accessibility"],
+  "forbiddenBehaviors": [
+    "calls URL.createObjectURL() for image previews without revoking them on removal/unmount",
+    "builds a drag-and-drop-only upload zone with no keyboard-accessible file picker button",
+    "treats client allowedFileTypes or input accept as authoritative security validation"
+  ],
+  "rubricDimensions": [
+    {
+      "dimension": "upload tooling and lifecycle",
+      "pass": "selects Uppy (tus/S3/restrictions + clear/destroy), FilePond, or headless dropzone with explicit size/type limits upfront",
+      "fail": "leaves uploads un-cancellable or leaks Uppy instances across route transitions"
+    },
+    {
+      "dimension": "preview memory and client processing",
+      "pass": "revokes every createObjectURL preview on remove/unmount and offloads heavy image resizing to OffscreenCanvas in a Worker",
+      "fail": "leaks blob URLs or freezes the main thread resizing large photos"
+    },
+    {
+      "dimension": "accessibility and state completeness",
+      "pass": "provides keyboard-focusable picker trigger, paste support, and distinct idle/invalid/uploading/paused/error/complete states",
+      "fail": "ships drag-only upload zones or silent upload failures"
+    }
+  ],
+  "negativeControls": [
+    {
+      "name": "leaked object urls",
+      "input": "call URL.createObjectURL(file) in render without ever calling URL.revokeObjectURL()",
+      "mustNot": "approve unrevoked createObjectURL previews"
+    },
+    {
+      "name": "drag-only dropzone",
+      "input": "build a <div onDrop={handleDrop}> upload area with no keyboard-focusable button or file input",
+      "mustNot": "approve drag-only file uploaders without keyboard file selection"
+    }
+  ],
+  "baseline": {
+    "withoutSkill": "renders a drag-only box, leaks object URLs, treats input accept as security, and fails silently on large files",
+    "withSkill": "uses Uppy/dropzone with upfront limits, tus resumability, revoked object URLs, keyboard/paste access, and full upload state coverage"
+  }
+}

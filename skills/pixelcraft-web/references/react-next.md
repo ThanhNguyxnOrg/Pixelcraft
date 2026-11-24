@@ -43,6 +43,12 @@ Use route-level `loading`/`error`/`not-found` plus component-level state deliber
 
 Use `<form action>` progressive enhancement where feasible. Correct `autocomplete`/`inputMode` are preserved in JSX capitalization (`autoComplete`, `inputMode`). Return field errors as data and associate them accessibly; do not rely on browser alert/toast alone. Preserve input on failed server validation.
 
+## Modern React 19, Next.js 15/16, React Router v7, and TanStack Start idioms
+
+- **React 19**: pass `ref` directly as a regular prop (no `forwardRef` boilerplate), use `useActionState` / `useOptimistic` for component-scoped mutation/optimistic lifecycles (`references/state-architecture.md`), and keep render functions pure (no mutating props/refs during render) so **React Compiler** can auto-memoize safely without manual `useMemo`/`useCallback` clutter.
+- **Next.js 15/16**: `params`, `searchParams`, `cookies()`, and `headers()` are async (`await params`); adopt explicit caching (`'use cache'` / Cache Components / PPR where enabled) rather than assuming implicit `fetch` caching.
+- **React Router v7 (framework mode)** & **TanStack Start**: for Vite-native full-stack React without Next.js lock-in, use React Router v7 typed `loader`/`action` routes or **TanStack Start** (`createFileRoute` + `createServerFn().middleware([...]).handler(...)`) for end-to-end type-safe routing and server functions.
+
 ## Do/don't pairs
 
 | Do | Don't |
