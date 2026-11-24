@@ -1,53 +1,99 @@
 # Panel / HoloViz
 
-## Token mapping
+## Token mapping and component layer
 
-Use Panel theme/config/template mechanisms before custom CSS. Depending project version, configure theme on template/extension and inject scoped stylesheets through documented extension/assets mechanisms. Keep Plotly/HoloViews/Bokeh figure themes synchronized with page semantic tokens; figure defaults are a common mismatch.
+Use **Panel Material UI (`panel_material_ui` / `pmui`)** or Panel's native templates (`pn.template.FastListTemplate`, `MaterialTemplate`) with explicit light/dark palette configuration before writing custom CSS. Synchronize Bokeh/HoloViews/Plotly figure themes explicitly so dark surfaces never frame bright white default plots.
 
-## Layout and responsive idioms
+```python
+import panel as pn
+import panel_material_ui as pmui
 
-Use `Row`, `Column`, `GridSpec`/template layouts and sizing modes intentionally (`stretch_width`, fixed, responsive). Panel dashboards often fail because resize behavior was never specified. Sidebar/main/template structure should reflect task hierarchy rather than exposing every control at once.
+pn.extension("tabulator")  # load only extensions actually used
+```
 
-## Typography/custom fonts
+## Reactive expressions (`pn.rx`), caching, chat, and Material UI idioms
 
-Use template/global CSS/font configuration deliberately. Visualization libraries may require separate font settings; test rendering/export contexts. Keep dense scientific labels legible and localized units/formats explicit.
+Prefer **`pn.rx(...)`** reactive expressions over verbose `@pn.depends` boilerplate, scope caches with **`per_session=True`** whenever user permissions or private filters apply, and use **`pn.chat.ChatInterface`** for streaming AI/data assistants:
 
-## Motion/reduced motion
+```python
+import panel as pn
+import panel_material_ui as pmui
+import pandas as pd
 
-Panel interaction is callback/server driven. Use loading spinners/indicators and busy state truthfully; decorative motion is secondary. Any custom CSS/JS animation must honor reduced motion.
+pn.extension("tabulator")
 
-## Accessibility specifics
+@pn.cache(per_session=True, ttl=300)
+def load_orders(region: str) -> pd.DataFrame:
+    return query_region_orders(region)
 
-Use labels/names/help text, keyboard-operable widgets, semantic ordering, chart alternatives/summaries, and visible focus. DOM output is web-backed but accessibility varies across widget/type; inspect actual output rather than assuming Bokeh/Panel abstractions guarantee semantics.
+region = pmui.Select(label="Region", options=["EMEA", "AMER", "APAC"], value="EMEA")
+orders_rx = pn.rx(load_orders)(region)
 
-## States idiom
+def render_table(df: pd.DataFrame):
+    if df.empty:
+        return pn.pane.Alert("No orders match the active filter.", alert_type="info")
+    return pn.widgets.Tabulator(df, pagination="remote", page_size=25, sizing_mode="stretch_width")
 
-Understand parameter/`param` dependencies, reactive functions, session state, caching, and async tasks. Render empty data, missing file/model, backend exception, stale cache, busy state, offline/disconnect state, and permission failure explicitly. Avoid hidden global mutable state across sessions.
+async def respond(contents: str, user: str, instance: pn.chat.ChatInterface):
+    partial = ""
+    async for chunk in stream_analyst_reply(contents, region.value):
+        partial += chunk
+        yield partial
 
-## Forms idiom
+chat = pn.chat.ChatInterface(callback=respond, sizing_mode="stretch_both")
 
-Use widgets with names/labels/help, validation bounds/types, explicit apply/submit controls for expensive computation, and input preservation. Parameterized forms should not recompute expensively on every tiny adjustment unless designed.
+page = pmui.Page(
+    title="Operations Console",
+    sidebar=[region],
+    main=[
+        pn.bind(render_table, orders_rx),
+        chat,
+    ],
+)
+page.servable()
+```
+
+## Pyodide / WebAssembly static deployment
+
+For serverless public demos or documentation embeds, compile Panel apps to client-side Pyodide with:
+
+```sh
+panel convert app.py --to pyodide-worker --out dist
+```
+
+- Verify every dependency ships a pure-Python or Pyodide wheel.
+- Strip all server secrets and warehouse credentials—code and bundled data ship directly to the browser.
+- Provide explicit initial loading copy while Pyodide boots and downloads packages.
+
+## Layout, motion, and accessibility
+
+Set explicit `sizing_mode` (`"stretch_width"`, `"stretch_both"`, or fixed width where tabular alignment demands it) on every pane and widget—unspecified sizing modes are the top cause of clipped Panel dashboards. Use `pn.param.loading_indicator` / `loading=True` truthfully during callbacks, honor `prefers-reduced-motion` in custom CSS, and pair HoloViews/Bokeh canvases with text summaries or Tabulator data views for keyboard and screen-reader users.
+
+## States and forms idiom
+
+Keep per-user mutable state inside session callbacks or `pn.state.cache` keyed by session, never global mutable lists. For expensive parameter sweeps, bind a `pmui.Button` (or `pn.bind(..., watch=...)` with explicit trigger) instead of recomputing on every slider drag. Surface empty results, backend exceptions, and websocket disconnect states visibly.
 
 ## Do/don't pairs
 
 | Do | Don't |
 |---|---|
-| deliberate sizing mode per pane | fixed notebook-sized layout pasted into production dashboard |
-| explicit busy/error state around expensive callbacks | silent spinner or stale plot after backend failure |
-| semantic page CSS plus synchronized figure theme | default white plot floating inside custom dark UI |
-| apply button for costly parameter sweeps | recompute on every slider tick unintentionally |
-| per-session state ownership | global mutable cache leaking user-specific data |
+| `pn.rx(...)` reactive expressions with clear data flow | Deeply tangled `@pn.depends` side-effect chains |
+| `@pn.cache(per_session=True, ttl=...)` for user-scoped queries | Global `@pn.cache` leaking one tenant's DataFrame to another |
+| `panel_material_ui` (`pmui.Page`) with synced light/dark plot themes | Default white Bokeh/Plotly plots inside a dark template |
+| Explicit `sizing_mode="stretch_width"` per pane | Fixed notebook pixel widths pasted into production apps |
+| `panel convert --to pyodide-worker` only for secret-free apps | Exporting apps containing DB credentials to WASM |
 
 ## Known traps
 
-Resize/sizing behavior, template/version differences, disconnected sessions, callback ordering, hidden global state, plot theme mismatch, expensive recompute loops, notebook-vs-server behavior divergence, dense expert UI becoming inaccessible through clutter.
+Missing `sizing_mode`, cross-user leaks in global `@pn.cache`, forgetting `pn.extension("tabulator")` before serving, blocking Tornado's event loop with heavy synchronous I/O, Bokeh/Panel dark-mode theme mismatch, and notebook behavior diverging from `panel serve`.
 
 ## Verification commands
 
 ```sh
-panel serve app.py
-python -m pytest
 python -m compileall .
+python -m pytest
+panel serve app.py --autoreload
+panel convert app.py --to pyodide-worker --out dist
 ```
 
-Rendered evidence requires browser inspection at multiple widths/session states; notebook rendering alone is insufficient.
+Browser inspection across desktop/narrow widths, dark/light themes, and live filter updates gives `rendered` evidence; notebook preview and `pytest` alone are `static`/logic evidence.

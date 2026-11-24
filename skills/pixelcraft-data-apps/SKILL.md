@@ -1,6 +1,6 @@
 ---
 name: pixelcraft-data-apps
-description: Translates Pixelcraft direction, tokens, UX, and floor requirements into data applications, AI/ML demos, dashboards, notebooks, BI reports, and internal tools in any language. Use for Streamlit, Gradio, Reflex, NiceGUI, Dash, Panel, Shiny for Python or R, Julia Genie/Stipple, Jupyter widgets, Observable Framework, Evidence, data-app state/rerun behavior, theming limits, custom components, SQL/data freshness, reproducibility, and honest verification.
+description: Translates Pixelcraft direction, tokens, UX, and floor requirements into data applications, AI/ML demos, dashboards, notebooks, BI reports, and internal tools in any language. Use for Streamlit, Gradio, Reflex, NiceGUI, Dash, Panel, Shiny for Python or R, Julia Genie/Stipple, marimo, Solara, Mesop, Taipy, Chainlit, FastHTML, Preswald, Jupyter ipywidgets, AnyWidget, Voila, Observable Framework, Evidence, and low-code internal tools (Retool, Appsmith, ToolJet, Budibase) including state/rerun behavior, theming limits, SQL freshness, and honest verification.
 license: MIT
 metadata:
   version: 0.1.0
@@ -12,11 +12,11 @@ Use this skill when the workload is a data app, AI/ML demo, dashboard, notebook 
 
 ## Surface craft
 
-Keep active filters, data freshness and the selected result visibly linked. Put stable summaries near the controls that change them; defer heavier details without replacing the working context. Test a slow query, an empty result, a changed filter and a stale result. Do not copy a dashboard layout without its data provenance or rerun behavior.
+Keep active filters, data freshness, and the selected result visibly linked. Put stable summaries near the controls that change them; defer heavier details without replacing the working context. Test a slow query, an empty result, a changed filter, and a stale result. Do not copy a dashboard layout without its data provenance or rerun behavior.
 
 ## Detection signals
 
-Python imports/entry points (`st.*`, `gr.*`, `rx.*`, NiceGUI `ui.*`, Dash callbacks, Panel objects, Shiny UI/server), `.streamlit/config.toml`, notebooks/ipywidgets, R `DESCRIPTION`/`app.R` with Shiny/bslib, Julia `Project.toml` with Genie/Stipple, Observable `observablehq.config.*`/data loaders, Evidence `evidence.config.yaml`/`theme.yaml`/`pages`/`sources`, SQL/warehouse configuration, model/demo artifacts, cache/data-loader definitions.
+Python imports/entry points (`st.*`, `gr.*`, `rx.*`, NiceGUI `ui.*`, Dash callbacks, Panel/HoloViz objects, Shiny UI/server, `marimo` `@app.cell`, `solara`, `mesop`, `taipy`, `chainlit` `@cl.*`, `fasthtml`, `preswald`, `anywidget`/`ipywidgets`, `voila`), `.streamlit/config.toml`, `.chainlit/config.toml`, `preswald.toml`, notebooks, R `DESCRIPTION`/`app.R` with Shiny/`bslib`, Julia `Project.toml` with Genie/Stipple, Observable `observablehq.config.*`/data loaders, Evidence `evidence.config.yaml`/`theme.yaml`/`pages`/`sources`, low-code exports/configs (Retool, Appsmith, ToolJet, Budibase), SQL/warehouse configs, and cache/data-loader definitions.
 
 ## Translate direction with honest constraints
 
@@ -24,7 +24,7 @@ Python imports/entry points (`st.*`, `gr.*`, `rx.*`, NiceGUI `ui.*`, Dash callba
 2. Map tokens through the framework's supported theme layer first; use custom CSS/components only as scoped escape hatches.
 3. Understand rerun/session/callback/build semantics before designing interaction. Do not lose form state because a widget key, query lifecycle, or callback owner was careless.
 4. Prioritize data legibility, task flow, feedback, empty/error states, reproducibility, and trust over cosmetic pixel matching.
-5. Escape hatch order: native theme/config → semantic component props/layout containers → documented custom CSS/classes → custom component/extension. Avoid brittle selectors where docs warn internals change.
+5. Escape hatch order: native theme/config -> semantic component props/layout containers -> documented custom CSS/classes -> custom component/extension. Avoid brittle selectors where internals change across releases.
 
 ## Platform-wide rules
 
@@ -33,7 +33,7 @@ Python imports/entry points (`st.*`, `gr.*`, `rx.*`, NiceGUI `ui.*`, Dash callba
 - Inputs have labels/help/format validation and preserve values across reruns/callbacks/navigation where possible.
 - Tables/charts need text summaries, empty states, real units, appropriate color scales, uncertainty/freshness cues, and non-color encoding.
 - Session state is explicit: inspect keys, initialization, stale cache, concurrency, multi-user leakage, query invalidation, and static snapshot age.
-- Secrets, uploaded files, generated files, credentials, warehouse results, and user data must not leak across sessions/users or into client bundles/static output.
+- Secrets, uploaded files, generated files, credentials, warehouse results, and user data must not leak across sessions/users or into client bundles/static WASM output.
 
 ## Common data-app failures
 
@@ -49,20 +49,21 @@ Python imports/entry points (`st.*`, `gr.*`, `rx.*`, NiceGUI `ui.*`, Dash callba
 
 ## Verification options
 
-DOM-backed frameworks can often be inspected in browser when the app runs, but visual verification requires actually launching them. Unit tests may validate callbacks, SQL, loaders, or state without proving rendering. Notebook widgets depend on kernel/frontend context. Static data apps need build inspection plus browser rendering. Label absence honestly; do not imply rendering happened because Python/R/Julia/JS code compiled or SQL succeeded.
+DOM-backed frameworks can often be inspected in browser when the app runs, but visual verification requires actually launching them. Unit tests (`AppTest`, `nicegui.testing.User`, `testthat`, `pytest`) validate callbacks, SQL, loaders, or state (`static`) without proving rendering. Notebook widgets depend on kernel/frontend context. Static data apps (Evidence, Observable, Shinylive, marimo/Panel WASM) need build inspection plus browser rendering (`rendered`). Label absence honestly; do not imply rendering happened because Python/R/Julia/JS code compiled or SQL succeeded.
 
 ## Framework routing
 
-- Read [references/streamlit.md](references/streamlit.md) for Streamlit.
-- Read [references/gradio.md](references/gradio.md) for Gradio.
-- Read [references/reflex.md](references/reflex.md) for Reflex.
-- Read [references/nicegui.md](references/nicegui.md) for NiceGUI.
-- Read [references/dash.md](references/dash.md) for Plotly Dash.
-- Read [references/panel.md](references/panel.md) for Panel/HoloViz.
-- Read [references/shiny.md](references/shiny.md) for Shiny for Python.
-- Read [references/jupyter-widgets.md](references/jupyter-widgets.md) for ipywidgets/Jupyter surfaces.
-- Read [references/r-shiny.md](references/r-shiny.md) for R Shiny data apps.
-- Read [references/julia-genie.md](references/julia-genie.md) for Julia Genie/Stipple data apps.
-- Read [references/observable-framework.md](references/observable-framework.md) for Observable Framework dashboards/data documents.
-- Read [references/evidence.md](references/evidence.md) for Evidence SQL/Markdown BI reports and data products.
-- Read [references/reactive-data-apps.md](references/reactive-data-apps.md) for reactive Python data apps and notebooks (marimo, Solara, Mesop, Taipy).
+- Read [references/streamlit.md](references/streamlit.md) when building or auditing Streamlit apps (`.streamlit/config.toml`, `@st.fragment`, `st.navigation`, `AppTest`).
+- Read [references/gradio.md](references/gradio.md) when building or auditing Gradio 5/6 demos, chat UIs, `@gr.render`, or MCP-exposed ML interfaces.
+- Read [references/reflex.md](references/reflex.md) when building or auditing Reflex apps (`@rx.event`, background tasks, `rx.ComponentState`).
+- Read [references/nicegui.md](references/nicegui.md) when building or auditing NiceGUI apps (`@ui.page`, `app.storage.*`, `run.io_bound`, `nicegui.testing`).
+- Read [references/dash.md](references/dash.md) when building or auditing Plotly Dash 3 apps (`Patch`, clientside/background callbacks, Dash Pages, Mantine/AG Grid).
+- Read [references/panel.md](references/panel.md) when building or auditing Panel/HoloViz apps (`pn.rx`, `panel-material-ui`, `ChatInterface`, Pyodide export).
+- Read [references/shiny.md](references/shiny.md) when building or auditing Shiny for Python apps (`ui.Theme`, Express vs Core, `ExtendedTask`, `ui.Chat`, Shinylive).
+- Read [references/reactive-data-apps.md](references/reactive-data-apps.md) when building or auditing reactive Python data apps and notebooks (`marimo`, `Solara`, `Mesop`, `Taipy`).
+- Read [references/jupyter-widgets.md](references/jupyter-widgets.md) when building or auditing `ipywidgets`, `AnyWidget` ESM widgets, or `Voilá` standalone dashboards.
+- Read [references/r-shiny.md](references/r-shiny.md) when building or auditing R Shiny apps (`bslib`, `ExtendedTask`+`mirai`, `bindCache`, `shinychat`/`ellmer`, modules).
+- Read [references/julia-genie.md](references/julia-genie.md) when building or auditing Julia Genie/Stipple reactive data apps (`@app`, `@in`/`@out`/`@onchange`).
+- Read [references/observable-framework.md](references/observable-framework.md) when building or auditing Observable Framework data documents (polyglot loaders, DuckDB-Wasm, `resize()`).
+- Read [references/evidence.md](references/evidence.md) when building or auditing Evidence SQL/Markdown BI reports (Universal SQL, Svelte components, `npm run sources`).
+- Read [references/ai-and-internal-data-apps.md](references/ai-and-internal-data-apps.md) when building or auditing Chainlit, FastHTML, Preswald, or low-code internal tools (Retool, Appsmith, ToolJet, Budibase).

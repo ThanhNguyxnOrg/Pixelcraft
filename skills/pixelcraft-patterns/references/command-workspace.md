@@ -1,53 +1,56 @@
 # Command-first and high-velocity workspace patterns
 
-Use this reference for expert operational web and desktop workspaces where repeat users prioritize speed, keyboard muscle memory, low perceived latency, and dense scanability over marketing whitespace.
+Use this reference for expert operational workspaces across **web, desktop, mobile, and terminal (TUI)** surfaces where repeat users prioritize speed, keyboard muscle memory, low perceived latency, and dense scanability over marketing whitespace.
 
 ## Command palette (`Cmd+K` / `Ctrl+K`)
 
-Treat the command palette as a global action router, not a passive search box:
+Treat the command palette as a global action router, not merely a passive search input:
 
-| Requirement | Concrete rule |
+| Requirement | Surface-independent rule |
 |---|---|
-| Invocation | Bind `Meta+K` (macOS) and `Control+K` (Windows/Linux) plus a visible clickable trigger showing the platform-appropriate shortcut hint. |
-| Scope & actions | Support both navigation (`Go to…`) and direct parameterized actions (`Assign…`, `Change status…`, `Export…`), with recent items shown before typing. |
-| Semantics & focus | Use a modal dialog containing a `combobox` input + `listbox` results with `aria-activedescendant`; `ArrowUp`/`ArrowDown` moves selection, `Enter` executes, `Escape` closes and restores focus to the exact prior element. |
-| Empty & failure | Show actionable fallback when zero commands match (clear filter or jump to full search); never trap focus or leave stale async results after a newer query resolves. |
+| **Invocation** | Bind the platform's primary command shortcut (`Cmd+K` on macOS, `Ctrl+K` on Windows/Linux/TUI, or prominent search/command button on touch/mobile) plus a visible clickable trigger showing the active shortcut hint. |
+| **Scope & parameterized actions** | Support both navigation (`Go to…`) and direct parameterized actions (`Assign to…`, `Change status…`, `Export…`), displaying recent items before the user types. |
+| **Selection & focus restoration** | Expose a modal/overlay list with keyboard selection (`Up`/`Down`), execution (`Enter`), and dismissal (`Escape`) that **restores focus to the exact prior element or pane**. |
+| **Async freshness & empty recovery** | Cancel or ignore stale async query responses so slower earlier results never overwrite newer input; offer actionable fallback when zero commands match (clear filter or jump to full search). |
 
-## Keyboard-first navigation
+## Keyboard-first navigation and input-suppression contract
 
-- Suppress single-key shortcuts (`j`, `k`, `c`, `/`, `?`) whenever focus is inside `<input>`, `<textarea>`, `<select>`, `[contenteditable]`, or during IME composition (`event.isComposing`).
-- Provide a discoverable `?` shortcut cheat-sheet dialog grouped by context (Global, List, Editor).
-- Support `Cmd/Ctrl+Enter` to submit inline composers and `Escape` to cancel edits cleanly without losing unsaved drafts silently.
-- Use roving `tabindex` (`0` on active item, `-1` on siblings) in dense lists, toolbars, and tablists so `Tab` moves between regions rather than stepping through 200 rows.
+Single-key shortcuts (`j`/`k` navigate, `c` create, `/` search, `?` help) dramatically accelerate triage, but they become destructive if fired while editing text. Enforce this surface-independent **input-suppression contract** before dispatching any unmodified single-key hotkey:
 
-```ts
-function isTypingTarget(e: KeyboardEvent): boolean {
-  if (e.isComposing) return true;
-  const el = e.target as HTMLElement | null;
-  if (!el) return false;
-  return Boolean(el.closest('input, textarea, select, [contenteditable="true"]'));
-}
-```
+1. **Active text input guard**: Suppress when focus is inside any text entry control, editable document region, or combo/select search input.
+2. **IME composition guard**: Suppress during active CJK/dead-key IME composition so intermediate keystrokes never trigger commands.
+3. **Modal scope guard**: Suppress background workspace hotkeys whenever a blocking dialog, confirmation sheet, or command palette is open.
+4. **Modifier clarity**: Keep chords consistent (`Cmd/Ctrl+Enter` to submit inline composers, `Escape` to cancel edits cleanly without losing drafts silently, `?` for a context-grouped shortcut cheat sheet).
+5. **Composite region navigation**: Use single-tab-stop composite navigation inside dense lists, toolbars, and tab bars (arrow keys move internally; `Tab` moves between major panes).
+
+### Platform mapping
+
+| Surface | Palette invocation & focus | Single-key suppression & pane navigation |
+|---|---|---|
+| **Web (`pixelcraft-web`)** | `Meta+K` / `Control+K`; dialog + `combobox`/`listbox` + `aria-activedescendant`; restore focus on `Escape` | Check `event.isComposing` and whether target is inside `input`, `textarea`, `select`, or `[contenteditable]`; roving `tabindex` (`0` / `-1`) |
+| **Desktop (`pixelcraft-desktop`)** | Native menu/command bar (`Cmd+K` macOS, `Ctrl+K`/`Ctrl+Shift+P` Win/Linux); restore first-responder/focus ring | Respect OS text-field responder and IME marked-text state; native `NSSplitView`/WinUI/Qt splitters with keyboard resize |
+| **Mobile (`pixelcraft-mobile`)** | Persistent quick-action/search bar + hardware keyboard `Cmd+K` on iPadOS/Android tablets | Offer thumb-reachable action sheets and swipe shortcuts alongside external keyboard shortcuts |
+| **Terminal (`pixelcraft-tui`)** | `Ctrl+P` / `Ctrl+K` / `:` command mode overlay; restore active pane focus | Separate normal navigation mode from insert/input focus; never shadow terminal escape sequences unintentionally |
 
 ## Optimistic UI, rollback, and undo
 
-- Apply low-risk, reversible mutations (status toggle, star, archive, reorder, inline rename) immediately in the UI using a client mutation ID / idempotency key.
-- Show a subtle non-blocking pending state only if the request exceeds ~300 ms; never block the entire screen with a modal spinner for a single-row edit.
-- On server failure, roll back the optimistic state deterministically, preserve user input, and surface an inline or toast error with a one-click `Retry`.
-- For destructive-feeling but reversible actions (archive, bulk delete to trash), pair immediate removal with a timed `Undo` toast (`role="status"`) rather than an intrusive confirmation modal; reserve confirmation dialogs for irreversible actions.
-- Match skeleton loader geometry to the exact loaded row/card heights so layout shift (`CLS`) stays near zero.
+- Apply low-risk, reversible mutations (status toggle, star, archive, reorder, inline rename) immediately using a client mutation ID / idempotency key.
+- Surface a subtle non-blocking pending cue only when the request exceeds ~300 ms; never block the workspace with a modal spinner for a single-row mutation.
+- On server failure, roll back the optimistic state deterministically, preserve user input, and surface an inline or toast error with one-action `Retry`.
+- Pair reversible destructive-feeling actions (archive, move to trash) with an immediate timed `Undo` notification rather than a blocking confirmation dialog; reserve confirmation modals for irreversible mutations.
+- Match loading-placeholder geometry to loaded row/card heights so layout never shifts when data resolves.
 
 ## Master-detail split panes and intentional density
 
-- Offer semantic density modes (`compact`, `comfortable`, `spacious`) driven by spacing/row-height tokens rather than arbitrary per-component overrides.
-- Persist active filters, sort order, selected tab, and open detail ID in URL search parameters so refresh, back/forward, and link sharing restore the exact workspace state.
-- Make resizable pane splitters keyboard-operable (`role="separator"`, `aria-valuenow`, Arrow keys) with clamped min/max widths and a single-column stack on narrow viewports.
+- Drive density modes (`compact`, `comfortable`, `spacious`) from semantic spacing and row-height tokens rather than one-off component overrides.
+- Persist active filters, sort order, selected tab, and open detail identifier in shareable route/navigation state so reload, Back/Forward, and deep links restore exact context.
+- Keep resizable pane splitters operable via both pointer and keyboard (with clamped min/max widths) and collapse gracefully into stacked navigation on narrow viewports.
 
 ## Do/don't pairs
 
 | Do | Don't |
 |---|---|
-| Restore focus to the triggering row/button after closing the command palette | Drop focus to `document.body` on `Escape` |
-| Gate single-key hotkeys on `!isTypingTarget(e)` | Hijack `j`/`k`/`/` while the user is typing in a search field or IME |
-| Sync filter/sort/selection state into URL params | Reset filters to defaults on browser refresh or Back |
-| Roll back optimistic state with preserved input and `Retry` | Silently swallow failed mutations leaving stale UI pretending success |
+| Restore focus to the exact triggering row or button when closing the palette | Drop focus to the window root on `Escape` |
+| Suppress single-key hotkeys during text editing and IME composition | Hijack `j`, `k`, or `/` while a user types in a search box or CJK IME |
+| Persist filter, sort, and detail selection in navigation/URL state | Reset workspace filters to defaults on Back or reload |
+| Roll back failed optimistic writes with preserved input and `Retry` | Leave stale optimistic UI pretending a failed mutation succeeded |

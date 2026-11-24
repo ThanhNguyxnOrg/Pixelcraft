@@ -2,52 +2,109 @@
 
 ## Token mapping
 
-Use the project's supported theme/bootstrap mechanism plus external CSS assets. Exact theme APIs vary by Shiny for Python version and UI layout choice; verify local dependency docs before relying on a named constructor. Keep semantic CSS variables in assets and map plots separately because plotting libraries have independent themes.
+Use `ui.Theme` (backed by Bootstrap 5 / Bootswatch Sass compilation) for semantic colors, typography, and spacing, paired with `ui.input_dark_mode()` and scoped CSS files under `www/`. Synchronize Matplotlib/Plotly/Altair figure styles separately because plotting libraries do not automatically inherit Bootstrap CSS variables.
 
-## Layout and responsive idioms
+```python
+from shiny import ui
 
-Use Shiny UI layout functions (`page_*`, layout columns/sidebar/nav panels/cards depending version) to express information architecture. Reactive outputs should occupy stable reserved space where possible. Do not depend on fixed browser width or hidden overflow for dense dashboards.
+app_theme = (
+    ui.Theme("flatly")
+    .add_defaults(
+        primary="#0074ca",
+        body_bg="#faf8f1",
+        body_color="#161b24",
+    )
+    .add_rules(".metric-note { font-variant-numeric: tabular-nums; }")
+)
+```
 
-## Typography/custom fonts
+## Express vs Core architecture
 
-Use external CSS/font assets with explicit fallback/loading policy. Configure plotting typography separately. Ensure numeric/date/locale formatting happens through explicit formatting rather than raw string concatenation.
+Choose the API surface that matches app complexity rather than mixing them randomly:
 
-## Motion/reduced motion
+| Mode | Entry idiom | Best fit | Trade-off |
+|---|---|---|---|
+| **Shiny Express** | `from shiny.express import input, render, ui` | Rapid single-file prototypes, notebook-like top-to-bottom apps | Implicit UI ordering makes large modular apps harder to test and share |
+| **Shiny Core** | `App(app_ui, server)` + `@module.ui` / `@module.server` | Production multi-page dashboards, reusable modules, strict separation of layout and reactive server graph | Slightly more boilerplate for tiny demos |
 
-Reactive invalidation/progress feedback is more important than decorative animation. Use progress indicators honestly for long operations. Custom CSS/JS animation must honor reduced motion.
+```python
+# Shiny Core with non-blocking ExtendedTask and streaming ui.Chat
+import asyncio
+from shiny import App, reactive, render, ui
 
-## Accessibility specifics
+app_ui = ui.page_sidebar(
+    ui.sidebar(
+        ui.input_select("region", "Region", ["EMEA", "AMER", "APAC"]),
+        ui.input_task_button("run_forecast", "Run forecast"),
+        ui.input_dark_mode(),
+    ),
+    ui.layout_columns(
+        ui.card(ui.card_header("Forecast"), ui.output_data_frame("forecast_tbl")),
+        ui.card(ui.card_header("Analyst assistant"), ui.chat_ui("assistant")),
+    ),
+    title="Revenue Forecast",
+    theme=app_theme,
+)
 
-Use semantic headings/labels/input bindings, visible focus, accessible error/status text, chart summaries/tables, and keyboard verification. Shiny generates web UI, but abstraction does not guarantee accessible custom layout or plot meaning.
+def server(input, output, session):
+    @ui.bind_task_button(button_id="run_forecast")
+    @reactive.extended_task
+    async def compute_forecast(region: str):
+        await asyncio.sleep(0.1)  # replace with async I/O or ThreadPoolExecutor work
+        return run_model_for_region(region)
 
-## States idiom
+    @reactive.effect
+    @reactive.event(input.run_forecast)
+    def _start_forecast():
+        compute_forecast(input.region())
 
-Understand reactive graph invalidation. Separate inputs, reactive calculations, outputs, side effects, and session/user state. Render loading/recalculating/empty/error/stale/offline states explicitly. Long jobs need progress/error/cancellation expectations and input preservation.
+    @render.data_frame
+    def forecast_tbl():
+        return render.DataGrid(compute_forecast.result())
 
-## Forms idiom
+    chat = ui.Chat(id="assistant")
 
-Use correct input controls/types/bounds/labels/help, validation timing after meaningful input, explicit submit/apply for expensive workflows, and recovery copy. Do not trigger costly reactive chains on every keystroke unless debounced/intentional.
+    @chat.on_user_submit
+    async def _handle_chat(user_input: str):
+        await chat.append_message_stream(stream_llm_chunks(user_input))
+
+app = App(app_ui, server)
+```
+
+## Layout, responsiveness, and Shinylive (WASM)
+
+- Build responsive layouts with `ui.page_sidebar`, `ui.page_navbar`, `ui.layout_columns(col_widths=...)`, `ui.card(full_screen=True)`, and `ui.value_box`. Reserve stable heights for reactive outputs so charts do not jump on recalculation.
+- For zero-server static distribution (docs, demos, public reports), export to **Shinylive (Pyodide/WebAssembly)** with `shinylive export app site`. Verify every dependency has a pure-Python or Pyodide wheel, keep all secrets out of client code, and show an honest loading state while the WASM runtime initializes.
+
+## Typography, motion, and accessibility
+
+Load custom fonts via `ui.Theme` / `ui.head_content` with explicit fallbacks and `tabular-nums` for KPIs. Prefer reactive busy indicators (`ui.input_task_button`, `ui.Progress`) over decorative motion, and honor `prefers-reduced-motion` in custom CSS. Ensure inputs have real labels, plots include text/table alternatives, and focus does not vanish when dynamic UI rerenders.
+
+## States and forms idiom
+
+Separate reactive calculations (`@reactive.calc`), side effects (`@reactive.effect`), and non-blocking jobs (`@reactive.extended_task`). Use `req(...)` or explicit empty/error UI panels so invalid filters never silently blank an output without explanation. Isolate per-user state inside `server(...)` (or `reactive.value` per session); never mutate module-level globals across concurrent users.
 
 ## Do/don't pairs
 
 | Do | Don't |
 |---|---|
-| explicit reactive dependency graph | hidden chain reactions nobody can debug |
-| `req()`/validation paths with user-visible explanation | output silently disappearing when inputs are invalid |
-| stable placeholder layout while recalculating | whole dashboard collapsing/flashing on each input |
-| user/session-scoped state | mutable module-global state leaking across users |
-| plot plus text/table alternative | color-only chart treated as complete analysis |
+| `ui.Theme(...)` + `ui.input_dark_mode()` | Scattering inline CSS overrides across every component |
+| `@reactive.extended_task` + `ui.input_task_button` for slow work | Blocking the shared asyncio loop with synchronous CPU/DB calls |
+| Shiny Core + `@module.ui`/`@module.server` for multi-view apps | Growing a 1,500-line single-file Express script with name collisions |
+| `ui.Chat` + `append_message_stream` for streaming responses | Re-rendering an entire markdown blob on every token |
+| Explicit empty/error message when a query returns zero rows | Silent blank output caused by bare `req()` without user copy |
 
 ## Known traps
 
-Reactive graph over-invalidation, stale session state, hidden server errors, version-dependent theme APIs, plot/page theme mismatch, input focus loss during redraw, expensive recomputation, concurrency/multi-user leakage.
+Blocking the event loop without `ExtendedTask`/executor offloading, mutating module globals across sessions, plot themes ignoring dark mode, Shinylive builds failing on C-extension packages or leaking credentials, and focus loss during dynamic `render.ui` redraws.
 
 ## Verification commands
 
 ```sh
-shiny run app.py
-python -m pytest
 python -m compileall .
+python -m pytest
+shiny run app.py
+shinylive export app site
 ```
 
-Use browser inspection across widths/input sequences and inspect reactive errors/logs; compile success is not UI evidence.
+Run `pytest` with Playwright (`shiny.playwright` / `shiny.pytest`) and inspect narrow/desktop layouts, dark mode, and empty/error states in a browser for `rendered` evidence; compilation alone is `static`.

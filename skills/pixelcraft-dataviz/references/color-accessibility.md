@@ -81,7 +81,7 @@ Interactive visualization must define:
 - legend/filter/keyboard equivalent;
 - focus restoration after zoom/filter/data refresh.
 
-Do not construct hundreds of Tab stops. Prefer one composite widget with roving focus/internal arrow keys when point-by-point exploration is required.
+Do not construct hundreds of Tab stops. Prefer one composite widget with roving focus/internal arrow keys when point-by-point exploration is required. **Highcharts' `accessibility` module** is a useful benchmark pattern for this interaction model: it provides composite roving keyboard navigation across series and points, auto-generated screen-reader descriptions, an optional synchronized data table, and high-contrast pattern fills.
 
 ## Screen readers and live data
 
@@ -92,7 +92,7 @@ Do not construct hundreds of Tab stops. Prefer one composite widget with roving 
 
 ## Sonification boundary
 
-Sonification can help users perceive trend/rhythm/outliers, but support varies widely and it is not a WCAG substitute for textual/tabular access. If offered, make it opt-in, provide play/pause and speed control, document pitch/timing mapping, never autoplay sound, and keep visual/text equivalents primary.
+Sonification can help users perceive trend, rhythm, and outliers, but support varies widely and it is never a WCAG substitute for textual/tabular access. **Highcharts' `sonification` module** illustrates the right boundary: opt-in audio playback, explicit play/pause and speed controls, configurable pitch/instrument mapping, and spoken context cues, always paired with primary visual, keyboard, and tabular equivalents. Never autoplay sound.
 
 ## Motion and cognitive load
 

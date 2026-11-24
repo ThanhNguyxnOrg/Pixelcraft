@@ -1,4 +1,4 @@
-# Real-time data, node graphs, maps, and rendering scale
+# Real-time data, node graphs, and rendering scale
 
 ## Real-time and streaming data
 
@@ -6,94 +6,77 @@ Define the temporal semantics before implementation:
 
 | Question | Required design |
 |---|---|
-| What is “now”? | show event time versus ingestion/clock time; state timezone and latency |
-| Is data append-only or revised? | make corrections/backfills visible rather than silently rewriting history |
-| What cadence matters? | update at decision cadence, not raw socket cadence |
-| What happens on burst/backlog? | aggregate, sample honestly, drop nonessential frames, or pause; never freeze silently |
-| What happens disconnected? | mark last-known data stale with timestamp; preserve user context; reconnect/resume deliberately |
-| Can users inspect history? | provide pause, time window, scrub/playback, or snapshot semantics |
+| What is "now"? | Show event time versus ingestion/clock time; state timezone and latency. |
+| Is data append-only or revised? | Make corrections/backfills visible rather than silently rewriting history. |
+| What cadence matters? | Update at decision cadence, not raw socket cadence. |
+| What happens on burst/backlog? | Aggregate, sample honestly, drop nonessential frames, or pause; never freeze silently. |
+| What happens disconnected? | Mark last-known data stale with timestamp; preserve user context; reconnect/resume deliberately. |
+| Can users inspect history? | Provide pause, time window, scrub/playback, or snapshot semantics. |
 
 Implementation rules:
 
-- Batch expensive rendering with `requestAnimationFrame` in browsers or the platform equivalent; do not re-render the whole chart for every event.
-- Bound memory with explicit windows/ring buffers/aggregation and document the retention policy.
-- Use backpressure or throttle WebSocket/SSE consumers. Pause nonessential rendering when the page/app is hidden, while continuing or pausing ingestion according to product semantics.
-- Avoid layout shift when values update; reserve stable width using tabular numerals and measured placeholders.
-- Do not announce every update to assistive technology; use user-controlled inspection and sparse summaries.
-- Keep interactions truthful: a “live” badge means actively updating; paused/stale/reconnecting are separate visible states.
-
-Anti-slop pattern: pulsing green “LIVE” dots, random walking demo data, counters that always increase, and sparklines generated only to fill empty space. These are fabricated evidence.
+- Batch expensive rendering with `requestAnimationFrame` (or platform equivalent); never re-render the full chart on every WebSocket message.
+- Bound memory with explicit ring buffers/sliding windows and document the retention policy.
+- Throttle consumers and pause nonessential rendering when tabs/windows are hidden.
+- Reserve stable numeric widths with `tabular-nums` so streaming counters never jitter layout.
+- Do not flood screen-reader live regions on every tick; summarize consequential state changes at controlled intervals and provide a pause control.
+- Keep badges truthful: "live", "paused", "stale", and "reconnecting" are separate visible states. Avoid pulsing green demo dots and random-walk fake telemetry.
 
 ## Node graphs and network diagrams
 
-First decide whether the user needs topology inspection, path tracing, editing, or monitoring. A force-directed hairball is rarely the right default.
+First clarify the **cross-skill boundary**: analytical topology, dependency, and network visualization (read/explore/cluster/trace) belongs in `pixelcraft-dataviz`. Interactive workflow/node-graph **editors** (automation builders, visual pipelines, canvas undo/redo, node inspector forms) coordinate with `pixelcraft-web` (interaction mechanics) and `pixelcraft-patterns` (creative tools, history/undo).
 
-### React Flow (xyflow)
+A force-directed hairball is rarely the right default—match the graph engine to node count and task:
 
-React Flow is appropriate for interactive node-based editors and explorable workflows. Practical rules:
+| Graph engine | Rendering | Sweet spot | Best fit | Practical trade-off |
+|---|---|---|---|---|
+| **`@xyflow/react` v12 / `@xyflow/svelte`** | DOM/HTML nodes + SVG edges | < 1,500 visible nodes | Workflow/pipeline editors, custom rich node UIs, architecture diagrams | Rich DOM nodes slow down past ~1–2k simultaneous elements; pair with ELK/dagre layout |
+| **Cytoscape.js** | Canvas 2D | 500–10k elements | Analytical network exploration, bioinformatics, compound graphs (`cose`, `breadthfirst`, `elk`) | Canvas is opaque to screen readers; requires external list/neighborhood text view |
+| **AntV G6 (v5)** | Canvas 2D / WebGL / SVG | 1k–100k elements | Enterprise lineage, combo/nested graphs, radial/dagre/force layouts | Larger API surface; verify bundle splitting and accessibility wrappers |
+| **Sigma.js (v3 + Graphology)** | WebGL | 10k–100k+ nodes/edges | Large interactive network exploration, citation/knowledge graphs | Custom WebGL shaders needed for non-standard node shapes; external search/table required |
+| **Cosmograph** | WebGL / GPU force simulation | 100k–1M+ nodes/edges | Massive graph exploration and GPU-accelerated force layout | High GPU demand; always provide filtered subgraphs and non-visual summaries |
 
-- Model controlled state explicitly (`nodes`, `edges`, change handlers) when selection/persistence/undo matters; uncontrolled convenience is for simple demos.
-- Use `fitView` deliberately for initial framing; do not reset the viewport on every data update.
-- React Flow does not automatically solve graph layout. Use dagre, ELK, or a domain-specific deterministic layout before placing nodes; preserve user-adjusted positions separately.
-- Configure editing affordances (`nodesDraggable`, `nodesConnectable`, selection, deletion) according to permission/state rather than leaving demo defaults.
-- Provide minimap/controls only when the graph size justifies them; they are not substitutes for orientation labels.
-- Enable/maintain keyboard access (`nodesFocusable`, `edgesFocusable`, keyboard navigation support) and test focus visibility. Canvas-like custom node content still needs semantic labels/actions.
-- Virtualize/limit rendering for very large graphs; use aggregation/clusters and server-side layout where necessary.
+### `@xyflow/react` v12 & `@xyflow/svelte` rules
 
-### Cytoscape.js
+- Migrate legacy `reactflow` imports to `@xyflow/react` v12 (supports `colorMode="system" | "dark" | "light"`, SSR hydration with explicit node dimensions, and computed layout hooks) or `@xyflow/svelte` for Svelte 5 apps.
+- Model controlled state (`nodes`, `edges`, `onNodesChange`, `onEdgesChange`) when selection, persistence, or undo matters.
+- Compute deterministic initial layouts with **ELKjs** or **dagre** before mounting; call `fitView` once on initial load, not on every data mutation.
+- Set `nodesFocusable` and `edgesFocusable`, configure permission-gated editing (`nodesDraggable`, `nodesConnectable`), and verify visible keyboard focus rings inside custom node DOM.
 
-Cytoscape.js is appropriate for graph analysis and canvas-rendered network visualization. It provides graph primitives, layout algorithms such as grid/circle/breadthfirst/cose, and extension layouts for more advanced constraint solving. Because rendering is canvas-based, keyboard access and screen-reader access are not automatic: provide an external semantic graph/list, keyboard commands, focus/filter controls, and textual neighborhood summaries.
+### Universal graph UX rules
 
-### Graph UX rules
-
-- Label edge direction and meaning; do not use arrows decoratively.
-- Use clustering/aggregation when density prevents reading; expose counts and expansion.
-- Make selection state and neighborhood emphasis explicit.
-- Preserve zoom/pan/layout positions across refresh.
-- Supply search/filter and path tracing for large graphs.
-- Design empty/disconnected/cyclic/self-loop/permission-hidden-node states.
+- Label edge direction and meaning; never add decorative arrows.
+- Cluster or collapse dense neighborhoods with visible member counts and expand/collapse controls.
+- Preserve zoom/pan and user-adjusted node positions across data refreshes.
+- Always supply search/jump-to-node, shortest-path or neighbor highlighting, and explicit empty, disconnected, cyclic, and permission-redacted states.
 
 ## Maps and geospatial UI
 
-Choose map technology only when spatial location is essential. Tables, ranked lists, or cartograms often communicate regional comparison better.
+Use a map only when geography itself is the analytical key (otherwise prefer ranked bars, tables, or tile-grid cartograms). For full geospatial engine selection (MapLibre GL JS, Mapbox, Leaflet, OpenLayers, deck.gl WebGL2 interleaving, CesiumJS), self-hosted Protomaps/PMTiles, Turf.js client spatial ops, and choropleth pitfalls (normalization, breaks, missing-data fills, boundaries), read [maps-geospatial.md](maps-geospatial.md).
 
-### MapLibre GL JS
+## Rendering and data-scale tiers
 
-MapLibre GL JS renders vector tiles using WebGL and style JSON. Verify tile/style/glyph/sprite URLs, attribution, licensing, offline behavior, and network failure. Vector text requires glyph resources; missing glyphs are a common cause of invisible labels. Treat the base map as data with a provider/license, not a decorative background.
+There is no single cutoff—measure on target hardware—but use this architectural ladder:
 
-### deck.gl
+1. **SVG / DOM** (dozens to ~2,000 marks): Default when crisp typography, CSS theming, print export, and native accessibility matter most.
+2. **Canvas 2D** (~2k to ~100k marks, or high-frequency time series): Use `uPlot`, `ECharts`, `Chart.js`, or `TradingView Lightweight Charts` with an external semantic summary/table.
+3. **WebGL / GPU** (100k–10M+ points or dense graphs): Use `deck.gl`, `Sigma.js`, `Cosmograph`, `Plotly scattergl`, or `GLMakie` with binary typed arrays (`Float32Array`) and context cleanup on unmount.
+4. **WASM & SQL pre-aggregation** (multi-million-row interactive filtering & streaming pivots):
+   - **UW IDL Mosaic + DuckDB-Wasm**: Materializes pre-aggregated data cubes so brushing/cross-filtering millions of rows stays sub-16ms in the browser.
+   - **FINOS Perspective**: C++/Rust WASM streaming engine for high-frequency financial blotters, virtualized pivots, and live views.
+   - **Datashader (Python)**: Server/GPU rasterization for billion-point distributions without browser overplotting.
+5. **3D only when depth carries information** (terrain, molecular structures, physical digital twins, orbital trajectories)—never to embellish a 2D chart.
 
-deck.gl provides GPU-accelerated layers (for example `GeoJsonLayer`, `ScatterplotLayer`, `HexagonLayer`, `ArcLayer`) and can sit above MapLibre/Mapbox-compatible base maps. Update layers by supplying appropriately versioned immutable data; measure GPU memory and attribute update cost. Do not use a WebGL map for a handful of static markers if ordinary DOM/SVG is easier to make accessible.
-
-### Choropleth pitfalls
-
-- Normalize counts by population/customer/area only when that denominator is meaningful; otherwise map counts intentionally and label them as counts.
-- Classification choice changes the story: quantile, equal interval, natural breaks, manual thresholds. Publish the breaks and rationale.
-- Large regions visually dominate small dense regions; consider cartograms/tile grids when area is misleading.
-- Missing/no-data regions need a distinct neutral treatment, never zero color.
-- Border/territory representation can be politically sensitive; choose boundary datasets consciously and follow user/legal context.
-- Color alone cannot carry regional values; provide hover/focus/table ranking and direct labels for key regions.
-
-## SVG versus canvas versus WebGL versus 3D
-
-There is no universal element-count cutoff. Measure target hardware and interaction. Use this decision order:
-
-1. **SVG/DOM first** for dozens to low thousands of elements when selection, accessibility, CSS, print, and text quality matter.
-2. **Canvas 2D** when many repeating marks are redrawn as raster and semantic structure can live outside the canvas.
-3. **WebGL/GPU** when sustained interactivity with tens/hundreds of thousands of points, images, particles, or GPU aggregation is required.
-4. **3D only when spatial depth itself carries information** (molecular, terrain, volumetric, physical scene). Never use 3D merely to make a 2D chart look advanced.
-
-When using canvas/WebGL, accessibility does not disappear: retain an offscreen/semantic data representation, keyboard interaction model, focus proxy where applicable, text summary, and data table/export.
+Canvas, WebGL, and WASM layers never waive accessibility: retain an offscreen/external semantic data summary, keyboard controls, and CSV/table access.
 
 ## Performance verification
 
-Measure with realistic cardinality and device/network constraints:
+Measure with realistic cardinality and device constraints:
 
-- initial parse/layout/render time;
-- frame time during pan/zoom/hover/filter;
-- update latency and dropped frames during streaming bursts;
-- memory growth across refresh/reconnect;
-- bundle/worker/wasm/tile payload;
-- battery/thermal behavior on mobile where relevant.
+- initial parse, WASM/tile fetch, layout, and first-paint time;
+- frame time during pan, zoom, brush, hover, and filter changes;
+- update latency and dropped frames under realistic streaming bursts;
+- memory and WebGL context cleanup across route changes and reconnects;
+- bundle, worker, and tile payload size plus mobile thermal/battery behavior.
 
-Record whether evidence is `rendered` measurement or `not-checked`. Do not call a visualization “fast” because a tiny demo dataset rendered once.
+Label measurements honestly as `rendered` or `not-checked`—a 20-row mock dataset proving 60 fps is not scale evidence.

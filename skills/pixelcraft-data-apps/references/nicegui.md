@@ -1,63 +1,102 @@
 # NiceGUI
 
-Evidence: current docs confirm `ui.colors(...)`, app-wide `app.colors(...)`, `ui.dark_mode()`, and `ui.add_head_html` for custom CSS/HTML.
-
 ## Token mapping
 
-Use app/page color configuration first:
+Configure Quasar palette tokens globally with `app.colors(...)` or per page with `ui.colors(...)`, pair with `ui.dark_mode()` (`None` follows system preference), and add scoped semantic CSS variables via `ui.add_head_html` only when Quasar/Tailwind utility classes are insufficient:
 
 ```python
-app.colors(primary='#0074ca', brand='#0074ca')
-ui.colors(primary='#0074ca')
-dark = ui.dark_mode()  # None means auto
+from nicegui import app, ui
+
+app.colors(primary="#0074ca", secondary="#0f766e", positive="#15803d", negative="#b91c1c")
+ui.add_head_html("<style>.num { font-variant-numeric: tabular-nums; }</style>", shared=True)
 ```
 
-Use Quasar/Tailwind-style classes deliberately and inject scoped CSS with `ui.add_head_html` only when supported configuration is insufficient.
+## Page isolation, storage scopes, refreshables, and async offloading
 
-## Layout and responsive idioms
+Always use `@ui.page(...)` for multi-user apps. Top-level auto-index scripts share one UI tree across every connected browser, leaking selections and form input between users.
 
-NiceGUI is component/server driven. Use rows/columns/cards/expansion/tabs/pages by task flow, but verify actual responsive DOM. Shared/global page state and per-user state must be separated explicitly. Avoid fixed-width desktop dashboard assumptions.
+| Storage scope | Persistence | Isolation | Requirement / use case |
+|---|---|---|---|
+| `app.storage.user` | Server JSON/Redis + signed cookie | Per user across tabs & reloads | Requires `storage_secret=...` in `ui.run()`; preferences, theme, auth user ID |
+| `app.storage.tab` | Server memory (TTL) | Per browser tab across reloads | Active tab filters, draft wizard state |
+| `app.storage.client` | Server memory | Single websocket connection | Ephemeral view objects cleared on refresh |
+| `app.storage.general` | Server JSON/Redis | Shared across all users | Global feature flags, shared reference metadata only |
 
-## Typography/custom fonts
+```python
+from nicegui import app, run, ui
 
-Use CSS/font assets through documented HTML/head mechanisms. Because output is web DOM, fallback/loading/script coverage remain relevant. Do not hide typography inside ad hoc inline styles everywhere.
+@ui.page("/reports")
+async def reports_page():
+    ui.dark_mode().bind_value(app.storage.user, "dark_mode")
+    region = app.storage.tab.setdefault("region", "EMEA")
+    state = {"rows": [], "loading": False, "error": None}
 
-## Motion/reduced motion
+    @ui.refreshable
+    def results_panel():
+        if state["loading"]:
+            ui.spinner(size="lg")
+            return
+        if state["error"]:
+            ui.label(f"Load failed: {state['error']}").classes("text-negative")
+            return
+        if not state["rows"]:
+            ui.label("No rows match the selected region.")
+            return
+        ui.aggrid({"columnDefs": [{"field": "order_id"}, {"field": "amount"}], "rowData": state["rows"]})
 
-Use CSS/Quasar motion sparingly and honor `prefers-reduced-motion`. Server push/update latency is interaction feedback; use immediate local pending state where possible.
+    async def load_data():
+        state["loading"], state["error"] = True, None
+        results_panel.refresh()
+        try:
+            # Offload blocking DB I/O or heavy CPU work off the asyncio event loop
+            state["rows"] = await run.io_bound(query_warehouse, app.storage.tab["region"])
+        except Exception as exc:
+            state["error"] = str(exc)
+        finally:
+            state["loading"] = False
+            results_panel.refresh()
 
-## Accessibility specifics
+    with ui.header().classes("items-center justify-between"):
+        ui.label("Operations Reports").classes("text-h6")
+        ui.switch("Dark").bind_value(app.storage.user, "dark_mode")
 
-Quasar components provide baseline semantics, but labels/aria/focus/keyboard behavior still need inspection. Dynamic server-side updates need status/error visibility. `ui.add_head_html` can add meta/CSS but cannot repair missing semantic structure by itself.
+    with ui.row().classes("w-full items-end gap-4"):
+        ui.select(["EMEA", "AMER", "APAC"], label="Region", value=region).bind_value(app.storage.tab, "region")
+        ui.button("Refresh", on_click=load_data)
 
-## States idiom
+    results_panel()
+    await load_data()
 
-Understand page lifecycle, shared objects, background tasks, timers, and websocket/client state. Explicitly model loading/error/empty/offline/disconnected states. Avoid mutating shared global UI objects across users. Background work needs cancellation/timeout/error propagation.
+ui.run(storage_secret="replace-with-env-secret")
+```
 
-## Forms idiom
+- Use `run.io_bound(fn, ...)` for blocking network/database calls and `run.cpu_bound(fn, ...)` for heavy NumPy/Pandas compute so websocket heartbeats never freeze and clients do not disconnect.
+- Use `@ui.refreshable` (calling `.refresh()`) to update only the affected DOM subtree instead of clearing and rebuilding the entire page.
 
-Use labeled inputs, validation rules where supported, correct props/types, preservation across server events, and explicit submit behavior. Do not run expensive actions on every keystroke unless intentionally debounced/designed.
+## Layout, typography, motion, and accessibility
+
+Compose responsive layouts with `ui.header`, `ui.left_drawer`, `ui.row().classes("flex-wrap")`, `ui.grid`, and `ui.card` rather than fixed pixel containers. Honor `prefers-reduced-motion` in custom CSS. Quasar provides baseline ARIA, but verify labels, focus order, dark-mode contrast, and websocket disconnect banners in the rendered DOM.
 
 ## Do/don't pairs
 
 | Do | Don't |
 |---|---|
-| `app.colors(primary=...)` or page-level `ui.colors` intentionally | injecting global CSS that fights Quasar unpredictably |
-| `ui.dark_mode()` auto/manual behavior explicit | assuming dark mode exists because browser prefers it |
-| stable classes plus scoped `ui.add_head_html` CSS | brittle generated-selector hacks |
-| per-user page/state ownership | shared mutable globals leaking across sessions |
-| visible reconnect/error state | silent websocket failure while UI appears live |
+| `@ui.page(...)` with `app.storage.tab` / `app.storage.user` | Auto-index top-level UI leaking controls across every connected user |
+| `await run.io_bound(...)` / `run.cpu_bound(...)` for slow work | Blocking the asyncio loop and causing websocket timeouts |
+| `@ui.refreshable` for scoped dynamic regions | Calling `container.clear()` across unrelated input widgets |
+| `ui.aggrid` / `ui.table` with empty and error branches | Rendering an empty grid silently when a query raises |
+| Explicit `storage_secret` from env for `app.storage.user` | Hardcoding secrets or storing private user data in `app.storage.general` |
 
 ## Known traps
 
-Shared-state leakage, server-client synchronization gaps, dark-mode precedence confusion, custom CSS instability, background task lifecycle, browser disconnect/reconnect state, mobile layout assumptions, injected HTML/security risk.
+Accidental shared auto-index pages, blocking the event loop on synchronous DB calls, forgetting `storage_secret`, storing unserializable objects in `app.storage.user`, websocket disconnect without user feedback, and unsafe raw HTML passed to `ui.html(..., sanitize=False)`.
 
 ## Verification commands
 
 ```sh
-python main.py
-python -m pytest
 python -m compileall .
+python -m pytest
+python main.py
 ```
 
-Rendered evidence requires actual browser inspection including resize, dark mode, keyboard, disconnect/reconnect, and multi-client behavior where relevant.
+Use `nicegui.testing` pytest fixtures: the lightweight `user` fixture (`User`) validates simulated DOM interactions and event handlers quickly (`static`/simulated evidence), while the `screen` fixture (`Screen`, browser-backed) or Playwright verifies real rendering, dark mode, responsive wrap, and reconnect behavior (`rendered` evidence).
