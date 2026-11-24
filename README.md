@@ -376,23 +376,27 @@ node bin/pixelcraft.mjs add all --agent all --dry-run
 
 ```text
 bin/                         zero-dependency Node installer and wizard
-install.sh                  curl/bash installer (no Node required)
-install.ps1                 PowerShell installer (no Node required)
-scripts/                     validation tooling
-skills/                      self-contained Agent Skills
+install.sh                   curl/bash installer (no Node required; pass --ref <tag> for a release or --ref <commit-sha> for a content-stable pin)
+install.ps1                  PowerShell installer (no Node required; pass -Ref <tag> for a release or -Ref <commit-sha> for a content-stable pin)
+scripts/                     validation, adapter builder, and contract test suites
+skills/                      26 self-contained Agent Skills
+evals/                       26 behavioural eval guides and machine-readable JSON fixtures
+assets/                      brand artwork and icons
 docs/ARCHITECTURE.md         system design and conventions
-docs/DESIGN-RATIONALE.md      contributor rationale for major rules
+docs/DESIGN-RATIONALE.md     contributor rationale for major rules
+plugin.json                  portable plugin manifest
+gemini-extension.json        Gemini CLI extension manifest
 .claude-plugin/              Claude marketplace and plugin manifests
+.agents/plugins/             Codex local plugin catalog metadata
 .github/workflows/           validation and tag-release workflows
 ```
 
 ## Roadmap
 
-- evaluation corpus for visual distinctiveness, UX completeness, accessibility, localization, and cross-platform fidelity;
+- automated model-execution eval harness on top of the existing `evals/` guides and JSON fixtures, plus expanding fixture coverage across all 26 skills;
 - showcase site with verified examples across supported stacks;
 - deeper framework coverage and version-specific verification matrices;
 - richer design-token conversion and implementation handoff;
-- calibrated review fixtures with known good/bad examples;
 - internationalization of contributor documentation where useful, while keeping skill content consistently machine-readable.
 
 ## Contributing

@@ -1,4 +1,5 @@
 import { execFileSync } from 'node:child_process';
+import { createHash } from 'node:crypto';
 import fs from 'node:fs';
 import os from 'node:os';
 import path from 'node:path';
@@ -47,9 +48,14 @@ try {
   execFileSync('tar', ['--format=gnu', '--sort=name', `--mtime=@${commitTime}`, '--owner=0', '--group=0', '--numeric-owner',
     '--use-compress-program=gzip -n', '-cf', 'pixelcraft-skills.tar.gz', ...dirs], { cwd: stage, env });
   fs.mkdirSync(out, { recursive: true });
+  const checksumLines = [];
   for (const name of ['pixelcraft-skills.zip', 'pixelcraft-skills.tar.gz']) {
-    fs.copyFileSync(path.join(stage, name), path.join(out, name));
+    const dest = path.join(out, name);
+    fs.copyFileSync(path.join(stage, name), dest);
+    const digest = createHash('sha256').update(fs.readFileSync(dest)).digest('hex');
+    checksumLines.push(`${digest}  ${name}`);
   }
+  fs.writeFileSync(path.join(out, 'SHA256SUMS.txt'), checksumLines.join('\n') + '\n', 'utf8');
 } finally {
   fs.rmSync(stage, { recursive: true, force: true });
 }

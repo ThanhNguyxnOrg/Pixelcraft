@@ -44,10 +44,10 @@ Outlook Word renderer, Gmail clipping/style stripping, image blocking, dark-mode
 
 ## Verification commands
 
+Run the repository's email build/template validation pipeline without suppressing failures (for example, `npm run build` or your template compiler):
+
 ```sh
-# depends on pipeline
-npm run build 2>/dev/null || true
-python -m compileall . 2>/dev/null || true
+npm run build
 ```
 
 Use actual client previews/screenshots or a testing service; inspect source size/clipping, plaintext MIME, image-off rendering, dark mode, narrow/wide layouts, high contrast, links, spam/deliverability checks where available.

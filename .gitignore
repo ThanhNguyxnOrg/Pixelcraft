@@ -1,6 +1,7 @@
 node_modules/
 dist/
 /skill-zips/
+adapters/
 build/
 coverage/
 .DS_Store

@@ -44,9 +44,10 @@ Blueprint visual-script sprawl hiding state ownership, input mode mistakes, focu
 
 ## Verification commands
 
+Run the project's Unreal Automation / UAT build command against the repo `.uproject` without suppressing failures:
+
 ```sh
-# project dependent; use Unreal automation/build commands available in repo
-ls *.uproject 2>/dev/null || true
+RunUAT BuildCookRun -project="<PathToProject>.uproject" -build -unattended
 ```
 
 Use PIE/device/console-like target screenshots, controller-only navigation, resolution/aspect/safe-zone matrix, localization pseudo-text/glyph checks, accessibility option tests, input-mode/menu interruption flows, automation tests, and current platform certification checklists where applicable.
