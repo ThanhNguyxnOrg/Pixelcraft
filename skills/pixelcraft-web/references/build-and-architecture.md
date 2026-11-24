@@ -1,8 +1,8 @@
 # Frontend build tools, application architecture, and browser runtime
 
-Select the bundler, rendering architecture, microfrontend boundary, and browser runtime primitives to match the product's delivery constraints—not default templates. For PWA manifest/installability UX, read `references/pwa.md`; for Lit Shadow DOM accessibility/form internals, read `references/lit-web-components.md`.
+Select the bundler, rendering architecture, microfrontend boundary, and browser runtime primitives to match the product's delivery constraints—not default templates. For PWA manifest/installability UX, read [pwa.md](pwa.md); for Lit Shadow DOM accessibility/form internals, read [lit-web-components.md](lit-web-components.md).
 
-## Build and bundling decision matrix
+## Build, linting, and bundling decision matrix
 
 | Tool | Underlying engine | Best fit | Version & migration rules |
 |---|---|---|---|
@@ -10,16 +10,23 @@ Select the bundler, rendering architecture, microfrontend boundary, and browser 
 | **Vite 6–7** | Rollup (build) + esbuild (dev/dep pre-bundling) | Existing Vite 6–7 repos not yet upgraded to v8 | Verify installed major in `package.json` before choosing `rollupOptions` vs `rolldownOptions`. |
 | **Rspack / Rsbuild** | Rust Webpack-compatible bundler | Webpack migrations, enterprise monorepos, Module Federation 2.0 | Use Rsbuild (`@rsbuild/core`) for ergonomic defaults (`performance.chunkSplit`, built-in `moduleFederation.options`); drop down to raw Rspack only for custom Webpack plugin pipelines. |
 | **Turbopack** | Incremental Rust bundler (Next.js) | Next.js dev/production builds | Align loaders and resolve aliases with Next.js `turbopack` config; avoid Webpack-only plugins that block Turbopack adoption. |
-| **Webpack 5** | JS bundler | Legacy enterprise apps with custom Webpack loaders/plugins | Maintain existing setups; prefer Rsbuild/Rspack or Vite 8 for greenfield apps. |
-| **Parcel** | Zero-config multi-asset bundler | Small multi-entry static sites, Chrome extensions, quick prototypes | Keep config minimal; switch to Vite or Rsbuild once custom chunking or SSR pipelines are needed. |
-| **esbuild** | Go bundler/transpiler | CLI scripts, library builds, fast single-pass bundling | Not a full SPA dev/HMR framework; pair with Vite/tsup/unbuild when type generation or CSS extraction is required. |
+| **`tsdown`** | Rolldown + Oxc (superseding `tsup`) | TypeScript/JS npm packages and workspace UI libraries | Prefer `tsdown` (`dts: true`, isolated declarations fast `.d.ts` emit) over legacy `tsup` for new library builds. |
+| **Bun bundler (`bun build`)** | Zig native bundler + runtime | Bun-first full-stack apps, scripts, single-file executables | Verify Node/browser compatibility for plugins and SSR adapters when targeting non-Bun hosts. |
+| **Webpack 5 / Parcel / esbuild** | JS / Rust / Go | Legacy enterprise Webpack pipelines; zero-config static bundles (Parcel); fast single-pass CLI transforms (esbuild) | Maintain existing setups; prefer Vite 8, Rsbuild, or `tsdown` for greenfield builds. |
 
-### Vite 8 (Rolldown + Oxc) config idiom
+### Linting, formatting, and compiler plugins
 
-- **Chunk splitting breaking change**: Vite 8 / Rolldown removes object-form `manualChunks` and deprecates function-form `manualChunks`. Use `build.rolldownOptions.output.codeSplitting.groups` (`name`, `test`, `priority`), and enable `strictExecutionOrder` only if aggressive chunk splitting causes module-initialization order errors. In SSR meta-frameworks using Vite Environment API, scope client chunking under `environments.client.build`.
+- **Biome**: single Rust binary for formatting + linting (`biome check --write`) across JS/TS/JSX/CSS/JSON/HTML with zero Prettier/ESLint plugin sprawl; pair with framework-specific linters only where needed (e.g., complex Vue/Svelte template rules).
+- **Oxlint & Oxfmt** (Oxc toolchain): ultra-fast Rust linter (`oxlint`) and formatter (`oxfmt`) that run orders of magnitude faster than ESLint in CI—either standalone or ahead of narrow type-aware/framework ESLint rules.
+- **React Compiler build plugin**: enable `reactCompiler: true` in Next.js 15/16 or wire `babel-plugin-react-compiler` in Vite/Rsbuild (paired with `eslint-plugin-react-hooks` compiler rules) so pure React components auto-memoize without hand-written `useMemo`/`useCallback`.
+
+### Vite 8 (Rolldown + Oxc) and Vite Environment API idiom
+
+- **Chunk splitting breaking change**: Vite 8 / Rolldown removes object-form `manualChunks` and deprecates function-form `manualChunks`. Use `build.rolldownOptions.output.codeSplitting.groups` (`name`, `test`, `priority`), and enable `strictExecutionOrder` only if aggressive chunk splitting causes module-initialization order errors.
+- **Vite Environment API**: modern meta-frameworks (React Router v7, TanStack Start, Cloudflare Vite plugin, Nuxt, SvelteKit) separate client, SSR, and edge worker runtimes under `environments: { client: ..., ssr: ... }`—scope browser-only chunk rules under `environments.client.build` rather than mutating global build options blindly.
 
 ```ts
-// vite.config.ts (Vite 8+)
+// vite.config.ts (Vite 8+ with Environment API & Rolldown)
 import { defineConfig } from 'vite';
 
 export default defineConfig({
@@ -31,19 +38,19 @@ export default defineConfig({
       // replaces deprecated optimizeDeps.esbuildOptions
     },
   },
-  build: {
-    rolldownOptions: {
-      output: {
-        // replaces Rollup manualChunks (object form removed in Vite 8)
-        codeSplitting: {
-          groups: [
-            { name: 'react-vendor', test: /node_modules[\\/](?:react|react-dom|scheduler)[\\/]/, priority: 30 },
-            { name: 'vendor', test: /node_modules[\\/]/, priority: 10 },
-          ],
-        },
-        // replaces esbuild.drop / minify options
-        minify: {
-          compress: { dropConsole: true },
+  environments: {
+    client: {
+      build: {
+        rolldownOptions: {
+          output: {
+            codeSplitting: {
+              groups: [
+                { name: 'framework-vendor', test: /node_modules[\\/](?:react|react-dom|scheduler)[\\/]/, priority: 30 },
+                { name: 'vendor', test: /node_modules[\\/]/, priority: 10 },
+              ],
+            },
+            minify: { compress: { dropConsole: true } },
+          },
         },
       },
     },
@@ -60,7 +67,7 @@ Choose the lightest rendering strategy that satisfies interactivity, freshness, 
 | **SSG** | Build time | Optional / minimal | Docs, marketing, blogs, catalogs with infrequent updates | Full rebuilds scaling poorly on 10k+ pages |
 | **ISR / On-demand revalidation** | Build + cached server refresh | Page/route bundle | E-commerce, news, high-traffic CMS pages | Stale-while-revalidate surprises on auth-scoped content |
 | **SSR (streaming)** | Per request | Full or selective hydration | Personalized pages, auth-gated dashboards, live SEO pages | Hydration mismatch & slow TTFB blocking first paint |
-| **Islands / Partial Hydration** | Build or SSR | Only interactive islands (`client:visible`, `client:idle`) | Content-heavy sites with isolated widgets (Astro, Fresh) | Accidental top-level wrapper hydrating the entire page |
+| **Islands / Partial Hydration** | Build or SSR | Only interactive islands (`client:visible`, `client:idle`) | Content-heavy sites with isolated widgets (Astro, Fresh, Leptos) | Accidental top-level wrapper hydrating the entire page |
 | **Resumability** | SSR with serialized listeners | Lazy-loaded on interaction (Qwik) | Mobile-first, interaction-sensitive apps with tight INP budgets | Breaking serialization boundaries with non-serializable closures |
 | **SPA (CSR)** | Empty shell + client render | Full app bundle | Authenticated tools, offline-first editors, canvas workspaces | Blank first paint, poor SEO, waterfall data fetching |
 
@@ -97,7 +104,7 @@ export default defineConfig({
 
 When building framework-agnostic leaf components or cross-framework design systems:
 
-- **Lit**: lightweight standards-based custom elements (`references/lit-web-components.md`).
+- **Lit**: lightweight standards-based custom elements ([lit-web-components.md](lit-web-components.md)).
 - **Stencil**: compiler generating standard Web Components plus framework wrapper packages (React/Vue/Angular) for enterprise design systems.
 - **FAST**: Microsoft's Web Components foundation with design tokens and adaptive color recipes.
 - **Shoelace / Web Awesome**: ready-to-use accessible Web Components (`sl-*` / `wa-*`) with CSS custom properties, `::part()` hooks, and React wrappers.

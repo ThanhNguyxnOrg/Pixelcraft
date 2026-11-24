@@ -6,20 +6,22 @@ Never build a rich-text or code editor on raw `contenteditable` with `document.e
 
 | Category | Tools | Document model | Best fit | Primary trade-off |
 |---|---|---|---|---|
-| **Rich-text core** | **ProseMirror**, **Tiptap** (v3) | Immutable schema-validated node tree (ProseMirror) | Custom block/inline docs, Notion-like editors, Yjs collaboration | Bundle size & schema design discipline; SSR requires `immediatelyRender: false` |
+| **Rich-text core** | **ProseMirror**, **Tiptap** (v3), **BlockNote** | Immutable schema-validated node tree (ProseMirror) | Custom block/inline docs, Notion-like editors (**BlockNote** ships slash menus, drag handles, and Yjs blocks out of the box) | Bundle size & schema design discipline; SSR requires `immediatelyRender: false` |
 | **React-first rich text** | **Lexical**, **Slate**, **Plate** | Double-buffered node tree (Lexical) or JSON AST (Slate/Plate) | React apps needing fine-grained custom nodes, mentions, slash commands, or shadcn-style blocks (Plate) | Lexical requires registering custom nodes upfront; Slate needs careful normalization & IME testing |
 | **Full-featured turnkey** | **CKEditor 5**, **TinyMCE** | Proprietary rich model | CMS/enterprise forms needing turnkey tables, track changes, Word paste cleanup | Commercial licensing for advanced plugins; harder to restyle deeply |
 | **Markdown / MDX** | **Milkdown** (ProseMirror-based), **MDXEditor** (Lexical-based) | Markdown AST + live WYSIWYG | Developer docs, Git-backed CMS, technical writing | Round-trip Markdown serialization edge cases with custom JSX/MDX |
-| **Code editors** | **CodeMirror 6**, **Monaco Editor**, **Ace** | Line/rope immutable state (CM6) or VS Code text model (Monaco) | **CodeMirror 6**: lightweight, mobile-friendly, modular web apps; **Monaco**: desktop IDE features (TypeScript IntelliSense, diff editor, LSP) | Monaco is heavy (~2–4 MB + Web Workers) and weak on mobile touch; never bundle Monaco for a small JSON input |
+| **Read-only syntax highlighting** | **Shiki** (`shiki`) | TextMate grammars → static HTML / CSS variables | Docs, changelogs, diff viewers, AI code blocks (0 KB client JS when rendered at build/SSR time) | Not an editable code editor—pair with CodeMirror 6 when editing is required |
+| **Code editors** | **CodeMirror 6**, **Monaco Editor**, **Ace** | Line/rope immutable state (CM6) or VS Code text model (Monaco) | **CodeMirror 6**: lightweight, mobile-friendly, modular web apps; **Monaco**: desktop IDE features (TypeScript IntelliSense, diff editor, LSP) | Monaco is heavy (~2–4 MB + Web Workers) and weak on mobile touch; never bundle Monaco for a small JSON input or read-only snippet |
 | **In-browser playgrounds** | **Sandpack**, **WebContainers** | Client bundler iframe (Sandpack) or WASM Node.js runtime (WebContainers) | **Sandpack**: live React/Vue/HTML sandboxes in docs; **WebContainers**: full Node CLI/dev-server in browser | WebContainers require `Cross-Origin-Opener-Policy: same-origin` and `Cross-Origin-Embedder-Policy: require-corp` headers |
 | **Visual page builders** | **Puck**, **Craft.js**, **GrapesJS** | JSON component tree (Puck/Craft.js) or HTML/CSS canvas (GrapesJS) | **Puck**: React/Next.js apps rendering your own design-system components; **GrapesJS**: standalone HTML/email template builders | GrapesJS outputs arbitrary HTML/CSS that can drift from design tokens |
 
 ## Rich-text implementation idioms
 
-### Tiptap v3 (ProseMirror)
+### Tiptap v3 (ProseMirror) & BlockNote
 
 - **SSR safety**: always set `immediatelyRender: false` in `useEditor()` inside Next.js/Remix/SSR apps so server and client HTML do not mismatch.
-- **Yjs collaboration**: when adding `@tiptap/extension-collaboration`, disable `StarterKit`'s built-in undo/redo (`StarterKit.configure({ undoRedo: false })` in v3) so local history does not fight collaborative Yjs history.
+- **Undo/Redo footgun**: keep `StarterKit`'s built-in undo/redo **enabled** for single-user editors! Disable it (`undoRedo: false` in Tiptap v3) **only** when `@tiptap/extension-collaboration` (Yjs) owns history—copying `undoRedo: false` into a standalone editor silently breaks `Ctrl+Z` / `Cmd+Z`.
+- **BlockNote**: use `@blocknote/react` (`useCreateBlockNote` + `<BlockNoteView>`) when a Notion-style block editor with slash menus, block drag handles, and optional Yjs sync is desired without assembling 15 Tiptap extensions by hand.
 - **Persistence & XSS**: store canonical JSON (or sanitize HTML server-side with DOMPurify/allowlist before rendering read-only views).
 
 ```tsx
@@ -27,16 +29,18 @@ Never build a rich-text or code editor on raw `contenteditable` with `document.e
 
 import { useEditor, EditorContent } from '@tiptap/react';
 import StarterKit from '@tiptap/starter-kit';
+import Collaboration from '@tiptap/extension-collaboration';
+import type * as Y from 'yjs';
 
-export function DocumentEditor({ initialHtml }: { initialHtml: string }) {
+export function DocumentEditor({ initialHtml, ydoc }: { initialHtml: string; ydoc?: Y.Doc }) {
+  const isCollaborative = Boolean(ydoc);
   const editor = useEditor({
     extensions: [
-      StarterKit.configure({
-        // Disable built-in undoRedo when pairing with Yjs Collaboration
-        undoRedo: false,
-      }),
+      // ONLY disable built-in undoRedo when Yjs Collaboration provides history!
+      StarterKit.configure(isCollaborative ? { undoRedo: false } : {}),
+      ...(ydoc ? [Collaboration.configure({ document: ydoc })] : []),
     ],
-    content: initialHtml,
+    content: isCollaborative ? undefined : initialHtml,
     immediatelyRender: false,
   });
 
@@ -78,7 +82,11 @@ export function NotesEditor() {
 }
 ```
 
-## Code editor implementation idioms
+## Code editors and read-only highlighting
+
+### Shiki (read-only code blocks)
+
+- Never ship CodeMirror or Monaco just to display read-only code snippets. Use **`shiki`** (`codeToHtml(code, { lang, themes: { light, dark } })`) at build time or inside Server Components / `.server.vue` / Astro for VS Code-accurate syntax highlighting with zero client JavaScript, using dual light/dark CSS variables so themes switch without re-highlighting.
 
 ### CodeMirror 6
 
@@ -125,9 +133,9 @@ export function setTabSize(size: number) {
 | Do | Don't |
 |---|---|
 | Set `immediatelyRender: false` in Tiptap `useEditor()` for SSR apps | Mount Tiptap immediately on the server and ship hydration mismatches |
-| Disable `StarterKit` `undoRedo` when using Tiptap Yjs Collaboration | Run local undo/redo alongside Yjs collaborative history |
-| Use CodeMirror 6 `Compartment.reconfigure()` for theme/language switches | Recreate `EditorView` on prop change and wipe cursor/undo history |
-| Lazy-load Monaco and configure Web Workers; use CM6 for lightweight/mobile views | Bundle full Monaco synchronously into a mobile form or settings modal |
+| Disable `StarterKit` `undoRedo` **only** when Yjs Collaboration is attached | Copy `undoRedo: false` into a standalone single-user editor (silently breaks Undo/Redo) |
+| Use **Shiki** (build/SSR) for read-only code blocks and CodeMirror 6 (`Compartment`) for editable inputs | Ship Monaco or CodeMirror just to highlight static code examples, or recreate `EditorView` on prop change |
+| Lazy-load Monaco and configure Web Workers for desktop IDE surfaces | Bundle full Monaco synchronously into a mobile form or settings modal |
 | Provide a `Tab` escape hatch and `role="toolbar"` roving focus | Trap keyboard focus inside `Tab`-indented editors |
 | Sanitize persisted rich-text HTML or store structured JSON AST | Render unsanitized `dangerouslySetInnerHTML` from editor output |
 

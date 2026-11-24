@@ -45,9 +45,10 @@ Interop impedance mismatch, bundle splitting/startup, typed model divergence fro
 
 ```sh
 dotnet test
-dotnet fable watch src --run webpack
+dotnet fable watch src --run npx vite
+dotnet fable src --run npx vite build
 npm test
 npx playwright test
 ```
 
-Inspect generated DOM/accessibility tree, browser keyboard/focus behavior, offline/server failure, text scaling/localization, reduced-motion emulation, production bundle behavior.
+Inspect generated DOM/accessibility tree, browser keyboard/focus behavior, offline/server failure, text scaling/localization, reduced-motion emulation, and production bundle behavior (`rendered`).

@@ -34,7 +34,10 @@ These recipes describe reusable behavior, not a visual template. Choose only wha
 Prefer native browser primitives when the effect does not need JS physics or timeline callbacks:
 
 - **CSS Scroll-Driven Animations** (`animation-timeline: view()` / `scroll()`): gate with `@supports (animation-timeline: view())` and `@media (prefers-reduced-motion: no-preference)`.
-- **View Transitions API** (`@view-transition { navigation: auto; }` for MPA or `document.startViewTransition()` for SPA): check feature support and fall back to instant DOM update when unsupported or reduced-motion is set.
+- **View Transitions API + Types + `view-transition-class`**:
+  - Use `@view-transition { navigation: auto; }` for cross-document MPA transitions and `document.startViewTransition({ update, types: ['slide-forward'] })` for directional SPA transitions; target transition modes cleanly in CSS with **`:active-view-transition-type(slide-forward)`** instead of toggling temporary classes on `<html>`.
+  - Use **`view-transition-class: card-item`** alongside unique `view-transition-name: card-42` values so every card shares one `::view-transition-group(.card-item)` animation rule without generating per-ID CSS.
+  - Always feature-detect `document.startViewTransition` and bypass or simplify to instant crossfade/update when `prefers-reduced-motion: reduce` is active.
 
 ```css
 @supports (animation-timeline: view()) {
@@ -48,7 +51,32 @@ Prefer native browser primitives when the effect does not need JS physics or tim
 }
 
 @keyframes plate-rise {
-  from { opacity: 0; transform: translateY(24px); }
-  to { opacity: 1; transform: translateY(0); }
+  from { opacity: 0; translate: 0 24px; }
+  to { opacity: 1; translate: 0 0; }
+}
+
+/* View Transition Types + shared view-transition-class */
+.product-card { view-transition-class: product-card; }
+
+@media (prefers-reduced-motion: no-preference) {
+  ::view-transition-group(.product-card) {
+    animation-duration: 240ms;
+    animation-timing-function: cubic-bezier(0.22, 1, 0.36, 1);
+  }
+  html:active-view-transition-type(slide-forward)::view-transition-new(page-body) {
+    animation: slide-in-inline 220ms ease-out both;
+  }
+}
+```
+
+```ts
+// Feature-detected SPA View Transition with semantic transition type
+export function transitionView(update: () => void, direction: 'slide-forward' | 'slide-back') {
+  const reduced = window.matchMedia('(prefers-reduced-motion: reduce)').matches;
+  if (!document.startViewTransition || reduced) {
+    update();
+    return;
+  }
+  document.startViewTransition({ update, types: [direction] });
 }
 ```

@@ -1,24 +1,42 @@
 # Audiovisual accessibility and performance
 
-## User control
+Pair these concrete browser media rules with [media-players.md](media-players.md) and `pixelcraft-accessibility` (`motion-canvas.md`).
 
-- Do not autoplay audible media.
-- Provide visible play/pause, mute/unmute, stop, and replay where relevant.
-- Make current playback state understandable to keyboard and assistive technology.
-- Synchronized captions are required for both spoken dialogue **and** meaningful non-speech audio (alarms, status cues, sound effects) in informative synchronized media; provide a transcript for audio-only or long-form media as well.
-- Important information must remain available in text and must not depend on hearing, seeing animation, or perceiving color.
+## `<track>` & alternative media contract (WCAG 1.2.x)
 
-## Motion and sensory safety
+| Track `kind` | Purpose | Required when |
+|---|---|---|
+| `kind="captions"` | Spoken dialogue **plus** meaningful non-speech sound cues (`[alarm beeps]`, `[music fades]`) | All prerecorded informative video with audio (WCAG 1.2.2); include `srclang`, `label`, and `default` where appropriate |
+| `kind="descriptions"` | Text audio-description cues describing critical visual-only actions/charts | Informative video containing visual information not spoken in the audio track (WCAG 1.2.3 / 1.2.5) |
+| `kind="subtitles"` | Translated dialogue for viewers who can hear the audio | Multilingual releases (does **not** replace `captions` for deaf/hard-of-hearing users) |
+| `kind="chapters"` | Navigable WebVTT chapter markers | Long tutorials, talks, and podcasts for keyboard/scrubber navigation |
 
-- Respect reduced motion and expose a static/simplified visual mode.
-- Avoid flashing, rapid alternating contrast, large involuntary camera movement, and full-screen repetitive motion.
-- Pause when the page is hidden or the user pauses.
-- Let users opt out of sound-reactive effects.
+- Supply a readable text transcript adjacent to audio-only podcasts/clips (WCAG 1.2.1) and long-form videos so users can search, copy, and translate content.
 
-## Performance
+## User control & WCAG 2.2.2 / 2.3.1 safety rules
 
-Record media transfer, decode, analysis, renderer frame time, memory, and device conditions separately. Lazy-load media, use posters, adapt resolution, cap visualizer update rate, and avoid per-frame allocations. Verify on a mid-tier mobile device and a lower-power path when relevant.
+- **No unmuted autoplay (WCAG 1.4.2)**: never autoplay audible media (>3s without an immediate pause/stop/mute control).
+- **WCAG 2.2.2 (Pause, Stop, Hide)**: any moving, blinking, scrolling, or auto-updating content (ambient background video, marquees, canvas loops, carousels) that starts automatically, lasts **more than 5 seconds**, and appears alongside other content **must** expose a visible, keyboard-focusable Pause/Stop/Hide button—honoring `prefers-reduced-motion` is necessary but not sufficient for users who have not enabled OS reduced motion.
+- **WCAG 2.3.1 (Three Flashes or Below Threshold)**: never render content that flashes **more than 3 times in any 1-second period** above general or saturated-red flash thresholds. Clamp audio-reactive luminance/opacity modulation (`audio-reactive.md`) and shader noise frequencies accordingly.
+- **Keyboard & assistive tech parity**: Play/Pause, Seek, Mute/Volume, Captions toggle, and Fullscreen must be reachable by `Tab`, operable with `Space`/`Enter`/arrows, expose `aria-pressed` or live state labels, and keep visible focus rings.
+
+```html
+<!-- Ambient loop satisfying WCAG 2.2.2 (Pause control) + reduced motion -->
+<figure class="ambient-stage">
+  <video id="hero-loop" muted loop playsinline poster="/media/loop-poster.webp" aria-hidden="true">
+    <source src="/media/loop.mp4" type='video/mp4; codecs="avc1.42E01E"' />
+  </video>
+  <button type="button" id="toggle-loop" aria-pressed="false" aria-controls="hero-loop">
+    Pause background motion
+  </button>
+</figure>
+```
+
+## Performance & verification
+
+- Record media transfer size, codec/decode cost, analyser/visualizer update rate, GPU frame time, memory, and device tier separately (`rendered`).
+- Lazy-load below-fold media (`preload="none"` / `IntersectionObserver`), pause playback when offscreen or `document.hidden`, avoid per-frame allocations in audio visualizers, and test on mid-tier mobile or throttled network profiles (or mark device profiling `not-checked`).
 
 Official guidance:
-- WCAG: https://www.w3.org/WAI/standards-guidelines/wcag/
-- Media accessibility: https://www.w3.org/WAI/media/av/
+- WCAG 2.2: https://www.w3.org/TR/WCAG22/
+- W3C Making Audio and Video Media Accessible: https://www.w3.org/WAI/media/av/

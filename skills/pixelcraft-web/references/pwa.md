@@ -146,6 +146,7 @@ Service workers are programmable network proxies. Registration and installation 
 Implementation rules:
 
 - precache only the minimum app shell; huge upfront caches harm install/storage;
+- prefer **Serwist** or **Workbox** over hand-rolling raw `fetch` caches (see [build-and-architecture.md](build-and-architecture.md) for Serwist precaching, runtime routing, and `BackgroundSyncPlugin` setup);
 - version cache names and delete obsolete caches during `activate`;
 - do not cache opaque/cross-origin/authenticated responses without understanding scope and leakage;
 - combine with correct HTTP caching; service-worker cache and HTTP cache are distinct layers;
@@ -180,8 +181,12 @@ Service-worker updates occur when the browser detects a byte-different worker fi
 UX-safe flow:
 
 ```js
+let reloadingForUpdate = false;
+
 navigator.serviceWorker.addEventListener('controllerchange', () => {
-  if (!reloadingForUpdate) window.location.reload();
+  if (reloadingForUpdate) return;
+  reloadingForUpdate = true;
+  window.location.reload();
 });
 
 newWorker.addEventListener('statechange', () => {

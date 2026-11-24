@@ -1,17 +1,17 @@
 # Styling and CSS ecosystem
 
-Select the styling layer by runtime model, React Server Components (RSC) compatibility, theming contract, and team ownership—not habit. For Tailwind v4 CSS-first `@theme` rules, read `references/tailwind.md`; for pure native HTML/CSS features (`@layer`, Popover, Anchor Positioning, `@starting-style`, `oklch`), read `references/html-css.md`.
+Select the styling layer by runtime model, React Server Components (RSC) compatibility, theming contract, and team ownership—not habit. For Tailwind v4 CSS-first `@theme inline` rules, read [tailwind.md](tailwind.md); for pure native HTML/CSS features (`@layer`, Popover, Anchor Positioning, `@starting-style`, `oklch`), read [html-css.md](html-css.md).
 
 ## Architecture decision matrix
 
 | Model | Representative tools | Build-time CSS | RSC-safe | Best fit | Primary trade-off |
 |---|---|---|---|---|---|
-| Native CSS & Modules | CSS Modules, PostCSS, Lightning CSS | Yes | Yes | Any framework, minimal tooling, long-lived apps | Manual token/variant ergonomics unless paired with CVA |
+| Native CSS & Modules | CSS Modules, **Lightning CSS**, PostCSS | Yes | Yes | Any framework, minimal tooling, long-lived apps | Manual token/variant ergonomics unless paired with CVA |
 | Preprocessors | Sass/SCSS (`@use`/`@forward`), Less | Yes | Yes | Existing SCSS/Bootstrap/Carbon codebases | Largely superseded by native CSS nesting, custom properties, and `@layer` for greenfield work |
 | Utility / Token CSS | Tailwind CSS v4, UnoCSS, Open Props, Bootstrap, Bulma | Yes | Yes | Rapid composition, multi-surface products, server-rendered apps | Requires strict semantic token bridge to avoid utility soup |
-| Zero-runtime CSS-in-TS | Panda CSS, vanilla-extract, Linaria (WyW-in-JS) | Yes | Yes | Type-safe design systems, strict token contracts, RSC apps | Static-extraction constraints (no arbitrary runtime expressions) |
-| Compiled Atomic JS | StyleX (`@stylexjs/stylex`) | Yes | Yes | Large multi-team React/Meta-scale apps needing deterministic specificity | Strict `.stylex.ts` file & compiler rules |
-| Runtime CSS-in-JS | Emotion, styled-components | No (runtime injection) | No (`'use client'` + registry required) | Legacy React SPAs or MUI v5–v6 / Chakra v2 maintenance | Serialization, hydration, and RSC overhead; avoid for new RSC apps |
+| Zero-runtime CSS-in-TS | Panda CSS, vanilla-extract, **Pigment CSS**, Linaria (WyW-in-JS) | Yes | Yes | Type-safe design systems, strict token contracts, RSC apps (Pigment CSS for MUI v6/v7 RSC migrations) | Static-extraction constraints (no arbitrary runtime expressions) |
+| Compiled Atomic JS | StyleX (`@stylexjs/stylex`), **Tamagui Web** | Yes | Yes | Meta-scale deterministic atomic CSS (StyleX); shared React Web + React Native UI with optimizing extraction (Tamagui) | Strict compiler/file rules and bundler plugin setup |
+| Runtime CSS-in-JS | Emotion, styled-components | No (runtime injection) | No (`'use client'` + registry required) | Legacy React SPAs or MUI v5 / Chakra v2 maintenance | Serialization, hydration, and RSC overhead; avoid for new RSC apps |
 
 Never stack two competing styling paradigms in the same surface (for example, Bootstrap + Tailwind or Emotion + Panda CSS) unless executing an explicit incremental migration behind `@layer`.
 
@@ -91,6 +91,12 @@ export const lightTheme = createTheme(vars, {
   font: { body: 'system-ui, sans-serif' },
 });
 
+export const container = style({
+  background: vars.color.surface,
+  fontFamily: vars.font.body,
+  paddingInline: '1rem',
+});
+
 export const button = recipe({
   base: { fontFamily: vars.font.body, borderRadius: '6px' },
   variants: {
@@ -111,11 +117,10 @@ import { container, vars } from './theme.css';
 <section className={container} style={assignInlineVars(vars, { color: { brand, surface }, font: { body } })} />
 ```
 
-### Linaria (WyW-in-JS)
+### Pigment CSS & Linaria (WyW-in-JS)
 
-Linaria (`@linaria/core`, `@linaria/react`, `@wyw-in-js/vite`) extracts tagged template literals to static CSS and compiles dynamic prop interpolations into CSS custom properties applied via inline `style`.
-
-- **Custom wrapped components**: any component wrapped with `styled(CustomCard)` that uses dynamic prop interpolations **must accept and forward both `className` and `style`**; dropping `style` silently breaks dynamic variables.
+- **Pigment CSS (`@pigment-css/react`)**: build-time CSS-in-JS (built on WyW-in-JS) designed as an RSC-compatible migration target for Emotion/MUI teams (`styled`, `css`, `variants`, theme CSS variables). Dynamic styles must use `variants` or CSS custom properties rather than arbitrary runtime functions.
+- **Linaria (`@linaria/core`, `@linaria/react`, `@wyw-in-js/vite`)**: extracts tagged template literals to static CSS and compiles dynamic prop interpolations into CSS custom properties applied via inline `style`. Any custom component wrapped with `styled(CustomCard)` that uses dynamic interpolations **must accept and forward both `className` and `style`**; dropping `style` silently breaks dynamic variables.
 
 ## Atomic CSS compilers
 
@@ -154,6 +159,10 @@ const styles = stylex.create({
 <article {...stylex.props(isDark && darkTheme, styles.card)} />
 ```
 
+### Tamagui Web (`@tamagui/core` / `tamagui`)
+
+Choose **Tamagui** when sharing styled primitives and design tokens across **React Web and React Native / Expo** (not for web-only projects where Tailwind v4, CSS Modules, or Panda CSS are simpler). Enable the build-time optimizing compiler (`@tamagui/vite-plugin` or `@tamagui/next-plugin`) so static style props flatten into atomic CSS classes and `<div>`/`<span>` tags instead of runtime style objects, and define tokens/themes centrally in `tamagui.config.ts`.
+
 ### UnoCSS
 
 UnoCSS is an on-demand atomic CSS engine configured in `uno.config.ts`.
@@ -186,16 +195,17 @@ When styling with Tailwind, UnoCSS, or CSS Modules, manage multi-axis component 
 | CVA (`class-variance-authority` v0.7 / `cva` v1) | Single-element primitives, CSS Modules, Tailwind | Via `defineConfig` (v1) or wrapper `cn()` (v0.7) | No (compose separate `cva` calls) |
 | Tailwind Variants (`tailwind-variants`) | Multi-part Tailwind components (cards, modals, inputs) | Yes (`twMerge: true` + `createTV`) | First-class `slots` and `compoundSlots` |
 
-- **CVA conflict resolution**: plain `cva` concatenates class strings without resolving conflicting Tailwind utilities. In `cva` v1, configure `defineConfig` from `cva/config` with `twMerge`; in `class-variance-authority` v0.7, wrap the output in `cn(buttonVariants(...), className)`.
+- **CVA conflict resolution**: plain `cva` concatenates class strings without resolving conflicting Tailwind utilities. In `cva` v1 (`cva` package), import `defineConfig` from **`'cva'`** and wire `twMerge` (use `tailwind-merge` v3+ with Tailwind v4); in `class-variance-authority` v0.7, wrap the output in `cn(buttonVariants(...), className)`.
 
 ```ts
 // cva v1 (cva.config.ts)
-import { defineConfig } from 'cva/config';
-import { cx as joinClasses } from 'cva';
+import { defineConfig } from 'cva';
 import { twMerge } from 'tailwind-merge';
 
 export const { cva, cx: cn } = defineConfig({
-  cx: (...inputs) => twMerge(joinClasses(...inputs)),
+  hooks: {
+    onComplete: (className) => twMerge(className),
+  },
 });
 ```
 
@@ -218,9 +228,20 @@ export const card = tv({
 });
 ```
 
-## CSS Modules, preprocessors, and token libraries
+## CSS Modules, Lightning CSS, preprocessors, and token libraries
 
-- **CSS Modules + PostCSS / Lightning CSS**: pair `*.module.css` with native CSS nesting, `@layer`, and semantic custom properties. Prefer Lightning CSS or PostCSS autoprefixer over adding Sass solely for nesting or variables.
+- **Lightning CSS + CSS Modules**: enable `css: { transformer: 'lightningcss' }` (and `build: { cssMinify: 'lightningcss' }`) in Vite for Rust-native CSS Modules, nesting, modern color/media-query lowering, vendor prefixing, and minification without a heavy PostCSS plugin chain:
+
+```ts
+// vite.config.ts
+import { defineConfig } from 'vite';
+
+export default defineConfig({
+  css: { transformer: 'lightningcss' },
+  build: { cssMinify: 'lightningcss' },
+});
+```
+
 - **Sass / SCSS**: in existing SCSS codebases, use `@use` and `@forward` with explicit namespaces; do not add new legacy `@import` chains (deprecated in Dart Sass). Never use Sass `$variables` for runtime theme switching—emit CSS custom properties instead.
 - **Open Props**: import only the packs you use (`@import "open-props/easings";`, `@import "open-props/sizes";`) or wire `postcss-jit-props` so unused custom properties are tree-shaken out of the production stylesheet.
 - **Bootstrap / Bulma**: when maintaining apps built on them, override semantic Sass/CSS variables at the theme layer rather than fighting framework specificity with `!important` or layering Tailwind on top.
@@ -228,7 +249,7 @@ export const card = tv({
 ## Runtime CSS-in-JS (Emotion, styled-components)
 
 - **RSC boundary**: Emotion and styled-components rely on React Context and runtime `<style>` insertion. They cannot execute inside React Server Components without `'use client'` boundaries and an SSR style registry (`useServerInsertedHTML` in Next.js App Router).
-- **Decision rule**: keep runtime CSS-in-JS only when extending an existing Emotion/styled-components codebase or a component library that mandates it. For greenfield RSC/SSR apps, choose CSS Modules, Tailwind v4, Panda CSS, vanilla-extract, or StyleX.
+- **Decision rule**: keep runtime CSS-in-JS only when extending an existing Emotion/styled-components codebase or a component library that mandates it. For greenfield RSC/SSR apps, choose CSS Modules + Lightning CSS, Tailwind v4, Panda CSS, vanilla-extract, Pigment CSS, or StyleX.
 
 ## Do/don't pairs
 
@@ -238,7 +259,8 @@ export const card = tv({
 | Put `stylex.defineVars()` in `*.stylex.ts` as named exports only | Export components or default exports from a `*.stylex.ts` token file |
 | Define `defineProperties()` variables before `createSprinkles()` | Inline `defineProperties()` calls inside `createSprinkles()` |
 | Forward both `className` and `style` into Linaria `styled(Custom)` targets | Forward only `className` and silently drop dynamic CSS variables |
-| Pair CVA with `tailwind-merge` (or use `tailwind-variants`) for Tailwind overrides | Concatenate conflicting Tailwind utilities and rely on CSS source order |
+| Import `defineConfig` from `'cva'` (v1) and wire `twMerge` (v3 for Tailwind v4) | Import non-existent `'cva/config'` or concatenate conflicting Tailwind utilities |
+| Enable `css: { transformer: 'lightningcss' }` in Vite for CSS Modules & native CSS | Add Sass + 6 PostCSS plugins solely for CSS nesting and autoprefixer |
 | Use `postcss-jit-props` or selective `@import` packs with Open Props | Ship the entire unshaken Open Props bundle when using five tokens |
 | Use Sass `@use`/`@forward` + CSS custom properties for runtime themes | Write new `@import` chains or bake dark mode into static Sass `$vars` |
 
@@ -248,4 +270,4 @@ export const card = tv({
 npm run build
 ```
 
-Inspect the built `.css` output (`static`) to confirm zero-runtime classes and custom properties were actually emitted (catching Panda/UnoCSS silent extraction misses), and verify computed styles across light/dark themes and component variants in a real browser (`rendered`).
+Inspect the built `.css` output (`static`) to confirm zero-runtime classes and custom properties were actually emitted (catching Panda/UnoCSS/Tamagui extraction misses), and verify computed styles across light/dark themes and component variants in a real browser (`rendered`).

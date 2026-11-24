@@ -6,6 +6,7 @@ Internationalization is not string replacement. Ship locale-aware formatting (`I
 
 | Library | Model | Message format | Best fit | Primary trade-off |
 |---|---|---|---|---|
+| **`next-intl`** | Next.js App Router native RSC + client (`getTranslations`/`useTranslations`) + typed locale routing | **ICU MessageFormat** | Next.js App Router apps needing static/dynamic RSC i18n, locale prefix routing, and minimal client payload | Next.js-specific; avoid passing entire message catalogs into `<NextIntlClientProvider>` |
 | **i18next** (`react-i18next`) | Runtime key/namespace lookup + backend plugins | i18next JSON (`_one`/`_other` CLDR) or ICU plugin | Multi-framework apps, CMS/TMS-driven runtime loading, React Native | Requires explicit `fallbackLng` (defaults to `false` in v27+) and `intl-pluralrules` polyfill on Hermes |
 | **FormatJS / React Intl** | Runtime / pre-compiled AST | Standard **ICU MessageFormat** | Enterprise React apps needing strict ICU plurals, selects, and `Intl` skeletons | Larger runtime unless pre-compiling ASTs at build time |
 | **Lingui** (v5+) | Compile-time macros + compiled `.po`/JSON catalogs | **ICU MessageFormat** (via macros) | React/RSC/Vite/Next.js apps wanting tiny runtime + clean source-text IDs | Requires Babel/SWC macro plugin + `lingui extract` / `lingui compile` pipeline |
@@ -14,6 +15,10 @@ Internationalization is not string replacement. Ship locale-aware formatting (`I
 | **Angular `@angular/localize`** | Compile-time AOT bundle-per-locale | XLIFF / JSON + ICU | Angular apps prioritizing zero runtime translation overhead | Switching locale reloads the app to the target locale bundle |
 
 ## Implementation idioms
+
+### `next-intl` (Next.js App Router)
+
+- Keep translations on the server via `await getTranslations('Checkout')` in Server Components (zero translation bytes sent to client). When Client Components need strings, pass only the specific namespace subset into `<NextIntlClientProvider messages={pick(messages, ['Checkout'])}>` and configure `defineRouting` + `createNavigation` for locale-prefixed `<Link>` / `redirect`.
 
 ### i18next (namespaces, lazy loading, fallback chains)
 
@@ -77,7 +82,7 @@ export async function dynamicActivate(locale: string) {
 - **Document attributes**: update both `<html lang="ar">` and `<html dir="rtl">` (or `dir="ltr"`) whenever the active locale changes; emit `<link rel="alternate" hreflang="...">` for SEO-indexed localized routes.
 - **Mixed-direction isolation (Unicode UAX #9)**: wrap interpolated user-generated or unknown-direction text (usernames, product titles, file paths) in `<bdi>` or set `dir="auto"` / `unicode-bidi: isolate` (never legacy `unicode-bidi: embed`) so opposite-direction characters do not bleed into surrounding punctuation and numbers.
 - **Logical CSS & selective mirroring**: use CSS logical properties (`margin-inline-start`, `padding-inline-end`, `inset-inline-start`, `text-align: start`). Mirror directional navigation icons (back/forward arrows, chevrons) in RTL, but **never** mirror clocks, media playback scrubbers, checkmarks, or mathematical/time-series graphs.
-- **Locale-aware formatting & MF2 evolution**: use `Intl.DateTimeFormat`, `Intl.NumberFormat`, `Intl.RelativeTimeFormat`, `Intl.ListFormat`, and `Intl.Collator` (for sorting) instead of hardcoded `MM/DD/YYYY`, `.toFixed(2)`, or `.sort()`. Track **Unicode MessageFormat 2 (LDML Part 9 / TC39 `Intl.MessageFormat`)** as the evolving standard successor to ICU MessageFormat 1 when planning long-lived TMS/localization pipelines.
+- **Locale-aware formatting (`Intl.*` + `Temporal`)**: use `Intl.DateTimeFormat`, `Intl.NumberFormat`, `Intl.RelativeTimeFormat`, **`Intl.DurationFormat`** (`new Intl.DurationFormat(locale, { style: 'short' }).format({ hours: 1, minutes: 25 })`), `Intl.ListFormat`, and `Intl.Collator` instead of hardcoded `MM/DD/YYYY`, `"1h 25m"`, `.toFixed(2)`, or `.sort()`. For calendar-date and timezone/DST arithmetic, prefer **`Temporal`** (`Temporal.PlainDate`, `Temporal.ZonedDateTime`, backed by `temporal-polyfill` where native `Temporal` is not yet shipped) instead of error-prone legacy `Date` mutation. Track **Unicode MessageFormat 2 (LDML Part 9 / TC39 `Intl.MessageFormat`)** as the evolving standard successor to ICU MessageFormat 1.
 - **Font and script fallback**: pair Latin display/body fonts with explicit script-specific fallbacks (`@font-face` with `unicode-range` for Arabic, Devanagari, Thai, CJK) and increase `line-height` slightly for tall/diacritic scripts (Arabic, Vietnamese, Thai) so ascenders/descenders do not clip.
 
 ## Do/don't pairs
@@ -85,8 +90,8 @@ export async function dynamicActivate(locale: string) {
 | Do | Don't |
 |---|---|
 | Use ICU `{plural}` / `{select}` with an `other` branch | Concatenate `count + (count === 1 ? ' item' : ' items')` (breaks Slavic/Arabic plural rules) |
-| Format dates, currencies, lists, and sorting with `Intl.*` | Hardcode `$`, `MM/DD/YYYY`, or ASCII `.sort()` |
-| Lazy-load per-locale / per-namespace translation chunks | Bundle all 15 language JSON files into the initial main chunk |
+| Format dates, currencies, durations (`Intl.DurationFormat`), lists, and sorting with `Intl.*` + `Temporal` | Hardcode `$`, `MM/DD/YYYY`, `"2h 15m"`, or fragile `Date` timezone math |
+| Lazy-load per-locale / per-namespace translation chunks (or keep them in RSC via `next-intl`) | Bundle all 15 language JSON files into the initial client chunk |
 | Use `msg` at module scope in Lingui and `@lingui/core/macro` imports | Call `t` at module top level or import deprecated `@lingui/macro` |
 | Sync `<html lang>` + `<html dir>` and use CSS logical properties | Use physical `left`/`right` margins or flip media scrubbers in RTL |
 | Configure `fallbackLng` explicitly in i18next v27+ and `legacy: false` in Vue I18n | Assume i18next defaults to `'en'` or use Vue I18n legacy mode with `useI18n()` |

@@ -1,6 +1,6 @@
 # Canvas, diagram, node-based editors, and drag-and-drop
 
-Choose between infinite whiteboard SDKs, 2D canvas scene graphs, DOM/SVG node-graph engines, and drag-and-drop toolchains by interaction model, object count, and accessibility requirements. For 3D scenes (`Three.js`, `R3F`, `WebGL`/`WebGPU`), see `pixelcraft-spatial`; for data charts, see `pixelcraft-dataviz`.
+Choose between infinite whiteboard SDKs, 2D canvas scene graphs, DOM/SVG node-graph engines, and drag-and-drop toolchains by interaction model, object count, and accessibility requirements. For browser 3D scenes (`Three.js`, `R3F`, `Babylon.js`, `WebGL`/`WebGPU`), see [scene-architecture.md](scene-architecture.md) and [web-3d-engines.md](web-3d-engines.md); for embodied XR/VR/AR headset UX, use `pixelcraft-spatial`; for data charts, use `pixelcraft-dataviz`.
 
 ## Engine decision matrix
 
@@ -10,17 +10,17 @@ Choose between infinite whiteboard SDKs, 2D canvas scene graphs, DOM/SVG node-gr
 | **2D Canvas scene graph** | **Konva** (`react-konva` / `vue-konva`), **Fabric.js**, **Paper.js** | HTML5 Canvas 2D (multi-layer in Konva; single canvas in Fabric/Paper) | Design/annotation editors, floor plans, image/vector manipulation, 1k–10k shapes | Canvas pixels are invisible to screen readers unless paired with a parallel DOM/ARIA model |
 | **Workflow / node graph** | **React Flow / XYFlow** (`@xyflow/react`, `@xyflow/svelte`), **Rete.js** | DOM nodes + SVG edges (XYFlow) | Visual automation builders, AI agent pipelines, low-code workflows, dataflow graphs | DOM node count above ~500–1,000 visible nodes needs virtualization or simplified LOD |
 | **Network & enterprise diagrams** | **Cytoscape.js**, **JointJS**, **GoJS** | Canvas/WebGL (Cytoscape), SVG (JointJS), Canvas (GoJS) | Graph analytics / topology (Cytoscape); UML/BPMN/CAD enterprise diagrams (JointJS, GoJS) | GoJS and JointJS+ are commercial; Cytoscape is graph-layout focused rather than arbitrary React UI inside nodes |
-| **Drag-and-drop** | **dnd-kit** (`@dnd-kit/react`, `@dnd-kit/dom`), **Pragmatic Drag and Drop** (`@atlaskit/pragmatic-drag-and-drop`) | Pointer/Keyboard sensors (dnd-kit) or native HTML5 DnD (Pragmatic) | **dnd-kit**: accessible sortable lists, kanban, trees with built-in keyboard sensor; **Pragmatic DnD**: tiny, framework-agnostic, cross-window/file drops, huge tables | Pragmatic DnD relies on native HTML5 DnD—must pair with explicit keyboard reorder actions + ARIA live announcements |
+| **Drag-and-drop** | **dnd-kit** (`@dnd-kit/core` v6 or `@dnd-kit/react` v0.x rewrite), **Pragmatic Drag and Drop** (`@atlaskit/pragmatic-drag-and-drop`) | Pointer/Keyboard sensors (dnd-kit) or native HTML5 DnD (Pragmatic) | **dnd-kit**: accessible sortable lists, kanban, trees with built-in keyboard sensor; **Pragmatic DnD**: tiny, framework-agnostic, cross-window/file drops, huge tables | Pragmatic DnD relies on native HTML5 DnD—must pair with explicit keyboard + single-pointer reorder actions and ARIA live announcements |
 
 ## Node-based editors (React Flow / XYFlow)
 
-- Always import `'@xyflow/react/style.css'` and give the `<ReactFlow>` parent container an explicit non-zero height and width.
+- Always import **`'@xyflow/react/dist/style.css'`** (not `'@xyflow/react/style.css'`) and give the `<ReactFlow>` parent container an explicit non-zero height and width.
 - **Memoization rule**: define `nodeTypes` and `edgeTypes` **outside** the component or inside `useMemo(() => (...), [])`. Wrap custom node/edge components in `React.memo` and callbacks (`onNodesChange`, `onEdgesChange`, `onConnect`) in `useCallback`. Passing a fresh inline `nodeTypes={{ custom: MyNode }}` object on every render forces React Flow to unmount and remount nodes on every drag tick.
 
 ```tsx
 import { useMemo, useCallback } from 'react';
 import { ReactFlow, useNodesState, useEdgesState, addEdge, type Connection } from '@xyflow/react';
-import '@xyflow/react/style.css';
+import '@xyflow/react/dist/style.css';
 import { TriggerNode } from './TriggerNode';
 
 export function WorkflowCanvas() {
@@ -75,29 +75,43 @@ star.on('dragend', () => star.moveTo(mainLayer));
 
 ## Drag-and-drop toolchains & accessibility
 
-### dnd-kit
+### dnd-kit (`@dnd-kit/core` v6 vs `@dnd-kit/react` v0.x)
 
-- When customizing sensors on `DragDropProvider`, **extend** the default sensor list (`sensors={(defaults) => [...]}`) instead of replacing it with `[PointerSensor]` alone—omitting `KeyboardSensor` removes keyboard drag-and-drop support.
-- Provide visible focus indicators on drag handles and screen-reader announcements for pickup, move, drop, and cancel.
+Check `package.json` before writing imports—there are two distinct API generations:
+
+- **Stable `@dnd-kit/core` v6 (+ `@dnd-kit/sortable`)**: uses `<DndContext sensors={sensors}>` with `useSensors(useSensor(PointerSensor), useSensor(KeyboardSensor, { coordinateGetter: sortableKeyboardCoordinates }))`. Always include `KeyboardSensor` alongside `PointerSensor`.
+- **Rewrite `@dnd-kit/react` v0.x (+ `@dnd-kit/dom`)**: uses `<DragDropProvider>` where custom sensor arrays **must extend** `defaults` (`sensors={(defaults) => [...]}`) so the default keyboard sensor is not dropped.
+- Provide visible focus indicators on drag handles, screen-reader announcements (`accessibility.announcements`), and single-pointer reorder alternatives (WCAG 2.5.7).
 
 ```tsx
+// @dnd-kit/core v6 (stable production API)
+import { DndContext, KeyboardSensor, PointerSensor, useSensor, useSensors } from '@dnd-kit/core';
+import { sortableKeyboardCoordinates } from '@dnd-kit/sortable';
+
+const sensors = useSensors(
+  useSensor(PointerSensor, { activationConstraint: { distance: 6 } }),
+  useSensor(KeyboardSensor, { coordinateGetter: sortableKeyboardCoordinates }),
+);
+<DndContext sensors={sensors}>{/* sortable items */}</DndContext>;
+
+// @dnd-kit/react v0.x rewrite (extend defaults to keep KeyboardSensor)
 import { DragDropProvider } from '@dnd-kit/react';
-import { PointerSensor } from '@dnd-kit/dom';
+import { PointerSensor as DomPointerSensor } from '@dnd-kit/dom';
 
 <DragDropProvider
   sensors={(defaults) => [
-    ...defaults.filter((s) => s !== PointerSensor),
-    PointerSensor.configure({ /* activation constraints */ }),
+    ...defaults.filter((s) => s !== DomPointerSensor),
+    DomPointerSensor.configure({ /* activation constraints */ }),
   ]}
 >
   {/* sortable items */}
-</DragDropProvider>
+</DragDropProvider>;
 ```
 
 ### Pragmatic Drag and Drop (`@atlaskit/pragmatic-drag-and-drop`)
 
 - Always merge cleanup functions returned by `draggable()`, `dropTargetForElements()`, and `monitorForElements()` using `combine(...)` inside `useEffect` (or framework unmount) so global listeners never leak.
-- Because native HTML5 DnD has no built-in keyboard mode, pair every Pragmatic DnD reorderable list/board with an explicit keyboard control (e.g., "Move up / Move down / Move to column" action menu) and announce the new position in an `aria-live="polite"` region.
+- Because native HTML5 DnD has no built-in keyboard mode, pair every Pragmatic DnD reorderable list/board with an explicit keyboard + single-pointer control (e.g., "Move up / Move down / Move to column" action menu) and announce the new position in an `aria-live="polite"` region.
 
 ```ts
 import { useEffect } from 'react';
