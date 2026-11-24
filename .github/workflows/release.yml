@@ -27,16 +27,8 @@ jobs:
       - run: node scripts/validate-skills.mjs
       - name: Verify release tag and npm package
         run: npm run test:distribution -- --release
-      - run: node scripts/build-adapters.mjs
       - name: Package skills and adapters
-        run: |
-          rm -rf release-package
-          mkdir -p release-package
-          cp -R skills release-package/skills
-          cp -R dist release-package/adapters
-          mkdir -p dist/release
-          (cd release-package && zip -qr "$GITHUB_WORKSPACE/dist/release/pixelcraft-skills.zip" skills adapters)
-          tar -czf dist/release/pixelcraft-skills.tar.gz -C release-package skills adapters
+        run: node scripts/build-release-archives.mjs dist/release
       - uses: actions/upload-artifact@v7
         with:
           name: release-assets-pixelcraft
