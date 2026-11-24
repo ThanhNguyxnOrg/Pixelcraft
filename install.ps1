@@ -15,7 +15,7 @@ param(
 Set-StrictMode -Version Latest
 $ErrorActionPreference = 'Stop'
 
-$canonicalAgents = @('claude', 'codex', 'agents', 'devin', 'cursor', 'gemini', 'copilot', 'windsurf', 'opencode', 'kiro')
+$canonicalAgents = @('claude', 'codex', 'agents', 'devin', 'cursor', 'gemini', 'copilot', 'windsurf', 'opencode', 'kiro', 'cline', 'roo', 'droid', 'antigravity')
 $validAgents = $canonicalAgents + @('all')
 
 function ConvertTo-CanonicalAgent([string]$Name) {
@@ -25,6 +25,9 @@ function ConvertTo-CanonicalAgent([string]$Name) {
     'gemini-cli' { return 'gemini' }
     'github-copilot' { return 'copilot' }
     'open-code' { return 'opencode' }
+    'roo-code' { return 'roo' }
+    'factory' { return 'droid' }
+    { $_ -in @('amp', 'zed', 'goose') } { return 'agents' }
     default { return $value }
   }
 }
@@ -70,17 +73,24 @@ function Get-TargetRoot([string]$Name, [bool]$GlobalScope) {
     if ($Name -eq 'copilot') { return (Join-Path $homeDir '.copilot/skills') }
     if ($Name -eq 'windsurf') { return (Join-Path $homeDir '.codeium/windsurf/skills') }
     if ($Name -eq 'opencode') { return (Join-Path $homeDir '.config/opencode/skills') }
-    if ($Name -eq 'kiro') { return (Join-Path $homeDir '.kiro/pixelcraft/skills') }
+    if ($Name -eq 'kiro') { return (Join-Path $homeDir '.kiro/skills') }
+    if ($Name -eq 'cline') { return (Join-Path $homeDir '.cline/skills') }
+    if ($Name -eq 'roo') { return (Join-Path $homeDir '.roo/skills') }
+    if ($Name -eq 'droid') { return (Join-Path $homeDir '.factory/skills') }
+    if ($Name -eq 'antigravity') { return (Join-Path $homeDir '.gemini/config/skills') }
   } else {
     $base = (Get-Location).Path
     if ($Name -eq 'claude') { return (Join-Path $base '.claude/skills') }
-    if ($Name -in @('codex', 'agents', 'devin')) { return (Join-Path $base '.agents/skills') }
+    if ($Name -in @('codex', 'agents', 'devin', 'antigravity')) { return (Join-Path $base '.agents/skills') }
     if ($Name -eq 'cursor') { return (Join-Path $base '.cursor/skills') }
     if ($Name -eq 'gemini') { return (Join-Path $base '.gemini/skills') }
     if ($Name -eq 'copilot') { return (Join-Path $base '.github/skills') }
     if ($Name -eq 'windsurf') { return (Join-Path $base '.windsurf/skills') }
     if ($Name -eq 'opencode') { return (Join-Path $base '.opencode/skills') }
-    if ($Name -eq 'kiro') { return (Join-Path $base '.kiro/pixelcraft/skills') }
+    if ($Name -eq 'kiro') { return (Join-Path $base '.kiro/skills') }
+    if ($Name -eq 'cline') { return (Join-Path $base '.cline/skills') }
+    if ($Name -eq 'roo') { return (Join-Path $base '.roo/skills') }
+    if ($Name -eq 'droid') { return (Join-Path $base '.factory/skills') }
   }
   throw "invalid agent '$Name'"
 }
@@ -117,7 +127,6 @@ function Write-AdapterFile([string]$Path, [string[]]$Lines) {
 
 function Write-PixelcraftAdapter([string]$AgentName, [string]$SkillRoot) {
   $base = Split-Path -Parent $SkillRoot
-  if ($AgentName -eq 'kiro') { $base = Split-Path -Parent $base }
   $workflowActions = @(
     @{ Name = 'pixelcraft-plan'; Task = (Get-WorkflowTask 'pixelcraft-plan') },
     @{ Name = 'pixelcraft-review'; Task = (Get-WorkflowTask 'pixelcraft-review') },

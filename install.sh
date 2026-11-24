@@ -20,7 +20,8 @@ copying self-contained skill folders into an agent skills directory.
 
 Options:
   --agent NAME     claude, codex, agents, devin, cursor, gemini, copilot,
-                   windsurf, opencode, kiro, or all. Comma-separated names allowed.
+                   windsurf, opencode, kiro, cline, roo, droid, antigravity, or all.
+                   Amp, Zed and Goose map to agents.
                    Default: agents.
   --skills LIST    Comma-separated skill names, or all. Default: all.
   --global         Install in the user-level skills directory.
@@ -117,19 +118,22 @@ canonical_agent() {
     gemini-cli) value="gemini" ;;
     github-copilot) value="copilot" ;;
     open-code) value="opencode" ;;
+    roo-code) value="roo" ;;
+    factory) value="droid" ;;
+    amp|zed|goose) value="agents" ;;
   esac
   printf '%s' "$value"
 }
 
 valid_agent() {
   case "$1" in
-    claude|codex|agents|devin|cursor|gemini|copilot|windsurf|opencode|kiro|all) return 0 ;;
+    claude|codex|agents|devin|cursor|gemini|copilot|windsurf|opencode|kiro|cline|roo|droid|antigravity|all) return 0 ;;
     *) return 1 ;;
   esac
 }
 
 agents=()
-all_agents=(claude codex agents devin cursor gemini copilot windsurf opencode kiro)
+all_agents=(claude codex agents devin cursor gemini copilot windsurf opencode kiro cline roo droid antigravity)
 IFS=',' read -r -a raw_agents <<< "$agents_arg"
 use_all_agents=0
 for raw in ${raw_agents[@]+"${raw_agents[@]}"}; do
@@ -235,12 +239,15 @@ target_for() {
   if [[ "$scope" == "project" ]]; then
     case "$agent" in
       claude) printf '%s/.claude/skills\n' "$PWD" ;;
-      codex|agents|devin) printf '%s/.agents/skills\n' "$PWD" ;;
+      codex|agents|devin|antigravity) printf '%s/.agents/skills\n' "$PWD" ;;
       cursor) printf '%s/.cursor/skills\n' "$PWD" ;;
       gemini) printf '%s/.gemini/skills\n' "$PWD" ;;
       copilot) printf '%s/.github/skills\n' "$PWD" ;;
       windsurf) printf '%s/.windsurf/skills\n' "$PWD" ;;
-      kiro) printf '%s/.kiro/pixelcraft/skills\n' "$PWD" ;;
+      kiro) printf '%s/.kiro/skills\n' "$PWD" ;;
+      cline) printf '%s/.cline/skills\n' "$PWD" ;;
+      roo) printf '%s/.roo/skills\n' "$PWD" ;;
+      droid) printf '%s/.factory/skills\n' "$PWD" ;;
       opencode) printf '%s/.opencode/skills\n' "$PWD" ;;
     esac
   else
@@ -252,7 +259,11 @@ target_for() {
       copilot) printf '%s/.copilot/skills\n' "$HOME" ;;
       windsurf) printf '%s/.codeium/windsurf/skills\n' "$HOME" ;;
       opencode) printf '%s/.config/opencode/skills\n' "$HOME" ;;
-      kiro) printf '%s/.kiro/pixelcraft/skills\n' "$HOME" ;;
+      kiro) printf '%s/.kiro/skills\n' "$HOME" ;;
+      cline) printf '%s/.cline/skills\n' "$HOME" ;;
+      roo) printf '%s/.roo/skills\n' "$HOME" ;;
+      droid) printf '%s/.factory/skills\n' "$HOME" ;;
+      antigravity) printf '%s/.gemini/config/skills\n' "$HOME" ;;
     esac
   fi
 }
@@ -384,11 +395,7 @@ write_shell_adapters() {
       done
       ;;
     windsurf|kiro)
-      if [[ "$agent" == "windsurf" ]]; then
-        base="${root%/skills}"
-      else
-        base="${root%/pixelcraft/skills}"
-      fi
+      base="${root%/skills}"
       if [[ "$agent" == "windsurf" ]]; then
         write_adapter_file "$base/rules/pixelcraft.md" '# Pixelcraft router' '' "Use Pixelcraft for interface design, implementation, review, and visual QA. Start with pixelcraft-plan and read the matching self-contained skill under $root."
         for action in pixelcraft-plan pixelcraft-review pixelcraft-visual-qa pixelcraft-direction; do

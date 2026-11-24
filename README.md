@@ -147,7 +147,7 @@ node "$HOME/Pixelcraft/bin/pixelcraft.mjs" add all --agent claude --force
 
 When a subset is requested, the installer automatically includes the required `pixelcraft` orchestrator and `pixelcraft-plan` step-zero skill and prints a note. Auto-added core skills install only when missing; `--force` applies only to explicitly requested skills. Without `--force`, existing skill directories are skipped so local edits are not silently deleted. The installer refuses symlinked target skill directories rather than following them outside the project.
 
-Installer agent names are `claude`, `codex`, `agents`, `devin`, `cursor`, `gemini`, `copilot`, `windsurf`, `opencode`, `kiro`, and `all`, with aliases `claude-code`, `gemini-cli`, `github-copilot`, and `open-code`.
+Installer agent names are `claude`, `codex`, `agents`, `devin`, `cursor`, `gemini`, `copilot`, `windsurf`, `opencode`, `kiro`, `cline`, `roo`, `droid`, `antigravity`, and `all`. Amp, Zed, and Goose can use `--agent amp`, `--agent zed`, and `--agent goose`, which select the shared `agents` directory. Other aliases: `claude-code`, `gemini-cli`, `github-copilot`, `open-code`, `roo-code`, and `factory`.
 
 | Agent | Project path | User path | What Pixelcraft installs |
 |---|---|---|---|
@@ -158,7 +158,11 @@ Installer agent names are `claude`, `codex`, `agents`, `devin`, `cursor`, `gemin
 | GitHub Copilot | `.github/skills` | `~/.copilot/skills` | Native skills plus instruction/prompt adapter files |
 | OpenCode | `.opencode/skills` | `~/.config/opencode/skills` | Native skills only |
 | Windsurf | `.windsurf` | `~/.codeium/windsurf` | Native skills under `skills/` plus rules/memory and workflow routers |
-| Kiro | `.kiro` | `~/.kiro` | Bundled steering adapter; see the native Power option below |
+| Kiro | `.kiro/skills` | `~/.kiro/skills` | Native skills plus the steering adapter |
+| Cline | `.cline/skills` | `~/.cline/skills` | Native skills |
+| Roo Code | `.roo/skills` | `~/.roo/skills` | Native skills |
+| Factory Droid | `.factory/skills` | `~/.factory/skills` | Native skills |
+| Google Antigravity | `.agents/skills` | `~/.gemini/config/skills` | Native skills; project path works with the app and CLI |
 
 `--agent all` installs every target and deduplicates shared `.agents/skills` destinations.
 
@@ -193,22 +197,37 @@ Inside Claude Code, add the repository as a marketplace and install the plugin. 
 
 The equivalent shell commands are `claude plugin marketplace add ThanhNguyxnOrg/Pixelcraft` and `claude plugin install pixelcraft@pixelcraft`. In Claude Desktop/Cowork, enter `ThanhNguyxnOrg/Pixelcraft` in **Plugins → Add marketplace**. Claude Code CLI marketplace validation and install were verified locally; Desktop/Cowork sync is `not-checked`.
 
+### Claude and ChatGPT sessions
+
+- **Claude web/Desktop:** For a personal skill upload rather than a marketplace install, download or clone this repository and run `npm run build:skill-zips` from it (no dependency install needed). In **Customize → Skills → + → Upload a skill**, select an archive such as `dist/skill-zips/pixelcraft.zip`. Upload and enable additional skills individually, starting with `pixelcraft-plan` and the skills for your platform or task. Use an [eligible Claude plan with code execution enabled](https://support.claude.com/en/articles/12512180-use-skills-in-claude). Each ZIP contains exactly one skill folder and its supporting files; don't upload the full release archive as a single skill. To build again, use an empty destination with `npm run build:skill-zips -- --out <directory>`.
+- **ChatGPT plugins:** Pixelcraft is a skills-only [OpenAI Agent Plugin](https://developers.openai.com/plugins/build/plugins), not a legacy ChatGPT plugin or a server-backed Apps SDK integration. For local development in the ChatGPT desktop app, open the repository as a project and select Pixelcraft from the project's plugin marketplace. For a managed ChatGPT workspace, an eligible admin can [import and sync the GitHub marketplace](https://developers.openai.com/codex/enterprise/plugin-management) using `ThanhNguyxnOrg/Pixelcraft` with **Path** left empty. Install it from **Plugins** and start a new session. Availability depends on the client and workspace settings.
+- **ChatGPT skills:** If your workspace allows personal skill uploads, use **Plugins → Skills → Create → Upload from your computer**, or use **Create with editor**. The [ChatGPT help page](https://help.openai.com/en/articles/20001066-skills-in-chatgpt) documents upload and admin permissions but does not specify the accepted archive layout. Pixelcraft's per-skill ZIPs follow Claude's documented layout; ChatGPT ZIP acceptance has not been verified. Use the plugin marketplace for the full pack where available.
+
 ### Native host installation without npx
 
 The same canonical `skills/` tree is used by the manifests; no copy of the skill bodies is maintained. “Not checked” means the host path is documented but was not exercised in its client. None of the marketplace or gallery options below imply that Pixelcraft has been submitted to a public host catalog.
 
 | Host | Installation | Status |
 |---|---|---|
-| [Claude Code / Desktop](https://code.claude.com/docs/en/plugins/marketplace-reference) | Marketplace commands above; `.claude-plugin/marketplace.json` lists the bundled skills explicitly. | CLI install checked; Desktop/Cowork not checked. |
+| [Claude Code](https://code.claude.com/docs/en/plugins/marketplace-reference) | Marketplace commands above; `.claude-plugin/marketplace.json` lists the bundled skills explicitly. | CLI install checked. |
+| [Claude Desktop / Cowork / web](https://support.claude.com/en/articles/12512198-how-to-create-custom-skills) | Marketplace or per-skill ZIP upload as described above. | ZIP contents checked; client sync and upload not checked. |
+| [ChatGPT](https://learn.chatgpt.com/docs/plugins) | Use the portable `plugin.json` with `.agents/plugins/marketplace.json` in supported sessions, or use the Skills editor where available. | Client and workspace not checked. |
 | [Cursor](https://cursor.com/docs/reference/plugins) | Use the bundled Cursor installer, or for local plugin testing place `plugin.json` and `skills/` under `~/.cursor/plugins/local/pixelcraft/`. The root manifest is also suitable for Cursor marketplaces. | Plugin loading in Cursor not checked. |
-| [OpenCode](https://opencode.ai/docs/skills/) | Use the bundled installer with `--agent opencode` or add the checkout's `skills/` path to OpenCode's `skills` config. This is a skills pack, not an executable OpenCode plugin. | Installer placement checked; client discovery not checked. |
+| [OpenCode](https://opencode.ai/docs/skills/) | Use the bundled installer with `--agent opencode` or add the checkout's `skills/` path to OpenCode's `skills` config. This is a skills pack, not an executable OpenCode plugin. | Local CLI discovered 26 skills. |
 | [Pi](https://docs.pi.dev/latest/packages) | `pi install git:github.com/ThanhNguyxnOrg/Pixelcraft` (or `pi install ./Pixelcraft` from a local clone's parent). | Local package install checked. |
-| [Codex](https://developers.openai.com/plugins/build/plugins#package-and-distribute-plugins) | `codex plugin marketplace add ThanhNguyxnOrg/Pixelcraft`, then select Pixelcraft in the plugin UI. The bundled `--agent codex` skill install still works without a marketplace. | Local catalog registration checked; UI install not checked. |
+| [Codex CLI and IDE](https://developers.openai.com/plugins/build/plugins#package-and-distribute-plugins) | CLI: `codex plugin marketplace add ThanhNguyxnOrg/Pixelcraft`, then `codex plugin add pixelcraft@pixelcraft` or use `/plugins`. IDE: use `pixelcraft add all --agent codex` for project skills; the IDE extension does not support plugin installation. | Local CLI plugin install checked; IDE not checked. |
 | [Gemini CLI](https://geminicli.com/docs/extensions/reference/) | `gemini extensions install https://github.com/ThanhNguyxnOrg/Pixelcraft` and restart the session. | Local extension install checked. |
 | [GitHub Copilot CLI](https://docs.github.com/en/copilot/how-tos/copilot-cli/customize-copilot/plugins-finding-installing) | `copilot plugin marketplace add ThanhNguyxnOrg/Pixelcraft`, then `copilot plugin install pixelcraft@pixelcraft`. | Local catalog and plugin install checked. |
+| [GitHub Copilot in VS Code](https://docs.github.com/en/copilot/concepts/customizations/agent-skills) | `pixelcraft add all --agent copilot` into the workspace's `.github/skills`; start a new chat and ask for a Pixelcraft skill by name. | Installer placement checked; IDE discovery not checked. |
 | [Windsurf Cascade](https://docs.windsurf.com/fr/windsurf/cascade/skills) | Use the bundled installer with `--agent windsurf` or copy into the client's supported skills directory. | Installer placement checked; client discovery not checked. |
-| [Kiro](https://kiro.dev/docs/powers/installation/) | **Powers → Add Custom Power → Import from a repository URL** and enter `https://github.com/ThanhNguyxnOrg/Pixelcraft`. For a local test, import the checkout as a folder. | Power import and activation not checked. |
+| [Kiro](https://kiro.dev/docs/skills/) | `pixelcraft add all --agent kiro` into `.kiro/skills` (or use `--global` on local clients). This is native Agent Skills packaging, not a Kiro Power. | Installer placement checked; client discovery not checked. |
 | [Amp](https://ampcode.com/docs/customize/skills) | `amp skill add https://github.com/ThanhNguyxnOrg/Pixelcraft` or use the bundled project's `.agents/skills` install. No executable Amp plugin required. | Client discovery not checked. |
+| [Cline](https://docs.cline.bot/customization/skills) | `pixelcraft add all --agent cline` into `.cline/skills`. | Installer placement checked; client discovery not checked. |
+| [Roo Code](https://roocodeinc.github.io/Roo-Code/features/skills/) | `pixelcraft add all --agent roo` into `.roo/skills`. | Installer placement checked; client discovery not checked. |
+| [Zed](https://zed.dev/docs/ai/skills) | `pixelcraft add all --agent zed` into `.agents/skills`; use Skills in the Zed Settings Editor to inspect discovery. | Installer placement checked; client discovery not checked. |
+| [Factory Droid](https://docs.factory.com/harness/plugins) | `droid plugin marketplace add ThanhNguyxnOrg/Pixelcraft`, then `droid plugin install pixelcraft@Pixelcraft` (use the marketplace name Droid prints), or `pixelcraft add all --agent droid` into `.factory/skills`. | Local marketplace plugin install checked. |
+| [Goose](https://github.com/block/goose/blob/main/documentation/docs/guides/context-engineering/using-skills.md) | `pixelcraft add all --agent goose` into `.agents/skills`, then `goose skills list`. | Local CLI discovered 26 skills. |
+| [Google Antigravity](https://antigravity.google/docs/skills) | `pixelcraft add all --agent antigravity` into `.agents/skills`; inspect skills via Customizations in the app. | Installer placement checked; client discovery not checked. |
 | [skills.sh](https://www.skills.sh/docs/cli) | The cross-agent Git discovery command above; no Pixelcraft npm package required. | Local discovery of the full skill pack checked; public listing not checked. |
 
 ### curl/bash installer without Node.js

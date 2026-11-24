@@ -24,15 +24,28 @@ const assertGuidance = (command, args, flag) => {
   assert.match(output, /https:\/\/github\.com\/upstash\/context7#readme/);
   assert.deepEqual(fs.readdirSync(destination), []);
 };
+const harnesses = 'kiro,cline,roo,droid,antigravity,goose,amp,zed';
+const assertHarnessPaths = (output) => {
+  const portableOutput = output.replaceAll('\\', '/');
+  for (const prefix of ['.kiro/skills', '.cline/skills', '.roo/skills', '.factory/skills', '.agents/skills']) {
+    assert.ok(portableOutput.includes(`/${prefix}/pixelcraft-plan`), prefix);
+  }
+  assert.ok(portableOutput.includes('/.kiro/steering/pixelcraft.md'));
+  assert.equal(portableOutput.split('/.agents/skills/pixelcraft-plan').length, 2);
+  assert.deepEqual(fs.readdirSync(destination), []);
+};
 
 try {
   assertGuidance(process.execPath, [path.join(root, 'bin/pixelcraft.mjs'), 'add', 'pixelcraft-plan', '--agent', 'agents', '--dry-run'], '--docs-mcp');
   console.log('ok - Node installer only prints MCP guidance on opt-in and dry-run leaves the workspace unchanged');
+  assertHarnessPaths(run(process.execPath, [path.join(root, 'bin/pixelcraft.mjs'), 'add', 'pixelcraft-plan', '--agent', harnesses, '--dry-run']));
+  console.log('ok - Node installer maps native harnesses and deduplicates shared project skills');
   if (process.argv.includes('--shell')) {
     const archive = `${destination}.tar.gz`;
     try {
       run('git', ['archive', '--format=tar.gz', `--output=${archive}`, '--prefix=Pixelcraft-test/', 'HEAD', 'skills'], root);
       assertGuidance('bash', [path.join(root, 'install.sh'), '--archive', archive, '--skills', 'pixelcraft-plan', '--dry-run'], '--docs-mcp');
+      assertHarnessPaths(run('bash', [path.join(root, 'install.sh'), '--archive', archive, '--skills', 'pixelcraft-plan', '--agent', harnesses, '--dry-run']));
       console.log('ok - Bash installer accepts a local archive and opt-in guidance without writing');
     } finally {
       fs.rmSync(archive, { force: true });
@@ -43,6 +56,7 @@ try {
     try {
       run('git', ['archive', '--format=zip', `--output=${archive}`, '--prefix=Pixelcraft-test/', 'HEAD', 'skills'], root);
       assertGuidance('pwsh', ['-NoProfile', '-File', path.join(root, 'install.ps1'), '-Archive', archive, '-Skill', 'pixelcraft-plan', '-DryRun'], '-DocsMcp');
+      assertHarnessPaths(run('pwsh', ['-NoProfile', '-File', path.join(root, 'install.ps1'), '-Archive', archive, '-Skill', 'pixelcraft-plan', '-Agent', harnesses, '-DryRun']));
       console.log('ok - PowerShell installer accepts a local archive and opt-in guidance without writing');
     } finally {
       fs.rmSync(archive, { force: true });

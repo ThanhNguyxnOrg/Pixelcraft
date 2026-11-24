@@ -5,5 +5,13 @@
   "description": "Portable Agent Skills for distinctive UI and rigorous UX across frontend stacks",
   "repository": "https://github.com/ThanhNguyxnOrg/Pixelcraft",
   "license": "MIT",
-  "keywords": ["frontend", "ui", "ux", "design system", "accessibility", "responsive design"]
+  "keywords": ["frontend", "ui", "ux", "design system", "accessibility", "responsive design"],
+  "extensions": {
+    "com.openai": {
+      "interface": {
+        "displayName": "Pixelcraft",
+        "shortDescription": "Plan, design, and verify frontend UI across platforms."
+      }
+    }
+  }
 }
