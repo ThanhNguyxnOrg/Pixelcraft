@@ -37,7 +37,7 @@ The full architecture is documented in [`docs/ARCHITECTURE.md`](docs/ARCHITECTUR
 | Skill | Purpose |
 |---|---|
 | `pixelcraft` | Orchestrator: stack/surface detection, mode classification, plan-first loop, mandatory floor, evidence-labeled reporting |
-| `pixelcraft-plan` | Step-zero planning: brownfield repo mapping, greenfield requirements intake, weighted stack selection, `.pixelcraft/plan.md` |
+| `pixelcraft-plan` | Step-zero planning: brownfield repo mapping, greenfield requirements intake, optional product/stack discovery interview for unresolved material decisions, weighted stack selection, `.pixelcraft/plan.md` |
 | `pixelcraft-direction` | Divergent visual direction, scoring, motion identity, evidence-based reference analysis, repetition history, anti-slop fingerprints |
 | `pixelcraft-craft` | Typography, color, composition, motion language, animation principles, imagery, and icon craft |
 | `pixelcraft-tokens` | DTCG token structure and multi-platform token export |

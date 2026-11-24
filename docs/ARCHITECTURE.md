@@ -30,7 +30,7 @@ The architecture has five layers: **Plan** (`pixelcraft-plan`), **Core** (orches
 | Skill | Role |
 |---|---|
 | `pixelcraft` | Orchestrator: detect stack + surface mode, run the loop, route to other skills, final report contract |
-| `pixelcraft-plan` | Step 0: brownfield repo discovery, greenfield requirements intake, weighted stack selection, `.pixelcraft/plan.md` consumed by later skills |
+| `pixelcraft-plan` | Step 0: brownfield repo discovery, greenfield requirements intake, optional evidence-first product/stack decision interview for materially unresolved choices, weighted stack selection, `.pixelcraft/plan.md` consumed by later skills |
 | `pixelcraft-direction` | Divergence engine: brief/material extraction, movement catalog, motion identity, evidence-based reference analysis, signature element, slop fingerprints, history |
 | `pixelcraft-craft` | Visual craft: typography, color (OKLCH, contrast), layout/composition, motion language, imagery, iconography |
 | `pixelcraft-tokens` | DTCG 2025.10 tokens, theming/modes, export to CSS/Tailwind/Swift/Compose/Flutter/Python/Qt/Textual |

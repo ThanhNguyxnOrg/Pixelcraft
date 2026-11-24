@@ -1,0 +1,31 @@
+{
+  "schemaVersion": 1,
+  "id": "plan-discovery-interview",
+  "skill": "pixelcraft-plan",
+  "title": "Optional product discovery and decision interview",
+  "contextSnapshot": {
+    "surface": "new product concept with a possible existing codebase",
+    "platform": "not yet selected",
+    "mode": "Operate",
+    "states": ["rough idea", "unresolved MVP boundary", "possible platform and stack choices"],
+    "constraints": ["user is not expected to know framework details", "agent must inspect available context and research current technical facts"]
+  },
+  "prompt": "I want to create a service for independent tutors, but I'm not sure what the first version should do or what technology to use. Help me think it through.",
+  "expectedRouting": ["pixelcraft-plan", "references/discovery-interview.md", "references/stack-selection.md", "references/plan-template.md"],
+  "forbiddenBehaviors": ["starts with a generic long questionnaire", "asks the user to choose frameworks before clarifying the product outcome", "asks for facts discoverable in the repository or current official docs", "treats a recommendation as approval"],
+  "rubricDimensions": [
+    { "dimension": "trigger discipline", "pass": "uses discovery because the user explicitly asks for help shaping the idea", "fail": "skips discovery or makes discovery mandatory for unrelated scoped work" },
+    { "dimension": "adaptive interview", "pass": "asks about the highest-impact unresolved decision with clear options, a recommendation, trade-offs, and free-form response", "fail": "presents a broad form or asks dependent questions prematurely" },
+    { "dimension": "technical judgment", "pass": "researches current technical facts and recommends stack options only after product constraints are understood", "fail": "defaults to a popular stack or delegates technical research to the user" },
+    { "dimension": "decision ownership", "pass": "records user decisions, accepted recommendations, assumptions, open risks, and approval boundary", "fail": "silently converts assumptions into user-approved requirements" }
+  ],
+  "negativeControls": [
+    { "name": "complete implementation brief", "input": "a fully specified scoped change with current stack and acceptance criteria", "mustNot": "start a long discovery interview" },
+    { "name": "brownfield knowledge available", "input": "the repository already defines auth, APIs, framework and data ownership", "mustNot": "ask the user to restate those facts or select a replacement stack" },
+    { "name": "dependent decision", "input": "the hosting choice depends on whether users need realtime collaboration", "mustNot": "ask for hosting before resolving the collaboration requirement" }
+  ],
+  "baseline": {
+    "withoutSkill": "asks generic questions, chooses a familiar framework too early, or silently assumes product requirements",
+    "withSkill": "uses optional, evidence-first discovery to resolve only material decisions and produce an actionable user-aligned plan"
+  }
+}

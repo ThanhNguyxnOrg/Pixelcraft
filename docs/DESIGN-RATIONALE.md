@@ -14,6 +14,14 @@ Public standards and platform guidelines such as WCAG 2.2, WAI-ARIA, Apple Human
 
 The design brief and evidence classification exist because agents otherwise mix user facts, repository observations, visual-source inference, research, assumptions, and unknowns into one confident narrative. Keeping those classes separate makes escalation and waiver decisions auditable without requiring a heavyweight requirements process.
 
+## Discovery without compulsory questionnaires
+
+**Rule:** distinguish planning from discovery. Always gather enough evidence to plan safely, but interview the user only when they ask for help shaping the idea or when an unresolved decision could materially change product scope, outcome, platform, architecture, data, or major constraints.
+
+**Why:** agents can discover repository facts, current APIs, dependencies, and existing conventions themselves. The user should not have to repeat those facts or choose technology without understanding its consequences. At the same time, a vague product idea cannot be made precise by silently filling every gap with model assumptions.
+
+**Trade-off:** too little questioning hides important product decisions; too much questioning turns simple work into bureaucracy and makes users do the agent's research. Pixelcraft therefore uses an adaptive interview: ask about the highest-impact unknown, present a small set of credible options with a recommendation and trade-offs, respect user ownership of priorities, and stop when the plan is actionable. Complete briefs and scoped fixes use a direct path. Durable decisions are recorded in existing plan/brief artifacts; ADRs and glossaries are created only when their specific value justifies them.
+
 ## Authority order
 
 **Rule:** the explicit user brief outranks project conventions; project conventions outrank platform defaults; platform and legal constraints outrank Pixelcraft guidance; model taste is last.

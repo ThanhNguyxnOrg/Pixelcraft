@@ -12,6 +12,14 @@ Classify both the project (greenfield, brownfield or hybrid) and the requested c
 | Redesign or rebuild | Inventory existing routes or entry points, task outcomes, content/data, accessibility and localization, and other relevant contracts. Record what stays, what changes, and how each preserved or migrated contract will be checked before replacing anything. Diverge only in the undecided scope. A rebuild does not by itself authorize a new stack, dropped routes or changed outcomes. |
 | Behavior-preserving refactor | Inventory consumers and observable contracts first. Reuse the approved direction and assert output, interactions, accessibility behavior and public contracts before/after where affected. Do not turn an internal change into a visual redesign. |
 
+## Optional discovery interview boundary
+
+Use the discovery path inside `pixelcraft-plan` only when the user asks to shape/brainstorm/compare options, or when a material decision remains unresolved and could change the product outcome, scope, platform, architecture, data model, or major constraints. Inspect the repository and artifacts before asking. The agent must research discoverable facts; the user decides priorities, preferences, and approvals.
+
+For each material choice, explain why it matters, offer a small set of credible options, recommend one with evidence and trade-offs, and allow a free-form answer or “you decide”. Ask one principal question per turn by default; defer dependent choices until prerequisites are resolved. Stop when the plan is actionable rather than interrogating every implementation detail.
+
+Do not interview for a complete brief, approved design, straightforward fix, or narrow edit. For low-impact unknowns, choose a reversible default and record the assumption. For high-impact or hard-to-reverse choices, obtain the user's decision before committing to that direction. If the user skips discovery, use conservative defaults and surface material risks.
+
 ## Check before advancing
 
 Use the existing brief, plan, direction card, checks and report; link or summarize their relevant sections in the plan rather than creating a separate set of artifacts. For each phase, record the result and point to what you actually read, inspected or ran (path and section or symbol; source and date; command and outcome; rendered artifact and state). Name the constraint or decision it established. A filename list, headings-only skim, or search hit without reading the relevant surrounding code or rule does not count. Use current evidence only; reread affected sections when inputs or scope change. If the workspace cannot be written, keep the same record in the run or handoff.

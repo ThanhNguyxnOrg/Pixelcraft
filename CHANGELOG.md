@@ -3,12 +3,14 @@
 ### Added
 
 - Extend existing craft/web/pattern/direction/accessibility/QA/handoff skills with motion engineering, 3D web, creative graphics, interactive media, scrollytelling, and evidence-based reference analysis.
+- Add an optional evidence-first discovery interview to `pixelcraft-plan`, with adaptive questions, recommended choices, tech-stack trade-offs, and decision capture for unresolved product requirements.
 - Add implementation references and evaluation coverage without increasing the 26-skill catalog or introducing mandatory runtime dependencies.
 
 ### Changed
 
 - Route ordinary browser 3D through pixelcraft-web; reserve pixelcraft-spatial for embodied XR/VR/AR workflows.
 - Prefer extending existing skills over parallel specialists when the trigger and verification contract are shared.
+- Keep planning mandatory but discovery optional: complete briefs and scoped fixes use the direct path; materially ambiguous ideas use an adaptive user-led decision interview.
 
 
 # Changelog
