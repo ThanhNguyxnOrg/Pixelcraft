@@ -22,6 +22,13 @@ Evidence base: recurring generated-UI patterns and output-homogenization evidenc
 | card inside card inside card | noisy containment | use spacing/hairline/typographic grouping; reserve containers for semantic boundaries |
 | everything centered regardless of content length | lowest-effort layout | align to reading/task logic; use measure and asymmetric negative space deliberately |
 | identical radius/spacing/shadow on every component | token misunderstanding | define semantic variation and density hierarchy |
+| glowing / mouse-spotlight Bento grid | 2025–2026 SaaS landing cliché | choose layout from content hierarchy; use bento grouping only when heterogeneous modules genuinely need side-by-side comparison without hover spotlights |
+| fake macOS traffic-light terminal chrome on non-dev products | decorative credibility prop | show real product artifact/data or real terminal output only when the product actually runs in a terminal |
+| infinite logo marquee strip | automated social-proof filler | list real, verifiable partner proof statically or omit the strip when no verified partners exist |
+| fake “Trusted by 10,000+ / 4.9★” avatar stack | fabricated proof + template trust strip | remove invented metrics and generic stock avatars; use verified user-provided proof with provenance or none |
+| `✨` sparkle icon spam on buttons and headings | default “AI feature” shorthand | name the concrete capability in plain language (`Summarize`, `Generate SQL`) with a system-coherent icon |
+| default shadcn zinc + 1px border + pill badge hero | unexamined starter-kit collapse | treat primitives as unstyled behavior; author tokens, type voice, spacing rhythm, and surface contrast from the committed direction |
+| cargo-cult Liquid Glass blur | copying iOS/macOS 26 chrome onto web/apps without layered context | restrict translucency to floating chrome over rich media, verify composited contrast over worst-case backgrounds, and provide a `prefers-reduced-transparency` solid fallback |
 
 ## Copy fingerprints
 
@@ -47,12 +54,13 @@ A page can have zero fingerprints and still be bad; absence of slop is not prese
 
 ## Scanner traceability (`slop-scan.mjs` vs judgment)
 
-`pixelcraft-review` runs `slop-scan.mjs` to catch the mechanically detectable subset statically (`static`); visual/taste fingerprints remain human/rendered review (`rendered` / `model-judgment`):
+`pixelcraft-review` runs `slop-scan.mjs` to catch the mechanically detectable subset statically (`static`); visual/taste fingerprints remain human/rendered review (`rendered` / `model-judgment`). In `slop-scan.mjs`, `--waivers` accepts ONLY the 7 advisory brand rules (`default-font-only`, `purple-blue-gradient`, plus the 5 P3 rules); P0/P1 floor rules and non-brand P2 rules cannot be suppressed via brand waivers:
 
 | Fingerprint family | Automated `slop-scan.mjs` rule ID(s) | Check mode |
 |---|---|---|
-| Focus removal, zoom lock, paste blocking | `outline-removed`, `zoom-disabled`, `paste-blocked` | `static` (P0) |
-| Placeholder-as-label, missing reduced-motion | `placeholder-as-label`, `missing-reduced-motion` | `static` (P1) |
-| Default fonts, `transition: all`, emoji icons, cliché copy, purple-blue gradients, hardcoded hexes | `default-font-only`, `transition-all`, `emoji-as-icon`, `generic-copy`, `purple-blue-gradient`, `hardcoded-color-literals` | `static` (P2) |
+| Focus removal, zoom lock, paste blocking | `outline-removed`, `zoom-disabled`, `paste-blocked` | `static` (P0, non-waivable) |
+| Placeholder-as-label, missing reduced-motion | `placeholder-as-label`, `missing-reduced-motion` | `static` (P1, non-waivable) |
+| `transition: all`, emoji icons, cliché copy, hardcoded hexes | `transition-all`, `emoji-as-icon`, `generic-copy`, `hardcoded-color-literals` | `static` (P2, non-waivable) |
+| Default fonts, purple-blue gradients | `default-font-only`, `purple-blue-gradient` | `static` (P2 advisory, waivable for approved brand) |
 | Repeated `rounded-2xl`, uniform shadows, centered hero + 2 CTAs, gradient text, rounded accent rails | `rounded-2xl-repetition`, `uniform-shadow`, `centered-hero-two-ctas`, `gradient-text-treatment`, `rounded-accent-rail` | `static` (P3, waivable for approved brand) |
-| Cream+serif+terracotta defaults, glassmorphism without depth, decorative Bento/sparklines, invented testimonials, shallow UX states | — | `rendered` / `model-judgment` |
+| Cream+serif+terracotta defaults, spotlight Bento grids, fake terminal chrome, logo marquees, fake avatar proof stacks, `✨` sparkle spam, default shadcn zinc hero, cargo-cult Liquid Glass blur, shallow UX states | — | `rendered` / `model-judgment` |

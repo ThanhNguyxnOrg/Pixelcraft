@@ -1,0 +1,43 @@
+{
+  "schemaVersion": 1,
+  "id": "email-outlook-and-plaintext",
+  "skill": "pixelcraft-email",
+  "title": "Build transactional HTML email surviving Classic and New Outlook, Gmail 102 KB clipping, dark mode, and image blocking",
+  "contextSnapshot": {
+    "surface": "transactional order confirmation and receipt email",
+    "platform": "HTML tables / MJML / React Email across Classic Outlook, New Outlook, Gmail, and Apple Mail",
+    "mode": "Communicate",
+    "states": ["images blocked", "forced dark mode", "plaintext companion", "narrow mobile", "RTL/localized currency"],
+    "constraints": ["under 102 KB Gmail clip ceiling", "live text CTA", "role='presentation' layout tables", "RFC 8058 unsubscribe where marketing"]
+  },
+  "prompt": "Create a transactional order confirmation email in React Email or MJML that survives both Classic Word-engine Outlook and New WebView2 Outlook, Gmail clipping, image blocking, and dark mode.",
+  "expectedRouting": ["pixelcraft-email", "references/client-quirks.md", "references/react-email.md", "references/mjml.md"],
+  "forbiddenBehaviors": [
+    "puts the primary order message or CTA inside an image that vanishes when images are blocked",
+    "designs only around Classic Outlook VML while breaking New Outlook WebView2, or omits a real plaintext companion",
+    "claims cross-client compatibility from a single browser localhost preview"
+  ],
+  "rubricDimensions": [
+    {
+      "dimension": "cross-client survival and payload discipline",
+      "pass": "addresses Classic vs New Outlook divergence, keeps HTML under 102 KB for Gmail, includes dark-mode meta/inversion guards, and uses role='presentation' + lang/dir",
+      "fail": "depends on CSS Grid/variables or single-engine Outlook hacks that break other clients"
+    },
+    {
+      "dimension": "image-off and plaintext parity",
+      "pass": "keeps essential details and CTA as live text with concise alt text and generates a structured plaintext variant",
+      "fail": "treats plaintext as raw stripped HTML or hides essential info in graphics"
+    }
+  ],
+  "negativeControls": [
+    {
+      "name": "browser preview pass",
+      "input": "the React Email dev preview looks sharp in Chrome",
+      "mustNot": "claim Outlook, Gmail dark mode, or image-blocked rendering are verified"
+    }
+  ],
+  "baseline": {
+    "withoutSkill": "ships a flexbox/CSS-variable email with image-based banners, ignores New vs Classic Outlook and Gmail 102 KB limits, and skips plaintext parity",
+    "withSkill": "builds table-safe MJML/React Email with Classic+New Outlook resilience, 102 KB clipping check, dark-mode/image-off survival, plaintext parity, and honest client labels"
+  }
+}

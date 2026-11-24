@@ -20,8 +20,6 @@ Divergence is a procedure, not a mood. Never ask for “the best design” in on
 - Read [references/repetition-history.md](references/repetition-history.md) before generating candidates and when writing the final repetition check.
 - Read [references/motion-identity.md](references/motion-identity.md) when defining a consistent motion language.
 - Read [references/reference-analysis.md](references/reference-analysis.md) when researching visual examples and transferring patterns with provenance and evidence labels.
-- Read [references/motion-identity.md](references/motion-identity.md) when defining a consistent motion language.
-- Read [references/reference-analysis.md](references/reference-analysis.md) when researching visual examples and transferring patterns with provenance and evidence labels.
 - Read [references/wildcards.md](references/wildcards.md) when catalog directions feel repetitive, insufficiently subject-derived, or too safe.
 
 ## 1. Extract brief and material first
@@ -65,19 +63,24 @@ A useful distribution is:
 
 ## 3. Score before choosing
 
-Score each direction 0–4 per criterion. Require evidence, not adjectives.
+Score each direction 0–4 across all 12 criteria defined in `references/direction-scoring.md`. Require evidence, not adjectives.
 
 | Criterion | Question |
 |---|---|
 | subject fit | does it arise from the actual domain/material? |
-| audience/mode fit | does expression match user success and frequency of use? |
-| platform transferability | can it survive the target stack and input modality? |
-| accessibility/floor risk | can contrast, text scaling, focus, motion safety, and localization be preserved? |
-| implementation cost | can it be built honestly within project constraints? |
+| task/mode fit | does expression match user success and frequency of use? |
+| prototypicality | does it preserve learned platform/domain recognition where helpful? |
+| hierarchy clarity | is the next decision obvious without reading every pixel? |
+| visual complexity | does element count, grouping, and density match the mode? |
+| accessibility risk | can contrast, text scaling, focus, motion safety, and cognitive load be preserved? |
+| localization risk | does the layout/type system survive expansion, RTL, and script shaping? |
+| platform transfer | can it be idiomatic in the target stack and input modality? |
+| implementation cost | can it be built honestly within project constraints and timeline? |
 | distinctiveness | is it meaningfully apart from slop fingerprints and prior project history? |
-| coherence | can one system sustain all required states/screens? |
+| content truth | is every claim, metric, copy block, and visual backed by real provenance? |
+| coherence | can one system sustain all required states, modes, and screens? |
 
-Use the full scorecard in `references/direction-scoring.md`. Include prototypicality, hierarchy clarity, visual complexity, localization risk, implementation cost, and content truth alongside subject fit and distinctiveness. Choose the highest evidence-weighted result unless the user brief changes weights; hard floor/legal/truth failures are disqualifying regardless of total. Log why every losing direction lost; “less pretty” is not a reason.
+Apply mode weights from `references/direction-scoring.md`. Choose the highest evidence-weighted result unless the user brief changes weights; hard floor/legal/truth failures are disqualifying regardless of total. Log why every losing direction lost using criterion names; “less pretty” is not a reason.
 
 ## 4. Commit to one direction
 
@@ -118,7 +121,9 @@ Use `.pixelcraft/history.json` in the user's project when writable. Never commit
   "entries": [
     {
       "date": "2026-01-01",
+      "project": "optional-project-name",
       "surface": "marketing-home",
+      "mode": "Persuade",
       "direction": "blueprint-instrument",
       "axes": {
         "composition": "technical-grid",
@@ -127,10 +132,14 @@ Use `.pixelcraft/history.json` in the user's project when writable. Never commit
         "material": "flat-print",
         "motion": "measurement-snap",
         "imagery": "annotated-diagram",
-        "density": "high"
+        "density": "high",
+        "copy": "specification-led"
       },
       "signature": "measurement-scale-navigation",
-      "fingerprint": "sha1-or-short-stable-hash-of-axes"
+      "fingerprint": "stable-short-hash-of-normalized-axes",
+      "selected": true,
+      "rejectedReason": "",
+      "notes": "optional"
     }
   ]
 }

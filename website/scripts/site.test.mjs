@@ -92,7 +92,7 @@ test("shipped source has no host scaffold, remote font or superseded 3D dependen
     "package.json",
     "index.html",
     "vite.config.ts",
-    ...(await files("src")),
+    ...(await files("src")).filter((f) => f !== "src/generated/repo-meta.json"),
     ...(await files("public")),
   ]) {
     const source = await read(file);

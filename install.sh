@@ -359,6 +359,67 @@ write_adapter_file() {
   echo "installed adapter: $file"
 }
 
+write_managed_adapter_file() {
+  local file="$1"
+  shift
+  local dir
+  dir="$(dirname "$file")"
+  assert_target_path_safe "$dir"
+  [[ ! -L "$file" ]] || die "adapter output is a symlink: $file; refusing to install through it"
+  if (( dry_run )); then
+    echo "dry-run: managed adapter $file"
+    return
+  fi
+  mkdir -p "$dir"
+  assert_target_path_safe "$dir"
+  local start_marker='<!-- pixelcraft:start -->'
+  local end_marker='<!-- pixelcraft:end -->'
+  local block
+  block="$(printf '%s\n' "$start_marker" "$@" "$end_marker")"
+  if [[ ! -e "$file" ]]; then
+    printf '%s\n' "$block" > "$file"
+    echo "installed adapter: $file"
+    return
+  fi
+  local out="" line="" state="before" has_start=0 has_end=0
+  while IFS= read -r line || [[ -n "$line" ]]; do
+    if [[ "$state" == "before" && "$line" == *"$start_marker"* ]]; then
+      has_start=1
+      if [[ "$line" == *"$end_marker"* ]]; then
+        has_end=1
+        state="after"
+        out+="${block}"$'\n'
+      else
+        state="inside"
+        out+="${block}"$'\n'
+      fi
+    elif [[ "$state" == "inside" ]]; then
+      if [[ "$line" == *"$end_marker"* ]]; then
+        has_end=1
+        state="after"
+      fi
+    else
+      out+="${line}"$'\n'
+    fi
+  done < "$file"
+  if (( has_start && ! has_end )); then
+    die "managed Pixelcraft block is missing its end marker: fix $file before installing"
+  fi
+  if (( has_start )); then
+    printf '%s' "$out" > "$file"
+  else
+    while [[ "$out" == *$'\n' ]]; do
+      out="${out%$'\n'}"
+    done
+    if [[ -n "$out" ]]; then
+      printf '%s\n\n%s\n' "$out" "$block" > "$file"
+    else
+      printf '%s\n' "$block" > "$file"
+    fi
+  fi
+  echo "installed adapter: $file"
+}
+
 workflow_task() {
   case "$1" in
     pixelcraft-plan) printf '%s' 'Run Pixelcraft step-zero planning before UI work' ;;
@@ -369,10 +430,20 @@ workflow_task() {
   esac
 }
 
+display_skill_root() {
+  local root="$1"
+  if [[ "$scope" == "global" ]]; then
+    printf '~%s' "${root#"$HOME"}"
+  else
+    printf '%s' "${root#"$PWD/"}"
+  fi
+}
+
 write_shell_adapters() {
   local agent="$1"
   local root="$2"
-  local base action task
+  local base action task display_root
+  display_root="$(display_skill_root "$root")"
   case "$agent" in
     claude)
       base="${root%/skills}"
@@ -383,12 +454,12 @@ write_shell_adapters() {
       ;;
     cursor)
       base="${root%/skills}"
-      write_adapter_file "$base/rules/pixelcraft.mdc" '---' 'description: Route UI design and review through Pixelcraft' 'alwaysApply: true' '---' '' '# Pixelcraft router' '' "Use Pixelcraft for interface design, implementation, review, and visual QA. Start with pixelcraft-plan and read the matching self-contained skill under $root; do not inline large generated content."
+      write_adapter_file "$base/rules/pixelcraft.mdc" '---' 'description: Route UI design and review through Pixelcraft' 'alwaysApply: true' '---' '' '# Pixelcraft router' '' "Use Pixelcraft for interface design, implementation, review, and visual QA. Start with pixelcraft-plan and read the matching self-contained skill under $display_root; do not inline large generated content."
       ;;
     copilot)
       base="${root%/skills}"
-      write_adapter_file "$base/copilot-instructions.md" '# Pixelcraft router' '' "Use Pixelcraft for interface design, implementation, review, and visual QA. Start with pixelcraft-plan and read the matching self-contained skill under $root; do not inline large generated content."
-      write_adapter_file "$base/instructions/pixelcraft.instructions.md" '---' 'applyTo: "**/*.{html,css,scss,js,jsx,ts,tsx,vue,svelte,astro,py,rb,php,cs,java,kt,swift,dart,rs,go,lua,ex,exs,clj,cljs,elm,fs,scala}"' '---' '' 'When editing interface or user-facing behavior, follow copilot-instructions.md and read the matching Pixelcraft skill before implementation or review.'
+      write_managed_adapter_file "$base/copilot-instructions.md" '# Pixelcraft router' '' "Use Pixelcraft for interface design, implementation, review, and visual QA. Start with pixelcraft-plan and read the matching self-contained skill under $display_root; do not inline large generated content."
+      write_adapter_file "$base/instructions/pixelcraft.instructions.md" '---' 'applyTo: "**/*.{html,css,scss,js,jsx,ts,tsx,vue,svelte,astro,mdx,razor,heex,erb,templ,mjml,typ,tex,py,rb,php,cs,java,kt,swift,dart,rs,go,lua,ex,exs,clj,cljs,elm,fs,scala,cpp,h,glsl,wgsl,qml,xaml,uxml,uss,gd,tscn,tcss,qss,r,jl}"' '---' '' 'When editing interface or user-facing behavior, follow copilot-instructions.md and read the matching Pixelcraft skill before implementation or review.'
       for action in pixelcraft-plan pixelcraft-review pixelcraft-visual-qa pixelcraft-direction; do
         task="$(workflow_task "$action")"
         write_adapter_file "$base/prompts/$action.prompt.md" '---' "description: $task" '---' '' "$task. Read and follow the self-contained \`$action\` skill. Preserve user requirements, project conventions, accessibility, and evidence labels."
@@ -397,13 +468,17 @@ write_shell_adapters() {
     windsurf|kiro)
       base="${root%/skills}"
       if [[ "$agent" == "windsurf" ]]; then
-        write_adapter_file "$base/rules/pixelcraft.md" '# Pixelcraft router' '' "Use Pixelcraft for interface design, implementation, review, and visual QA. Start with pixelcraft-plan and read the matching self-contained skill under $root."
+        if [[ "$scope" == "global" ]]; then
+          write_managed_adapter_file "$base/memories/global_rules.md" '# Pixelcraft router' '' "Use Pixelcraft for interface design, implementation, review, and visual QA. Start with pixelcraft-plan and read the matching self-contained skill under $display_root."
+        else
+          write_adapter_file "$base/rules/pixelcraft.md" '# Pixelcraft router' '' "Use Pixelcraft for interface design, implementation, review, and visual QA. Start with pixelcraft-plan and read the matching self-contained skill under $display_root."
+        fi
         for action in pixelcraft-plan pixelcraft-review pixelcraft-visual-qa pixelcraft-direction; do
           task="$(workflow_task "$action")"
-          write_adapter_file "$base/workflows/$action.md" "# $task" '' "1. Read the self-contained \`$action\` skill under $root." '2. Follow its workflow and references.' '3. Preserve user requirements, accessibility, and evidence labels.'
+          write_adapter_file "$base/workflows/$action.md" "# $task" '' "1. Read the self-contained \`$action\` skill under $display_root." '2. Follow its workflow and references.' '3. Preserve user requirements, accessibility, and evidence labels.'
         done
       else
-        write_adapter_file "$base/steering/pixelcraft.md" '# Pixelcraft steering' '' "Use Pixelcraft for interface design, implementation, review, and visual QA. Start with pixelcraft-plan and read the matching self-contained skill under $root."
+        write_adapter_file "$base/steering/pixelcraft.md" '# Pixelcraft steering' '' "Use Pixelcraft for interface design, implementation, review, and visual QA. Start with pixelcraft-plan and read the matching self-contained skill under $display_root."
       fi
       ;;
   esac

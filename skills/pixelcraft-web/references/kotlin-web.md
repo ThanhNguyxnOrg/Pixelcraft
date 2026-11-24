@@ -39,15 +39,19 @@ In DOM mode use `<form>`, labels, autocomplete/inputmode, constraint validation 
 
 ## Known traps
 
-Confusing Compose HTML with canvas Compose UI, bundle size/startup, browser semantics loss, SEO/deep-link gaps, duplicate routing ownership, font/glyph mismatch, thinking Kotlin type safety implies accessibility.
+Confusing DOM-based Kobweb / Compose HTML with Skiko canvas-rendered Compose Multiplatform Web (`wasmJs` / `js`), WasmGC browser support and WASM startup size, browser semantics/autofill/SEO gaps on canvas targets, duplicate routing ownership, font/glyph mismatch, thinking Kotlin type safety implies accessibility.
 
 ## Verification commands
 
+Run the task matching the project's configured Kotlin target (`wasmJs` for modern Compose Multiplatform Web WasmGC targets, `js` for Kotlin/JS and Kobweb):
+
 ```sh
 ./gradlew build
+./gradlew wasmJsBrowserTest
+./gradlew wasmJsBrowserDevelopmentRun
 ./gradlew jsBrowserTest
 ./gradlew jsBrowserDevelopmentRun
 npx playwright test
 ```
 
-Inspect initial HTML/DOM versus canvas pixels, keyboard/focus/accessibility tree, network failure, bundle size, browser zoom/text scaling, reduced motion, back/deep-link behavior.
+Inspect initial HTML/DOM versus canvas pixels, keyboard/focus/accessibility tree, network failure, WASM/JS bundle size, browser zoom/text scaling, reduced motion, and back/deep-link behavior (`rendered`).

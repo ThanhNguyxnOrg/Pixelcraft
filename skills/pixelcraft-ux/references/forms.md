@@ -15,9 +15,9 @@ Evidence: validation and checkout research, WCAG redundant-entry/accessible-auth
 
 ## Input semantics and mobile adaptation
 
-- Use correct autocomplete/input purpose tokens (`name`, `email`, `tel`, `url`, `postal-code`, payment fields), input types/modes, virtual keyboard layout, capitalization/autocorrect settings, and paste behavior.
+- Use correct autocomplete/input purpose tokens (`name`, `email`, `tel`, `url`, `postal-code`, payment fields, and `autocomplete="username webauthn"` for passkey conditional UI), input types/modes, virtual keyboard layout, `enterkeyhint` (`search`, `send`, `next`, `done`, `go`), capitalization/autocorrect settings, and paste behavior.
 - Never block paste in email/password/verification/payment fields. Do not require retyping email or other redundant entry unless a security/legal reason exists.
-- Accessible authentication: no cognitive memory test, puzzle, or transcription-only flow; support password managers, paste, passkeys/biometrics/magic links where appropriate.
+- Accessible authentication: no cognitive memory test, puzzle, or transcription-only flow; support password managers, paste, passkeys/biometrics (`autocomplete="webauthn"` conditional mediation plus an explicit "Sign in with passkey" button), and magic links where appropriate.
 - Use input masking only when it visibly reduces uncertainty without trapping IMEs/paste/screen readers.
 - Verification codes: allow paste/autofill, do not split focus unpredictably, announce errors accessibly, and preserve countdown/resend state.
 
@@ -47,7 +47,9 @@ Choose semantics before layout:
 
 | Data | Input/control posture | Formatting behavior |
 |---|---|---|
-| email | email semantics; `email` autocomplete; paste allowed | do not reject valid internationalized/plus-address forms because they look unusual; trim only insignificant outer whitespace |
+| email | email semantics; `autocomplete="email"`; `enterkeyhint="next"` or `"done"`; paste allowed | do not reject valid internationalized/plus-address forms because they look unusual; trim only insignificant outer whitespace |
+| sign-in username / passkey | `autocomplete="username webauthn"` for conditional passkey autofill + explicit passkey button fallback | support password managers and WebAuthn conditional mediation without hiding fallback auth |
+| search / chat composer | `type="search"` + `enterkeyhint="search"` (or `enterkeyhint="send"` for chat input) | match mobile virtual keyboard action key to actual submit/next behavior |
 | telephone | telephone semantics/input mode; `tel` autocomplete | accept grouping punctuation/spaces; normalize internally; never assume one national format without locale scope |
 | URL | URL semantics/input mode; paste allowed | accept bare host only if product explicitly supports normalization; explain final normalization |
 | postal code | postal-code autocomplete; text input, not number | preserve leading zeroes/spaces/case; validate by selected country/region only when known |

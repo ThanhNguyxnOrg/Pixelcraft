@@ -1,45 +1,83 @@
-# Bevy UI (Rust)
+# Bevy UI (Rust, Bevy 0.15–0.18)
 
-## Token mapping
+## Token mapping and Required Components (Bevy 0.15+)
 
-Use semantic Rust constants/resources/components for theme values and shared styles. Current Bevy UI uses ECS nodes/components; avoid raw repeated colors/fonts. Coordinate game-art color grading with UI token intent.
+Bevy 0.15+ replaced legacy `*Bundle` structs (`NodeBundle`, `ButtonBundle`, `TextBundle`) and `Style` with **Required Components**: spawn `Node`, `BackgroundColor`, `BorderColor`, `Button`, `Text`, `TextFont`, and `TextColor` directly, and compose hierarchies with Bevy 0.16+ **`children![...]`** relationships. Store palette, typography, and spacing in a semantic `Resource` rather than scattering raw `Color::srgb(...)` literals across spawn sites:
 
-## Layout and responsive idioms
+```rust
+use bevy::a11y::AccessibilityNode;
+use bevy::picking::events::{Click, Pointer};
+use bevy::prelude::*;
+use bevy::ui::Val;
+use accesskit::{Node as AccessibleNode, Role};
 
-Use `Node` layout properties/flex-like behavior, explicit hierarchy, camera/render-target scale, aspect/resolution changes, safe margins, HUD versus menu/world-space ownership. Verify resizing/window scaling rather than static editor assumptions.
+#[derive(Resource)]
+struct UiTokens {
+    action_bg: Color,
+    action_text: Color,
+    border: Color,
+    font: Handle<Font>,
+}
 
-## Typography/custom fonts
+fn spawn_pause_menu(mut commands: Commands, tokens: Res<UiTokens>) {
+    commands.spawn((
+        Node {
+            width: Val::Percent(100.0),
+            height: Val::Percent(100.0),
+            justify_content: JustifyContent::Center,
+            align_items: AlignItems::Center,
+            ..default()
+        },
+        children![(
+            Button,
+            Node {
+                padding: UiRect::axes(Val::Px(24.0), Val::Px(14.0)),
+                border: UiRect::all(Val::Px(2.0)),
+                ..default()
+            },
+            BackgroundColor(tokens.action_bg),
+            BorderColor(tokens.border),
+            AccessibilityNode(AccessibleNode::new(Role::Button)),
+            children![(
+                Text::new("Resume"),
+                TextFont { font: tokens.font.clone(), font_size: 22.0, ..default() },
+                TextColor(tokens.action_text),
+            )],
+        )],
+    ))
+    .observe(|_trigger: Trigger<Pointer<Click>>| {
+        // Bevy 0.15–0.16: Trigger<Pointer<Click>> (Bevy 0.17+: On<Pointer<Click>>)
+    });
+}
+```
 
-Load font assets explicitly; validate glyph coverage/localization, scaling, bitmap/vector rendering, texture atlas behavior. Text size/readability at gameplay distance is a design constraint, not a default.
+## Native `bevy_picking`, `bevy_ui_widgets`, `bevy_feathers`, and focus (0.15–0.18)
 
-## Motion/reduced motion
+- **Native `bevy_picking` (0.15+)**: attach ECS observers (`.observe(...)` handling `Pointer<Click>`, `Pointer<Over>`, `Pointer<Out>`, `Pointer<Drag>`) directly on UI entities instead of polling `Query<&Interaction>` manually for complex pointer states. Note exact observer parameter syntax across versions (`Trigger<Pointer<Click>>` in 0.15–0.16 vs `On<Pointer<Click>>` in 0.17+).
+- **`bevy_ui_widgets` (0.17–0.18)**: use Bevy's official headless widgets (buttons, sliders, checkboxes, radio groups) for pointer/keyboard activation, disabled states, and AccessKit synchronization without locking visual appearance.
+- **`bevy_feathers` (0.17–0.18)**: use the opinionated themed widget suite atop `bevy_ui_widgets` for rapid settings/debug/editor tooling when custom game skinning is not needed.
+- **`bevy_input_focus` & `AutoDirectionalNavigation`**: track active focus through `InputFocus` / `InputFocusVisible` resources and wire D-pad/arrow traversal via `AutoDirectionalNavigation` (or explicit `DirectionalNavigationMap` edges) so controller navigation never depends on ad-hoc index counters.
+- **BSN (Bevy Scene Notation)**: treat declarative BSN syntax as experimental until stabilized in your pinned Bevy minor release; do not mix unstable BSN examples with production Required Component code.
 
-Implement animation through systems/timers/tweens deliberately. Expose reduced-motion/flash-reduction options, handle pause/cancellation/interruption, and never make critical state dependent on animation completion.
+## Layout, typography, motion, and AccessKit accessibility
 
-## Accessibility specifics
-
-Bevy integrates AccessKit-oriented accessibility infrastructure in current versions; examples use `bevy::a11y::AccessibilityNode` with `accesskit::Role`. Add semantic nodes/roles/labels for custom UI and verify actual platform adapters/version support. ECS rendering does not automatically create usable focus/screen-reader behavior.
-
-## States idiom
-
-Use explicit ECS states/resources/events for loading/menu/pause/error/death/network/empty inventory/settings/remap/interruption. Model focus ownership and restoration after popups/scene/state transitions.
-
-## Forms idiom
-
-Text input is low-level/custom unless using mature widgets/plugins. Validate keyboard focus, selection/caret/clipboard/IME behavior, remapping conflicts, virtual keyboard needs, validation timing, and recovery before using it for consequential input.
+- Use Taffy-backed `Node` Flexbox/Grid properties (`Display::Flex`, `Display::Grid`, `Val::Percent`/`Val::Px`/`Val::Vw`), handle `WindowResized` / `UiScale` changes, and keep HUD vs menu camera layers distinct.
+- Load TTF/OTF fonts explicitly via `AssetServer`, verify CJK/RTL/Cyrillic glyph coverage (cosmic-text handles shaping in Bevy 0.15+, but fallback fonts must still be available), and test distance legibility.
+- **AccessKit semantics**: construct `AccessibilityNode(accesskit::Node::new(Role::Button))` from the `accesskit` crate, populate accessible labels/checked/value states on interactive widgets, and test actual OS screen-reader output (`rendered`, or label unsupported targets `not-checked`).
+- Model pause, loading, disconnect, death/respawn, and modal focus restoration cleanly with `States` / `SubStates` and explicit `DespawnOnExit`; expose reduced-motion/flash settings in game options.
 
 ## Do/don't pairs
 
 | Do | Don't |
 |---|---|
-| `AccessibilityNode(Accessible::new(Role::Button))` where custom semantics are needed | drawing text/rectangles and calling it a button |
-| explicit state machine/menu focus ownership | focus disappearing after entity despawn |
-| semantic theme resource | raw color constants in every spawn bundle |
-| reduced flash/motion gameplay setting | assuming engine automatically honors OS settings |
+| Spawn Required Components (`Node`, `BackgroundColor`, `BorderColor`, `Text`, `TextFont`, `TextColor`) + `children![...]` | Copy legacy pre-0.15 `NodeBundle` / `ButtonBundle` / `Style` snippets |
+| Use `AccessibilityNode(accesskit::Node::new(Role::Button))` and `bevy_ui_widgets` where available | Draw plain rects/text without AccessKit `Node` semantics or focus wiring |
+| Wire `bevy_picking` observers and `bevy_input_focus` / `AutoDirectionalNavigation` | Build mouse-only menus or drop focus silently when despawning modal entities |
+| Keep theme tokens in a `Resource` and verify `UiScale` + reduced-motion toggles | Hard-code `Color::srgb(...)` per entity or assume OS reduced motion is auto-applied |
 
 ## Known traps
 
-Rapid API churn/version mismatch, entity despawn focus loss, accessibility adapter gaps, font glyph omissions, scaling/render-target mismatch, ECS event ordering bugs, custom input complexity.
+Fast minor-version API shifts across 0.15 → 0.18 (`Trigger<E>` vs `On<E>`, `BorderColor::all(...)` helpers, `DespawnOnExit`), despawning the focused entity without restoring `InputFocus`, forgetting `Pickable::IGNORE` on non-interactive HUD overlays that steal clicks, and incomplete font fallback in localized builds.
 
 ## Verification commands
 
@@ -49,4 +87,4 @@ cargo clippy -- -D warnings
 cargo run
 ```
 
-Run resolution/aspect/input matrix, keyboard/controller-only flow, actual accessibility tooling where supported, pause/interruption/resume, localization/glyph tests, screenshots/device targets.
+Verify resolution/aspect/`UiScale` matrix, controller-only `AutoDirectionalNavigation` traversal, AccessKit inspection on supported platforms, pause/interruption transitions, and localization glyph rendering (`rendered`).

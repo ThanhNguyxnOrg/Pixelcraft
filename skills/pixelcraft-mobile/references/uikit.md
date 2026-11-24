@@ -2,57 +2,88 @@
 
 ## Token mapping
 
-Use asset catalog colors keyed by semantic role plus dynamic provider colors when needed:
+Store light, dark, and high-contrast semantic colors in Asset Catalogs and reference them through generated `ColorResource` symbols (`UIColor(resource: .semanticAction)`) or dynamic trait providers (`UIColor { traits in ... }`). Keep spacing, corner radii, and motion constants in a typed semantic namespace—never duplicate raw RGB values across view controllers or cells.
 
 ```swift
-let action = UIColor(named: "Semantic/Action")
+enum PCColor {
+  static let action = UIColor(resource: .semanticAction)
+  static let surface = UIColor(resource: .semanticSurface)
+}
 ```
 
-Asset catalogs carry light/dark/high-contrast variants. Keep spacing/type constants in a typed semantic namespace; do not copy raw RGB values through view controllers/cells.
+## Trait changes & Swift 6 `@MainActor` isolation
 
-## Layout and responsive idioms
+`traitCollectionDidChange(_:)` is **deprecated (iOS 17+)**. Register explicit trait observers with **`registerForTraitChanges`** so updates run only for the traits you care about, and maintain **Swift 6 `@MainActor`** isolation on UIKit subclasses (avoiding `DispatchQueue.main.async` workarounds or `nonisolated` UI mutations):
 
-Use Auto Layout constraints, stack views, safe-area layout guides, trait collections, readable content guides, scroll view content layout guides, and collection/compositional layout intentionally. Avoid fixed frames except tightly controlled custom drawing/layout. Support multitasking/split-screen/orientation where target expects it.
+```swift
+@MainActor
+final class InvoiceViewController: UIViewController {
+  override func viewDidLoad() {
+    super.viewDidLoad()
+    registerForTraitChanges(
+      [UITraitPreferredContentSizeCategory.self, UITraitAccessibilityContrast.self]
+    ) { (self: Self, _) in
+      self.updateTypographyAndBorders()
+    }
+  }
+}
+```
 
-## Typography/custom fonts
+## Layout, sheets, Liquid Glass, & SwiftUI interop
 
-Use `UIFontMetrics` to scale custom/system fonts for Dynamic Type. Register custom fonts correctly and set `adjustsFontForContentSizeCategory` where appropriate. Layout must respond to trait collection/content size changes rather than truncating essential copy.
+- Use Auto Layout constraints against `view.safeAreaLayoutGuide`, `readableContentGuide`, `keyboardLayoutGuide`, `UIStackView`, and `UICollectionViewCompositionalLayout`. Avoid fixed frames except controlled custom drawing.
+- **iOS 26 Liquid Glass (`UIGlassEffect` / `UIGlassContainerEffect`)**: wrap floating controls and bars in `UIVisualEffectView(effect: UIGlassEffect())` (configuring `isInteractive` / `tintColor` where appropriate) and group adjacent glass views inside a `UIGlassContainerEffect` view. Always observe `UIAccessibility.reduceTransparencyStatusDidChangeNotification` and `UIAccessibility.darkerSystemColorsStatusDidChangeNotification` (`UIAccessibility.isReduceTransparencyEnabled` / `isDarkerSystemColorsEnabled`) to fall back to opaque high-contrast surfaces.
+- **Modern modal sheets (`UISheetPresentationController.Detent`)**: declare explicit `.medium()`, `.large()`, or content-fitting `.custom(identifier:) { ctx in ... }` detents, set `prefersGrabberVisible = true`, configure `largestUndimmedDetentIdentifier` when background interaction is intentional, and expose a visible Close/Done button for non-drag accessibility.
+- **Empty & loading states (`UIContentUnavailableConfiguration`)**: assign `contentUnavailableConfiguration` (`.empty()`, `.loading()`, `.search()`, with action button configuration) on `UIViewController` instead of toggling hidden placeholder subviews.
+- **Embedding SwiftUI cells (`UIHostingConfiguration`)**: host complex responsive cell layouts inside `UICollectionViewCell` / `UITableViewCell` via `cell.contentConfiguration = UIHostingConfiguration { ... }` rather than maintaining parallel Auto Layout cell subclasses.
 
-## Motion/reduced motion
+```swift
+var config = UIContentUnavailableConfiguration.empty()
+config.text = "No Pending Invoices"
+config.secondaryText = "New invoices will appear here when synced."
+config.image = UIImage(systemName: "doc.text")
+contentUnavailableConfiguration = config
+```
 
-Use UIView/CA animation intentionally. Check `UIAccessibility.isReduceMotionEnabled` and observe relevant notifications when behavior must adapt. Keep animations interruptible and provide non-motion state feedback. Do not rely on animation completion handlers for correctness without cancellation handling.
+## Typography & Dynamic Type
+
+Scale every custom and system font via `UIFontMetrics(forTextStyle: .body).scaledFont(for: baseFont)` and set `adjustsFontForContentSizeCategory = true`. Configure `numberOfLines = 0` on essential labels and reflow horizontal `UIStackView` axes to `.vertical` at accessibility content-size categories.
+
+## Motion & reduced motion
+
+Use `UIViewPropertyAnimator` for interruptible animations and check `UIAccessibility.isReduceMotionEnabled` (observing `UIAccessibility.reduceMotionStatusDidChangeNotification`). Never rely on animation completion blocks for correctness without handling cancellation or interrupted transitions.
 
 ## Accessibility specifics
 
-Configure `accessibilityLabel`, `accessibilityValue`, `accessibilityHint` sparingly, traits, custom actions, adjustable behavior, accessibility elements ordering (`accessibilityElements`), notifications (`UIAccessibility.post(notification:argument:)`), and focus behavior. Verify hit regions at 44×44 pt or document platform exception.
+Configure `accessibilityLabel`, `accessibilityValue`, `accessibilityHint` (sparingly), `accessibilityTraits`, `accessibilityCustomActions`, `accessibilityElements` order, and `UIAccessibility.post(notification: .announcement / .screenChanged, argument:)`. Verify touch hit areas are at least `44×44 pt` (expanding via `point(inside:with:)` when a visual glyph is smaller).
 
-## States idiom
+## States & forms idioms
 
-Use explicit view-state models rather than hiding/showing ad hoc controls. Diffable data sources need correct identity/reuse semantics. Preserve state across backgrounding/restoration and avoid duplicate operations when views reappear. Loading/empty/error/offline/permission states deserve designed content, not blank table/collection views.
+Drive tables and collections with `UICollectionViewDiffableDataSource` / `UITableViewDiffableDataSource` using stable item identifiers—never rely on `reloadData()` to hide identity bugs. Reset reused cell state explicitly in `prepareForReuse()` or cell configuration handlers. Preserve state across backgrounding via `NSUserActivity` / scene state restoration.
 
-## Forms idiom
-
-Use correct keyboard type, text content type, return key behavior, autocapitalization/autocorrection, password autofill/passkeys, scroll adjustment for keyboard, validation after completion, and input preservation. First responder management is interaction design, not incidental plumbing.
+In forms, configure `keyboardType`, `textContentType`, `returnKeyType`, password autofill/passkeys, and pin bottom actions to `view.keyboardLayoutGuide.topAnchor`. Manage `becomeFirstResponder()` / `resignFirstResponder()` deliberately and validate after field completion rather than interrupting every keystroke.
 
 ## Do/don't pairs
 
 | Do | Don't |
 |---|---|
-| `UIButton(configuration:)` or real control with target/action | tapping a plain `UILabel` as a fake control |
-| constraints to safe-area layout guide | hard-coded bottom padding copied from one device screenshot |
-| `UIFontMetrics.default.scaledFont(for:)` | fixed point font that ignores Dynamic Type |
-| prepare/reuse cells resetting state explicitly | stale images/selection/progress leaking through reuse |
-| VoiceOver order/name verification | assuming visual constraint order equals accessibility order |
+| `registerForTraitChanges([UITraitUserInterfaceStyle.self])` | Overriding deprecated `traitCollectionDidChange(_:)` on iOS 17+ |
+| `UIButton(configuration: .filled())` / `.glass()` | Adding `UITapGestureRecognizer` to a plain `UILabel` |
+| Pin bottom CTA to `view.keyboardLayoutGuide.topAnchor` | Manually parsing keyboard frame notifications with magic offsets |
+| `contentUnavailableConfiguration = UIContentUnavailableConfiguration.empty()` | Toggling ad-hoc hidden empty-state views over a collection view |
+| `UIFontMetrics.default.scaledFont(for:)` + `adjustsFontForContentSizeCategory` | Fixed point `UIFont(name:size:)` ignoring Dynamic Type |
+| Check `isReduceTransparencyEnabled` around `UIGlassEffect` | Leave translucent glass unreadable under Reduce Transparency / Increase Contrast |
 
 ## Known traps
 
-Constraint ambiguity/performance, cell reuse state leakage, retain cycles in handlers, keyboard obstruction, safe-area mismatch, opaque view controller hierarchy state, trait collection changes ignored, modal presentation/navigation back inconsistency, restoration identifier misuse.
+Auto Layout constraint ambiguity, cell reuse state leakage, retain cycles in trait/button closures (`[weak self]`), Swift 6 `@MainActor` sendability warnings silenced with unsafe `@unchecked Sendable`, keyboard obstruction, modal presentation dismissal skipping `viewWillAppear` on page-sheet parents, missing `UIGlassEffect` accessibility fallbacks.
 
 ## Verification commands
 
 ```sh
-xcodebuild -scheme App -destination 'platform=iOS Simulator,name=iPhone 15' build
-xcodebuild test -scheme App -destination 'platform=iOS Simulator,name=iPhone 15'
+xcrun simctl list devices available
+xcodebuild -scheme App -destination 'platform=iOS Simulator,name=<SimulatorName>' build
+xcodebuild test -scheme App -destination 'platform=iOS Simulator,name=<SimulatorName>'
 ```
 
-Use simulator/device screenshots, View Debugger, Accessibility Inspector, VoiceOver, Dynamic Type, dark/high-contrast modes, rotation/split-screen, and network-link conditioning for evidence.
+Inspect real simulator/device builds with View Debugger, Accessibility Inspector, VoiceOver, Dynamic Type (`AX3`), Dark Mode, Increase Contrast, Reduce Transparency, and rotation/split-screen for `rendered` evidence; compilation alone is `static`. Label untested hardware `not-checked`.

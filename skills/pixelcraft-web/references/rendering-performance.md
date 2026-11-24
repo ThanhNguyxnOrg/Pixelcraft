@@ -15,29 +15,63 @@ Set budgets during planning and measure on representative devices. A fixed FPS t
 - Avoid blanket `will-change: transform` on large lists; apply compositor promotion only to actively animating elements to prevent VRAM exhaustion.
 
 ```ts
-// Cap DPR, pause offscreen via IntersectionObserver, and handle context loss
+// Cap DPR, pause when offscreen or hidden, and handle WebGL context loss + restoration
 const dpr = Math.min(window.devicePixelRatio || 1, 2);
 renderer.setPixelRatio(dpr);
 
 let visible = true;
-const io = new IntersectionObserver(([entry]) => {
-  visible = entry.isIntersecting;
-}, { threshold: 0.01 });
+let rafId = 0;
+
+function tick(now: number) {
+  if (!visible || document.hidden) {
+    rafId = 0;
+    return;
+  }
+  renderFrame(now);
+  rafId = requestAnimationFrame(tick);
+}
+
+function startLoop() {
+  if (!rafId && visible && !document.hidden) rafId = requestAnimationFrame(tick);
+}
+
+const io = new IntersectionObserver(
+  ([entry]) => {
+    visible = entry.isIntersecting;
+    if (visible) startLoop();
+  },
+  { threshold: 0.01 },
+);
 io.observe(canvas);
 
-canvas.addEventListener('webglcontextlost', (e) => {
+const onVisibility = () => { if (!document.hidden) startLoop(); };
+document.addEventListener('visibilitychange', onVisibility);
+
+const onContextLost = (e: Event) => {
   e.preventDefault();
   cancelAnimationFrame(rafId);
-});
+  rafId = 0;
+};
+const onContextRestored = () => {
+  rebuildGpuResources();
+  startLoop();
+};
+canvas.addEventListener('webglcontextlost', onContextLost);
+canvas.addEventListener('webglcontextrestored', onContextRestored);
 
-// On teardown: io.disconnect(); geometry.dispose(); material.dispose(); renderer.dispose();
+// On teardown:
+// cancelAnimationFrame(rafId); io.disconnect();
+// document.removeEventListener('visibilitychange', onVisibility);
+// canvas.removeEventListener('webglcontextlost', onContextLost);
+// canvas.removeEventListener('webglcontextrestored', onContextRestored);
+// geometry.dispose(); material.dispose(); renderer.dispose();
 ```
 
 ## Evidence
 
-Record device/GPU/browser, viewport, DPR, refresh rate, scene state, warm/cold cache, frame-time distribution or FPS sample, long tasks, memory where observable, and whether capture was actual device or emulation. Do not compare numbers from unlike devices as if they were equivalent.
+Record device/GPU/browser, viewport, DPR, refresh rate, scene state, warm/cold cache, frame-time distribution or FPS sample, long tasks, GPU memory (`renderer.info.memory`), draw calls (`renderer.info.render.calls`), and whether capture was actual device or emulation (`rendered`). Do not compare numbers from unlike devices as if they were equivalent.
 
-The visual-qa performance budget is the shared project-level floor; this guide adds scene-specific measurements. If device profiling is unavailable, label GPU/frame checks not-checked rather than inferring from a screenshot.
+The visual-qa performance budget is the shared project-level floor; this guide adds scene-specific measurements. If device profiling is unavailable, label GPU/frame checks `not-checked` rather than inferring from a screenshot.
 
 ## Official references
 

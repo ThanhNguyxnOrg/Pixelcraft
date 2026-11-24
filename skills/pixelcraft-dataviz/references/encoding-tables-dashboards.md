@@ -78,6 +78,8 @@ Tables are often the correct visual representation. Design them as scanning inst
 
 Sparklines show shape, not exact magnitude. Pair them with current/range values and state whether axes are shared across rows.
 
+> **Cross-skill boundary:** `pixelcraft-dataviz` governs analytical tables, numeric alignment, visual encodings, inline sparklines, and dashboard information density. Operational table CRUD (row selection, bulk actions, inline editing, pagination, saved filters) and workspace shell navigation belong in `pixelcraft-patterns`.
+
 ## Dashboard layout and density
 
 Start from decisions, not chart inventory.

@@ -13,12 +13,13 @@ Choose the testing layer by what must be proved: logic contracts in unit tests, 
 | **Visual regression** | **Chromatic** (Storybook cloud), **Percy**, **Loki**, Playwright `toHaveScreenshot()` | Yes | Catching unintended spacing, typography, dark-mode, and responsive regressions | Unmasked dynamic dates/avatars/animations causing flaky diffs |
 | **Accessibility regression** | **`@axe-core/playwright`**, **`@storybook/addon-a11y`**, **`vitest-axe` / `jest-axe`**, **pa11y** | Yes (Playwright/Storybook/pa11y); DOM-only (`jest-axe`) | Continuous WCAG 2.1/2.2 A/AA checks on every PR | Assuming zero axe violations equals full accessibility (axe catches ~30–50% of WCAG issues; keyboard/focus/screen-reader flows still need verification) |
 
-## Component workshop & interaction testing (Storybook CSF 3)
+## Component workshop & interaction testing (Storybook CSF 3 + `@storybook/addon-vitest`)
 
 Write stories for every required state (default, loading, empty, error, disabled, overflow/long text, RTL/dark mode) and attach `play` functions for interactive contracts.
 
 - In Storybook 9/10+, import `expect`, `fn`, and `waitFor` from `'storybook/test'` and destructure `{ args, canvas, step, userEvent }` directly in `play`.
-- Pair Storybook with **MSW (`msw-storybook-addon`)** for deterministic network states rather than mocking `fetch` globally.
+- Wire **`@storybook/addon-vitest`** so every story (and its `play` + `addon-a11y` checks) executes directly in Vitest Browser Mode on CI, or reuse stories in standalone test files via **`composeStories(stories)`** from `@storybook/react` / `@storybook/vue3` / `@storybook/svelte` so decorators and args never drift.
+- Pair Storybook and Vitest with **MSW v2** (`http.get`, `HttpResponse.json`) for deterministic network states rather than mocking `fetch` globally.
 
 ```ts
 // Dialog.stories.ts (Storybook CSF 3)
@@ -47,6 +48,18 @@ export const OpensAndConfirms: Story = {
     });
   },
 };
+```
+
+```ts
+// MSW v2 network handler (shared across Storybook, Vitest, and browser tests)
+import { http, HttpResponse } from 'msw';
+
+export const handlers = [
+  http.get('/api/invoices', ({ request }) => {
+    const q = new URL(request.url).searchParams.get('q') ?? '';
+    return HttpResponse.json({ items: q ? [] : [{ id: '1', number: 'INV-101' }] });
+  }),
+];
 ```
 
 ## Real-browser component testing (Vitest Browser Mode)
@@ -95,9 +108,10 @@ Follow Testing Library's accessibility-first query priority so tests validate th
 
 Always initialize `const user = userEvent.setup()` and `await user.click(...)` / `await user.type(...)` instead of low-level `fireEvent`, which bypasses focus, disabled, and visibility checks.
 
-## Playwright E2E, ARIA snapshots, visual regression, and axe-core
+## Playwright E2E, Clock, ARIA snapshots, visual regression, and axe-core
 
-- **Accessibility fixture**: share a pre-configured `AxeBuilder` fixture via `test.extend()` targeting `['wcag2a', 'wcag2aa', 'wcag21a', 'wcag21aa']` (add `wcag22aa` where required) and assert `expect(results.violations).toEqual([])`.
+- **Accessibility fixture**: share a pre-configured `AxeBuilder` fixture via `test.extend()` targeting `['wcag2a', 'wcag2aa', 'wcag21a', 'wcag21aa', 'wcag22aa']` and assert `expect(results.violations).toEqual([])`.
+- **Playwright Clock (`page.clock`)**: freeze dates and fast-forward debounces, polling intervals, session timeouts, or OTP resend timers deterministically (`await page.clock.install({ time: new Date('2026-03-01T09:00:00Z') })`, `await page.clock.fastForward('00:30')`) instead of sleeping with `waitForTimeout`.
 - **Semantic ARIA snapshots**: use `await expect(locator).toMatchAriaSnapshot(...)` (inline YAML or `.aria.yml` file) to lock down roles, accessible names, heading levels, and checked/expanded states without breaking on benign CSS refactors.
 - **Visual snapshots**: stabilize `toHaveScreenshot()` by disabling/reducing animations (`animations: 'disabled'`), waiting for `document.fonts.ready`, and masking dynamic timestamps or charts (`mask: [page.locator('[data-dynamic]')]`).
 - **Component testing on Playwright 1.63+**: `@playwright/experimental-ct-*` packages were removed in Playwright 1.63; mount component stories through the app's dev server (or Storybook) using standard `@playwright/test` fixtures, or use Vitest Browser Mode.
@@ -110,12 +124,28 @@ import AxeBuilder from '@axe-core/playwright';
 export const test = base.extend<{ makeAxeBuilder: () => AxeBuilder }>({
   makeAxeBuilder: async ({ page }, use) => {
     await use(() =>
-      new AxeBuilder({ page }).withTags(['wcag2a', 'wcag2aa', 'wcag21a', 'wcag21aa']),
+      new AxeBuilder({ page }).withTags(['wcag2a', 'wcag2aa', 'wcag21a', 'wcag21aa', 'wcag22aa']),
     );
   },
 });
 
 export { expect };
+```
+
+```ts
+// Playwright Clock + ARIA snapshot example
+test('OTP resend unlocks after 30 seconds and preserves accessible structure', async ({ page }) => {
+  await page.clock.install({ time: new Date('2026-03-01T09:00:00Z') });
+  await page.goto('/verify');
+  await expect(page.getByRole('button', { name: /resend code/i })).toBeDisabled();
+  await page.clock.fastForward('00:30');
+  await expect(page.getByRole('form', { name: /verify/i })).toMatchAriaSnapshot(`
+    - form "Verify email":
+      - textbox "Verification code"
+      - button "Resend code"
+      - button "Continue"
+  `);
+});
 ```
 
 ## Do/don't pairs
@@ -124,9 +154,10 @@ export { expect };
 |---|---|
 | Query interactive elements with `getByRole` + accessible `name` | Scatter `data-testid` on every button and input while leaving labels broken |
 | Use `const user = userEvent.setup()` for realistic interactions | Use `fireEvent.click` on disabled or hidden controls without noticing they are unreachable |
-| Run layout, focus-trap, and Shadow DOM tests in Vitest Browser Mode or Playwright | Assert visual layout or responsive breakpoints in `jsdom` and mark them `rendered` |
-| Mask timestamps and set `animations: 'disabled'` in visual snapshots | Approve brittle full-page screenshots that flake on every CI run |
-| Combine automated `axe-core` scans with keyboard/focus-order assertions | Treat a passing `jest-axe` or `AxeBuilder` run as complete WCAG proof |
+| Use MSW v2 (`http.get`, `HttpResponse.json`) and `page.clock` for deterministic async/timer tests | Monkey-patch `global.fetch` or sprinkle `waitForTimeout(5000)` in E2E suites |
+| Run layout, focus-trap, and Shadow DOM tests in Vitest Browser Mode / `@storybook/addon-vitest` / Playwright | Assert visual layout or responsive breakpoints in `jsdom` and mark them `rendered` |
+| Mask timestamps and set `animations: 'disabled'` in visual snapshots; lock structure with `toMatchAriaSnapshot` | Approve brittle full-page screenshots that flake on every CI run |
+| Combine `AxeBuilder` (`wcag22aa`) scans with keyboard/focus-order assertions | Treat a passing `jest-axe` or `AxeBuilder` run as complete WCAG proof |
 | Use `provider: playwright()` from `@vitest/browser-playwright` on Vitest 4+ | Copy legacy `provider: 'playwright'` string config or removed `@playwright/experimental-ct-*` on Playwright 1.63+ |
 
 ## Verification commands

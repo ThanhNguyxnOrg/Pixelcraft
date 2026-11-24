@@ -1,27 +1,72 @@
 # Observable Framework
 
-## Token mapping
+## Token mapping and config theming
 
-Keep generated DTCG values in version-controlled static assets/modules and map them once into CSS custom properties, shared JavaScript style objects, and chart scales. `observablehq.config.js`/`.ts` can define project-level structure such as `title` and `pages`; inspect the installed version before depending on newer theme/config keys. Prefer a project stylesheet and semantic custom properties over repeating hex values in Markdown/JS blocks:
+Configure built-in light/dark paired themes and custom stylesheets in `observablehq.config.js` (or `.ts`), then map semantic tokens once into CSS custom properties and shared JS chart scales:
+
+```js
+// observablehq.config.js
+export default {
+  title: "Operations Telemetry",
+  theme: ["air", "near-midnight"], // paired light/dark built-in themes
+  style: "custom-tokens.css",
+  pages: [
+    { name: "Overview", path: "/overview" },
+    { name: "Regional Breakdown", path: "/regions" },
+  ],
+};
+```
 
 ```css
+/* src/custom-tokens.css */
 :root {
   --pc-action: oklch(55% 0.15 250);
   --pc-surface-raised: oklch(98% 0.01 250);
 }
 ```
 
-## Layout and responsive idioms
+## Polyglot data loaders, DuckDB-Wasm, `view(Inputs.*)`, and `resize()`
 
-Framework pages are Markdown/HTML documents with executable JavaScript blocks. Use normal document flow first, then CSS grid/flex containers for dense dashboards. Design cards/panels from the data-reading task rather than copying a generic SaaS grid. Test narrow embeds, wide monitors, print/export where relevant, and sidebar/table-of-contents behavior configured for the project.
+Observable Framework executes **polyglot data loaders** at build/dev time (`src/data/orders.parquet.py`, `src/data/metrics.json.sh`, `src/data/forecast.csv.R`) and streams their stdout to static files. Warehouse credentials stay server/CI-side, never in the browser bundle.
 
-## Typography/custom fonts
+In Markdown pages, pair **`FileAttachment(...)`** (always with a static string literal path) with **`DuckDBClient.of(...)`**, reactive **`view(Inputs.*)`**, and **`resize((width) => Plot.plot(...))`** so charts fit any container width without horizontal overflow:
 
-Load fonts deliberately through static assets/stylesheet with fallback metrics and licensing checked. Data labels often need tabular numerals; long SQL/category labels need wrapping/truncation rules. Do not let chart type become the only readable text on the page.
+````markdown
+```js
+const db = await DuckDBClient.of({
+  orders: FileAttachment("data/orders.parquet"),
+});
+const region = view(Inputs.select(["ALL", "EMEA", "AMER", "APAC"], { label: "Region" }));
+```
 
-## Motion/reduced motion
+```js
+const rows = await db.sql`
+  SELECT order_date, SUM(revenue) AS revenue
+  FROM orders
+  WHERE ${region === "ALL" ? sql`TRUE` : sql`region = ${region}`}
+  GROUP BY order_date
+  ORDER BY order_date
+`;
+```
 
-Observable Framework output is browser UI, so CSS/JS motion must honor `prefers-reduced-motion`. Keep transitions purposeful and do not animate every chart update:
+```js
+display(
+  rows.length === 0
+    ? html`<p class="empty-state">No orders found for ${region}.</p>`
+    : resize((width) =>
+        Plot.plot({
+          width,
+          y: { grid: true, label: "Revenue (USD)" },
+          marks: [Plot.lineY(rows, { x: "order_date", y: "revenue", tip: true })],
+        })
+      )
+);
+```
+````
+
+## Layout, typography, motion, and accessibility
+
+Use Framework's built-in `.grid` / `.grid-cols-2` / `.card` utilities or normal document flow with CSS Grid; design panels around the analytical reading path rather than uniform card mosaics. Set `font-variant-numeric: tabular-nums` on KPIs and tables. Honor `prefers-reduced-motion` for custom transitions:
 
 ```css
 @media (prefers-reduced-motion: reduce) {
@@ -29,39 +74,32 @@ Observable Framework output is browser UI, so CSS/JS motion must honor `prefers-
 }
 ```
 
-## Accessibility specifics
+Use semantic Markdown headings and `Inputs.table` / prose summaries alongside every SVG/Canvas plot so keyboard and screen-reader users are not locked out of critical numbers.
 
-Use real headings, labels, buttons, links, tables, and form controls in Markdown/HTML. Treat canvas/SVG charts as inaccessible until given text summaries, table alternatives, keyboard/focus behavior where interactive, and non-color encoding. Verify Plot/custom SVG aria behavior rather than assuming it.
+## States and forms idiom
 
-## States idiom
-
-Data loaders create static snapshots at build time; surface freshness, build failure, empty result sets, runtime fetch failure, permissions, and stale-cache state explicitly. `FileAttachment("name.json")` must use a static literal path and is only a handle until `.json()`, `.csv()`, or another contents method is invoked. Runtime `fetch`/WebSocket behavior needs loading/offline/error states separate from build-time loader behavior.
-
-## Forms idiom
-
-Use labeled native inputs/selects and preserve user selections across navigation where expected. Validate numeric/date/query parameters before use, show active filters in text, and never let malformed input become unsafe SQL or a misleading chart.
+Surface build-time snapshot timestamps visibly (emit a `generated_at` field from the loader). Distinguish build-time loader errors, empty filtered query results, and runtime `fetch`/WebSocket failures cleanly. Validate any client-side SQL parameters via parameterized `db.sql` templates—never string-concatenate untrusted input into SQL.
 
 ## Do/don't pairs
 
 | Do | Don't |
 |---|---|
-| `FileAttachment("quakes.json").json()` | dynamically constructing a `FileAttachment` path that static analysis cannot resolve |
-| polyglot data loaders for reproducible snapshots | giving every browser direct warehouse credentials |
-| visible data timestamp/build provenance | silently stale dashboard numbers |
-| text summary plus accessible table | a color-only canvas chart as the sole evidence |
-| semantic CSS custom properties | hex literals scattered through Markdown JS blocks |
+| `FileAttachment("data/orders.parquet")` static literal path | Dynamically built `FileAttachment(path)` strings that break static bundling |
+| `resize((width) => Plot.plot({ width, ... }))` | Fixed `width: 960` charts overflowing narrow viewports |
+| Polyglot loaders (`.parquet.py`, `.json.sh`) keeping secrets in CI | Shipping warehouse API keys into client-side `fetch()` calls |
+| `DuckDBClient.of(...)` with Parquet extracts for multi-MB tables | Shipping giant uncompressed JSON blobs into the browser |
+| Paired `theme: ["air", "near-midnight"]` + semantic CSS vars | Hardcoding hex values inside every Markdown JS block |
 
 ## Known traps
 
-Static snapshot freshness, accidentally exposing secrets to client code, unstable custom selectors, oversized serialized data, chart accessibility gaps, notebook-vs-app mental model confusion, runtime/build data divergence, Markdown pages that look correct while loader output is empty.
+Dynamic `FileAttachment` paths failing build resolution, stale static snapshots without freshness timestamps, large CSV/JSON payloads instead of Parquet, secrets accidentally committed in client modules, fixed-width plots clipping on mobile, and missing empty-result checks.
 
 ## Verification commands
 
 ```sh
-cat observablehq.config.js 2>/dev/null || cat observablehq.config.ts
-cat package.json
+ls observablehq.config.*
 npm run build
 npm run dev
 ```
 
-Exact scripts vary by template; inspect `package.json`. Browser inspection of the built/preview page is rendered evidence; a successful build is only static evidence.
+`npm run build` executes data loaders and verifies static compilation (`static` evidence); inspect the served build across desktop/narrow widths, light/dark themes, and interactive `Inputs.*` filters in a real browser for `rendered` evidence.

@@ -1,59 +1,95 @@
-# Avalonia
+# Avalonia (11+)
 
-## Token mapping
+## Token mapping: `ThemeVariant` & `ControlTheme`
 
-Use resource dictionaries/styles/theme variants:
+Map DTCG semantic tokens into `ResourceDictionary.ThemeDictionaries` keyed by **`ThemeVariant`** (`Default`, `Light`, `Dark`, and custom high-contrast variants) and reference them via `{DynamicResource ...}` so live theme switching updates without restarting windows.
+
+In Avalonia 11+, style templated controls with **`ControlTheme`** (explicitly scoped, predictable overrides) rather than cascading global `<Style Selector="...">` hacks, and enforce **`x:CompileBindings="True"`** + `x:DataType` across views so binding typos fail at compile time:
 
 ```xml
-<SolidColorBrush x:Key="SemanticActionBrush" Color="#FF0074CA" />
+<ResourceDictionary xmlns="https://github.com/avaloniaui"
+                    xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml">
+  <ResourceDictionary.ThemeDictionaries>
+    <ResourceDictionary x:Key="Light">
+      <SolidColorBrush x:Key="PcActionBrush" Color="#0074CA" />
+    </ResourceDictionary>
+    <ResourceDictionary x:Key="Dark">
+      <SolidColorBrush x:Key="PcActionBrush" Color="#5BB2FF" />
+    </ResourceDictionary>
+  </ResourceDictionary.ThemeDictionaries>
+
+  <ControlTheme x:Key="PrimaryButtonTheme" TargetType="Button" BasedOn="{StaticResource {x:Type Button}}">
+    <Setter Property="Background" Value="{DynamicResource PcActionBrush}" />
+    <Setter Property="MinHeight" Value="36" />
+  </ControlTheme>
+</ResourceDictionary>
 ```
 
-Map generated values once into semantic resources and use `DynamicResource` where theme switching matters. Do not scatter raw color/dimension constants in views/viewmodels.
+## Layout, `TopLevel` services, & custom window chrome
 
-## Layout and responsive idioms
+- Use `Grid`, `DockPanel`, `StackPanel`, `SplitView`, `ItemsRepeater` / `ListBox` virtualization, minimum window dimensions (`MinWidth`, `MinHeight`), and cross-platform DPI awareness.
+- **Platform services via `TopLevel`**: never instantiate deprecated `OpenFileDialog` / `SaveFileDialog`. Resolve **`TopLevel.GetTopLevel(this)`** to access **`StorageProvider`** (native file/folder pickers + bookmarks), **`Clipboard`**, **`Launcher`**, and **`InsetsManager`**:
 
-Use panels/grid/dock/layout-aware controls, minimum window dimensions, resizing, DPI scaling, platform window chrome choices, keyboard focus manager behavior, and cross-platform OS differences deliberately. Desktop, mobile-like, and embedded targets should not share one rigid layout.
+```csharp
+var topLevel = TopLevel.GetTopLevel(this);
+if (topLevel?.StorageProvider is { CanOpen: true } storage)
+{
+    var files = await storage.OpenFilePickerAsync(new FilePickerOpenOptions
+    {
+        Title = "Import invoices",
+        AllowMultiple = false,
+    });
+}
+```
 
-## Typography/custom fonts
+- **Custom titlebars**: when extending content into chrome with **`ExtendClientAreaToDecorationsHint="True"`**, configure `ExtendClientAreaChromeHints` intentionally and bind header padding to **`WindowDecorationMargin`** / `OffScreenMargin` so macOS traffic lights and Windows caption buttons never overlap interactive controls, and preserve drag + double-click maximize behavior.
 
-Register font assets/families correctly and use semantic text styles. Validate fallback/glyph coverage, scaling/DPI behavior, localization expansion, and truncation/rendering differences across platforms.
+## Typography, motion, accessibility, states, & forms
 
-## Motion/reduced motion
+Register bundled fonts via `FontManagerOptions` / `avares://` font URIs with explicit fallbacks and verify glyph coverage and DPI rasterization on Windows, macOS, and Linux separately.
 
-Use transitions/animations purposefully and expose reduced-motion behavior based on platform capability or explicit app setting. Keep animation interruptible and never block input or obscure state transitions.
+Keep Avalonia `Transitions` and keyframe animations concise and interruptible; expose an explicit reduced-motion setting where host OS preference propagation is uncertain.
 
-## Accessibility specifics
+Set `AutomationProperties.Name`, `AutomationProperties.LabeledBy`, `AutomationProperties.HelpText`, keyboard `HotKey` / `KeyBindings`, and visible `:focus-visible` styles on real interactive controls. Verify Windows UIA (Narrator), macOS VoiceOver, and Linux AT-SPI separately—shared Skia rendering does not guarantee identical screen-reader behavior across OSes.
 
-Use automation properties/accessibility metadata, focus/keyboard navigation, visible focus, real controls, high-contrast/system theme awareness, and platform screen-reader verification. Cross-platform rendering does not guarantee equal accessibility tree quality across Windows/macOS/Linux.
+Drive state via `CommunityToolkit.Mvvm` or `ReactiveUI` with explicit async cancellation and dirty-close interception (`Window.Closing`). In forms, use `DataValidationErrors` + inline recovery text, preserve input across validation errors, and test IME/paste on all target OSes.
 
-## States idiom
+## Headless UI verification (`Avalonia.Headless`)
 
-Use MVVM async state explicitly: loading/error/empty/offline/permission/dirty/concurrency. Handle window lifecycle/close, crash/update/restart, file lock/permission, multi-window state, cancellation/progress, and input preservation. Avoid async void hidden failure.
+Use **`Avalonia.Headless`** (`Avalonia.Headless.XUnit` or `Avalonia.Headless.NUnit`) to run fast deterministic UI tests driving real layout passes, `KeyPressQwerty`, `MouseDown`, focus traversal, and `CaptureRenderedFrame()` without needing an OS display server:
 
-## Forms idiom
-
-Use labeled inputs, validation/error presentation, focus order, paste/IME behavior, keyboard shortcuts/access keys where platform-appropriate, validation timing, and preservation after failed submit. Do not signal errors only through red borders.
+```csharp
+[AvaloniaFact]
+public void Escape_Returns_Focus_From_Inspector()
+{
+    var window = new MainWindow { DataContext = new MainViewModel() };
+    window.Show();
+    window.KeyPressQwerty(PhysicalKey.F6, RawInputModifiers.None);
+    window.KeyPressQwerty(PhysicalKey.Escape, RawInputModifiers.None);
+    Assert.True(window.CanvasControl.IsFocused);
+}
+```
 
 ## Do/don't pairs
 
 | Do | Don't |
 |---|---|
-| semantic resources + `DynamicResource` for themed values | inline repeated colors/brushes across views |
-| explicit async command state/cancellation | fire-and-forget async void operations |
-| platform/runtime keyboard and focus verification | assuming cross-platform rendering means identical interaction |
-| real controls/automation metadata | custom-drawn fake controls without accessibility exposure |
-| resize/high-DPI/multiplatform testing | validating only on developer OS/monitor |
+| Enable `x:CompileBindings="True"` + `x:DataType` and `ControlTheme` + `ThemeVariant` | Rely on untyped runtime bindings and fragile global style selectors |
+| Use `TopLevel.GetTopLevel(this)?.StorageProvider` & `Clipboard` | Call deprecated `OpenFileDialog` or OS-specific Win32/NSOpenPanel hacks |
+| Bind `ExtendClientAreaToDecorationsHint` chrome to `WindowDecorationMargin` | Overlap macOS traffic lights or break Windows maximize/drag regions |
+| Write `Avalonia.Headless` keyboard/focus/layout tests alongside OS runs | Rely solely on `dotnet build` or visual glances on one OS |
+| Guard `Window.Closing` for unsaved documents and cancel async commands | Use `async void` handlers or discard edits silently on close |
 
 ## Known traps
 
-Binding errors hidden in logs, style selector cascade surprises, platform rendering/accessibility differences, async lifecycle leaks, window chrome inconsistency, DPI/font fallback variation, resource lookup failure, focus management after dialogs/popups.
+Silent runtime binding failures when `x:CompileBindings` is omitted, `{StaticResource}` failing to update when `RequestedThemeVariant` switches at runtime, `TopLevel.GetTopLevel(this)` returning `null` before `OnAttachedToVisualTree`, broken window drag/caption buttons under `ExtendClientAreaToDecorationsHint`, OS-divergent screen-reader maturity across Windows/macOS/Linux, missing font fallbacks on minimal Linux distros.
 
 ## Verification commands
 
 ```sh
 dotnet build
-dotnet test
-dotnet run --project <AppProject> 2>/dev/null || true
+dotnet test   # includes Avalonia.Headless UI tests when configured
+dotnet run --project <AppProject>
 ```
 
-Use actual Windows/macOS/Linux runs where claimed, screen reader/keyboard tests, resize/DPI/window-state matrices, high contrast/dark mode, and close/crash/update flows as evidence.
+`dotnet build` is `static` evidence; `Avalonia.Headless` tests verify layout/focus/input deterministically (`static`/headless). Run native desktop binaries on each shipped OS (Windows/macOS/Linux) for screen-reader, HiDPI, dark/high-contrast, custom-chrome, and multi-monitor restore checks (`rendered`; label untested OSes `not-checked`).

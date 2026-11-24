@@ -708,7 +708,7 @@ export const TOOLS: Tool[] = [
     id: "tokens",
     file: "export-tokens.mjs",
     blurb:
-      "Exports DTCG 2025.10 design tokens to eight targets with no dependencies.",
+      "Exports DTCG 2025.10 design tokens to thirteen targets with no dependencies.",
     command: "node export-tokens.mjs tokens.json --format all",
   },
 ];
@@ -718,6 +718,7 @@ export const SCAN_RULES = [
   "zoom-disabled",
   "paste-blocked",
   "placeholder-as-label",
+  "positive-tabindex",
   "missing-reduced-motion",
   "default-font-only",
   "transition-all",
@@ -741,12 +742,17 @@ export const SHOOT_BREAKPOINTS = [
 export const TOKEN_FORMATS = [
   "css",
   "tailwind",
+  "scss",
+  "ts",
   "swift",
   "kotlin",
+  "android-xml",
   "dart",
   "python",
   "qt",
   "textual",
+  "xaml",
+  "rust",
 ];
 
 export const GATE_EXITS: { code: number; label: string }[] = [

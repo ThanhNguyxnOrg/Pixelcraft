@@ -1,96 +1,79 @@
 # Slack Block Kit and Discord
 
-Exact limits change. Use these as implementation constraints only after checking current official platform documentation.
+Exact limits and component capabilities evolve. Verify against current official platform docs before shipping schema changes.
 
 ## Slack Block Kit
 
-Documented core limits:
+### Core payload limits and timeouts
 
-| Constraint | Current documented limit |
-|---|---:|
-| blocks in one message | 50 |
-| blocks in a modal or Home tab | 100 |
-| `plain_text`/`mrkdwn` text object | 1–3000 characters |
-| section `fields` | up to 10 text objects |
-| text in each section field | up to 2000 characters |
-| `block_id` | up to 255 characters and should be unique per message iteration |
+| Constraint | Documented limit / rule |
+|---|---|
+| Blocks in one message | 50 |
+| Blocks in a Modal or Home tab | 100 |
+| `plain_text` / `mrkdwn` text object | 1–3,000 characters |
+| `header` block `plain_text` | up to 150 characters |
+| `button` label text | **up to 75 characters** |
+| Section `fields` | up to 10 objects (2,000 chars each) |
+| `block_id` / `action_id` | up to 255 characters; unique per message/view |
+| **Interaction `ack()` timeout** | **Must return HTTP 200 within 3 seconds** (post slow work asynchronously via `response_url` or Web API) |
 
-### Surface model
+### Modern blocks (`rich_text`, native `table`, `header`) and AI Assistant surfaces
 
-- **Messages** are persistent or ephemeral channel/DM payloads composed from `blocks`.
-- **Modals** are focused task surfaces opened through interactions and represented as views. Use them for bounded multi-field input; do not recreate an entire app in a modal.
-- **Home tabs** are persistent per-user app surfaces. Treat them as application UI with loading/empty/error states rather than as a giant message.
-- **Workflows/canvas/lists** have different capabilities; do not assume every block/element is legal on every surface. Check the block reference's surface compatibility.
+- Prefer **`rich_text`** blocks for structured nested lists, quotes, inline code, and styled text—avoiding `mrkdwn` escaping edge cases.
+- Use Slack's native **`table` block** for compact tabular summaries instead of broken monospace ASCII tables.
+- Use `header` (`plain_text`, <= 150 chars) for scannable card titles paired with concise `context` metadata.
+- **Slack AI Assistants & Agents surfaces**: When building an app enabled as a Slack AI Assistant (split-pane DM/thread experience), use:
+  - `assistant.threads.setTitle` (auto-name the thread from the user's question),
+  - `assistant.threads.setStatus` (honest progress copy like `"Searching billing records…"`),
+  - `assistant.threads.setSuggestedPrompts` (up to 4 concrete starter prompts),
+  - native streaming via **`chat.startStream`**, **`chat.appendStream`**, and **`chat.stopStream`** instead of spamming `chat.update` rate limits, and
+  - **`feedback_buttons`** context/action elements for thumbs-up/down evaluation hooks.
 
-### mrkdwn
+### Surface model and `mrkdwn` safety
 
-Slack `mrkdwn` is not standard Markdown and not HTML. Key consequences:
-
-- use Slack syntax for links/mentions/date formatting rather than pasting HTML or CommonMark assumptions;
-- escape `&`, `<`, and `>` when interpolating untrusted plain text;
-- `plain_text` and `mrkdwn` differ in emoji/verbatim/linkification behavior;
-- never concatenate user input directly into control markup without escaping;
-- test multiline text because Slack line wrapping/list indentation is platform-controlled.
-
-### Slack UX rules
-
-- use section/context/actions/divider/input blocks for semantic structure rather than ASCII tables;
-- put the primary action in a native button/select; links are secondary;
-- label buttons by outcome (`Approve request`, not `OK`);
-- use stable `action_id`/`block_id` values for interaction routing, but do not put secrets in them;
-- acknowledge interaction quickly and update/respond asynchronously where needed;
-- design already-handled/expired interaction states because messages can outlive the action validity or backend state.
+- **Messages**: Persistent or ephemeral channel/DM payloads. Always include a concise top-level `text` field for push notifications, screen readers, and degraded clients.
+- **Modals**: Focused bounded multi-field views (`views.open` requires a fresh `trigger_id` valid for 3 seconds). Never rebuild a full SaaS app inside chained modals.
+- **Home tabs**: Persistent per-user workspace (`views.publish`); design explicit loading, empty, and error states.
+- **`mrkdwn` escaping**: Slack `mrkdwn` is neither CommonMark nor HTML—escape `&`, `<`, and `>` on all untrusted user text before interpolating into `mrkdwn`, and never put secrets in `action_id`, `block_id`, or button `value`.
 
 ## Discord
 
-### Embeds and legacy messages
+### Legacy embeds vs Components V2
 
-Documented embed limits include:
+Documented legacy embed limits: title 256, description 4,096, 25 fields (name 256 / value 1,024), footer 2,048, author 256, combined text 6,000, max 10 embeds per message. Never split one logical response across 10 embeds.
 
-| Embed field | Limit |
-|---|---:|
-| title | 256 characters |
-| description | 4096 characters |
-| fields per embed | 25 |
-| field name | 256 characters |
-| field value | 1024 characters |
-| footer text | 2048 characters |
-| author name | 256 characters |
-| combined title/description/field/footer/author text | 6000 characters |
-| embeds per message | 10 |
+**Components V2** is opt-in per message via flag `IS_COMPONENTS_V2 = 1 << 15` (`32768`). Setting this flag is irreversible for that message and replaces `content`/`embeds`/`poll`/`stickers` with up to **40 total components**:
 
-Use embeds for structured display, not interactive control. Do not split one logical answer across ten embeds merely because the API allows it; attention cost matters more than payload capacity.
+- **Layout & display components**: `Container` (accent color, spoiler flag), `Section` (text + accessory), `Text Display`, `Media Gallery`, `Separator`, **`Thumbnail`** (type 11, Section accessory), and **`File`** (type 13, exposing uploaded `attachment://` files inline).
+- **Interactive components**: `Action Row` holds up to 5 buttons **or** 1 select menu (`String`, `User`, `Role`, `Channel`, `Mentionable`); every interactive component needs a unique per-message `custom_id`.
+- Use Components V2 when structured containers, inline files, and section thumbnails materially improve clarity; keep standard messages/embeds for simple bot responses needing legacy compatibility.
 
-### Components V2
+### Expanded Modals (2025–2026) and interaction timeouts
 
-Components V2 is opt-in per message with the `IS_COMPONENTS_V2` flag `1 << 15` (`32768`). Current official docs state that setting it is irreversible for that message and changes the payload model:
+- **Expanded Modal components**: Discord modals are no longer limited to bare `TextInput` fields—modern modals support **`Label`** wrappers with descriptions, **Select Menus** (String/User/Role/Channel/Mentionable), **File Upload**, and **Radio / Checkbox** inputs alongside short/paragraph text inputs. Verify exact field limits and component type numbers against current Discord API docs before shipping.
+- **Mandatory timing rules**:
+  - **3-second initial acknowledgement**: Respond to every slash command, button, select, or modal submit within **3 seconds** (or immediately defer with `DEFERRED_CHANNEL_MESSAGE_WITH_SOURCE` / `DEFERRED_UPDATE_MESSAGE`).
+  - **15-minute interaction token expiry**: Webhook follow-ups and edits using the interaction token expire after **15 minutes**—design explicit expiration/disabled states or transition to channel/bot-token updates for longer workflows.
+- Always enforce invoker ownership server-side and send private validation/permission errors as ephemeral replies (`EPHEMERAL = 1 << 6`).
 
-- `content` and `embeds` no longer work;
-- attachments must be exposed through components;
-- `poll` and `stickers` are disabled;
-- messages allow up to 40 total components.
+### Discord Embedded App SDK (Activities)
 
-Core layout rules:
+When a rich interactive experience (multiplayer canvas, collaborative board, game, complex configurator) exceeds message components, launch an **Activity** inside Discord's iframe sandbox using **`@discord/embedded-app-sdk`**:
 
-- an Action Row can contain up to 5 contextually grouped buttons **or** one select component;
-- Text Display, Media Gallery, Section, Separator, and Container compose static structure;
-- interactive components need unique per-message `custom_id` values;
-- Text Input is modal-only. Modal examples document `max_length` up to 4000 for paragraph input, but validate exact field-level constraints in the current reference before depending on them.
+- Initialize `new DiscordSDK(clientId)`, await `discordSdk.ready()`, exchange the OAuth2 `code` on your backend server (never expose `client_secret` in the iframe), and call `discordSdk.commands.authenticate({ access_token })`.
+- Route third-party external assets/APIs through Discord's URL proxy (`patchUrlMappings`) so CSP does not silently block fonts, images, or APIs.
+- Design for variable embedded sizes (narrow PiP / voice tile, desktop panel, mobile portrait) and respect Discord channel participant presence honestly.
 
-Components V2 is not automatically “better.” Use it when layout control/content structure justifies losing content/embed compatibility. Legacy components remain appropriate for simple bot actions.
+## Do/don't pairs
 
-### Discord UX rules
+| Do | Don't |
+|---|---|
+| Ack Slack & Discord interactions within 3 s and defer slow work | Wait on an LLM or DB call before sending HTTP 200 / defer |
+| Stream Slack AI Assistant replies with `chat.startStream`/`appendStream`/`stopStream` | Hammer `chat.update` on every token until rate-limited |
+| Use Slack native `table` and `rich_text` blocks + top-level fallback `text` | Render monospace ASCII tables that shatter on mobile |
+| Use Discord Components V2 `Section` + `Thumbnail` / `File` intentionally | Enable `IS_COMPONENTS_V2` and still pass ignored `content` / `embeds` |
+| Expire or disable Discord buttons after the 15-min token / task window | Leave dead buttons returning `"This interaction failed"` |
 
-- use ephemeral interaction responses for private validation/errors when the surface supports them;
-- defer/update deliberately for slow work; communicate progress without fake certainty;
-- use buttons for a small number of mutually visible actions and selects for larger bounded choices;
-- use modals only for structured input that cannot be represented as a select/button;
-- handle component ownership: decide whether any user or only the invoker can act, enforce server-side, and explain unauthorized interaction ephemerally;
-- expire or disable stale actions by editing the message where appropriate.
+## Verification
 
-## Shared verification
-
-- validate generated JSON schemas client-side before send where possible;
-- count Unicode characters/bytes according to the platform definition, not JavaScript string assumptions alone;
-- inspect desktop/mobile compactness, dark/light themes, long usernames/localized strings, screen-reader output where accessible, and permission-denied interactions;
-- keep a plain-text summary or fallback path for clients/automation that cannot render the rich surface.
+Validate Block Kit / Discord JSON payloads before send, count UTF-8 characters accurately (especially localized labels approaching Slack's 75-char button limit), test 3 s timeout deferral and 15-minute expiry paths, and inspect desktop, mobile, light/dark themes, and fallback notifications (`rendered` where tested in real clients; `static` for JSON schema tests).

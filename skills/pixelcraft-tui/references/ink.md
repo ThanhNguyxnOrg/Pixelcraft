@@ -1,60 +1,110 @@
-# Ink (React for CLI)
+# Ink (React for CLI, v5 / v6)
+
+Ink 5/6 runs **React 19** + **Yoga 3** Flexbox in terminal cells. Treat Ink as a keyboard-driven terminal surface—not a browser DOM running inside Node/Bun.
 
 ## Token mapping
 
-Define semantic constants in a theme module/context and map them to Ink color props/style behavior:
+Centralize semantic colors, borders, and spacing in a typed theme module or `@inkjs/ui` `ThemeProvider` / `extendTheme` so components reference semantic roles (`action`, `danger`, `muted`) rather than scattering raw hex/chalk strings:
 
 ```tsx
-export const theme = { action: '#0074ca', error: 'red' };
+export const pcTheme = {
+  action: 'cyan',
+  success: 'green',
+  error: 'red',
+  muted: 'gray',
+  focusBorder: 'blue',
+} as const;
 ```
 
-Do not scatter chalk-style color literals through components. Terminal themes/capabilities vary, so semantic names must degrade gracefully.
+Prefer ANSI semantic palette names (`cyan`, `red`, `green`, `yellow`) or test graceful degradation under `NO_COLOR=1` and 16-color terminals—never assume truecolor support.
 
-## Layout and responsive idioms
+## Core Ink 5/6 primitives: `<Static>`, `useInput`, `useFocus`, & `@inkjs/ui`
 
-Ink uses Yoga-like flexbox in terminal cells. Use flex direction/width/margin/padding deliberately, measure terminal columns/rows, define truncation/wrapping/minimum size behavior, and avoid browser layout assumptions. Static vs interactive output should be separated intentionally.
+- **`<Static items={completedLogs}>`**: render completed log lines, build steps, or historical entries once above the dynamic interactive footer so Ink appends cleanly to terminal scrollback without flickering or redrawing thousands of past lines.
+- **`useInput((input, key) => ..., { isActive })`**: gate keyboard listeners with `isActive` whenever a modal, confirmation prompt, or nested pane opens so background views never steal `Enter`, `Escape`, or arrow keys.
+- **`useFocus` & `useFocusManager`**: wire `Tab` / `Shift+Tab` focus traversal across panes and show an unmistakable focus indicator (border + text marker `>`, never color alone).
+- **`@inkjs/ui`**: prefer official accessible-baseline Ink widgets (`Select`, `MultiSelect`, `ConfirmInput`, `TextInput`, `Spinner`, `ProgressBar`, `StatusMessage`, `Badge`, `ThemeProvider`) before hand-rolling raw keystroke handlers.
 
-## Typography/custom fonts
+```tsx
+import React, { useState } from 'react';
+import { Box, Static, Text, useFocus, useInput } from 'ink';
+import { StatusMessage } from '@inkjs/ui';
 
-Terminals control fonts. Use color/bold/dim/underline/inverse and spacing. Do not assume emoji/Unicode width consistency. Use plaintext fallbacks for symbols.
+type LogEntry = { id: string; text: string };
 
-## Motion/reduced motion
+export function DeployView({ logs, onCancel }: { logs: LogEntry[]; onCancel: () => void }) {
+  const { isFocused } = useFocus({ autoFocus: true });
+  const [confirming, setConfirming] = useState(false);
 
-Use spinners/progress truthfully and avoid rapid render loops. Offer noninteractive/quiet mode in CI/piped contexts. Reduced-motion support is terminal-limited; avoid flashing/continuous animation by default.
+  useInput(
+    (input, key) => {
+      if (key.escape || input === 'q') setConfirming(true);
+      if (confirming && input === 'y') onCancel();
+      if (confirming && input === 'n') setConfirming(false);
+    },
+    { isActive: isFocused },
+  );
 
-## Accessibility specifics
+  return (
+    <Box flexDirection="column">
+      <Static items={logs}>{(entry) => <Text key={entry.id}>{entry.text}</Text>}</Static>
+      <Box borderStyle="round" borderColor={isFocused ? 'cyan' : 'gray'} paddingX={1}>
+        <Text>{isFocused ? '> ' : '  '}</Text>
+        {confirming ? (
+          <StatusMessage variant="warning">Abort deploy? [y/n]</StatusMessage>
+        ) : (
+          <Text>Press q or Esc to abort</Text>
+        )}
+      </Box>
+    </Box>
+  );
+}
+```
 
-Keyboard input handling/focus semantics are application responsibility. Visible selection/focus, logical key order, escape/cancel, no color-only state, plaintext alternatives, stdout/stderr separation, and screen-reader-friendly linear output matter. Mouse support cannot be assumed.
+## Layout, typography, motion, accessibility, & states idioms
 
-## States idiom
+- Query `useStdout()` (`stdout.columns`, `stdout.rows`) and subscribe to `resize` events to adapt layouts at `80×24` minimum; set `wrap="truncate-end"` intentionally on narrow labels so single rows do not blow up vertical cell height.
+- Separate interactive TTY runs from CI/piped usage (`process.stdout.isTTY`, `CI=1`, `--json` / `--no-interactive`): when stdout is piped or non-interactive, skip full-screen Ink redraws and emit clean line-oriented or JSON output.
+- Keep `Spinner` / `ProgressBar` updates truthful and quiet in CI; always clean up timers, child processes, and `AbortController` requests on unmount or `SIGINT` (`Ctrl+C`), and call `exit()` cleanly via `useApp()`.
+- In multi-step forms, support back/cancel semantics, paste support, visible cursor/selection, validation copy on submit, and non-interactive CLI flags for every prompted field.
 
-Use explicit React state/reducer state machines for loading/error/empty/offline/permission/optimistic/cancelled states. Async effects need cancellation/cleanup. Ctrl+C/EOF/interrupt behavior must be designed. Preserve input across step navigation/resize/render.
+## Automated frame & input testing (`ink-testing-library`)
 
-## Forms idiom
+Drive deterministic component rendering and keystroke sequences with **`ink-testing-library`**:
 
-Use text input components/hooks with labels/instructions, validation timing, paste behavior, cursor visibility, key conflict awareness, error copy, and input preservation. Multi-step CLI forms need back/cancel semantics and noninteractive equivalents.
+```tsx
+import { render } from 'ink-testing-library';
+import { DeployView } from './DeployView.js';
+
+const { lastFrame, stdin } = render(<DeployView logs={[]} onCancel={() => {}} />);
+stdin.write('q');
+// Assert frame contains "[y/n]" prompt text and focus marker ">"
+```
 
 ## Do/don't pairs
 
 | Do | Don't |
 |---|---|
-| central semantic theme constants | hard-coded color props in every component |
-| visible selected/focused row style plus text marker | color-only invisible focus |
-| cleanup async effect/cancel operation | state update after unmount/interrupt |
-| explicit noninteractive flags for automation | requiring full-screen input inside CI |
-| width-aware truncation/wrapping | overwriting terminal output unpredictably |
+| Render completed log history inside `<Static>` above live status | Re-render a growing 500-line array inside the dynamic `<Box>` every tick |
+| Gate `useInput(..., { isActive })` by focus/modal state | Let hidden background components intercept `Enter`/`Escape` keys |
+| Use `useFocus`/`useFocusManager` + visible text marker (`>`) + `@inkjs/ui` | Build color-only focus states or hand-rolled raw `stdin` hacks |
+| Detect `!process.stdout.isTTY` / `CI=1` and emit plain/JSON output | Hang CI pipelines waiting on interactive `<Select>` or `useInput` |
+| Assert frame text & key handling with `ink-testing-library` | Skip tests and eyeball only one wide terminal window |
 
 ## Known traps
 
-React effect lifecycle leaks, render-loop flicker, input key conflicts, Unicode width mismatch, terminal resize behavior, hidden state loss on rerender, stdout/stderr misuse, assuming TTY in automation, ANSI/INK version behavior differences.
+Rendering unbounded lists outside `<Static>` causing severe terminal flicker and broken scrollback, forgetting `isActive` on `useInput` causing double key-handling in modals, React effect leaks after `Ctrl+C` keeping the Node event loop alive, emoji/CJK double-width cell misalignment in Yoga boxes, writing ANSI Ink output into piped `stdout` scripts.
 
 ## Verification commands
 
 ```sh
 npm run lint
 npm run test -- --run
+npm run build
 node dist/cli.js --help
-CI=1 node dist/cli.js 2>/dev/null || true
+# Verify CI / non-TTY / NO_COLOR behavior explicitly (must exit cleanly):
+NO_COLOR=1 COLUMNS=80 node dist/cli.js --help
+CI=1 node dist/cli.js --help | cat
 ```
 
-Use actual terminal runs at multiple widths, keyboard-driven integration tests, ink-testing-library-style tests where configured, piped/non-TTY checks, NO_COLOR/TERM matrices, and interrupt-path testing.
+Lint, build, and `ink-testing-library` assertions provide `static` / virtual-frame evidence. Run the built CLI in real terminals at `80×24`, `NO_COLOR=1`, piped stdout, and `Ctrl+C` interrupt paths for `rendered` evidence; label untested terminal emulators `not-checked`.

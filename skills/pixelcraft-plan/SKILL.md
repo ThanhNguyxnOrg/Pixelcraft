@@ -1,6 +1,6 @@
 ---
 name: pixelcraft-plan
-description: Plans greenfield and brownfield UI work, selects platforms and technology stacks, and produces the .pixelcraft/plan.md consumed by later Pixelcraft skills. Use when starting a product or feature, choosing a stack, mapping an existing codebase, or resolving material scope and architecture decisions. Run a structured discovery interview only when the user's intent or important decisions remain unresolved; skip it for fully specified or narrowly scoped work.
+description: Plans greenfield and brownfield UI work, selects platforms and technology stacks, checks dependency freshness and lockfile reproducibility, records architecture decisions (ADR), and produces the .pixelcraft/plan.md consumed by later Pixelcraft skills. Use when starting a product or feature, choosing a stack, mapping an existing brownfield codebase, verifying library versions, or resolving material scope and architecture decisions. Run a structured discovery interview only when the user's intent or important decisions remain unresolved; skip it for fully specified or narrowly scoped work.
 license: MIT
 metadata:
   version: 0.1.0
@@ -29,7 +29,7 @@ Record the task route separately: new project, extend existing product, edit/fix
 
 1. **Scope the read.** Enumerate repository roots, packages/apps, generated/vendor directories, and ownership boundaries. Do not skim only `package.json`.
 2. **Inventory systematically.** Use [references/repo-discovery.md](references/repo-discovery.md): languages/frameworks, entry points, routing/screens, design tokens/theme/components, styling approach, state management, i18n, tests/visual tooling, CI, packaging, runtime constraints, accessibility evidence, and legal/privacy constraints.
-3. **Distinguish fact from inference.** Cite key files in the repo map. Classify material facts as user-provided, repo-observed, artifact-observed, analytics/research, assumption, or unknown. Mark unread/generated/ignored areas explicitly.
+3. **Distinguish fact from inference.** Cite key files in the repo map. Classify material facts as user-provided, repo-observed, artifact-observed, research/analytics, assumption, or unknown. Mark unread/generated/ignored areas explicitly.
 4. **Intake design inputs.** Use [references/design-input.md](references/design-input.md) for Figma, screenshots, mockups, existing UI, prototypes, and reference imagery: classify specification versus inspiration, record provenance/version/breakpoints/constraints, assess completeness, and decide whether `pixelcraft-handoff` is needed.
 5. **Map existing authority.** Decide whether tokens/components/conventions are authoritative, partial, inconsistent, or absent. Existing project decisions outrank Pixelcraft taste.
 6. **Resolve only material open decisions.** After inspecting the repository and design inputs, read [references/discovery-interview.md](references/discovery-interview.md) when the requested outcome, scope, platform, architecture, or another high-impact choice remains unresolved. Ask only what the repository, artifacts, and current research cannot answer. Keep the existing stack unless a separate runtime or authorized migration is necessary.

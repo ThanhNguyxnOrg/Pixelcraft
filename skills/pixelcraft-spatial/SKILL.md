@@ -1,6 +1,6 @@
 ---
 name: pixelcraft-spatial
-description: Designs and verifies embodied spatial, XR, VR, and AR interfaces across visionOS, WebXR, Meta Quest Interaction SDK, and Unity XR Interaction Toolkit. Use for headset, room-scale, gaze/hand/controller input, locomotion, comfort, privacy, and spatial accessibility; ordinary browser-based 3D product scenes use pixelcraft-web. Use for windows/volumes/immersive spaces, RealityKit, ornaments, glass materials, hover effects, gaze-and-pinch input, hand/controller interaction, locomotion comfort, depth/layering, XR ergonomics, spatial text legibility, privacy, frame-rate budgets, and XR accessibility.
+description: Designs and verifies embodied spatial, XR, VR, and AR interfaces across visionOS 26, Android XR (Jetpack XR / Compose for XR), Meta Horizon OS / Meta Spatial SDK, WebXR (@react-three/xr, Wonderland Engine, Needle Engine), Unity XR Interaction Toolkit, and Unreal OpenXR. Use for headset, room-scale, windows/volumes/immersive spaces, RealityKit, SceneCore, ornaments/orbiters, gaze-and-pinch/hand/controller input, locomotion comfort, depth/layering, spatial text legibility, frame-rate budgets, privacy, and XR accessibility; ordinary browser 3D scenes use pixelcraft-web.
 license: MIT
 metadata:
   version: 0.1.0
@@ -16,9 +16,10 @@ Attach depth to a meaningful relationship such as an object with nearby annotati
 
 ## References
 
-- Read [references/platforms.md](references/platforms.md) for visionOS, WebXR, Three.js/React Three Fiber/A-Frame, Meta Quest Interaction SDK, and Unity XR Interaction Toolkit.
+- Read [references/platforms.md](references/platforms.md) for visionOS 2/26, Android XR (Jetpack Compose for XR / SceneCore), Meta Horizon OS / Meta Spatial SDK, WebXR (`@react-three/xr` v6, Wonderland Engine, Needle Engine, Babylon.js/PlayCanvas WebXR, WebXR Layers), Unity XR Interaction Toolkit, and Unreal OpenXR.
 - Read [references/comfort-accessibility.md](references/comfort-accessibility.md) for locomotion comfort, frame-rate discipline, ergonomic distances/fields of view, angular sizing, depth/layering, gaze/pinch privacy, text legibility, and XR accessibility.
-- Read [references/web-3d-engines.md](references/web-3d-engines.md) when selecting or implementing Web 3D/graphics engines beyond Three.js/R3F: `<model-viewer>`, Babylon.js (WebGPU/WebXR), PlayCanvas, Threlte (Svelte), TresJS (Vue), luma.gl, or regl.
+
+For ordinary browser 3D product scenes and graphics runtimes (`<model-viewer>`, Three.js/R3F, Babylon.js, PlayCanvas, Threlte, TresJS, luma.gl), use the `pixelcraft-web` skill.
 
 ## Required workflow
 

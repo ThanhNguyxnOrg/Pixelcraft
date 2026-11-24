@@ -51,11 +51,13 @@ ARIA/label boundary issues, focus delegation confusion, duplicate IDs across sha
 
 ## Verification commands
 
+Run the project's configured browser test runner (`web-test-runner` or Playwright) without suppressing failures:
+
 ```sh
 npm run test -- --run
 npm run build
+npx web-test-runner
 npx playwright test
-npx web-test-runner 2>/dev/null || true
 ```
 
-Test in real browsers because shadow DOM behavior and accessibility trees differ from shallow unit rendering.
+Test in real browsers (`rendered`) because shadow DOM behavior, `ElementInternals` form participation, and accessibility trees differ from shallow unit rendering.

@@ -1,0 +1,43 @@
+{
+  "schemaVersion": 1,
+  "id": "extensions-mv3-and-vscode",
+  "skill": "pixelcraft-extensions",
+  "title": "Isolate MV3 content-script Shadow DOM UI and secure VS Code webviews without deprecated toolkits",
+  "contextSnapshot": {
+    "surface": "Manifest V3 browser extension side panel + content-script overlay, and VS Code webview panel",
+    "platform": "Chrome/Firefox MV3 (WXT) and VS Code Extension API",
+    "mode": "Operate",
+    "states": ["host permission denied", "service worker suspend/resume", "host dark/high-contrast switch", "untrusted workspace"],
+    "constraints": ["strict CSP with nonce", "Shadow DOM CSS and rem isolation", "no archived @vscode/webview-ui-toolkit", "minimal host permissions"]
+  },
+  "prompt": "Build a Manifest V3 browser extension with a side panel and page-annotation overlay plus a companion VS Code webview inspector that adapts to host themes and strict CSP.",
+  "expectedRouting": ["pixelcraft-extensions", "references/browser-extensions.md", "references/vscode-webviews.md"],
+  "forbiddenBehaviors": [
+    "requests <all_urls> host permissions by default or stores durable state in popup/service-worker memory",
+    "recommends archived @vscode/webview-ui-toolkit or injects unsafe-inline remote scripts into webview CSP",
+    "injects unisolated CSS into host pages or ignores Shadow DOM rem inheritance from host html font-size"
+  ],
+  "rubricDimensions": [
+    {
+      "dimension": "MV3 isolation and permission restraint",
+      "pass": "uses Shadow DOM with rem/token isolation, minimal contextual permissions with denied-state fallback, chrome.storage persistence, and Side Panel cross-browser awareness",
+      "fail": "leaks host CSS or breaks when the service worker suspends"
+    },
+    {
+      "dimension": "VS Code host-native fidelity and security",
+      "pass": "uses strict nonce CSP, asWebviewUri, --vscode-* theme variables, getState/setState serialization, avoids archived webview-ui-toolkit, and picks native QuickPick/TreeView where webview is unnecessary",
+      "fail": "hardcodes light colors, bypasses CSP, or relies on archived packages"
+    }
+  ],
+  "negativeControls": [
+    {
+      "name": "standalone browser tab test",
+      "input": "opening the webview HTML directly in Chrome renders with custom CSS",
+      "mustNot": "claim VS Code CSP, asWebviewUri asset loading, or host theme adaptation are verified"
+    }
+  ],
+  "baseline": {
+    "withoutSkill": "injects global CSS into host pages, requests broad permissions, copies archived @vscode/webview-ui-toolkit snippets, and hardcodes colors instead of host theme tokens",
+    "withSkill": "isolates content UI with Shadow DOM, minimizes permissions, uses strict nonce CSP and --vscode-* tokens, and verifies lifecycle interrupts"
+  }
+}

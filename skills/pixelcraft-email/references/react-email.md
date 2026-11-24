@@ -1,53 +1,95 @@
-# React Email
+# React Email and component email ecosystems
 
-## Token mapping
+## React Email (v3/v4+) core idioms
 
-Use typed semantic constants in shared modules and pass them into components/styles. React Email compiles JSX to email-oriented HTML, but client CSS support remains fragmented; do not assume CSS variables/modern selectors survive. Shared constants preserve semantic token intent while final output inlines literal values.
+React Email compiles JSX primitives (`Html`, `Head`, `Body`, `Preview`, `Container`, `Section`, `Row`, `Column`, `Heading`, `Text`, `Button`, `Img`, `Font`, `CodeBlock`, `Markdown`, `Tailwind`) to table-safe HTML. Component abstraction does not turn email into browser React—CSS variables, Grid, and client-side hooks do not exist in inboxes.
 
-## Layout and responsive idioms
+```tsx
+import {
+  Html, Head, Body, Preview, Container, Section,
+  Heading, Text, Button, Font, Tailwind, pixelBasedPreset, render,
+} from '@react-email/components';
 
-Use React Email components (`Html`, `Body`, `Container`, `Section`, `Row`, `Column`, `Text`, `Button`, `Img`, `Preview`) or project equivalents deliberately. Single-column-first ordering and resilient inline styles remain mandatory. Component abstraction does not make email a normal React web app.
+export function InvoiceEmail({ invoiceId, total }: { invoiceId: string; total: string }) {
+  return (
+    <Html lang="en" dir="ltr">
+      <Head>
+        <Font
+          fontFamily="Inter"
+          fallbackFontFamily="Arial"
+          webFont={{ url: 'https://example.com/fonts/inter-v18.woff2', format: 'woff2' }}
+          fontWeight={400}
+          fontStyle="normal"
+        />
+      </Head>
+      <Preview>Invoice {invoiceId} due — {total}</Preview>
+      <Tailwind config={{ presets: [pixelBasedPreset] }}>
+        <Body className="bg-[#f4f5f7] font-sans m-0 p-6">
+          <Container className="bg-white max-w-[600px] p-6 rounded">
+            <Section>
+              <Heading as="h1" className="text-[22px] text-[#111827] m-0 mb-3">
+                Invoice {invoiceId}
+              </Heading>
+              <Text className="text-[15px] text-[#374151] m-0 mb-5">
+                Total due: {total}.
+              </Text>
+              <Button
+                href={`https://example.com/pay/${invoiceId}`}
+                className="bg-[#0f5132] text-white px-5 py-3 rounded font-semibold"
+              >
+                Review and pay invoice
+              </Button>
+            </Section>
+          </Container>
+        </Body>
+      </Tailwind>
+    </Html>
+  );
+}
 
-## Typography/custom fonts
+// React Email v3+: render() is async; generate HTML + plaintext from the exact same tree
+const html = await render(<InvoiceEmail invoiceId="2026-041" total="€1,420.50" />);
+const text = await render(<InvoiceEmail invoiceId="2026-041" total="€1,420.50" />, {
+  plainText: true,
+});
+```
 
-Use fallback font stacks and real text. Custom fonts are progressive enhancement only. Avoid layout that depends on exact metrics. Include plaintext generation using the same structured content where possible rather than hand-diverging copy.
+Key v3/v4+ patterns:
 
-## Motion/reduced motion
+- **`<Tailwind>` + `pixelBasedPreset`**: Tailwind v4 defaults to `rem` units, CSS custom properties, and `oklch()` colors, which break Outlook and trigger Gmail `<style>` stripping. Pass `config={{ presets: [pixelBasedPreset] }}` so spacing/type emit `px` and colors emit email-safe hex/RGB.
+- **Async `render()` + `{ plainText: true }`**: always `await render(element)` and derive the `text/plain` MIME part via `await render(element, { plainText: true })` from the same component tree so links, amounts, and legal text stay in sync.
+- **`<Font fallbackFontFamily=...>`**: always specify a websafe `fallbackFontFamily` (`Arial`, `Helvetica`, `Georgia`, `Verdana`) because Classic Outlook and Gmail ignore `@font-face` and otherwise fall back to Times New Roman.
+- **`<CodeBlock>` & `<Markdown>`**: use for developer notifications, release digests, or API key instructions while verifying line wrapping on 320px viewports and total HTML size against Gmail's 102 KB clipping limit.
 
-Assume animation/interactivity is unsupported. Email meaning and CTA must work statically.
+## Related component frameworks and ESP platforms
 
-## Accessibility specifics
+- **Vue Email / Svelte Email**: in Vue/Nuxt or SvelteKit stacks, use `@vue-email/components` (Vue Email) or `svelte-email` / `better-svelte-email` with the same inline-style, table-baseline, and plaintext-parity rules rather than shipping raw SPA templates.
+- **Sending & authoring platforms**: **Resend** accepts React Email components natively (`react: <InvoiceEmail />` alongside `text`); **Loops** targets SaaS lifecycle/transactional workflows with MJML/API templates; **Postmark** focuses on high-deliverability transactional streams with Mustachio templates; **Stripo** offers visual + code hybrid authoring with AMP and Outlook export. Regardless of ESP, inspect the **delivered** HTML after link-tracking rewrites.
+- **Can I email (`caniemail.com`)**: check support matrices before using any non-trivial CSS property (`gap`, `border-radius`, `aspect-ratio`, `@media (prefers-color-scheme)`).
 
-Real text, meaningful alt text, logical reading order, descriptive link/button copy, contrast-aware styling, plaintext parity, preheader text, no image-only essential content. Inspect rendered HTML because component names do not guarantee client semantics.
+## Accessibility, states, and forms
 
-## States idiom
-
-Test images blocked/off, dark mode inversion/mutation, Gmail clipping, plaintext-only, forwarding/quoting, narrow mobile view, print/high contrast, missing assets. Transactional email also needs expired-link/already-used/unauthorized destination states on the destination page, though the email itself cannot solve them.
-
-## Forms idiom
-
-Do not depend on embedded forms. Link to secure destination flows. Use correct preheader/copy so users understand consequence before clicking.
+- Set `lang` and `dir` on `<Html>`, use real `<Heading as="h1"|"h2">` and `<Text>`, meaningful `alt` on `<Img>`, explicit `<Preview>`, and verify rendered HTML contains `role="presentation"` on layout tables.
+- Test images blocked, dark-mode inversion, Gmail 102 KB clipping, plaintext-only, forwarding/quoting, narrow mobile widths, and destination-page error states (expired/already-used transactional links).
+- Never embed interactive forms inside email; link to a secure web route.
 
 ## Do/don't pairs
 
 | Do | Don't |
 |---|---|
-| shared typed content model feeding HTML + plaintext | manually maintaining divergent plaintext copy |
-| real `Button`/link text with consequence verb | image-only or “Click here” CTA |
-| semantic constants passed to inline styles | assuming CSS variables/classes work everywhere |
-| preview/preheader written deliberately | first legal/footer text accidentally becoming preview |
-| inspect compiled HTML/client rendering | trusting React component rendering in isolation |
-
-## Known traps
-
-Treating output like normal web React, inconsistent plaintext, missing alt/preheader, style prop assumptions, client-specific mutation, clipping due output weight, dark-mode logo disappearance, generated HTML bloat, local preview looking better than real clients.
+| Wrap `<Tailwind config={{ presets: [pixelBasedPreset] }}>` when using Tailwind utilities | Ship raw Tailwind v4 `rem`, `oklch()`, or `@layer` rules into email `<style>` blocks |
+| Generate HTML and plaintext via `await render(el)` and `await render(el, { plainText: true })` | Manually maintain divergent plaintext templates or call v2 synchronous `render()` |
+| Always set `fallbackFontFamily` on `<Font>` and `lang`/`dir` on `<Html>` | Let Classic Outlook collapse missing web fonts into Times New Roman |
+| Inspect exported HTML byte size and real client renders (New Outlook + Classic Outlook + Gmail + Apple Mail) | Treat `npx email dev` local browser preview as proof of inbox rendering |
 
 ## Verification commands
+
+Run static lint, build, and non-blocking static HTML export without suppressing failures:
 
 ```sh
 npm run lint
 npm run build
-npx email dev 2>/dev/null || true
+npx email export
 ```
 
-Use local preview only as initial evidence. Validate compiled HTML/plaintext, image-off/dark/mobile/high-contrast rendering, actual client previews/test service, link destinations/expiry behavior, and clipping/source size.
+Inspect exported HTML size against Gmail's 102 KB clipping threshold and validate plaintext output (`static`), then verify real client previews with dark mode and images off (`rendered`).

@@ -1,59 +1,82 @@
-# Tauri
+# Tauri (v2)
 
 ## Token mapping
 
-Use generated CSS variables inside the webview exactly as web UI, but treat desktop shell colors/titlebar/menu behavior as separate integration. Rust/backend configuration may need matching semantic constants for native menus/tray/notifications; generate or mirror them deliberately rather than copying random hex strings.
+Use generated DTCG CSS custom properties inside the WebView exactly as web UI, while mirroring semantic theme values for native shell surfaces (window background color on launch to prevent white flash in dark mode, native menus, tray icons, and dialogs) in Rust / `tauri.conf.json`.
 
-## Layout and responsive idioms
+## Tauri v2 IPC: commands, streaming `Channel`, & binary `Response`
 
-Design browser layout plus window behavior: minimum width/height, resizing/maximized/fullscreen, split panes, DPI changes, multi-window state, custom/native titlebar decision. `tauri.conf.json` controls capabilities/windows only at configuration level; actual UX must handle runtime resize and restore.
+Design backend communication around explicit typed contracts and non-blocking async Rust commands:
 
-## Typography/custom fonts
+- **`#[tauri::command]`**: declare `async fn` returning `Result<T, E>` (serialized errors) for I/O or CPU work so the UI never freezes and the frontend receives structured error states.
+- **`tauri::ipc::Channel<T>`**: use `Channel` for ordered, high-throughput streaming (build logs, AI token streams, download progress) instead of broadcasting global `app.emit(...)` events across every window.
+- **`tauri::ipc::Response`**: return `tauri::ipc::Response::new(bytes)` for binary payloads (images, audio buffers, Arrow/Parquet chunks) to bypass JSON serialization overhead.
 
-Use web font loading inside the webview, but package/license/fallback behavior must work offline where desktop expectations demand it. System font stacks are often appropriate for native feel. Verify text scaling/zoom behavior and high-DPI rendering.
+```rust
+use tauri::ipc::{Channel, Response};
 
-## Motion/reduced motion
+#[tauri::command]
+async fn export_report(
+    id: String,
+    on_progress: Channel<u8>,
+) -> Result<Response, String> {
+    on_progress.send(25).map_err(|e| e.to_string())?;
+    let pdf_bytes: Vec<u8> = generate_pdf(&id).await.map_err(|e| e.to_string())?;
+    on_progress.send(100).map_err(|e| e.to_string())?;
+    Ok(Response::new(pdf_bytes))
+}
+```
 
-Use CSS/JS motion honoring `prefers-reduced-motion` in the webview. Desktop platform settings may not propagate identically in every runtime/version; verify actual webview behavior. Avoid animation that blocks window manipulation/input.
+## Official v2 plugins & capability-based ACLs
 
-## Accessibility specifics
+- **Capabilities (`src-tauri/capabilities/*.json`)**: grant least-privilege permissions scoped explicitly by `windows` and `platforms` (`["linux", "macOS", "windows"]` vs `["iOS", "android"]`). Never open broad `remote.urls` wildcards unless audited.
+- Prefer official Tauri v2 plugins for standard desktop behavior instead of hand-rolling fragile hacks:
+  - **`tauri-plugin-window-state`**: persists and safely clamps window size/position/maximized state across launches.
+  - **`tauri-plugin-store`**: lightweight persisted settings/preferences store.
+  - **`tauri-plugin-updater`**: signed in-app updates with explicit restart/defer UX.
+  - **`tauri-plugin-single-instance`**: focuses the existing window and forwards CLI/file-open args instead of spawning duplicate instances.
+  - **`tauri-plugin-deep-link`**: handles custom URL schemes (`myapp://...`) cleanly on both cold start and warm launch.
 
-Web accessibility remains necessary but insufficient. Menus, tray icons, shortcuts, notifications, dialogs, file associations, custom titlebar controls, drag regions, and multi-window focus need platform verification. Use native dialogs/menu APIs where appropriate.
+## Window chrome, drag regions, & macOS Overlay titlebar
 
-## States idiom
+Decide between native titlebars and integrated chrome upfront:
 
-Model web content state plus desktop process state: backend availability/startup failure, updater status, file permission, deep link/file open cold start, offline state, background/tray mode, second instance, crash/restart. Preserve unsaved work before close.
+- On macOS, set `"titleBarStyle": "Overlay"` (and `"hiddenTitle": true` when providing a custom header) in `tauri.conf.json`, reserving safe left-side clearance (~`72–80 px`) so traffic-light buttons never collide with sidebar toggles or tabs.
+- Mark draggable chrome with **`data-tauri-drag-region`**, and ensure interactive controls inside headers (`<button>`, `<input>`, tabs) sit in non-drag child containers or do not inherit drag-swallowing pointer behavior so clicks and double-click maximize remain reliable.
+- Support minimum window sizes (`minWidth`, `minHeight`), DPI changes across monitors, and native menus (`tauri::menu`) + keyboard accelerators so desktop shortcuts are discoverable in the OS menu bar.
 
-## Forms idiom
+## Typography, motion, accessibility, states, & forms idioms
 
-Use web form rules inside the webview; integrate native file pickers/autofill limitations/clipboard behavior honestly. Validate input preservation across window close/minimize/reload/deep-link flows.
+Bundle custom web fonts locally so desktop apps work identically offline. Honor `@media (prefers-reduced-motion: reduce)` inside the WebView and verify actual propagation on WebView2 (Windows), WKWebView (macOS), and WebKitGTK (Linux).
+
+Web accessibility inside the WebView is necessary but insufficient: verify native menus, global/window shortcuts, tray menus, file dialogs (`tauri-plugin-dialog`), custom titlebar buttons, and multi-window focus restoration per OS. Model desktop process states explicitly (Rust backend init errors, updater restart prompt, file permission denial, single-instance handoff, unsaved-document close intercept via `on_window_event(WindowEvent::CloseRequested)`).
+
+## Tauri v2 mobile targets
+
+When sharing a Tauri v2 codebase across desktop and iOS/Android, isolate mobile plugins (biometrics, NFC, haptics) in platform-scoped capability files and pair mobile WebView ergonomics with `pixelcraft-mobile` safe-area and touch-target rules.
 
 ## Do/don't pairs
 
 | Do | Don't |
 |---|---|
-| explicit drag region plus accessible window controls in custom chrome | invisible/half-working custom titlebar |
-| backend startup/permission error surface | blank webview when Rust initialization fails |
-| native menu/shortcut registration and display | browser-only hidden shortcuts with no desktop discovery |
-| preserve unsaved document state on close | treating window close like browser tab refresh |
-| test narrow/minimum window and high DPI | validating only fullscreen developer monitor layout |
-
-## Tauri v2 capabilities and mobile targets
-
-- **Capability-based ACLs**: declare least-privilege permissions in `src-tauri/capabilities/*.json` scoped by `windows` and `platforms` (`["linux", "macOS", "windows"]` vs `["iOS", "android"]`). By default, Tauri commands are accessible only to bundled local code—never add broad `remote.urls` wildcards unless strictly audited.
-- **Desktop + Mobile parity**: Tauri v2 supports iOS and Android targets alongside desktop; gate mobile-only plugins (biometrics, NFC, barcode scanner) behind platform-scoped capability files and adapt touch targets/safe areas when shipping mobile builds.
+| Stream progress/logs via `tauri::ipc::Channel<T>` and binary data via `ipc::Response` | Serialize megabyte buffers as JSON arrays or spam global window events |
+| Scope `src-tauri/capabilities/*.json` per window and platform | Grant wildcard permissions or untrusted `remote.urls` access |
+| Use `tauri-plugin-window-state` + `tauri-plugin-single-instance` | Hand-roll un-clamped window restore or allow accidental duplicate instances |
+| Reserve traffic-light inset with `titleBarStyle: "Overlay"` and clean `data-tauri-drag-region` | Cover macOS traffic lights or let drag regions intercept header button clicks |
+| Intercept `WindowEvent::CloseRequested` to guard unsaved work | Let window close discard unsaved edits without warning |
 
 ## Known traps
 
-Custom titlebar drag/double-click/system menu omissions, CSP/asset loading, webview version differences, updater/restart state, permissions/capability misconfiguration, tray lifecycle, multi-window focus leakage, file association/deep-link cold start, confusing dev/prod backend behavior.
+WebView engine differences (WKWebView vs WebView2 vs WebKitGTK CSS/backdrop/font quirks), white launch flash when `backgroundColor` isn't set before WebView hydration, CSP blocking bundled assets or IPC, forgetting to register a plugin's capability permission in `capabilities/*.json`, synchronous `#[tauri::command]` blocking the main thread, cold-start deep links firing before frontend listeners mount.
 
 ## Verification commands
 
 ```sh
+cargo tauri info
 npm run build
 cargo test --manifest-path src-tauri/Cargo.toml
 cargo tauri dev
 cargo tauri build
 ```
 
-Use real OS runs for window/menu/shortcut/high-DPI evidence; browser-only inspection is inner-webview evidence only.
+`cargo tauri info`, `npm run build`, and `cargo test` provide environment and `static` evidence. Run packaged or `cargo tauri dev` builds on each target OS (macOS/Windows/Linux) to verify native menus, custom titlebars, drag regions, DPI scaling, screen readers, and dirty-close behavior for `rendered` evidence; browser-only dev preview is inner-DOM evidence only—label untested OSes `not-checked`.

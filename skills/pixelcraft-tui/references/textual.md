@@ -1,67 +1,110 @@
-# Textual
+# Textual (Python)
 
-Evidence: current docs confirm Textual CSS variables use `$name`; `pytest-textual-snapshot` provides the `snap_compare` fixture and SVG snapshot comparisons.
+## Token mapping & Textual v1–v3+ `Theme` API
 
-## Token mapping
+Textual CSS (TCSS) uses **character cell units** (`1`, `2`, `1fr`, `50%`, `w`, `h`)—**never `px`** (pixel units are invalid in TCSS). Register semantic themes via the **`Theme`** API (`app.register_theme(...)`) and reference built-in semantic design variables (`$primary`, `$surface`, `$panel`, `$error`, `$text-muted`) across TCSS:
 
-Use exported Textual variables directly:
+```python
+from textual.app import App, ComposeResult
+from textual.theme import Theme
+
+PC_THEME = Theme(
+    name="pixelcraft-dark",
+    primary="#5BB2FF",
+    secondary="#7EE787",
+    accent="#D2A8FF",
+    foreground="#E6EDF3",
+    background="#0D1117",
+    surface="#161B22",
+    panel="#21262D",
+    error="#F85149",
+    dark=True,
+)
+```
 
 ```tcss
-$semantic-color-action: #0074ca;
-$space-control-inline: 4px;
+/* Integer cell units only — never `px` */
+$space-control-inline: 2;
 
-Button {
-  background: $semantic-color-action;
+Button.-primary {
+  background: $primary;
+  padding: 0 $space-control-inline;
 }
 ```
 
-Keep variables semantic and scoped intentionally. Do not hard-code repeated colors through TCSS/widget constructors when a variable can express the role.
+Register the theme in `on_mount` (`self.register_theme(PC_THEME); self.theme = "pixelcraft-dark"`) so users can switch cleanly between light, dark, and high-contrast themes (including `textual-ansi` for 16-color/low-capability terminals).
 
-## Layout and responsive idioms
+## Layout, `CommandPalette`, & responsive idioms
 
-Use containers, grids/docks/horizontal/vertical layouts, fractional/percent/auto sizing, scrollable containers, focus chains, and terminal width/height adaptation. Design minimum dimensions such as 80×24 and define what collapses/disappears first.
+Use `Vertical`, `Horizontal`, `Grid`, `Container`, `TabbedContent`, `DataTable`, `Dock`, fractional (`1fr`) and cell sizing, and terminal-size CSS/reactive breakpoints. Test at `80×24` minimum and define which secondary pane collapses first.
 
-## Typography/custom fonts
+Expose keyboard-first command discovery through Textual's built-in **`CommandPalette`** (`Ctrl+P` by default) by adding custom `Provider` classes (`search` yielding `Hit` results) alongside concise `BINDINGS` displayed in `Footer`.
 
-Terminals control fonts. Use weight/style/color/underline/inverse and spacing as typography; never assume custom typefaces or exact glyph width. Unicode width/emoji/CJK behavior can differ by terminal/font.
+## Async workers (`@work(exclusive=True)`) & states idiom
 
-## Motion/reduced motion
+Never block the Textual asyncio event loop with disk/HTTP calls. Isolate async or blocking work in **`@work`** methods with explicit `exclusive=True` (automatically cancelling superseded refreshes when the user changes filters or navigates) and `thread=True` for blocking SDK calls:
 
-Textual has animation/timer/refresh capabilities, but terminal motion should be sparse. Use reduced-motion/user configuration where platform support is uncertain. Avoid rapid flashing/full-screen refresh and prefer stable state changes.
+```python
+from textual import work
+from textual.worker import get_current_worker
 
-## Accessibility specifics
+class InvoiceApp(App):
+    @work(exclusive=True, thread=True)
+    def load_invoices(self, query: str) -> None:
+        worker = get_current_worker()
+        rows = fetch_blocking(query)
+        if not worker.is_cancelled:
+            self.call_from_thread(self.apply_rows, rows)
+```
 
-Keyboard-first bindings, visible focus, logical focus order, no color-only state, screen-reader-friendly text equivalents, `NO_COLOR`/low-color fallback, mouse optional. Do not use emoji/glyph-only critical meaning. Terminal accessibility depends on emulator/screen reader integration; verify what can actually be inspected.
+Handle loading (`LoadingIndicator`), empty, error, offline, and worker-cancelled states visibly in the widget tree; preserve user input across `push_screen` / `pop_screen` modal dialogs and terminal resizes.
 
-## States idiom
+## Typography, motion, accessibility, & forms idioms
 
-Use widgets/screens/modals/data state explicitness: loading/error/empty/offline/permission/worker progress/cancellation. Textual workers/tasks need cancellation/error propagation. Preserve input through screen changes and resize. Show disconnected/completed/failed state textually.
+Terminals control fonts—use Textual bold/italic/dim/underline/reverse styles and spatial hierarchy, and never assume emoji or CJK glyph width matches single-cell Latin characters. Keep `styles.animate(...)` sparse and non-blocking; never use rapid flashing or continuous repaint loops, and provide a plain/reduced-motion toggle for low-capability terminals.
 
-## Forms idiom
+Ensure every task works strictly via keyboard (`Tab`/`Shift+Tab`, arrow keys, `Enter`, `Esc`, `CommandPalette`), pair colors with plain-text state markers (`[ERR]`, `[*]`) so `NO_COLOR` and 16-color terminals remain legible, and use real `Input`, `TextArea`, `Select`, `Checkbox`, and `Button` widgets with `Validator` classes that display recovery copy after edit/submit.
 
-Use real Input/TextArea/Select/Checkbox/Button widgets, validation timing, focus order, keybindings, paste behavior verification, visible error copy, and preservation across modal/navigation. Do not make Enter/Escape behavior ambiguous.
+## Headless verification (`App.run_test()` / `Pilot` & SVG snapshots)
+
+Drive real keyboard workflows and narrow-terminal resize checks deterministically using **`App.run_test()`** and **`Pilot`**, paired with **`pytest-textual-snapshot`** (`snap_compare`) SVG snapshots:
+
+```python
+import pytest
+
+@pytest.mark.asyncio
+async def test_narrow_keyboard_flow():
+    app = InvoiceApp()
+    async with app.run_test(size=(80, 24)) as pilot:
+        await pilot.press("ctrl+p")
+        await pilot.press("escape")
+        assert app.focused is not None
+```
 
 ## Do/don't pairs
 
 | Do | Don't |
 |---|---|
-| semantic TCSS `$variables` | hex constants repeated in every widget/rule |
-| keyboard `Binding` plus visible help/footer | hidden mouse-only interaction |
-| worker cancellation/error state visible | background task silently failing |
-| snapshot test at multiple widths | only manually glancing at one terminal size |
-| plain text state plus color | color-only green/red status |
+| Use cell units (`padding: 0 2;`) and registered `Theme` `$primary`/`$surface` vars | Write web pixel units (`4px`) or scatter raw hex literals in TCSS |
+| Use `@work(exclusive=True)` and check `worker.is_cancelled` | Block the Textual event loop or let stale async responses overwrite newer filters |
+| Test keyboard flows with `App.run_test(size=(80, 24))` + `Pilot` & `snap_compare` | Rely only on manually glancing at one wide developer terminal |
+| Pair `BINDINGS` + `Footer` + `CommandPalette` providers for discoverability | Hide essential commands behind mouse-only clicks or undocumented keys |
+| Combine text markers (`[OK]`, `[ERR]`) with semantic theme colors | Use green/red text color alone without `NO_COLOR` / 16-color legibility |
 
 ## Known traps
 
-Unicode width mismatch, terminal font assumptions, color capability variation, focus loss in modals/screens, worker lifecycle leaks, rapid repaint noise, overflow/truncation at narrow width, mouse support assumptions, TCSS specificity confusion.
+Invalid CSS `px` units in TCSS, blocking the asyncio loop with synchronous `requests` calls, stale worker results mutating UI without `exclusive=True`, Unicode/emoji width misalignment in `DataTable` cells, focus lost after closing `ModalScreen`, omitting non-interactive CLI fallback when piped in CI.
 
 ## Verification commands
 
 ```sh
-python -m pytest
-pytest --snapshot-update  # only when intentionally updating
 python -m compileall .
-python app.py 2>/dev/null || true
+python -m pytest
+# Intentionally refresh SVG snapshots only after visual inspection:
+# pytest --snapshot-update
+# Interactive terminal run at 80x24 and NO_COLOR=1:
+python app.py
+NO_COLOR=1 python app.py
 ```
 
-Use `pytest-textual-snapshot` snapshots, actual terminal runs, narrow/wide matrices, `NO_COLOR`/TERM variations, keyboard-only flows, and piped/non-TTY behavior where relevant.
+`compileall` and logic tests are `static`; `App.run_test`/`Pilot` and `snap_compare` SVGs verify headless rendering (`rendered` snapshot evidence). Also run in a real terminal emulator at `80×24`, `TERM=dumb`/`NO_COLOR=1`, and piped stdin/stdout to confirm keyboard and capability fallback (`rendered`; label untested terminals `not-checked`).

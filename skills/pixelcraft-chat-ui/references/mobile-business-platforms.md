@@ -1,87 +1,68 @@
-# Telegram, Zalo, WhatsApp, and Microsoft Teams
+# Telegram, Zalo, WhatsApp, Teams, LINE, and WeChat
 
-## Telegram bots and Mini Apps
+Verify exact schema versions and host API availability against current official docs before releasing; mobile and business super-app runtimes update rapidly.
 
-Documented exact constraints:
+## Telegram Bots and Mini Apps (Bot API 8.x–9.x)
 
-| Constraint | Current documented limit/behavior |
+| Constraint | Documented limit / rule |
 |---|---|
-| text message length | 1–4096 characters after entity parsing |
-| media caption length | 0–1024 characters after entity parsing |
-| inline keyboard button `callback_data` | 1–64 bytes |
-| formatting entity nesting | entities may nest only under Telegram's documented restrictions; blockquotes cannot be nested |
+| Text message length | 1–4,096 characters after entity parsing |
+| Media caption length | 0–1,024 characters after entity parsing |
+| Inline button `callback_data` | **1–64 UTF-8 bytes** (CJK/Vietnamese/emoji take 2–4 bytes each—measure byte length, never JS `.length`) |
+| Callback acknowledgement | **Always call `answerCallbackQuery`** on every inline tap to dismiss the client loading spinner |
+| Entity nesting | Respect Telegram nesting rules; blockquotes cannot nest; prefer explicit entities or escaped HTML |
 
-Telegram supports explicit entities, Markdown-style parsing, or HTML-style parsing. Prefer explicit entities for machine-generated/localized text because they avoid delimiter escaping ambiguity. Escape user input if a parse mode is used.
+- **Keyboards**: Attach inline keyboards to message-scoped actions; make reply keyboards `one_time_keyboard` or explicitly removable so they do not hijack the composer indefinitely.
+- **Mini App (`Telegram.WebApp`) modern capabilities (Bot API 8.0–9.x)**:
+  - Use **`MainButton`** (primary action) paired with **`SecondaryButton`** (secondary/cancel action) and **`BackButton`** instead of duplicating fixed bottom bars inside the WebView.
+  - Honor safe areas using **`--tg-safe-area-inset-top/bottom/left/right`** and **`--tg-content-safe-area-inset-*`** CSS variables, especially when using **`requestFullscreen()` / `exitFullscreen()`** on mobile.
+  - Feature-detect **`addToHomeScreen()`**, **`BiometricManager`** (auth gate with graceful fallback), **`CloudStorage` / `SecureStorage`** (bot-scoped client persistence), and **Telegram Stars** digital goods checkout via `openInvoice(url)` (currency `XTR`).
+  - Always verify **`initData`** HMAC signature server-side with the bot token; never trust client-provided `initDataUnsafe` user IDs for authorization. Bind UI colors to `themeParams` rather than hardcoding a single theme.
 
-Keyboard model:
+## Zalo Mini Apps, ZaUI, and Zalo OA (ZNS)
 
-- **inline keyboards** attach to a message and are appropriate for actions tied to that message;
-- **reply keyboards** replace the user's keyboard/input area and are appropriate for repeated constrained input, but they occupy persistent UI and must be removable;
-- callback buttons carry opaque data; never trust the client-supplied user/chat/context without server-side validation;
-- URL/deep-link buttons must be clearly labeled by destination.
+- Configure pages, header style, status bar, and safe areas in **`app-config.json`**, use **`zmp-ui`** (`zmp-ui/zaui.css` + `<App theme="light" | "dark">`) for ZDS-compliant components, and access host APIs through **`zmp-sdk`** (`authorize`, `getUserInfo`, `openChat`, `getStorage`/`setStorage`, `getSystemInfo`).
+- Design for embedded Vietnamese phone viewports (account for stacked diacritics and line height), intermittent mobile networks, permission-denial recovery, and server-side token exchange.
+- For proactive business notifications outside active user chat sessions, use approved **Zalo OA / ZNS (Zalo Notification Service)** transactional templates with parameterized fields rather than unauthorized free-form pushes.
 
-Mini App rules:
+## WhatsApp Business Interactive Messages and Flows
 
-- choose keyboard-button versus inline-button launch based on data flow: keyboard-button Mini Apps can use `Telegram.WebApp.sendData` for a service-message response; inline-button Mini Apps receive a `query_id` flow for messages on the user's behalf;
-- validate `initData` server-side using the documented bot-token HMAC validation. Never trust client-supplied user identity directly;
-- consume `themeParams` rather than forcing a fixed light/dark palette;
-- track viewport expansion/stable size and safe-area/content-safe-area insets; do not put controls under Telegram chrome;
-- use `MainButton` for the single primary next action and `BackButton` for platform navigation instead of duplicating both in-page;
-- test collapse/expand, viewport changes, theme switch, haptic availability, lifecycle suspension, and versioned API feature detection.
-
-## Zalo Mini Apps and ZaUI
-
-Current documented basics:
-
-- ZaUI components are derived from Zalo's official ZDS design system;
-- the React component package is installed as `zmp-ui` (`npm install zmp-ui`);
-- import the package stylesheet such as `zmp-ui/zaui.css` or component-level stylesheets according to the installed version;
-- the `App` container supplies shared context/theme, with documented `"light"` and `"dark"` theme values.
-
-Design rules:
-
-- follow platform navigation/header/page primitives before inventing custom chrome;
-- design for phone-width embedded use, intermittent connectivity, Vietnamese text length/tone marks, and host-controlled safe areas;
-- use official components for inputs/pickers/sheets where possible because they carry platform behavior;
-- verify current package/runtime versions and host API availability rather than relying on community tutorials;
-- handle login/permission denial and expired session explicitly.
-
-Some Zalo documentation is primarily Vietnamese. Keep implementation artifacts in English when required by the project, but preserve exact API/component names unchanged.
-
-## WhatsApp interactive messages
-
-Documented constraints include:
-
-| Constraint | Current documented behavior |
+| Constraint | Documented limit |
 |---|---|
-| list message | menu of up to 10 options |
-| reply button message | up to 3 options/buttons |
-| section title | maximum 24 characters when multiple sections are used |
-| row title | maximum 24 characters |
-| row description | maximum 72 characters |
-| interactive delivery window | list/reply buttons generally cannot be proactive notifications; use within the documented 24-hour user-message window unless using an approved template/Flow path |
+| Interactive body text | up to **1,024 characters** |
+| Reply buttons | up to 3 buttons, **max 20 characters per title** |
+| List message | up to 10 rows total; section & row title **max 24 chars**, description **max 72 chars** |
+| CTA URL button (`cta_url`) | single external link button with explicit display text (max 20 chars) |
+| Carousel templates | pre-approved multi-card media templates with identical button count/types across every card |
+| Service window | Interactive list/reply messages require an open 24-hour user-initiated window; proactive outreach requires approved templates or Flows |
 
-Rules:
+- **WhatsApp Flows (JSON multi-screen forms)**: Use Flows for structured appointment booking, lead capture, or checkout instead of forcing 8 back-and-forth text turns. Define typed `screens` (`Form`, `TextInput`, `Dropdown`, `DatePicker`, `Footer` with `data_exchange` or `complete`), implement **RSA-OAEP + AES-GCM payload encryption/decryption** on your data-exchange endpoint, return clear field-level validation errors on the active screen, and test narrow truncation on 20-char button labels.
 
-- use reply buttons for 1–3 immediate mutually exclusive decisions;
-- use lists for bounded larger choices, not deep browsing;
-- write labels that fit the host truncation limits and remain distinguishable when truncated;
-- do not encode state in user-visible text; validate webhook payloads server-side;
-- account for unsupported platforms/clients and template fallback;
-- do not use marketing pressure or ambiguous confirmation in a high-trust messaging surface;
-- preserve message ordering/idempotency because users can reopen earlier interactions.
+## Microsoft Teams Adaptive Cards, Dialogs, and Teams AI Library
 
-## Microsoft Teams Adaptive Cards
+- Teams desktop/web/mobile and Microsoft Copilot Chat target **Adaptive Cards schema 1.5** (supporting **`Carousel`**, **`CodeBlock`**, and **`Chart.*`** elements where host-verified—always test in the actual target client, not just the web designer, because Outlook Actionable Messages and Bot Framework Web Chat diverge).
+- Use **`Action.Execute`** with `refresh` payloads so cards transition cleanly from actionable to completed/expired state across channel viewers, provide concise `speak` text, and respect HostConfig rather than fighting Teams typography or dark/high-contrast themes.
+- **Teams AI Library**: For LLM agents in Teams, use native streaming responses (`streamer.emit(...)`), **`setGeneratedByAI` / AI disclosure badges**, sensitivity labels, inline numbered citations, and feedback-loop buttons.
+- **Teams Dialogs (Task Modules) & Tabs**: Use `@microsoft/teams-js` (`dialog.url.open` / `app.notifySuccess`) for complex multi-step forms or auth popups that exceed Adaptive Card input limits.
 
-Current Microsoft agent-design documentation lists Teams desktop/web/mobile and Microsoft Copilot Chat at Adaptive Cards schema **1.5**, Dynamics 365 live chat at 1.5, Bot Framework Web Chat at 1.6 with `Action.Execute` unsupported, and Outlook Actionable Messages on a separate 1.0–1.2 track. Verify before release because host support changes.
+## LINE LIFF and Flex Messages
 
-Rules:
+- **Flex Messages**: Compose rich cards via JSON `bubble` (single card with `header`, `hero`, `body`, `footer` boxes) or `carousel` (up to 12 horizontally scrollable bubbles). Every Flex Message **must include a concise `altText`** (max 400 chars) shown in chat lists, push notifications, and unsupported clients.
+- **Quick Replies**: Attach up to 13 transient action chips (`message`, `postback`, `datetimepicker`, `camera`, `location`) at the bottom of a message for single-tap next replies; they disappear once tapped.
+- **LIFF SDK v2**: Initialize with `await liff.init({ liffId })`, verify `liff.getIDToken()` server-side against LINE's verify endpoint (never trust decoded JWTs unverified), respect configured sheet height (`compact`, `tall`, `full`), check `liff.isInClient()` before calling `liff.sendMessages()` or `liff.closeWindow()`, and provide a clean browser fallback when opened outside LINE.
 
-- set the card `version` deliberately and test in the real target host, not only the designer;
-- HostConfig controls spacing/fonts/colors/actions/interactivity; Teams/host styling is not yours to override arbitrarily;
-- prefer `Action.Execute` where supported for a unified invoke model, but verify host support and provide appropriate fallback behavior;
-- use inputs only when the interaction truly requires structured data; validate server-side because client input is not trustworthy;
-- use `refresh`/card update semantics deliberately so cards reflect completed/expired state;
-- keep cards narrow-friendly; Teams mobile reflow can reorder/stack visual assumptions;
-- provide meaningful `speak`/text equivalents for important visual content where the schema supports them;
-- never assume full CSS, arbitrary HTML, or web-like layout control exists inside Adaptive Cards.
+## WeChat Mini Program (`WXML` / `WXSS` / `wx.*`)
+
+- Build layouts in **`WXML`** and **`WXSS`** using responsive **`rpx`** units (750 rpx = screen width), calculate custom navigation bar clearance from **`wx.getMenuButtonBoundingClientRect()`** and `wx.getWindowInfo()` safe-area insets so controls never collide with WeChat's floating capsule button.
+- Authenticate via `wx.login()` -> send ephemeral `code` to your server -> exchange via `code2Session` (never expose `AppSecret` in Mini Program code); handle `wx.requestPayment` failures/cancellations idempotently.
+- Respect hard **2 MB main-package size budgets** via `subpackages` lazy loading, and use **Official Account / Subscription Message templates** strictly with explicit user opt-in (`wx.requestSubscribeMessage`) and truthful transactional content.
+
+## Do/don't pairs
+
+| Do | Don't |
+|---|---|
+| Measure UTF-8 bytes for Telegram's 64-byte `callback_data` and always call `answerCallbackQuery` | Check `.length` on multibyte strings or leave Telegram buttons spinning |
+| Validate `initData` HMAC (Telegram), `getIDToken()` (LINE), and `wx.login` code (WeChat) server-side | Trust client-passed user IDs from Mini App JS globals |
+| Use WhatsApp Flows (with RSA/AES data-exchange encryption) for multi-field collection | Force 10 sequential free-text chat turns for a booking form |
+| Provide mandatory `altText` (LINE Flex), `speak` (Teams), and safe-area insets (Telegram/WeChat/Zalo) | Assume rich cards render identically in push notifications or fullscreen notches |
+| Keep Teams Adaptive Cards narrow-friendly and verified on mobile + high contrast | Rely solely on the desktop Adaptive Card designer preview |

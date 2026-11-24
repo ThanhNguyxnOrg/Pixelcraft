@@ -14,33 +14,73 @@ Load fonts in document head/root layout with subset/fallback policy. Resumable H
 
 ## Motion/reduced motion
 
-Use CSS where possible. Event handlers are lazy-loaded in Qwik, so motion tied to interaction can remain local through `$`/`useVisibleTask$` patterns. Honor `prefers-reduced-motion`; do not use visible-task initialization for content that can be static.
+Use CSS where possible. Event handlers are lazy-loaded in Qwik, so motion tied to interaction can remain local through `$` handlers. Honor `prefers-reduced-motion`; reserve `useVisibleTask$` strictly for unavoidable browser-only DOM/observer setup (canvas, third-party widgets) because it eagerly loads JS when scrolled into view and undercuts resumability.
 
 ## Accessibility specifics
 
-Resumability is not accessibility by itself. Initial HTML needs correct semantics, labels, landmarks, and focus order. Manage focus after lazy interaction, route transition, deletion, and dialog close. Anchor/button distinction remains mandatory.
+Resumability is not accessibility by itself. Initial HTML needs correct semantics, labels, landmarks, and focus order. Use `useId()` for SSR-safe `<label for>` and `aria-describedby` wiring. Manage focus after lazy interaction, route transition, deletion, and dialog close. Anchor/button distinction remains mandatory.
 
 ## States idiom
 
-Use `routeLoader$`, `routeAction$`, server state, resource tracking, and explicit pending/error/empty branches. Because Qwik serializes state into HTML, avoid secrets/nonserializable values and preserve input/error state across action failure.
+Use `routeLoader$`, `routeAction$`, `server$`, `useResource$` + `<Resource>`, and explicit pending/error/empty branches. Because Qwik serializes state into HTML, avoid secrets/nonserializable values (wrap unavoidable non-serializable handles with `noSerialize(...)`) and preserve input/error state across action failure.
+
+## Qwik 1.x vs Qwik 2.0 and task/resource idioms
+
+Check `package.json` for the installed major before writing imports: **Qwik 2.0** moves core packages to **`@qwik.dev/core`** and **`@qwik.dev/router`** (replacing `@builder.io/qwik` and `@builder.io/qwik-city`).
+
+- **`useTask$` vs `useVisibleTask$`**: default to **`useTask$`** for reactive state derivation and async work (runs during SSR and resumes on the client only when tracked signals change). Use **`useVisibleTask$`** only as a browser-only escape hatch (e.g., attaching ResizeObserver/canvas/chart instances) and return a cleanup function via `cleanup(() => ...)`.
+- **`useResource$` + `<Resource>`**: use for streamed/reactive async data with explicit `onPending`, `onRejected`, and `onResolved` states.
+- **`server$`**: define typed server-only RPC functions callable from event handlers without exposing server secrets or database code to the browser bundle.
+
+```tsx
+import { component$, Resource, useResource$, useSignal, useTask$ } from '@qwik.dev/core';
+import { server$ } from '@qwik.dev/router';
+
+const searchInvoices = server$(async (query: string) => db.invoices.search(query));
+
+export const InvoiceSearch = component$(() => {
+  const query = useSignal('');
+  const debounced = useSignal('');
+
+  useTask$(({ track, cleanup }) => {
+    const next = track(() => query.value);
+    const id = setTimeout(() => { debounced.value = next; }, 200);
+    cleanup(() => clearTimeout(id));
+  });
+
+  const results = useResource$<Invoice[]>(({ track }) => {
+    const q = track(() => debounced.value);
+    return searchInvoices(q);
+  });
+
+  return (
+    <Resource
+      value={results}
+      onPending={() => <p role="status" aria-busy="true">Searching…</p>}
+      onRejected={(err) => <p role="alert">Search failed: {err.message}</p>}
+      onResolved={(items) => (items.length ? <ul>{items.map((i) => <li key={i.id}>{i.number}</li>)}</ul> : <p>No matches.</p>)}
+    />
+  );
+});
+```
 
 ## Forms idiom
 
-Qwik City actions can progressively enhance forms. Use native labels/types/autocomplete/inputmode and return field errors without discarding values. Avoid converting every input into eager client-controlled state when native form semantics suffice.
+Qwik Router `routeAction$` + `<Form>` (or Modular Forms `@modular-forms/qwik`; see `forms-validation.md`) progressively enhance forms. Use native labels/types/autocomplete/inputmode and return field errors without discarding values. Avoid converting every input into eager client-controlled state when native form semantics suffice.
 
 ## Do/don't pairs
 
 | Do | Don't |
 |---|---|
-| `<Link href="/invoice/42">View invoice</Link>` | click-only div calling navigation |
-| local lazy handler `onClick$` for the control that needs it | eager global hydration mental model copied from SPA frameworks |
-| serializable action state/error shape | storing class instances/functions/secrets in UI state |
-| stable static layout before interaction | blank shell waiting for lazy behavior that content does not need |
-| `useVisibleTask$` only for browser-visible side effects | running browser-only assumptions during SSR |
+| `<Link href="/invoice/42">View invoice</Link>` | Click-only `<div>` calling navigation |
+| `useTask$` for reactive state and `useResource$` + `<Resource>` for async UI states | Reaching for `useVisibleTask$` for data fetching (breaks resumability and delays SSR) |
+| `server$` / `routeAction$` with serializable error shapes | Storing class instances, functions, or secrets directly in `useStore`/`useSignal` |
+| Match imports to installed major (`@qwik.dev/core` + `@qwik.dev/router` in v2) | Mixing v1 `@builder.io/qwik-city` and v2 `@qwik.dev/router` imports |
+| Stable static layout before interaction | Blank shell waiting for lazy behavior that content does not need |
 
 ## Known traps
 
-Serialization boundary violations, overuse of visible tasks, accidentally losing resumability benefits through broad client state, lazy focus management gaps, stale route data, confusing optimizer errors, CSS duplication across lazy chunks.
+Serialization boundary violations (missing `noSerialize` on DOM/library handles), overusing `useVisibleTask$` and throwing away resumability, leaking server-only code outside `server$`/`routeLoader$`, lazy focus management gaps, stale route data, CSS duplication across lazy chunks.
 
 ## Verification commands
 
@@ -51,4 +91,4 @@ npm run build
 npx playwright test
 ```
 
-Inspect initial HTML before JS as well as post-interaction browser state; both are distinct evidence.
+Inspect initial HTML before JS (`static` / no-JS `rendered`) as well as post-interaction browser state (`rendered`); both are distinct evidence.

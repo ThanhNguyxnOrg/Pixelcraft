@@ -2,12 +2,22 @@
 
 Primary source; new-criteria overview. This is a practical floor, not legal certification.
 
+## Regulatory & standards scope
+
+WCAG 2.2 AA is Pixelcraft's mandatory engineering floor (not legal certification; escalate formal compliance to legal/accessibility counsel):
+
+- **EU European Accessibility Act (EAA, effective June 28, 2025)** & **EN 301 549:** covers consumer digital products, e-commerce, banking, transport, e-books, and communications sold in the EU (referencing WCAG 2.1/2.2 AA + non-web software/document requirements).
+- **US ADA Title II (compliance deadlines starting April 24, 2026 for larger state/local public entities, April 2027 for smaller entities):** mandates WCAG 2.1 AA minimum (meeting WCAG 2.2 AA satisfies and exceeds 2.1 AA).
+- **APCA / WCAG 3.0 cross-reference:** keep WCAG 2.2 AA luminance ratios (`4.5:1` / `3:1`) as the normative legal floor, and pair them with **APCA (`|Lc|`)** perceptual contrast checks (see `pixelcraft-craft`) to catch dark-mode halation and thin-weight legibility defects as WCAG 3.0 matures.
+
 ## Perceivable
 
-- Text contrast: 4.5:1 normal, 3:1 large; non-text UI/icons 3:1 unless exempt. Check states, placeholders, disabled-but-relevant text, focus indicators, diagrams/charts.
+- Text contrast: `4.5:1` normal, `3:1` large; non-text UI/icons `3:1` unless exempt. Check states, placeholders, focus indicators, diagrams/charts, and composited translucency. Supplement with APCA `|Lc|` checks on dark surfaces.
 - Resize/reflow: 200% zoom/text scaling and 320 CSS px-equivalent width without two-dimensional scrolling or loss of content/function, subject to exceptions.
+- **1.4.12 Text Spacing:** layout survives user overrides of line height ≥ `1.5×` font size, paragraph spacing ≥ `2×`, letter spacing ≥ `0.12×`, and word spacing ≥ `0.16×` with zero clipping, overlap, or lost controls.
+- **1.4.13 Content on Hover or Focus:** tooltips, hovercards, and submenus triggered by hover/focus must be **dismissible** (`Esc` without moving pointer/focus), **hoverable** (pointer can move onto the revealed content without it vanishing), and **persistent** until the user dismisses or moves away.
 - Meaning does not depend on color, shape, position, sound, or sensory characteristic alone.
-- Media: captions/subtitles, transcripts/audio description as applicable; no flashing above safe thresholds.
+- Media: captions/subtitles, transcripts/audio description as applicable; no flashing above safe thresholds (`≤ 3 flashes/s`).
 - Content adapts orientation unless essential; meaningful images have appropriate alternative text or are marked decorative.
 
 ## Operable
@@ -15,11 +25,14 @@ Primary source; new-criteria overview. This is a practical floor, not legal cert
 | Criterion | Concrete check |
 |---|---|
 | keyboard/focus | every action reachable/operable; no keyboard trap; visible focus with sufficient contrast |
-| 2.4.11 focus not obscured | sticky headers, banners, overlays, keyboards, and floating actions never fully hide focused component; enhanced AAA minimum is stricter |
+| **2.1.4 Character Key Shortcuts** | single-character shortcuts (`j`, `k`, `/`, `?`) can be turned off, remapped, or are active only while a relevant component has focus |
+| **2.4.11 Focus Not Obscured (AA)** & **2.4.12 (Enhanced, AAA)** | sticky headers, banners, overlays, keyboards, and floating actions never hide the focused component (AA: not *entirely* hidden; AAA 2.4.12: *no part* obscured—prefer 2.4.12 via `scroll-margin-block`) |
+| **2.4.13 Focus Appearance (AAA target)** | recommended focus ring geometry: enclosing area at least equivalent to a `2px` perimeter with `≥ 3:1` contrast change between unfocused and focused pixels |
 | bypass/navigation | skip/landmarks/headings or platform equivalent; logical reading/focus order; meaningful page/screen titles |
 | link/control purpose | destination/action understandable in context; avoid repeated vague names |
-| 2.5.7 dragging | every dragging movement has single-pointer alternative (buttons, menu, keyboard, direct input) |
-| 2.5.8 target size | web AA minimum 24×24 CSS px unless spacing/inline/essential/user-agent exception applies; platform baselines may be larger |
+| **2.5.3 Label in Name** | accessible name (`aria-label`, `alt`, computed name) contains the exact visible text label (ideally starting with it) so Voice Control / speech-input users can say what they see |
+| **2.5.7 Dragging Movements** | every dragging movement has a single-pointer alternative (buttons, menu, keyboard, direct input) |
+| **2.5.8 Target Size (Minimum)** | web AA minimum `24×24` CSS px unless spacing/inline/essential/user-agent exception applies; native touch baselines are larger (`44pt` iOS / `48dp` Android) |
 | gestures/motion | multipoint/path gestures have simple alternatives; motion actuation can be disabled/substituted |
 | timing | user can extend/disable/control nonessential time limits; no unexpected context change on input/focus |
 

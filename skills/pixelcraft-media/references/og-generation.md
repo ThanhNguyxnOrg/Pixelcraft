@@ -1,35 +1,34 @@
-# Satori, `@vercel/og`, and `ImageResponse`
+# OG and programmatic image generation pipelines
 
-These tools are not browsers. They implement constrained JSX/CSS layout pipelines for deterministic image generation. Check the exact installed package/version because upstream Satori evolves independently from Vercel/Next wrappers.
+Choose the generator for layout complexity, script shaping (Latin vs Arabic/Indic/CJK), output format (PNG/WebP/AVIF), latency budget, and runtime environment (Node.js, Rust, Edge, or headless browser).
 
 ## Pipeline boundaries
 
-| Tool | Output/model | Critical boundary |
-|---|---|---|
-| Satori | JSX/element tree → SVG string | requires explicit fonts; subset of HTML/CSS; no React state/effects; no guarantee of pixel-perfect browser parity |
-| `@vercel/og` | JSX/CSS → PNG through Satori + Resvg | Vercel documents only flexbox plus a subset of CSS; maximum bundle size 500 KB; TTF/OTF/WOFF fonts only |
-| Next.js `ImageResponse` (`next/og`) | route-level image response using `@vercel/og` | current Next docs repeat the flex-only/CSS-subset and 500 KB limits; import path changed from `next/server` to `next/og` in v14 |
+| Tool | Output / model | Best for | Critical boundaries |
+|---|---|---|---|
+| **Takumi** (`@takumi-rs/image-response` / Rust) | Rust high-speed JSX/Tailwind → PNG/WebP/AVIF | fast dynamic OG cards needing **CSS Grid**, Flexbox, WOFF2 fonts, and WebP/AVIF output | native Rust binding (Node.js/server runtime or WASM build); verify CSS support per pinned version |
+| **Next.js `ImageResponse` (`next/og`)** | JSX/CSS → PNG via Satori + Resvg | Next.js App Router `opengraph-image.tsx` routes | Next.js 15/16 defaults to **Node.js runtime** (`runtime = 'nodejs'`), lifting the 500 KB Edge limit and enabling `fs.readFile`; Edge Runtime (`runtime = 'edge'`) keeps the 500 KB bundle cap; Flexbox-only + TTF/OTF/WOFF fonts |
+| **`@vercel/og`** | JSX/CSS → PNG via Satori + Resvg | Vercel Edge / serverless functions | 500 KB Edge bundle cap including JSX/fonts/assets; Flexbox-only subset; TTF/OTF/WOFF only (no WOFF2) |
+| **Satori + `@resvg/resvg-js`** | JSX → SVG string → PNG buffer | framework-agnostic Node/CI/Astro/Remix OG generation | explicit font buffers required; no system fallback; handle emoji/CJK via `loadAdditionalAsset` |
+| **Sharp** (`sharp`) | libvips raster compositing, resize, WebP/AVIF/PNG | compositing SVG/PNG badges, multi-crop social variants, strict byte budgets (WhatsApp <300 KB, GitHub <1 MB) | not an HTML/CSS layout engine; pair with SVG/Satori/Takumi |
+| **`@napi-rs/canvas` / `skia-canvas`** | Rust/Skia 2D Canvas API in Node.js | custom generative art, pixel-exact charts, dense data badges without HTML layout | manual text wrapping and coordinate layout |
+| **Playwright HTML-to-screenshot** | full Chromium render → PNG/JPEG/WebP | complex **Arabic/Indic/CJK bidirectional shaping**, full CSS Grid/subgrid, SVG filters, rich web components | high memory/cold-start latency; pre-render at build time or cache aggressively behind CDN |
 
-Upstream Satori's README describes a broader/evolving layout implementation. That does not override the narrower documented `@vercel/og`/`ImageResponse` contract. If a project calls Satori directly, inspect the pinned Satori version and feature table rather than assuming either the old or new limit.
+## Next.js 15/16 `ImageResponse` (Node.js runtime)
 
-## Required constraints for Vercel/Next generation
+In Next.js 15/16, `opengraph-image.tsx` and Route Handlers default to the **Node.js runtime** (`export const runtime = 'nodejs'`), which lifts the legacy 500 KB Edge bundle cap and allows reading local font assets directly via `node:fs/promises`:
 
-- use `display: flex` layouts; do not depend on CSS grid;
-- use only the documented supported CSS subset;
-- maximum bundle size is 500 KB including JSX/CSS/fonts/images/assets;
-- font data must be supplied explicitly as `Buffer`/`ArrayBuffer`;
-- supported font formats are TTF, OTF, and WOFF—not WOFF2; TTF/OTF are preferred for parsing speed;
-- every text style needs matching family/weight/style font data;
-- images need explicit dimensions and reliable data/URLs; prefer inline/buffer data where latency/reliability matters;
-- JSX must be pure/static: no hooks/state/effects/browser DOM assumptions.
-
-## Font loading pattern
-
-```jsx
+```tsx
 import { ImageResponse } from 'next/og';
+import { readFile } from 'node:fs/promises';
+import { join } from 'node:path';
 
-export async function GET() {
-  const fontData = await fetch(new URL('./Inter-Bold.ttf', import.meta.url)).then((res) => res.arrayBuffer());
+export const runtime = 'nodejs'; // default in Next.js 15/16; lifts 500 KB Edge cap
+export const size = { width: 1200, height: 630 };
+export const contentType = 'image/png';
+
+export default async function Image() {
+  const interBold = await readFile(join(process.cwd(), 'assets/fonts/Inter-Bold.ttf'));
 
   return new ImageResponse(
     (
@@ -38,70 +37,117 @@ export async function GET() {
           width: '100%',
           height: '100%',
           display: 'flex',
-          alignItems: 'center',
-          padding: 80,
-          background: '#101820',
-          color: 'white',
+          flexDirection: 'column',
+          justifyContent: 'space-between',
+          padding: 72,
+          background: '#0f172a',
+          color: '#f8fafc',
           fontFamily: 'Inter',
         }}
       >
-        Pixelcraft
+        <div style={{ fontSize: 64, fontWeight: 700, lineHeight: 1.1 }}>Pixelcraft</div>
+        <div style={{ fontSize: 28, color: '#cbd5e1' }}>Portable UI craft across every surface</div>
       </div>
     ),
     {
-      width: 1200,
-      height: 630,
-      fonts: [
-        {
-          name: 'Inter',
-          data: fontData,
-          weight: 700,
-          style: 'normal',
-        },
-      ],
+      ...size,
+      fonts: [{ name: 'Inter', data: interBold, weight: 700, style: 'normal' }],
     },
   );
 }
 ```
 
-Exact behavior depends on runtime/framework. Do not fetch secrets or unbounded remote URLs. Cache font bytes deliberately; font loading can dominate cold-start time and bundle size.
+If you explicitly opt into `export const runtime = 'edge'`, enforce the 500 KB total bundle cap and load fonts via `fetch(new URL('./Inter-Bold.ttf', import.meta.url))`.
 
-## Satori direct-use pattern
+## Satori + `@resvg/resvg-js` (`loadAdditionalAsset` & `tw` caveats)
 
-```js
+Use Satori directly with `@resvg/resvg-js` when you want deterministic Node/CI generation outside Vercel/Next:
+
+```ts
 import satori from 'satori';
+import { Resvg } from '@resvg/resvg-js';
+import { readFile } from 'node:fs/promises';
+
+const interBold = await readFile('./assets/Inter-Bold.ttf');
 
 const svg = await satori(element, {
   width: 1200,
   height: 630,
-  fonts: [{ name: 'Inter', data: interBuffer, weight: 700, style: 'normal' }],
+  fonts: [{ name: 'Inter', data: interBold, weight: 700, style: 'normal' }],
+  // On-demand emoji (Twemoji SVG data URI) or CJK subset fonts without bloating the base bundle
+  loadAdditionalAsset: async (code, segment) => {
+    if (code === 'emoji') {
+      return await loadLocalTwemojiDataUri(segment);
+    }
+    return '';
+  },
 });
+
+// Satori already converts glyphs to vector paths; disable system font scanning for speed & determinism
+const resvg = new Resvg(svg, {
+  fitTo: { mode: 'width', value: 1200 },
+  font: { loadSystemFonts: false },
+});
+const pngBuffer = resvg.render().asPng();
 ```
 
-Satori returns SVG. Convert to PNG with an explicit rasterizer such as Sharp/librsvg or Resvg depending on the environment; verify text rasterization and bundled native/runtime dependencies. `@vercel/og` already performs its own PNG pipeline.
+Satori caveats:
 
-## Layout guidance
+- **`tw` prop**: Satori's built-in Tailwind `tw="..."` prop parses a constrained Tailwind v3-era subset (no CSS Grid, no Tailwind v4 `oklch()` / CSS variables, no responsive breakpoints or arbitrary pseudo-selectors). Prefer explicit `style` objects or inspect rendered PNG bytes whenever using `tw`.
+- **`loadAdditionalAsset`**: use for Twemoji/OpenMoji SVG data URIs or on-demand CJK/Arabic subset fonts so missing glyphs never render as tofu boxes; pin local or allowlisted assets rather than making uncached per-request external fetches.
+- **No implicit system fallback**: every weight (`400`, `700`) and style (`normal`, `italic`) used in JSX needs a matching buffer in `fonts`.
 
-- compose with nested flex rows/columns and absolute positioning where supported;
-- avoid external stylesheets/selectors/media queries/pseudo-elements unless the pinned renderer explicitly supports them;
-- do not rely on system fonts; there is no implicit system font fallback in Satori-style rendering;
-- test emoji/CJK/RTL/Indic scripts explicitly—font coverage and shaping are renderer/font dependent;
-- keep text wrapping deterministic by constraining width/height and using explicit ellipsis/truncation strategy where supported;
-- test missing image/font/fetch failure states; a broken OG route should fail visibly in monitoring rather than emit a blank card.
+## Takumi (Rust JSX/Tailwind → PNG/WebP/AVIF)
 
-## Security and performance
+Use **Takumi** (`@takumi-rs/image-response` or native Rust crate) when you need Satori-style JSX authoring with **CSS Grid**, **WOFF2** font support, native **WebP/AVIF** compression, and multi-millisecond Rust throughput:
 
-- treat user-controlled text as untrusted input; do not interpolate raw HTML/script behavior;
-- constrain remote asset domains and timeouts;
-- cache immutable generated assets by content/input hash;
-- measure cold/warm latency and memory, especially font parsing/rasterization;
-- do not expose private data in public preview images or metadata.
+```tsx
+import { ImageResponse } from '@takumi-rs/image-response';
 
-## Verification
+export async function renderCard(title: string) {
+  return new ImageResponse(
+    (
+      <div className="grid grid-cols-12 h-full w-full bg-[#0f172a] text-white p-16 gap-8">
+        <div className="col-span-8 flex flex-col justify-center">
+          <h1 className="text-6xl font-bold leading-tight">{title}</h1>
+        </div>
+      </div>
+    ),
+    { width: 1200, height: 630, format: 'webp' },
+  );
+}
+```
 
-1. inspect generated bytes/dimensions/content type;
-2. render/compare light/dark and crop-scale thumbnails;
-3. verify actual text shaping/wrapping for target scripts;
-4. test missing font/image/network failure;
-5. validate platform crawler can fetch the absolute URL;
-6. record whether layout behavior was checked against Satori direct use, `@vercel/og`, or Next `ImageResponse`—their contracts are not identical.
+## Sharp composite and format-budget pipeline
+
+Use **Sharp** to composite generated overlays onto product photography/screenshots, generate multi-aspect variants, and compress strictly under platform byte caps (e.g., WhatsApp <300 KB, GitHub <1 MB):
+
+```ts
+import sharp from 'sharp';
+
+await sharp('base-1200x630.png')
+  .composite([{ input: svgOverlayBuffer, top: 0, left: 0 }])
+  .webp({ quality: 84 }) // or .png({ palette: true, compressionLevel: 9 }) for crisp UI graphics
+  .toFile('og-card.webp');
+```
+
+## `@napi-rs/canvas` / `skia-canvas` and Playwright HTML-to-screenshot
+
+- **`@napi-rs/canvas` / `skia-canvas`**: choose for procedural visualizations, sparklines, and canvas-native graphics where explicit `ctx.measureText` + Skia rendering outperform HTML boxes. Register fonts via `GlobalFonts.registerFromPath(...)` / `FontLibrary.use(...)`.
+- **Playwright HTML-to-screenshot**: choose when cards require **complex Arabic/RTL, Devanagari/Indic, Thai, or mixed CJK bidirectional shaping**, full CSS Grid/subgrid, `backdrop-filter`, or real rendered UI components:
+
+```ts
+await page.setViewportSize({ width: 1200, height: 630 });
+await page.setContent(safeHtml, { waitUntil: 'networkidle' });
+await page.evaluate(() => document.fonts.ready);
+await page.screenshot({ path: 'og-ar.png', type: 'png' });
+```
+
+Never render untrusted user HTML directly in Playwright—escape text strictly, block internal network requests (SSRF protection), and cache by content hash.
+
+## Security, caching, and verification
+
+- Treat user-supplied titles/handles as untrusted text; bound character length and sanitize/escape before templating;
+- constrain remote image domains and timeouts (or inline buffers) so slow external hosts never stall crawlers;
+- cache generated OG images immutably by content/version hash (`Cache-Control: public, max-age=31536000, immutable`);
+- inspect generated byte size, exact dimensions, `Content-Type`, thumbnail legibility at 25–33% scale, and target script shaping (`rendered`); record which renderer produced the image.

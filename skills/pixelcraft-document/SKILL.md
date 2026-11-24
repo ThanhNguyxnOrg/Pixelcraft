@@ -1,6 +1,6 @@
 ---
 name: pixelcraft-document
-description: Designs and verifies paginated documents, print output, reports, invoices, CVs, and slide decks across web and document tooling. Use for print CSS, @page/paged media, page breaks, running headers/footers, physical units, bleed/prepress, PDF generation, Paged.js, WeasyPrint, React-PDF, Typst, LaTeX, document typography, invoices/reports/CVs, Slidev/reveal.js/Marp presentations, slide composition, projector legibility, and print/export verification.
+description: Designs and verifies paginated documents, print output, reports, invoices, CVs, Office exports, and slide decks across web and document tooling. Use for print CSS, @page/paged media, page breaks, running headers/footers, physical units, bleed/prepress, PDF generation, Playwright PDF, Gotenberg, Paged.js, WeasyPrint, PrinceXML, Vivliostyle, React-PDF, pdf-lib, Typst, LaTeX, Quarto, PDF/UA, PDF.js, PptxGenJS, docx, ExcelJS, document typography, invoices/reports/CVs, Slidev/reveal.js/Marp/Touying presentations, projector legibility, and export verification.
 license: MIT
 metadata:
   version: 0.1.0
@@ -8,7 +8,7 @@ metadata:
 
 # Pixelcraft document
 
-Documents are fixed-fragmentation interfaces. Screen scrolling assumptions do not apply: page size, margin boxes, breaks, running navigation, physical units, print color behavior, and final-file legibility are part of the design. Choose the renderer before writing print CSS because browser print, Paged.js, WeasyPrint, React-PDF, Typst, and LaTeX implement different subsets.
+Documents are fixed-fragmentation interfaces. Screen scrolling assumptions do not apply: page size, margin boxes, breaks, running navigation, physical units, print color behavior, and final-file legibility are part of the design. Choose the renderer before writing print CSS because browser print, Playwright/Gotenberg, Paged.js, WeasyPrint, PrinceXML, Vivliostyle, React-PDF, Typst, and LaTeX implement different subsets.
 
 ## Surface craft
 
@@ -16,11 +16,11 @@ Build a reading sequence around repeated headers, explicit units and page bounda
 
 ## References
 
-- Read [references/print-css.md](references/print-css.md) for `@page`, named pages, counters, margin boxes, fragmentation, physical units, print color, bleed, and browser-support boundaries.
-- Read [references/pdf-tools.md](references/pdf-tools.md) for Paged.js, WeasyPrint, React-PDF, Typst, and LaTeX selection plus exact integration constraints.
-- Read [references/archetypes.md](references/archetypes.md) for invoice, report, and CV/résumé composition rules.
-- Read [references/slides.md](references/slides.md) for Slidev, reveal.js, Marp, Keynote-style slide craft, safe areas, type scale, and export verification.
-- Read [references/pdfjs-and-pptx.md](references/pdfjs-and-pptx.md) when embedding client-side PDF viewers (`pdfjs-dist` worker, `TextLayer`, cancellation) or generating programmatic PowerPoint decks (`pptxgenjs`).
+- Read [references/print-css.md](references/print-css.md) for `@page`, named pages, counters, margin boxes, `string-set`, `target-counter()`, footnotes, fragmentation, physical units, print color, bleed, and browser-support boundaries.
+- Read [references/pdf-tools.md](references/pdf-tools.md) for Playwright PDF, Gotenberg, PrinceXML, Vivliostyle, Paged.js, WeasyPrint, React-PDF, `pdf-lib`, ReportLab/PDFKit, Typst, LaTeX, Quarto, and Office (`docx`/`python-docx`, ExcelJS/SheetJS) toolchains.
+- Read [references/archetypes.md](references/archetypes.md) for invoice (including ZUGFeRD/Factur-X hybrid e-invoicing), report, CV/résumé, and PDF/UA tagging composition rules.
+- Read [references/slides.md](references/slides.md) for Slidev, reveal.js, Marp, Touying/Polylux, Quarto RevealJS, Keynote-style slide craft, safe areas, type scale, and export verification.
+- Read [references/pdfjs-and-pptx.md](references/pdfjs-and-pptx.md) when embedding client-side PDF viewers (`pdfjs-dist` worker, `TextLayer`, HiDPI transform, cancellation) or generating programmatic PowerPoint decks (`pptxgenjs`).
 
 ## Required workflow
 

@@ -12,17 +12,20 @@ used only when already installed in the target dependency context; otherwise
 installation guidance is printed and no browser is launched.
 
 Options:
-  --out FILE             Write JSON report to FILE instead of stdout
-  --breakpoints LIST     Width x height list (default: 390x900,1440x900)
-  --project DIR          Dependency resolution root (default: current directory)
-  --root DIR             Static server root for local targets (default: target directory)
-  --executable-path FILE Use a specific Chromium/Chrome executable
-  --timeout MS           Navigation timeout in milliseconds (default: 30000)
-  --wait-until EVENT     Navigation lifecycle event: load or domcontentloaded (default: load)
-  --wait-for SELECTOR    Wait for a selector after page load
-  --wait-ms MS           Post-load settle time in milliseconds (default: 2000)
-  --compact              Emit compact JSON
-  --help                 Show this help
+  --out FILE               Write JSON report to FILE instead of stdout
+  --breakpoints LIST       Width x height list (default: 390x900,1440x900)
+  --project DIR            Dependency resolution root (default: current directory)
+  --root DIR               Static server root for local targets (default: target directory)
+  --executable-path FILE   Use a specific Chromium/Chrome executable
+  --color-scheme MODE      Emulate prefers-color-scheme: light or dark
+  --reduced-motion MODE    Emulate prefers-reduced-motion: no-preference or reduce
+  --allow-http-error       Measure HTTP 4xx/5xx pages without failing the run
+  --timeout MS             Navigation timeout in milliseconds (default: 30000)
+  --wait-until EVENT       Navigation lifecycle event: load or domcontentloaded (default: load)
+  --wait-for SELECTOR      Wait for a selector after page load
+  --wait-ms MS             Post-load settle time in milliseconds (default: 2000)
+  --compact                Emit compact JSON
+  --help                   Show this help
 
 The output is heuristic evidence, not an accessibility or quality certification.
 Cross-origin CSS may be unreadable, canvas/WebGL painting can hide text and color,
@@ -37,59 +40,95 @@ Install Playwright in the target project when measurement is desired, for exampl
 
 function optionValue(args, index, name) {
   const value = args[index + 1];
-  if (value === undefined) throw new Error(`${name} requires a value`);
+  if (value === undefined || value === '') throw new Error(`${name} requires a value`);
+  return value;
+}
+
+function inlineValue(arg, prefix, name) {
+  const value = arg.slice(prefix.length);
+  if (value === '') throw new Error(`${name} requires a value`);
   return value;
 }
 
 function parse(args) {
-  const options = { out: null, breakpoints: '390x900,1440x900', project: process.cwd(), root: null, timeout: 30000, waitUntil: 'load', waitFor: null, waitMs: 2000, compact: false, executablePath: null, help: false };
+  const options = {
+    out: null,
+    breakpoints: '390x900,1440x900',
+    project: process.cwd(),
+    root: null,
+    timeout: 30000,
+    waitUntil: 'load',
+    waitFor: null,
+    waitMs: 2000,
+    compact: false,
+    executablePath: null,
+    colorScheme: null,
+    reducedMotion: null,
+    allowHttpError: false,
+    help: false,
+  };
   const positional = [];
   for (let index = 0; index < args.length; index += 1) {
     const arg = args[index];
     if (arg === '--help' || arg === '-h') options.help = true;
     else if (arg === '--compact') options.compact = true;
+    else if (arg === '--allow-http-error') options.allowHttpError = true;
     else if (arg === '--out') {
       options.out = optionValue(args, index, '--out');
       index += 1;
-    } else if (arg.startsWith('--out=')) options.out = arg.slice(6);
+    } else if (arg.startsWith('--out=')) options.out = inlineValue(arg, '--out=', '--out');
     else if (arg === '--breakpoints') {
       options.breakpoints = optionValue(args, index, '--breakpoints');
       index += 1;
-    } else if (arg.startsWith('--breakpoints=')) options.breakpoints = arg.slice(14);
+    } else if (arg.startsWith('--breakpoints=')) options.breakpoints = inlineValue(arg, '--breakpoints=', '--breakpoints');
     else if (arg === '--project') {
       options.project = optionValue(args, index, '--project');
       index += 1;
-    } else if (arg.startsWith('--project=')) options.project = arg.slice(10);
+    } else if (arg.startsWith('--project=')) options.project = inlineValue(arg, '--project=', '--project');
     else if (arg === '--root') {
       options.root = optionValue(args, index, '--root');
       index += 1;
-    } else if (arg.startsWith('--root=')) options.root = arg.slice(7);
+    } else if (arg.startsWith('--root=')) options.root = inlineValue(arg, '--root=', '--root');
     else if (arg === '--executable-path') {
       options.executablePath = optionValue(args, index, '--executable-path');
       index += 1;
-    } else if (arg.startsWith('--executable-path=')) options.executablePath = arg.slice(18);
+    } else if (arg.startsWith('--executable-path=')) options.executablePath = inlineValue(arg, '--executable-path=', '--executable-path');
+    else if (arg === '--color-scheme') {
+      options.colorScheme = optionValue(args, index, '--color-scheme');
+      index += 1;
+    } else if (arg.startsWith('--color-scheme=')) options.colorScheme = inlineValue(arg, '--color-scheme=', '--color-scheme');
+    else if (arg === '--reduced-motion') {
+      options.reducedMotion = optionValue(args, index, '--reduced-motion');
+      index += 1;
+    } else if (arg.startsWith('--reduced-motion=')) options.reducedMotion = inlineValue(arg, '--reduced-motion=', '--reduced-motion');
     else if (arg === '--timeout') {
       options.timeout = Number(optionValue(args, index, '--timeout'));
       index += 1;
-    } else if (arg.startsWith('--timeout=')) options.timeout = Number(arg.slice(10));
+    } else if (arg.startsWith('--timeout=')) options.timeout = Number(inlineValue(arg, '--timeout=', '--timeout'));
     else if (arg === '--wait-until') {
       options.waitUntil = optionValue(args, index, '--wait-until');
       index += 1;
-    } else if (arg.startsWith('--wait-until=')) options.waitUntil = arg.slice(13);
+    } else if (arg.startsWith('--wait-until=')) options.waitUntil = inlineValue(arg, '--wait-until=', '--wait-until');
     else if (arg === '--wait-for') {
       options.waitFor = optionValue(args, index, '--wait-for');
       index += 1;
-    } else if (arg.startsWith('--wait-for=')) options.waitFor = arg.slice(11);
+    } else if (arg.startsWith('--wait-for=')) options.waitFor = inlineValue(arg, '--wait-for=', '--wait-for');
     else if (arg === '--wait-ms') {
       options.waitMs = Number(optionValue(args, index, '--wait-ms'));
       index += 1;
-    } else if (arg.startsWith('--wait-ms=')) options.waitMs = Number(arg.slice(10));
+    } else if (arg.startsWith('--wait-ms=')) options.waitMs = Number(inlineValue(arg, '--wait-ms=', '--wait-ms'));
     else if (arg.startsWith('-')) throw new Error(`unknown option: ${arg}`);
     else positional.push(arg);
   }
   if (!Number.isFinite(options.timeout) || options.timeout <= 0) throw new Error('--timeout must be a positive number');
   if (!Number.isFinite(options.waitMs) || options.waitMs < 0) throw new Error('--wait-ms must be a non-negative number');
   if (options.waitUntil !== 'load' && options.waitUntil !== 'domcontentloaded') throw new Error(`--wait-until must be 'load' or 'domcontentloaded', got '${options.waitUntil}'`);
+  if (options.colorScheme !== null && options.colorScheme !== 'light' && options.colorScheme !== 'dark') {
+    throw new Error(`--color-scheme must be 'light' or 'dark', got '${options.colorScheme}'`);
+  }
+  if (options.reducedMotion !== null && options.reducedMotion !== 'no-preference' && options.reducedMotion !== 'reduce') {
+    throw new Error(`--reduced-motion must be 'no-preference' or 'reduce', got '${options.reducedMotion}'`);
+  }
   return { positional, options };
 }
 
@@ -213,8 +252,8 @@ function emptyNetworkPhase() {
   return { requests: 0, transferBytes: 0, jsBytes: 0 };
 }
 
-function observeNetwork(session, mainFrameId = null) {
-  let loadEventSeen = false;
+function observeNetwork(session, mainFrameId = null, waitUntil = 'load') {
+  let phaseBoundarySeen = false;
   const active = new Map();
   const network = {
     status: 0,
@@ -247,8 +286,9 @@ function observeNetwork(session, mainFrameId = null) {
     }
   }
 
-  session.on('Page.loadEventFired', () => {
-    loadEventSeen = true;
+  const boundaryEvent = waitUntil === 'domcontentloaded' ? 'Page.domContentEventFired' : 'Page.loadEventFired';
+  session.on(boundaryEvent, () => {
+    phaseBoundarySeen = true;
   });
   session.on('Network.requestWillBeSent', (event) => {
     const existing = active.get(event.requestId);
@@ -259,7 +299,7 @@ function observeNetwork(session, mainFrameId = null) {
       return;
     }
     const type = event.type || 'Other';
-    const phase = loadEventSeen ? 'deferred' : 'initial';
+    const phase = phaseBoundarySeen ? 'deferred' : 'initial';
     active.set(event.requestId, { type, phase });
     network.requests += 1;
     network[phase].requests += 1;
@@ -274,14 +314,14 @@ function observeNetwork(session, mainFrameId = null) {
   session.on('Network.loadingFinished', (event) => {
     const record = active.get(event.requestId);
     const type = record?.type || 'Other';
-    const phase = record?.phase || (loadEventSeen ? 'deferred' : 'initial');
+    const phase = record?.phase || (phaseBoundarySeen ? 'deferred' : 'initial');
     addBytes(type, phase, event.encodedDataLength || 0);
     active.delete(event.requestId);
   });
   session.on('Network.loadingFailed', (event) => {
     const record = active.get(event.requestId);
     const type = record?.type || 'Other';
-    const phase = record?.phase || (loadEventSeen ? 'deferred' : 'initial');
+    const phase = record?.phase || (phaseBoundarySeen ? 'deferred' : 'initial');
     network.failedRequests += 1;
     addBytes(type, phase, event.encodedDataLength || 0);
     active.delete(event.requestId);
@@ -296,7 +336,7 @@ function observeNetwork(session, mainFrameId = null) {
   };
 }
 
-const extract = String.raw`(() => {
+const extract = String.raw`((extractOptions = {}) => {
   const viewportWidth = window.innerWidth;
   const viewportHeight = window.innerHeight;
   const navigation = performance.getEntriesByType('navigation')[0] || {};
@@ -380,7 +420,7 @@ const extract = String.raw`(() => {
   function luminance(color) {
     const convert = (channel) => {
       const value = channel / 255;
-      return value <= 0.03928 ? value / 12.92 : Math.pow((value + 0.055) / 1.055, 2.4);
+      return value <= 0.04045 ? value / 12.92 : Math.pow((value + 0.055) / 1.055, 2.4);
     };
     return 0.2126 * convert(color.r) + 0.7152 * convert(color.g) + 0.0722 * convert(color.b);
   }
@@ -738,12 +778,15 @@ const extract = String.raw`(() => {
   const backgroundEntries = [...backgroundColors.entries()].sort((a, b) => b[1] - a[1]);
   const inkEntries = [...inkColors.entries()].sort((a, b) => b[1] - a[1]);
   const distinctColors = new Set([...backgroundColors.keys(), ...inkColors.keys()]);
-  const dominantKey = backgroundEntries[0]?.[0] || '255,255,255';
+  const isDarkEmulation = extractOptions.colorScheme === 'dark';
+  const dominantFallback = isDarkEmulation ? '18,18,18' : '255,255,255';
+  const dominantKey = backgroundEntries[0]?.[0] || dominantFallback;
   const dominantParts = dominantKey.split(',').map(Number);
+  const dominantDefaultChannel = isDarkEmulation ? 18 : 255;
   const dominantColor = {
-    r: Number.isFinite(dominantParts[0]) ? dominantParts[0] : 255,
-    g: Number.isFinite(dominantParts[1]) ? dominantParts[1] : 255,
-    b: Number.isFinite(dominantParts[2]) ? dominantParts[2] : 255,
+    r: Number.isFinite(dominantParts[0]) ? dominantParts[0] : dominantDefaultChannel,
+    g: Number.isFinite(dominantParts[1]) ? dominantParts[1] : dominantDefaultChannel,
+    b: Number.isFinite(dominantParts[2]) ? dominantParts[2] : dominantDefaultChannel,
     a: 1,
   };
 
@@ -799,13 +842,26 @@ const extract = String.raw`(() => {
     three: Boolean(window.THREE) || /\bthree(?:\.min|\.module)?\.js\b|@react-three/.test(scriptHaystack),
     barba: Boolean(window.barba) || /\bbarba\b/.test(scriptHaystack),
     swup: Boolean(window.Swup) || /\bswup\b/.test(scriptHaystack),
-    framerMotion: /framer-motion|motionone|motion\.one/.test(scriptHaystack),
+    framerMotion: /framer-motion|motion\/react|motionone|motion\.one/.test(scriptHaystack),
+    motion: /motion\/react|motion-dom|motionone|motion\.one/.test(scriptHaystack),
     rive: Boolean(window.rive) || /\brive(?:\.min)?\.js\b|@rive-app\//.test(scriptHaystack),
     lottie: Boolean(window.lottie) || /\blottie(?:\.min)?\.js\b|\blottie-web\b/.test(scriptHaystack),
+    pixi: Boolean(window.PIXI) || /\bpixi(?:\.min|\.mjs)?\.js\b|pixi\.js/.test(scriptHaystack),
+    babylon: Boolean(window.BABYLON) || /\bbabylon(?:\.min)?\.js\b|@babylonjs\//.test(scriptHaystack),
+    spline: Boolean(document.querySelector('spline-viewer')) || /@splinetool\/|spline-viewer/.test(scriptHaystack),
+    playcanvas: Boolean(window.pc) || /\bplaycanvas\b/.test(scriptHaystack),
   };
   const browserTechniques = {
     cssScrollTimeline: /scroll-timeline|animation-timeline|view-timeline/.test(cssLower),
-    viewTransitions: /view-transition|startviewtransition\s*\(/.test(cssLower + '\n' + scriptHaystack),
+    viewTransitions: /@view-transition|view-transition|startviewtransition\s*\(/.test(cssLower + '\n' + scriptHaystack),
+    webgpu: /navigator\.gpu|\brequestadapter\b/.test(scriptHaystack),
+    anchorPositioning: /anchor-name|position-anchor/.test(cssLower),
+    startingStyle: /@starting-style/.test(cssLower),
+    popover: Boolean(document.querySelector('[popover]')) || /:popover-open/.test(cssLower),
+    containerQueries: /@container\b/.test(cssLower),
+    lightDark: /light-dark\s*\(/.test(cssLower),
+    oklch: /oklch\s*\(/.test(cssLower),
+    reducedTransparencyCSS: /prefers-reduced-transparency/.test(cssLower),
   };
 
   const bodyStyle = document.body ? styleOf(document.body) : null;
@@ -827,6 +883,7 @@ const extract = String.raw`(() => {
   const cursorList = [...cursorValues].filter(Boolean).slice(0, 20);
   const customImageCursors = cursorList.filter((value) => value.includes('url('));
 
+  const canvasBackdrop = isDarkEmulation ? { r: 18, g: 18, b: 18, a: 1 } : { r: 255, g: 255, b: 255, a: 1 };
   function effectiveContrastColors(element, foregroundColor) {
     const chain = [];
     let node = element;
@@ -846,10 +903,9 @@ const extract = String.raw`(() => {
       bg = opacity < 1 ? { ...innerBg, a: innerBg.a * opacity } : innerBg;
       fg = opacity < 1 ? { ...innerFg, a: innerFg.a * opacity } : innerFg;
     }
-    const canvas = { r: 255, g: 255, b: 255, a: 1 };
     return {
-      background: alphaBlend(bg, canvas),
-      foreground: alphaBlend(fg, canvas),
+      background: alphaBlend(bg, canvasBackdrop),
+      foreground: alphaBlend(fg, canvasBackdrop),
     };
   }
 
@@ -888,11 +944,11 @@ const extract = String.raw`(() => {
     return true;
   }
 
-  const landmarkRoles = { MAIN: 'main', NAV: 'navigation', HEADER: 'banner', FOOTER: 'contentinfo', ASIDE: 'complementary' };
-  const validLandmarkRoles = new Set(['main', 'navigation', 'banner', 'contentinfo', 'complementary']);
+  const landmarkRoles = { MAIN: 'main', NAV: 'navigation', HEADER: 'banner', FOOTER: 'contentinfo', ASIDE: 'complementary', SEARCH: 'search' };
+  const validLandmarkRoles = new Set(['main', 'navigation', 'banner', 'contentinfo', 'complementary', 'search']);
   const sectioningSelector = 'article, aside, main, nav, section, [role="article"], [role="complementary"], [role="main"], [role="navigation"], [role="region"]';
   const landmarks = {};
-  for (const element of document.querySelectorAll('main,nav,header,footer,aside,[role]')) {
+  for (const element of document.querySelectorAll('main,nav,header,footer,aside,search,[role]')) {
     if (!isAccessibilityExposed(element)) continue;
     const roleAttr = (element.getAttribute('role') || '').trim().toLowerCase();
     let role = null;
@@ -1023,7 +1079,7 @@ const extract = String.raw`(() => {
     lcp: typeof state.lcp === 'number' ? round(state.lcp, 1) : null,
     cls: round(state.cls || 0, 4),
   };
-})()`;
+})`;
 
 const initObserver = String.raw`(() => {
   const state = { lcp: null, cls: 0 };
@@ -1063,7 +1119,7 @@ async function measurePage(page, target, viewport, options) {
   await session.send('Network.enable');
   const { frameTree } = await session.send('Page.getFrameTree');
   const mainFrameId = frameTree?.frame?.id || null;
-  const tracker = observeNetwork(session, mainFrameId);
+  const tracker = observeNetwork(session, mainFrameId, options.waitUntil);
   const response = await page.goto(target, { waitUntil: options.waitUntil, timeout: options.timeout });
   if (options.waitFor) await page.waitForSelector(options.waitFor, { timeout: options.timeout });
   if (options.waitMs > 0) await page.waitForTimeout(options.waitMs);
@@ -1073,7 +1129,7 @@ async function measurePage(page, target, viewport, options) {
       new Promise((resolve) => setTimeout(resolve, Math.min(1000, options.waitMs))),
     ]);
   }
-  const measured = await page.evaluate(extract);
+  const measured = await page.evaluate(`${extract}(${JSON.stringify({ colorScheme: options.colorScheme || 'light' })})`);
   const network = tracker.snapshot();
   if (response && network.status === 0) network.status = response.status();
   return { width: viewport.width, height: viewport.height, ...measured, network };
@@ -1097,6 +1153,9 @@ async function main() {
   }
   const target = await createStaticTarget(input, options);
   let browser;
+  const phaseLabel = options.waitUntil === 'domcontentloaded'
+    ? 'initial means request initiated before the document domcontentloaded event; deferred means after it'
+    : 'initial means request initiated before the document load event; deferred means after it';
   const report = {
     schemaVersion: 1,
     target: input,
@@ -1107,7 +1166,9 @@ async function main() {
       cache: 'fresh browser context per viewport; HTTP cache left enabled',
       throttling: 'none',
       emulation: 'headless Chromium viewport emulation',
-      payloadPhase: 'initial means request initiated before the document load event; deferred means after it',
+      ...(options.colorScheme ? { colorScheme: options.colorScheme } : {}),
+      ...(options.reducedMotion ? { reducedMotion: options.reducedMotion } : {}),
+      payloadPhase: phaseLabel,
     },
     limitations: [
       'cross-origin stylesheets may be unreadable',
@@ -1123,12 +1184,19 @@ async function main() {
     ],
     viewports: [],
   };
+  let sawHttpError = false;
   try {
     browser = await chromium.launch({ headless: true, ...(options.executablePath ? { executablePath: options.executablePath } : {}) });
     for (const viewport of breakpoints) {
-      const page = await browser.newPage({ viewport });
+      const page = await browser.newPage({
+        viewport,
+        ...(options.colorScheme ? { colorScheme: options.colorScheme } : {}),
+        ...(options.reducedMotion ? { reducedMotion: options.reducedMotion } : {}),
+      });
       try {
-        report.viewports.push(await measurePage(page, target.url, viewport, options));
+        const result = await measurePage(page, target.url, viewport, options);
+        if (result.network.status >= 400) sawHttpError = true;
+        report.viewports.push(result);
       } finally {
         await page.close();
       }
@@ -1145,6 +1213,10 @@ async function main() {
     console.log(`wrote ${path.relative(process.cwd(), out) || out}`);
   } else {
     console.log(json);
+  }
+  if (sawHttpError && !options.allowHttpError) {
+    console.error('style-inventory: target returned HTTP 4xx/5xx; use --allow-http-error only when intentionally measuring error pages');
+    process.exitCode = 1;
   }
 }
 

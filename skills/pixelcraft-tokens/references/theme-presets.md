@@ -34,21 +34,49 @@ Pure black backgrounds can cause smearing/halation and remove elevation cues. Pu
 
 Desaturate or lighten accents in dark mode when saturation vibrates or contrast fails. Preserve hue identity and state distinctness; do not make success/warning/error indistinguishable.
 
-## `prefers-contrast` and forced colors
+## `light-dark()`, `prefers-contrast`, `prefers-reduced-transparency`, and forced colors
 
-CSS contrast preference media features:
+On modern web targets, pair `color-scheme: light dark` with CSS Color 5 `light-dark()` so form controls, scrollbars, and semantic color tokens switch cleanly under system preference or explicit user choice (`color-scheme: light` / `color-scheme: dark` on `:root[data-theme="..."]`):
 
 ```css
-@media (prefers-contrast: more) { /* stronger semantic tokens */ }
-@media (prefers-contrast: less) { /* only when product intentionally supports it */ }
-@media (forced-colors: active) { /* do not fight platform colors */ }
+:root {
+  color-scheme: light dark;
+  --color-surface-base: light-dark(oklch(0.98 0.005 95), oklch(0.20 0.01 265));
+  --color-ink-primary: light-dark(oklch(0.22 0.015 265), oklch(0.93 0.008 95));
+}
+:root[data-theme="light"] { color-scheme: light; }
+:root[data-theme="dark"]  { color-scheme: dark; }
+
+@media (prefers-contrast: more) { /* stronger borders, ink separation, and focus outlines */ }
+@media (prefers-reduced-transparency: reduce) { /* replace translucent/glass fills with opaque surface tokens */ }
+@media (forced-colors: active) { /* preserve platform system colors and borders */ }
 ```
 
-`prefers-contrast` values include `no-preference`, `more`, `less`, and `custom` in current CSS media-query work; support is browser-dependent. Forced Colors Mode/Windows High Contrast is stronger: the platform constrains colors. Use system colors such as `Canvas`, `CanvasText`, `ButtonText`, `ButtonFace`, `LinkText`, `Highlight`, and `HighlightText` deliberately. Do not remove outlines/backgrounds that the platform needs for meaning, and do not use box shadows/background-only cues that disappear in forced colors.
+`prefers-contrast` values include `no-preference`, `more`, `less`, and `custom`. Whenever a theme uses translucent or glass surfaces, provide an opaque high-contrast token swap under `prefers-reduced-transparency: reduce` (and Apple/Windows Reduce Transparency settings). Forced Colors Mode/Windows High Contrast is stronger: the platform constrains colors. Use system colors such as `Canvas`, `CanvasText`, `ButtonText`, `ButtonFace`, `LinkText`, `Highlight`, and `HighlightText` deliberately. Do not remove outlines/backgrounds that the platform needs for meaning, and do not use box shadows/background-only cues that disappear in forced colors.
 
-## DTCG modes example
+### Anti-FOUC pre-paint theme initialization
 
-DTCG 2025.10 does not impose one universal mode-extension shape. Pixelcraft's zero-dependency exporter supports token-level overrides under `$extensions.pixelcraft.modes` as a controlled subset. A replacement can be a raw value or an object containing `$value`.
+For web apps supporting a persisted user theme override (`light` / `dark` / `system`), execute a tiny synchronous inline script in `<head>` **before** stylesheets paint so the page never flashes light mode before hydrating dark mode (or emit the saved theme cookie on the server during SSR):
+
+```html
+<script>
+  (() => {
+    try {
+      const saved = localStorage.getItem('theme');
+      const prefersDark = matchMedia('(prefers-color-scheme: dark)').matches;
+      const mode = saved === 'light' || saved === 'dark' ? saved : (prefersDark ? 'dark' : 'light');
+      document.documentElement.dataset.theme = mode;
+      document.documentElement.style.colorScheme = mode;
+    } catch {}
+  })();
+</script>
+```
+
+## DTCG modes: Resolver vs. `$extensions.pixelcraft.modes`
+
+For multi-theme and multi-brand production pipelines, use the **W3C DTCG 2025.10 Resolver Specification** (`*.resolver.json` with `sets`, `modifiers`, `contexts`, and `resolutionOrder`, documented in `references/format.md`) compiled with Terrazzo or Resolver-aware Style Dictionary.
+
+For lightweight single-file token sets exported with Pixelcraft's zero-dependency `scripts/export-tokens.mjs`, use token-level overrides under `$extensions.pixelcraft.modes`. A replacement can be a raw value or an object containing `$value`:
 
 ```json
 {

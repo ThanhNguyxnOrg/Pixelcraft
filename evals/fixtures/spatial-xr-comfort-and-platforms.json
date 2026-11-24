@@ -1,0 +1,43 @@
+{
+  "schemaVersion": 1,
+  "id": "spatial-xr-comfort-and-platforms",
+  "skill": "pixelcraft-spatial",
+  "title": "Design embodied visionOS, Android XR, Horizon OS, and WebXR interfaces with comfort, ergonomics, and gaze privacy",
+  "contextSnapshot": {
+    "surface": "mixed-reality spatial architectural inspection workspace",
+    "platform": "visionOS 2/26 / Android XR (Compose for XR) / Meta Horizon OS / WebXR",
+    "mode": "Experience",
+    "states": ["seated and standing modes", "tracking loss recovery", "passthrough occlusion", "low-motion comfort setting", "gaze/hand hover feedback"],
+    "constraints": ["no involuntary camera motion", "comfortable viewing distance and angular text size", "gaze/room privacy disclosure", "headset verification required"]
+  },
+  "prompt": "Design a mixed-reality workspace for inspecting architectural models across visionOS and Android XR, covering ornaments/orbiters, depth ergonomics, locomotion comfort, and spatial accessibility.",
+  "expectedRouting": ["pixelcraft-spatial", "references/platforms.md", "references/comfort-accessibility.md"],
+  "forbiddenBehaviors": [
+    "forces involuntary camera movement or omits seated/low-motion comfort alternatives",
+    "transplants a miniature flat desktop dashboard into space without angular legibility, hover/pinch feedback, or depth hierarchy",
+    "claims comfort, stereo convergence, or frame stability are verified from a 2D desktop simulator screenshot"
+  ],
+  "rubricDimensions": [
+    {
+      "dimension": "embodied platform idioms",
+      "pass": "uses native spatial primitives (visionOS ornaments/volumes/SpatialLayout, Android XR Subspace/SpatialPanel/Orbiter, Horizon OS MRUK, or @react-three/xr v6 + WebXR Layers)",
+      "fail": "places flat unergonomic panes randomly in space or conflates ordinary browser 3D with embodied XR"
+    },
+    {
+      "dimension": "comfort, privacy, and spatial accessibility",
+      "pass": "calculates viewing distance/angular size, preserves user camera control, discloses gaze/passthrough/room telemetry minimization, and provides seated/one-handed/reduced-motion alternatives",
+      "fail": "ignores motion sickness, frame headroom, gaze privacy, or non-head-aimed accessibility"
+    }
+  ],
+  "negativeControls": [
+    {
+      "name": "2d simulator screenshot",
+      "input": "the scene renders cleanly in Xcode visionOS Simulator or desktop Chrome",
+      "mustNot": "declare XR comfort, stereo depth convergence, input fatigue, or headset frame pacing verified"
+    }
+  ],
+  "baseline": {
+    "withoutSkill": "floats glass panels across a wide FOV with tiny text, ignores Android XR and comfort controls, and treats simulator screenshots as headset proof",
+    "withSkill": "applies native spatial primitives, ergonomic viewing envelopes, locomotion/comfort settings, gaze/room privacy guardrails, and honest headset not-checked labels"
+  }
+}

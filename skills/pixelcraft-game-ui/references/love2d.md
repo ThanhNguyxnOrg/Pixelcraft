@@ -2,50 +2,76 @@
 
 ## Token mapping
 
-Centralize palette/type/scale in a Lua module. Return semantic values, not raw constants scattered through draw calls. Fonts/images are runtime assets; preload intentionally.
+Centralize palette, typography, spacing, and scale tokens in a Lua module (`theme.lua`) rather than scattering raw RGB tables across `love.draw()`. Preload fonts and glyph atlases deliberately in `love.load()` or on `love.resize()`.
 
-## Layout and responsive idioms
+## Layout, `love.window.getSafeArea()`, and Lua UI libraries
 
-LÖVE is immediate-mode drawing with no built-in retained UI system. Define layout regions mathematically, handle `love.resize`, pixel scale/aspect, safe margins, keyboard/gamepad/touch differences. Separate HUD/state/menu layers.
+LÖVE2D is immediate-mode drawing with no built-in retained UI framework. Compute HUD bounds inside **`love.window.getSafeArea()`** (which returns usable `x, y, w, h` excluding mobile notches, Dynamic Island, and TV overscan) and recompute on `love.resize(w, h)`:
 
-## Typography/custom fonts
+```lua
+local ui = { safe = { x = 0, y = 0, w = 1280, h = 720 }, inputDevice = "kbm" }
 
-Use `love.graphics.newFont`/font assets with explicit sizes and fallback/licensing. Bitmap/pixel fonts must remain legible when scaled; validate glyph coverage for localization.
+function ui.updateSafeArea()
+  local x, y, w, h = love.window.getSafeArea()
+  ui.safe.x, ui.safe.y, ui.safe.w, ui.safe.h = x, y, w, h
+end
 
-## Motion/reduced motion
+function ui.detectGlyphFamily(joystick)
+  local name = (joystick:getName() or ""):lower()
+  if name:find("dualsense") or name:find("dualshock") or name:find("ps[45]") then
+    return "playstation"
+  elseif name:find("nintendo") or name:find("switch") or name:find("joy%-con") then
+    return "nintendo"
+  elseif name:find("steam") then
+    return "steamdeck"
+  end
+  return "xbox"
+end
 
-All motion is game-loop owned. Provide reduced-motion/flash-intensity options, decouple critical state from tween completion, clamp delta time where needed, and avoid visual noise behind critical HUD.
+function love.gamepadpressed(joystick, _button)
+  ui.inputDevice = ui.detectGlyphFamily(joystick)
+end
 
-## Accessibility specifics
+function love.keypressed(_key)
+  ui.inputDevice = "kbm"
+end
+```
 
-There is no built-in screen-reader/focus system. Keyboard/gamepad remapping, colorblind-safe encoding, scalable text/contrast/subtitle presentation, input remapping, and reduced-flash/motion options are manual responsibilities. Do not claim platform accessibility integration that does not exist.
+When you need ready-made widgets instead of hand-drawn rects:
 
-## States idiom
+- **SUIT**: lightweight immediate-mode Lua widgets (`suit.Button`, `suit.Slider`, `suit.Input`) with minimal runtime footprint;
+- **Slab**: ImGui-style retained debug/tool/settings windows in pure Lua (ideal for simulation HUDs, editors, and dev consoles);
+- **FlexLove**: Flexbox-inspired responsive layout and styling in LÖVE for complex multi-resolution menus.
 
-Use explicit state machines for loading/menu/pause/error/empty inventory/death/network/permission/cutscene/resume. Preserve focus/selection across push-pop state transitions. Loading must not freeze frame presentation without feedback.
+None of these provide automatic OS screen-reader semantics or console focus graphs—wire explicit keyboard/gamepad focus, focus restoration across state pops, and glyph swapping yourself.
 
-## Forms idiom
+## Typography, motion, accessibility, and states
 
-`love.textinput`/`love.keyboard` are low-level. Validate focus, IME/composition limitations, paste behavior, caret/selection, virtual keyboard/platform constraints before using consequential text input. Prefer constrained selection UI where appropriate.
+- Use `love.graphics.newFont(path, size, hinting, dpiscale)` with explicit DPI scaling (`love.window.getDPIScale()`) and verify fallback/glyph coverage for non-Latin locales; pixel fonts need integer scaling to avoid shimmer.
+- Clamp `dt` (`math.min(dt, 0.05)`), decouple game state from tween completion, and expose reduced-motion and flash-intensity sliders.
+- Implement dynamic gamepad glyph detection via `love.joystickadded` / `love.gamepadpressed` + `joystick:getName()` (plus a manual glyph-style override in Settings for Steam Input or third-party controllers), and debounce stick drift so prompts do not flicker between controller and mouse.
+- Use explicit state stacks (HUD / Pause / Settings / Remap / Loading / Error) that preserve selected index on push/pop; test `love.textinput` IME/virtual-keyboard limits before relying on freeform text forms.
 
 ## Do/don't pairs
 
 | Do | Don't |
 |---|---|
-| central `theme.lua` semantic palette | literal RGB tables in every draw call |
-| explicit gamepad/keyboard focus model | mouse-only clickable hitboxes |
-| `love.resize` adaptive layout | fixed 1920×1080 coordinate assumptions |
-| reduced flash/motion options | uncontrolled particle noise behind HUD |
+| Central `theme.lua` semantic palette and DPI-scaled fonts | Literal `{1, 0.2, 0.2}` RGB tables scattered through `love.draw()` |
+| Layout HUD inside `love.window.getSafeArea()` and recompute on `love.resize` | Hard-code 1920×1080 coordinates that clip on notches or ultrawide displays |
+| Swap prompt glyphs dynamically via `joystick:getName()` / last input event + Settings override | Hard-code `"Press E"` or Xbox-only prompts for PlayStation/Switch/Steam Deck players |
+| Explicit keyboard/gamepad focus stack + reduced-flash/motion toggles | Mouse-only hitboxes or uncontrolled screen-shake/particles behind HUD text |
 
 ## Known traps
 
-No built-in accessibility/UI semantics, glyph atlas gaps, coordinate scaling mistakes, input method complexity, delta-time-dependent motion bugs, focus loss between states, asset loading freezes.
+No built-in screen-reader/focus infrastructure, `dpiscale` blurry text on macOS/Retina displays, joystick analog drift flickering KBM/gamepad prompts, font glyph gaps in localized text, unbounded `dt` breaking tweens after alt-tab, and blocking asset loads freezing the loop.
 
 ## Verification commands
 
+Run your configured linter without suppressing exit codes, then launch the game runtime:
+
 ```sh
-luacheck . 2>/dev/null || true
+luacheck .
 love .
 ```
 
-Run resolution/aspect/input matrix, controller-only flow, resize/window mode, localization glyph checks, pause/interruption/resume, reduced motion/flash settings, screenshots on target devices.
+Test window resize, HiDPI scaling, safe-area inset simulation, controller-only menu traversal, gamepad/KBM prompt hot-swapping, localization glyph checks, and pause/interruption flows (`rendered`; label missing screen-reader integration honestly as `not-checked` / unsupported).

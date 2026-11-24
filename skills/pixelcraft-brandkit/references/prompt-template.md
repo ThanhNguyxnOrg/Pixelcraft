@@ -1,77 +1,79 @@
 # Internal image-generation prompt template
 
-Use this structure internally. Fill every bracket with strategy-backed specifics. Do not expose hidden reasoning unless the user asks; do expose chosen direction, output size, and verification notes in the final report.
+Keep decision reasoning separate from the text sent to the image model. Diffusion and multimodal image generators suffer from **concept leakage**: naming rejected metaphors or discarded aesthetics inside the generation prompt frequently causes the model to render those unwanted elements onto the board.
+
+## 1. Pre-prompt decision log (DO NOT send to the image model)
+
+Record this internally before composing the prompt (and summarize in the final report):
 
 ```text
-Create a premium brand-kit overview image for "[BRAND NAME]".
+Identity mode: [create from scratch / build on existing brand / requested refresh]
+Supplied assets to preserve: [exact logos/colors/fonts, or none]
+Rejected brand worlds (kept OUT of the image prompt):
+- [Concept A] — rejected because [criterion: audience fit / ownability / scalability]
+- [Concept B] — rejected because [criterion]
+Selected brand world: [selected concept]
+Signature / ownable rule: [single strongest repeatable identity behavior]
+Explicit anti-goals (translate into positive visual choices below): [clichés avoided]
+```
 
-Brand strategy:
+## 2. Image-generation prompt block (positive visual brief only)
+
+Fill every bracket with concrete, strategy-backed specifics describing **only** what should appear:
+
+```text
+Create a cohesive brand-kit overview board for "[BRAND NAME]".
+
+Brand direction:
 - identity mode: [create from scratch / build on existing brand / requested refresh]
-- existing assets: [supplied elements to preserve exactly, or none]
-- category: [category]
-- audience: [audience]
-- product function: [function]
-- emotional promise: [promise]
-- cultural position: [position]
-- trust level: [trust requirement]
-- personality: [traits]
-- core metaphor: [metaphor]
-- visual world: [world]
-- avoid: [explicit anti-goals and inappropriate clichés]
-
-Divergent selection:
-- rejected concepts: [1–2 brief alternatives and why they lost]
-- selected brand world: [selected concept]
-- signature/ownable idea: [the single strongest identity behavior]
+- existing assets: [supplied elements to preserve verbatim, or none]
+- category & audience: [category] for [audience]
+- core metaphor: [selected metaphor]
+- selected brand world: [selected visual world]
+- signature identity rule: [the single repeatable graphic/material behavior]
 
 Canvas:
 [requested width × height, aspect ratio, or orientation; otherwise 4:3 or 16:10].
 The dimensions describe the complete output image, not individual panels.
-If exact dimensions are unsupported, preserve the closest supported ratio and do not invent unsupported pixel dimensions.
+Preserve the closest supported aspect ratio without distorting geometry.
 
 Layout:
-[3×3 / 2×3 / 2×2 / 1×3 / 4×2 / custom] grid on a [dark/light/specific] presentation canvas with strong gutters, clean alignment, refined negative space, and unequal but coherent panel hierarchy.
+[3×3 / 2×3 / 2×2 / 1×3 / 4×2 / custom] grid on a [dark/light/specific] presentation canvas with crisp gutters, exact edge alignment, generous negative space, and clear focal hierarchy.
 
 Panels:
 - logo cover: [cover behavior]
-- logo concept / construction: [construction logic or correct existing-logo usage]
-- digital application: [browser/app/terminal/UI artifact]
+- logo construction: [geometric construction grid or exact supplied-logo lockup]
+- digital application: [minimal browser/app/terminal/UI fragment]
 - tagline / brand essence: [exact short line, if used]
 - color system: [swatch/chip/disc/strip treatment]
 - typography: [specimen/pairing behavior]
-- physical application: [object/mockup]
+- physical application: [tactile object/label/packaging mockup]
 - image direction: [art-directed scene/texture]
 - system detail: [chips/icons/pattern/input/detail]
-[adapt/omit/reorder only to match the chosen layout]
+[adapt/omit/reorder strictly to match the chosen layout]
 
-Visual mode:
-[selected visual mode and concrete interpretation]
-
-Palette:
-[base + primary accent + optional secondary accent + neutrals; exact colors if supplied]
-Accents repeat consistently across panels. No random rainbow and no generic purple-blue AI glow.
+Visual mode & palette:
+- mode: [selected visual mode and concrete material interpretation]
+- palette: [base + primary accent + optional secondary accent + neutrals; exact hex/values if supplied]
+- repeat the same palette strictly across all panels.
 
 Logo:
-[reuse the supplied logo without redesign, preserving exact shapes/proportions/assets] OR [create a professional, symbolic, simple, scalable, ownable mark using METHOD: monogram+meaning / product action / metaphor fusion / negative space / construction geometry].
-Repeat the same mark consistently across panels. No inconsistent variants and no copied famous marks.
+[reuse the supplied logo verbatim with exact shapes and proportions] OR [render one crisp, simple, scalable mark built with METHOD: monogram+meaning / product action / metaphor fusion / negative space / construction geometry].
+Repeat the exact same mark consistently across every panel.
 
-Typography:
-Readable, minimal, high hierarchy, sparse; no tiny fake body copy; no lorem ipsum; no dense menus or paragraphs.
+Typography & exact text inventory:
+- keep typography clean, high-contrast, and sparse; render only the listed text cleanly with zero filler body copy:
+  - brand name: [name]
+  - tagline: [one short specific line, or omit]
+  - optional URL/command: [at most one, or omit]
+  - labels/chips: [2–5 short labels maximum]
 
-Text inventory:
-- brand name: [name]
-- tagline: [one short specific line]
-- optional URL/command: [at most one]
-- labels/chips: [2–5 maximum]
+Image & mockup direction:
+- imagery: [editorial / material / halftone / architectural / product-world scene matched to the palette]
+- applications: minimal believable touchpoints only ([browser header / terminal bar / app icon / printed badge / folder / label]).
 
-Image direction:
-[cinematic / halftone / material / editorial / product-world treatment matched to palette and metaphor; avoid stock people, offices, robots, and unrelated scenes]
-
-Mockup direction:
-Minimal believable identity applications only: [browser chrome / URL bar / terminal / app icon / badge / folder / label / dashboard fragment]. No dense fake dashboards, cheap gloss, device overload, or feature-demo screens.
-
-Style:
-Premium, sparse, cinematic, intentional, polished brand-guidelines deck. Strong negative space, exact alignment, coherent gutters, restrained texture, art-directed imagery, implementation-ready identity system. No clutter, no copied inspiration logos/names/compositions/slogans/unique assets, no generic startup gradient, no random floating icons.
+Finish:
+Crisp studio identity-guidelines deck with disciplined negative space, aligned grid seams, controlled lighting, cohesive material texture, and clean vector-grade mark edges.
 ```
 
 ## Reference usage clause

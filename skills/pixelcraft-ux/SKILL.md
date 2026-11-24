@@ -1,6 +1,6 @@
 ---
 name: pixelcraft-ux
-description: Designs rigorous user experience before and during implementation. Use for task analysis, JTBD, user flows, information architecture, navigation, forms, validation, empty/error/loading/offline states, feedback timing, perceived performance, cognitive-load reduction, localization-ready UX, UX writing, and interaction recovery across any frontend stack.
+description: Designs rigorous user experience before and during implementation across any frontend stack. Use for task analysis, JTBD, user flows, information architecture, navigation, forms, passkeys, validation, empty/error/loading/offline and AI/streaming states, feedback timing, perceived performance, cognitive-load reduction, cognitive walkthrough, usability testing, localization-ready UX (i18n, RTL), UX writing, and interaction recovery.
 license: MIT
 metadata:
   version: 0.1.0

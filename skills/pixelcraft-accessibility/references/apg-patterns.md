@@ -2,6 +2,19 @@
 
 Use native platform semantics first. This matrix applies when a custom or composite widget is genuinely necessary. ARIA APG patterns are interaction contracts: role alone is never enough without keyboard behavior, focus management, state exposure, and accessible naming.
 
+## Native HTML replacements (prefer before custom ARIA)
+
+Modern HTML eliminates whole classes of brittle ARIA focus-trap and state-sync bugs—use these natively where target browser baselines support them:
+
+| Native HTML primitive | Replaces | Built-in accessibility & keyboard behavior | Guardrail |
+|---|---|---|---|
+| `<dialog>` + `showModal()` | Custom `role="dialog"` + JS focus-trap | Top-layer stacking, automatic background inerting, `Esc` cancel, focus restoration to invoker on close | Still provide an accessible label (`aria-labelledby` pointing to heading) and visible Close control |
+| Popover API (`popover="auto"` / `popover="hint"`) | Custom click-outside dropdowns, tooltips, non-modal overlays | Light-dismiss (`Esc` / outside click), top-layer placement, automatic `aria-expanded` / `aria-details` linkage with invoker | Use `popover="hint"` for non-interactive hover/focus tooltips that should not close open `auto` popovers |
+| Invoker Commands (`commandfor` + `command`) | Custom `onclick` + manual `aria-controls` / `aria-expanded` wiring | Declarative button invocation (`command="show-modal"`, `close`, `toggle-popover`) with native semantics and less JS | Feature-check or progressively enhance on older browsers lacking Invoker Commands |
+| `inert` attribute | Manual `tabindex="-1"` loops + `aria-hidden="true"` on siblings | Atomically removes subtree from tab order, pointer hit-testing, and accessibility tree | Never set `inert` on an ancestor of the active modal/focus target |
+| Exclusive `<details name="group">` | Custom JS accordion (`aria-expanded`, `aria-controls`) | Native disclosure semantics, keyboard toggle, and single-open group coordination via shared `name` | Use CSS `::details-content` + `interpolate-size` for optional smooth transitions; keep headings semantic |
+| Customizable `<select>` (`appearance: base-select`) | Custom `role="listbox"` / `combobox` replacements for styled selects | Keeps native keyboard navigation, typeahead, form submission, mobile pickers, and screen-reader announcements while allowing custom option markup | Treat as progressive enhancement; native `<select>` remains fully operable where unsupported |
+
 ## Core matrix
 
 | Pattern | Required behavior highlights | Common failure |

@@ -1,6 +1,6 @@
 ---
 name: pixelcraft-game-ui
-description: Translates Pixelcraft direction, tokens, UX, and floor requirements into game interfaces across Unity UI Toolkit, Godot Control/UI, Unreal UMG, LÖVE2D, Bevy, and MonoGame. Use for HUDs, menus, inventory, controller/keyboard navigation, focus order, safe areas, subtitles, accessibility options, localization, legibility at distance, platform certification-style constraints, pause/settings flows, and game UI verification.
+description: Translates Pixelcraft direction, tokens, UX, and floor requirements into game interfaces across Unity UI Toolkit, Unity uGUI/TextMeshPro, Godot Control/UI, Unreal UMG/CommonUI/MVVM, Bevy, LÖVE2D, MonoGame, Phaser/PixiJS/Kaplay, NoesisGUI/RmlUi/Gameface/Dear ImGui, and Raylib/SDL3/Defold/Cocos. Use for HUDs, menus, inventory, controller/keyboard navigation, dynamic input glyphs, focus order, safe areas, HDR/ultrawide HUDs, subtitles, accessibility options, localization, legibility at distance, and game UI verification.
 license: MIT
 metadata:
   version: 0.1.0
@@ -16,14 +16,14 @@ Separate always-needed survival information from inspect-on-demand stats. Preser
 
 ## Detection signals
 
-Unity `ProjectSettings/`, `.unity`, UXML/USS/UI Builder assets; Godot `project.godot`, `.tscn`, `.gd`, Control/Theme resources; Unreal `.uproject`, UMG widget assets/Blueprints; input maps, localization pipelines, platform target settings, safe-area/certification documentation.
+Unity `ProjectSettings/`, `.unity`, UXML/USS/UI Builder or uGUI `Canvas`/`TextMeshPro` assets; Godot `project.godot`, `.tscn`, `.gd`, Control/Theme resources; Unreal `.uproject`, UMG/CommonUI/MVVM widget assets and Slate; Rust `bevy` (`Cargo.toml`); LÖVE2D (`conf.lua`, `main.lua`); MonoGame (`.csproj`, Gum/Myra/FontStashSharp); Phaser/PixiJS/Excalibur/Kaplay (`package.json`); NoesisGUI (`.xaml`), RmlUi (`.rml`/`.rcss`), Coherent Gameface, Dear ImGui; Raylib/`raygui`, SDL3/`SDL_ttf`, Defold (`.gui`/`.gui_script`), Cocos Creator; input maps, localization pipelines, and safe-area/certification docs.
 
 ## Translate direction to game idioms
 
-1. Map semantic tokens to engine theme/style systems: Unity USS variables/selectors, Godot Theme resources, Unreal styles/brushes/materials.
+1. Map semantic tokens to engine theme/style systems: Unity USS variables/ScriptableObjects, Godot Theme resources, Unreal CommonUI styles/brushes/materials, or engine theme modules.
 2. Separate diegetic world presentation, HUD state, menu/settings, and cinematic narration. Do not let spectacle destroy critical state legibility.
 3. Design focus/navigation for controller/keyboard before mouse/touch polish; every actionable element needs predictable spatial navigation and visible focus.
-4. Reserve safe areas and platform-specific system overlays; verify aspect ratio, resolution scaling, split screen, handheld/TV distance, and stream/capture cropping.
+4. Reserve safe areas, ultrawide HUD clamps, HDR paper-white luminance, and platform system overlays; verify aspect ratio, resolution scaling, split screen, handheld/TV distance, and stream/capture cropping.
 5. Treat localization, accessibility options, input remapping, subtitles/captions, colorblind differentiation, and difficulty/assists as core UI systems—not post-launch patches.
 
 ## Platform-wide rules
@@ -52,10 +52,12 @@ Engine editor preview is not equivalent to runtime gameplay verification. Use pl
 
 ## Framework routing
 
-- Read [references/unity-ui-toolkit.md](references/unity-ui-toolkit.md) for Unity UI Toolkit/UXML/USS.
-- Read [references/godot.md](references/godot.md) for Godot Control/UI/Theme/focus behavior.
-- Read [references/unreal-umg.md](references/unreal-umg.md) for Unreal UMG/Slate-style UI.
-- Read [references/hud-principles.md](references/hud-principles.md) for cross-engine HUD, controller navigation, safe-area, localization, accessibility, and certification-style constraints.
-- Read [references/love2d.md](references/love2d.md) for LÖVE2D/Lua games.
-- Read [references/bevy.md](references/bevy.md) for Bevy/Rust UI and AccessKit-oriented semantics.
-- Read [references/monogame.md](references/monogame.md) for MonoGame/C# custom game UI.
+- Read [references/hud-principles.md](references/hud-principles.md) for cross-engine HUD taxonomy (diegetic/spatial/meta/non-diegetic), dynamic input-glyph swapping, HDR paper-white calibration, ultrawide HUD clamping, controller navigation, safe areas, XAG accessibility patterns, and verification.
+- Read [references/unity-ui-toolkit.md](references/unity-ui-toolkit.md) for Unity UI Toolkit (UXML/USS, Unity 6 `DataBinding`, Runtime Accessibility, `PanelSettings`, and UI Toolkit vs uGUI selection).
+- Read [references/unity-ugui.md](references/unity-ugui.md) for Unity uGUI (`Canvas` static/dynamic splitting, `CanvasScaler`, `RectTransform`, `TextMeshPro` SDF atlases, `InputSystemUIInputModule`, explicit `Selectable` navigation, and world-space canvases).
+- Read [references/godot.md](references/godot.md) for Godot 4 Control/Theme UI, Godot 4.5 AccessKit, MSDF fonts, `DisplayServer.get_display_safe_area()`, `process_mode`, and `mouse_filter`.
+- Read [references/unreal-umg.md](references/unreal-umg.md) for Unreal UMG, CommonUI (`UCommonActivatableWidget`, `CommonActionWidget`), UMG ViewModel (`MVVM`), Enhanced Input UI routing, Slate boundaries, and `InvalidationBox`/`RetainerBox`.
+- Read [references/bevy.md](references/bevy.md) for Bevy 0.15–0.18 Rust UI (Required Components, `children!`, `bevy_picking`, `bevy_ui_widgets`, `bevy_feathers`, `bevy_input_focus`, and AccessKit).
+- Read [references/love2d.md](references/love2d.md) for LÖVE2D/Lua games (`love.window.getSafeArea()`, gamepad glyph detection, SUIT/Slab/FlexLove).
+- Read [references/monogame.md](references/monogame.md) for MonoGame/C# game UI (Gum UI, Myra, FontStashSharp).
+- Read [references/web-and-middleware-game-ui.md](references/web-and-middleware-game-ui.md) for HTML5/web game engines (Phaser, PixiJS `@pixi/ui`, Excalibur, Kaplay), AAA/native middleware (NoesisGUI, RmlUi, Coherent Gameface, Dear ImGui), and native/indie engines (Raylib `raygui`, SDL3/`SDL_ttf` v3, Defold, Cocos Creator).

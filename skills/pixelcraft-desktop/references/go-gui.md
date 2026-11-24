@@ -1,54 +1,82 @@
-# Go GUI: Fyne, Wails, Gio
+# Go GUI: Wails (v2 / v3), Fyne, and Gio
 
-## Token mapping
+## Toolkit comparison & idioms
 
-Fyne: map semantic values into a custom `fyne.Theme` and use theme lookup rather than literals. Wails: use generated CSS variables inside the webview plus native shell integration. Gio: centralize semantic color/type constants in Go and apply through layout/widget styling.
+| Toolkit | Rendering model | Key 2025–2026 idioms | Best fit |
+|---|---|---|---|
+| **Wails v3** (and **v2**) | OS WebView + Go backend | **v3**: multi-window (`app.Window.NewWithOptions`), native application menus & system tray (`app.NewSystemTray`), `application.NewService(...)` generated TS bindings, `wails3` CLI. (**v2**: single-window `wails build` for existing repos.) | Web-UI desktop apps with a fast Go backend and small binaries |
+| **Fyne (v2.5 / v2.6+)** | Native Go OpenGL/Canvas retained widgets | Custom `fyne.Theme`, reactive `fyne.io/fyne/v2/data/binding`, `app.Preferences()` persistence, `widget.NewList` virtualization | Pure-Go cross-platform desktop/mobile utilities without WebView |
+| **Gio (`gioui.org`)** | Immediate-mode GPU (`layout.Context`, `material.Theme`) | Frame-local `layout.Flex` / `layout.Inset`, explicit `op.Ops`, high-FPS custom vector/tool rendering | Custom Go graphics/engineering tools where immediate-mode control dominates |
 
-## Layout and responsive idioms
+## Token mapping & idiomatic Go snippets
 
-Fyne uses containers/layouts and canvas scaling. Wails is a desktop webview shell—web layout plus menus/windowing/file-system integration. Gio is immediate-mode-ish layout with explicit constraints. Handle resize, minimum window size, high-DPI, multi-window, platform chrome, persistence.
+- **Wails v3**: map DTCG tokens into CSS custom properties inside the frontend while mirroring window background, native menus, and tray icon states in Go:
 
-## Typography/custom fonts
+```go
+// Wails v3 multi-window + service + system tray setup
+app := application.New(application.Options{
+    Name:     "InvoiceDesk",
+    Services: []application.Service{application.NewService(&InvoiceService{})},
+})
+win := app.Window.NewWithOptions(application.WebviewWindowOptions{
+    Title:     "Invoices",
+    Width:     1120,
+    Height:    760,
+    MinWidth:  720,
+    MinHeight: 500,
+})
+tray := app.SystemTray.New()
+tray.AttachWindow(win).WindowOffset(5)
+```
 
-Register font collections/assets deliberately; verify glyph fallback, scaling, localization/IME. Webview fonts follow web rules. Gio/Fyne custom rendering needs explicit text-shaping validation.
+- **Fyne v2.5/v2.6+**: centralize tokens inside a custom `fyne.Theme` implementation (`Color(name, variant)`, `Size(name)`), bind UI controls reactively with `data/binding` (`binding.NewString()`, `binding.NewFloat()`), and persist user/window preferences via `app.Preferences()`:
 
-## Motion/reduced motion
+```go
+status := binding.NewString()
+_ = status.Set("Ready")
+label := widget.NewLabelWithData(status)
+themePref := myApp.Preferences().StringWithFallback("theme", "system")
+```
 
-Use framework animation/timers sparingly and expose app-level reduced-motion where OS integration is uncertain. Avoid goroutine/frame-loop animation that ignores lifecycle, cancellation, and power.
+- **Gio**: centralize semantic `color.NRGBA` and spacing constants in a Go theme package consumed by `layout.Context` builders rather than scattering inline RGBA structs across frame functions.
 
-## Accessibility specifics
+## Layout, typography, & reduced motion
 
-Current Fyne API exposes an `Accessible` interface (`AccessibilityLabel`, `AccessibilityRole`) in recent versions, but support maturity/version coverage must be verified. Wails accessibility depends on emitted DOM plus webview/platform behavior. Gio/custom rendering requires explicit semantics and may not provide screen-reader support sufficient for productivity software. Never infer support from compilation.
+- **Wails**: apply desktop window management (minimum sizes, multi-monitor clamping, native menus, `window.Close` dirty-state prompt) alongside web layout inside the WebView.
+- **Fyne**: compose with `container.NewBorder`, `NewHSplit`, `NewGridWithColumns`, and virtualized `widget.NewList`/`NewTable`; never create thousands of `widget.Label` widgets eagerly inside a `VBox`.
+- **Gio**: derive layout cleanly from `gtx.Constraints` every frame and respect `gtx.Metric` (`Dp`/`Sp`) for HiDPI and font scaling.
+- Register bundled font assets explicitly and test CJK/RTL shaping and glyph fallback across OSes. Honor `prefers-reduced-motion` in Wails WebViews; in Fyne and Gio, expose an app-level reduced-motion preference when OS preference hooks are absent and tie any timer/animation goroutines to `context.Context` cancellation.
 
-## States idiom
+## Accessibility, states, & forms
 
-Use explicit Go state ownership/channels/context cancellation for loading/error/offline/permission/concurrent work. Keep file/dirty/window-close/update state durable. Goroutine completion is not a UX state unless surfaced.
-
-## Forms idiom
-
-Use real framework controls where possible; validate labels/focus order/paste/IME/input preservation/error recovery. Wails can use native HTML forms inside webview. Custom canvas input is costly to make correct.
+- **Wails**: accessibility relies on semantic HTML/ARIA inside the WebView plus native OS menu/shortcut/dialog verification.
+- **Fyne**: implement `fyne.Accessible` (`AccessibilityLabel`, `AccessibilityRole`) where supported, keep keyboard focus (`fyne.Focusable`) explicit, and verify actual VoiceOver/Narrator/Orca coverage honestly—do not assume parity with native OS toolkits.
+- **Gio**: custom GPU rendering has limited built-in screen-reader support; do not select Gio for screen-reader-mandated productivity software without an explicit accessibility bridge, and mark untested assistive-tech support `not-checked`.
+- Always cancel background goroutines via `context.Context`, guard dirty-document close events, and update Fyne/Gio UI safely on the toolkit's UI queue (`fyne.Do(...)` in Fyne v2.6+ / `window.Invalidate()` in Gio).
 
 ## Do/don't pairs
 
 | Do | Don't |
 |---|---|
-| implement Fyne `AccessibilityLabel()` where supported | claiming screen-reader support because app launches |
-| Wails semantic HTML form | custom div-only UI inside webview |
-| context cancellation/progress state | orphaned goroutine mutating UI state |
-| central Fyne/Gio theme constants | repeated literal colors at widget sites |
+| Use Wails v3 `application.NewService` + native menus + `MinWidth`/`MinHeight` | Ship a single-window WebView SPA with no desktop menus or resize limits |
+| Use Fyne `data/binding`, `app.Preferences()`, and `fyne.Do(...)` from goroutines | Mutate Fyne widgets directly from background goroutines without synchronization |
+| Use `widget.NewList` / `NewTable` in Fyne for large datasets | Append 2,000 rows directly into `container.NewVBox` |
+| Pass `context.Context` into background work and cancel on close/navigation | Leak orphaned goroutines that mutate stale window state |
+| Verify actual screen-reader support per toolkit honestly | Claim VoiceOver/Narrator compliance for Gio/Fyne purely because `go build` passed |
 
 ## Known traps
 
-CGO/platform packaging, webview runtime differences, accessibility immaturity, goroutine race/lifetime bugs, high-DPI/font rasterization, custom chrome behavior, file permission/update flows, blurry assumptions from web screenshots.
+CGO cross-compilation friction in Fyne (OpenGL/OS bindings) vs pure-Go/WebView builds, mutating Fyne UI off the main thread (causing races before `fyne.Do`), Wails v2 vs v3 API confusion (`wails` vs `wails3` CLI), OS WebView differences in Wails (WKWebView vs WebView2 vs WebKitGTK), missing font fallbacks in Gio/Fyne, uncancelled goroutines on window close.
 
 ## Verification commands
 
 ```sh
 go test ./...
 go vet ./...
-fyne package 2>/dev/null || true
-wails build 2>/dev/null || true
 go run .
+# Run the packaging command matching your toolkit when installed:
+wails3 build     # Wails v3 projects (use `wails build` for Wails v2)
+fyne package     # Fyne projects
 ```
 
-Run actual desktop OS builds; inspect resize/DPI/window/menu integration, keyboard/focus/screen reader where applicable, crash/dirty close, offline/background cancellation, packaging/signing.
+`go test` and `go vet` provide `static` / logic evidence. Run packaged builds on target desktop OSes to verify window chrome, tray/menus, resize/HiDPI, keyboard navigation, screen readers (where supported), and dirty-close cancellation for `rendered` evidence; label untested OSes `not-checked`.

@@ -1,6 +1,6 @@
 ---
 name: pixelcraft-dataviz
-description: Designs and verifies truthful, legible, accessible data visualization across any frontend stack. Use for charts, plots, dashboards, metrics, analytics, scientific visualization, tables as visualization, real-time/streaming data, node/link diagrams, maps/geospatial UI, SVG/canvas/WebGL/3D rendering choices, chart accessibility, and library-specific implementation in D3, Observable Plot, Vega-Lite, ECharts, Recharts/visx, Plotly, matplotlib/Altair, ggplot2, Makie, Swift Charts, or Compose/Vico.
+description: Designs and verifies truthful, legible, accessible data visualization across any stack. Use for charts, plots, dashboards, analytics, scientific visualization, tables as visualization, streaming data, node graphs, maps/geospatial UI, rendering scale, and chart accessibility across D3, Observable Plot, Vega/Vega-Lite, ECharts, Chart.js, Highcharts, Recharts, Nivo, Tremor, visx, uPlot, Lightweight Charts, AntV, Plotly, MapLibre, Mapbox, Leaflet, deck.gl, Cesium, PMTiles, Turf, Cytoscape, Sigma.js, Cosmograph, Bokeh, Seaborn, matplotlib, Altair, Datashader, Perspective, Mosaic, ggplot2, Makie, Swift Charts, or Vico.
 license: MIT
 metadata:
   version: 0.1.0
@@ -12,15 +12,15 @@ Data visualization is evidence communication, not dashboard decoration. Start wi
 
 ## Surface craft
 
-Start with the judgment the reader must make and expose its comparison baseline, units, uncertainty and missing values. Use annotations and ordered or small-multiple views when they remove comparison work. Verify the meaning survives monochrome, resizing and keyboard access; provide a data or text alternative for canvas or hover-only details.
+Start with the judgment the reader must make and expose its comparison baseline, units, uncertainty, and missing values. Use annotations and ordered or small-multiple views when they remove comparison work. Verify the meaning survives monochrome, resizing, and keyboard access; provide a data or text alternative for canvas or hover-only details.
 
 ## References
 
 - Read [references/chart-choice.md](references/chart-choice.md) when choosing among comparison, distribution, composition, relationship, time, flow, hierarchy, and geographic representations.
-- Read [references/encoding-tables-dashboards.md](references/encoding-tables-dashboards.md) for encoding hierarchy, axes, units, direct labeling, annotations, tables as visualization, and dashboard layout/density.
-- Read [references/color-accessibility.md](references/color-accessibility.md) for colorblind-safe palettes, redundant encodings, contrast, text alternatives, keyboard interaction, sonification boundaries, and reduced motion.
-- Read [references/realtime-graphs-maps-scale.md](references/realtime-graphs-maps-scale.md) for streaming updates, node graphs, maps, SVG/canvas/WebGL/3D scale decisions, and performance verification.
-- Read [references/maps-geospatial.md](references/maps-geospatial.md) when selecting or implementing mapping and geospatial engines (MapLibre GL JS, Mapbox GL JS, Leaflet, OpenLayers, CesiumJS, deck.gl, kepler.gl), interleaved GPU layers, or accessible map alternatives.
+- Read [references/encoding-tables-dashboards.md](references/encoding-tables-dashboards.md) when designing encoding hierarchy, axes, units, direct labeling, annotations, tables as visualization, and analytical dashboard layout/density.
+- Read [references/color-accessibility.md](references/color-accessibility.md) when selecting colorblind-safe palettes, redundant encodings, contrast, text alternatives, keyboard navigation, sonification boundaries, and reduced motion.
+- Read [references/realtime-graphs-maps-scale.md](references/realtime-graphs-maps-scale.md) when implementing streaming updates, node graphs (`@xyflow/react`, Cytoscape, Sigma.js, Cosmograph, AntV G6), and SVG/Canvas/WebGL/WASM scale tiers (Perspective, Mosaic/DuckDB-Wasm, Datashader).
+- Read [references/maps-geospatial.md](references/maps-geospatial.md) when selecting or implementing mapping and geospatial engines (MapLibre GL JS, Mapbox GL JS, Leaflet, OpenLayers, CesiumJS, deck.gl, kepler.gl), Protomaps/PMTiles, Turf.js spatial ops, choropleth pitfalls, or accessible map alternatives.
 - Read [references/libraries.md](references/libraries.md) when implementing in a specific charting library or language ecosystem.
 
 ## Required workflow
@@ -48,7 +48,7 @@ Start with the judgment the reader must make and expose its comparison baseline,
 
 ## Anti-slop warnings
 
-Avoid the default analytics collage: four KPI cards with invented deltas, a gradient area chart, a donut with unreadable slices, a purple-blue palette, unexplained “live” badges, generic axis ticks, and a legend that forces constant eye travel. Avoid chartjunk copied from demos: heavy gridlines, shadows, glassmorphism, 3D perspective, meaningless animated counters, and decorative map pin clouds. Distinctiveness belongs in editorial judgment, annotation quality, composition, and domain-specific emphasis—not in distorting evidence.
+Avoid the default analytics collage: four KPI cards with invented deltas, a gradient area chart, a donut with unreadable slices, a purple-blue palette, unexplained "live" badges, generic axis ticks, and a legend that forces constant eye travel. Avoid chartjunk copied from demos: heavy gridlines, shadows, glassmorphism, 3D perspective, meaningless animated counters, and decorative map pin clouds. Distinctiveness belongs in editorial judgment, annotation quality, composition, and domain-specific emphasis—not in distorting evidence.
 
 ## Pre-submit checklist
 
@@ -61,4 +61,4 @@ Avoid the default analytics collage: four KPI cards with invented deltas, a grad
 - [ ] text alternative and keyboard/screen-reader path exist;
 - [ ] update/rendering performance was measured or explicitly labeled `not-checked`;
 - [ ] static export/print/responsive behavior preserves legibility;
-- [ ] final claims separate rendered evidence from static inspection/model judgment.
+- [ ] final claims separate `rendered` evidence from `static` inspection or `model-judgment`.

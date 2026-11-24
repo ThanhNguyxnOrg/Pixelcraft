@@ -1,0 +1,43 @@
+{
+  "schemaVersion": 1,
+  "id": "document-typst-and-print-css",
+  "skill": "pixelcraft-document",
+  "title": "Design paginated invoices and reports with valid Typst context syntax, print CSS fragmentation, and PDF/UA checks",
+  "contextSnapshot": {
+    "surface": "multi-page quarterly financial invoice and report PDF",
+    "platform": "Typst 0.12+ and HTML Print CSS / Playwright PDF / WeasyPrint",
+    "mode": "Communicate",
+    "states": ["multi-page table header repeat", "totals kept with summary", "missing optional notes", "grayscale print", "PDF/UA selectable text"],
+    "constraints": ["physical mm/pt units", "valid Typst context counter display", "no orphan headings or split signatures", "data-driven totals only"]
+  },
+  "prompt": "Build a multi-page B2B invoice and summary report exported to PDF via Typst or print CSS, keeping running headers, repeated table headers, intact signature blocks, and accessible selectable text.",
+  "expectedRouting": ["pixelcraft-document", "references/pdf-tools.md", "references/print-css.md", "references/archetypes.md"],
+  "forbiddenBehaviors": [
+    "uses broken Typst 0.11+ counter(page).display() outside a context expression",
+    "uses screen px units as print dimensions or leaves table headers and signature blocks split across page breaks",
+    "claims pagination or font embedding is verified from screen HTML without inspecting the generated PDF"
+  ],
+  "rubricDimensions": [
+    {
+      "dimension": "renderer accuracy and physical typography",
+      "pass": "uses valid Typst context syntax (or Playwright/WeasyPrint/Paged.js print idioms), mm/pt units, explicit margins, embedded fonts, and PDF/A or PDF/UA considerations",
+      "fail": "copies broken Typst syntax or relies on unsupported browser print assumptions"
+    },
+    {
+      "dimension": "fragmentation and artifact verification",
+      "pass": "controls break-after/break-inside for headings, rows, totals, and signatures, and verifies the actual rendered PDF at 100% scale",
+      "fail": "accepts browser screen preview as proof of pagination"
+    }
+  ],
+  "negativeControls": [
+    {
+      "name": "screen html preview",
+      "input": "the HTML report looks aligned in a scrolling desktop viewport",
+      "mustNot": "declare page breaks, running headers, or PDF text selection verified without inspecting the exported PDF"
+    }
+  ],
+  "baseline": {
+    "withoutSkill": "uses screen px units, emits broken Typst counter syntax, forgets table header repetition, and never checks the generated PDF artifact",
+    "withSkill": "selects the right renderer with version-valid Typst/print CSS, enforces physical typography and fragmentation rules, and verifies the exported PDF"
+  }
+}

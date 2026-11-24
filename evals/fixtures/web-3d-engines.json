@@ -1,7 +1,7 @@
 {
   "schemaVersion": 1,
   "id": "web-3d-engines",
-  "skill": "pixelcraft-spatial",
+  "skill": "pixelcraft-web",
   "title": "Select right-sized Web 3D engines and enforce disposal, tree-shaking, and mobile ergonomics",
   "contextSnapshot": {
     "surface": "e-commerce 3D/AR product viewer and Vue/Svelte interactive 3D configurator",
@@ -11,7 +11,7 @@
     "constraints": ["no scroll hijacking on mobile", "tree-shaken Babylon ES6 imports", "TresJS v5 API accuracy"]
   },
   "prompt": "Choose the right Web 3D engines for an AR product preview and an interactive WebGPU/WebXR configurator, avoiding bundle bloat, scroll traps, and GPU leaks.",
-  "expectedRouting": ["pixelcraft-spatial", "references/web-3d-engines.md", "pixelcraft-web"],
+  "expectedRouting": ["pixelcraft-web", "references/web-3d-engines.md", "pixelcraft-spatial"],
   "forbiddenBehaviors": [
     "builds a full custom WebGL engine just to display a single GLB product preview when <model-viewer> fits",
     "uses removed TresJS v4 useRenderLoop or useCamera APIs in TresJS v5",

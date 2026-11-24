@@ -23,25 +23,22 @@ function parse(args) {
   for (let index = 0; index < args.length; index += 1) {
     const arg = args[index];
     if (arg === '--help' || arg === '-h') options.help = true;
-    else if (arg === '--out') { options.out = args[++index]; options.explicitOut = true; }
-    else if (arg.startsWith('--out=')) { options.out = arg.slice(6); options.explicitOut = true; }
-    else throw new Error(`unknown option: ${arg}`);
+    else if (arg === '--out') {
+      if (args[index + 1] === undefined) throw new Error('--out requires a value');
+      options.out = args[++index];
+      options.explicitOut = true;
+    } else if (arg.startsWith('--out=')) {
+      options.out = arg.slice(6);
+      options.explicitOut = true;
+    } else throw new Error(`unknown option: ${arg}`);
   }
   return options;
-}
-
-function frontmatterValue(text, key) {
-  const match = new RegExp(`^${key}:[ \\t]*(?:["']?)(.+?)(?:["']?)$`, 'm').exec(text);
-  return match ? match[1].trim() : '';
 }
 
 function catalog() {
   return fs.readdirSync(skillsRoot, { withFileTypes: true })
     .filter((entry) => entry.isDirectory() && fs.existsSync(path.join(skillsRoot, entry.name, 'SKILL.md')))
-    .map((entry) => {
-      const text = fs.readFileSync(path.join(skillsRoot, entry.name, 'SKILL.md'), 'utf8');
-      return { name: entry.name, description: frontmatterValue(text, 'description') };
-    })
+    .map((entry) => ({ name: entry.name }))
     .sort((a, b) => a.name.localeCompare(b.name));
 }
 
@@ -95,7 +92,7 @@ ${skillList(skills, '.github/skills')}
 
 function copilotPathInstructions() {
   return `---
-applyTo: "**/*.{html,css,scss,js,jsx,ts,tsx,vue,svelte,astro,py,rb,php,cs,java,kt,swift,dart,rs,go,lua,ex,exs,clj,cljs,elm,fs,scala}"
+applyTo: "**/*.{html,css,scss,js,jsx,ts,tsx,vue,svelte,astro,mdx,razor,heex,erb,templ,mjml,typ,tex,py,rb,php,cs,java,kt,swift,dart,rs,go,lua,ex,exs,clj,cljs,elm,fs,scala,cpp,h,glsl,wgsl,qml,xaml,uxml,uss,gd,tscn,tcss,qss,r,jl}"
 ---
 
 When editing interface, styling, navigation, interaction, or user-facing copy in these files, follow the Pixelcraft routing instructions in \`.github/copilot-instructions.md\` and read the matching skill under \`.github/skills/\` before implementation or review.
@@ -229,6 +226,7 @@ function build() {
   const fragments = {
     claude: '.claude/skills',
     codex: '.agents/skills',
+    agents: '.agents/skills',
     cursor: '.cursor/skills',
     gemini: '.gemini/skills',
     copilot: '.github/skills',

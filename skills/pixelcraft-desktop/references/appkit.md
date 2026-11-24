@@ -1,58 +1,91 @@
-# AppKit / macOS desktop
+# AppKit & SwiftUI for macOS
+
+macOS desktop craft depends on menu-bar architecture, multi-window/document lifecycle, keyboard acceleration, and platform chrome—whether authored in **AppKit**, **SwiftUI for macOS**, or a hybrid (`NSHostingView` / `NSViewRepresentable`).
 
 ## Token mapping
 
-Use asset catalog colors with semantic names for light/dark/high-contrast variants and typed constants in Swift:
+Store light, dark, and increased-contrast colors in Asset Catalogs and access them via Xcode-generated `ColorResource` symbols (`NSColor(resource: .semanticAction)` / `Color(.semanticAction)`). Respect system vibrancy (`NSVisualEffectView` / `.background(.ultraThinMaterial)`), system accent colors (`NSColor.controlAccentColor`), and **macOS 26 Tahoe Liquid Glass** (`NSGlassEffectView` in AppKit; `.glassEffect(_:in:)` + `GlassEffectContainer` in SwiftUI) for floating toolbars, sidebars, and controls—never apply translucent glass to primary reading/editing canvases.
+
+## SwiftUI for macOS scene & command idioms
+
+Use native macOS scene primitives instead of hand-rolling single-window shells:
+
+- **`WindowGroup`** (multi-window data views) and **`DocumentGroup`** (file-based apps with open/save/recent-documents/titlebar proxy icon).
+- **`Settings`** scene (`Cmd+,` automatically wired into the app menu).
+- **`MenuBarExtra`** (`.menu` style for quick status menus; `.window` style for compact interactive popovers).
+- **`.commands` + `CommandMenu` + `@FocusedValue` / `@FocusedBinding`** so menu-bar commands route cleanly to whichever document window currently owns focus:
 
 ```swift
-enum PCSemantic { static let action = NSColor(named: "Semantic/Action") }
+@main
+struct InvoiceStudioApp: App {
+  var body: some Scene {
+    DocumentGroup(newDocument: InvoiceDocument()) { file in
+      InvoiceEditorView(document: file.$document)
+    }
+    .commands {
+      CommandGroup(after: .newItem) {
+        ExportCommands()
+      }
+    }
+    Settings { SettingsView() }
+    MenuBarExtra("Sync Status", systemImage: "arrow.triangle.2.circlepath") {
+      SyncPopoverView()
+    }
+    .menuBarExtraStyle(.window)
+  }
+}
 ```
 
-Do not copy raw RGB through views/windows/menus. Respect system accent/vibrancy/contrast behavior where appropriate.
+On macOS 26 Tahoe, combine `.glassEffect(.regular, in: .capsule)` / `NSGlassEffectView` with explicit Reduce Transparency and Increase Contrast fallbacks so floating controls stay legible over dense documents.
 
-## Layout and responsive idioms
+## AppKit idioms (`NSDocument`, `NSStatusItem`, `NSWorkspace`)
 
-Use Auto Layout, stack views, safe/content layout guides, split views, toolbar/sidebar idioms, window resizing/minimum size/restoration, spaces/fullscreen behavior, and high-DPI vector assets. macOS desktop UI depends on menu bar/window/document conventions; do not transplant mobile navigation.
+- Use **`NSDocument` / `NSDocumentController`** for automatic autosave-in-place, Versions browser, dirty close dot (`isDocumentEdited`), and safe Quit/Logout prompting.
+- Use **`NSStatusItem`** (`NSStatusBar.system.statusItem(withLength:)`) with vector SF Symbols (`isTemplate = true`) for menu-bar utility agents; always provide a discoverable Quit item and keyboard shortcut.
+- Read macOS accessibility display preferences directly from **`NSWorkspace.shared`** (and observe `NSWorkspace.accessibilityDisplayOptionsDidChangeNotification`) to adapt motion, glass/vibrancy, and contrast:
 
-## Typography/custom fonts
+```swift
+let ws = NSWorkspace.shared
+let reduceMotion = ws.accessibilityDisplayShouldReduceMotion
+let reduceTransparency = ws.accessibilityDisplayShouldReduceTransparency
+let increaseContrast = ws.accessibilityDisplayShouldIncreaseContrast
+```
 
-Use system text styles and Dynamic Type-like scaling expectations appropriate to macOS. Register custom fonts in bundle/target correctly and verify baseline alignment in controls. Respect increased contrast/bold text/smart inversion behaviors where applicable.
+In SwiftUI for macOS, read `@Environment(\.accessibilityReduceMotion)`, `@Environment(\.accessibilityReduceTransparency)`, and `@Environment(\.colorSchemeContrast)`.
 
-## Motion/reduced motion
+## Layout, typography, & accessibility specifics
 
-Use AppKit/Core Animation purposefully and check system reduce-motion settings through platform accessibility APIs. Window resize/fullscreen/keyboard input must remain interruptible; do not animate every state change.
+- Use `NSSplitViewController` / `NavigationSplitView`, unified `NSToolbar` / `.toolbar`, minimum window sizes (`window.minSize` / `.frame(minWidth:minHeight:)`), `NSWindow.frameAutosaveName`, and Spaces/Fullscreen support. Never transplant an iOS bottom tab bar into a macOS window.
+- Use macOS semantic text styles (`.body`, `.headline`, `.callout`) and verify Retina vector/SF Symbol sharpness.
+- Implement `NSAccessibility` roles, labels, and custom actions on custom AppKit views; never suppress the system keyboard focus ring (`focusRingType = .none`) without a high-contrast replacement. Verify **Full Keyboard Access** (`System Settings → Keyboard → Keyboard navigation`) and **VoiceOver** across toolbars, sidebars, sheets, and modals.
 
-## Accessibility specifics
+## Sandbox, permissions, & notarization
 
-Use NSAccessibility labels/roles/descriptions, keyboard shortcuts/menu equivalents, Full Keyboard Access, VoiceOver ordering/custom actions, focus ring behavior, toolbar/sidebar semantics, modified document state, Escape/cancel behavior. Custom controls must implement accessibility protocol behavior rather than drawing only.
-
-## States idiom
-
-Model document/app/window state: dirty document, autosave/versioning, loading/error/offline/permission, update/restart, background agent/menu-bar lifecycle, file access/security-scoped bookmarks where relevant, crash restoration, multiwindow state. Preserve work on close/logout/restart.
-
-## Forms idiom
-
-Use real controls, labels/title/accessibility relationships, key equivalents, focus ring/initial first responder, input validation timing, paste/autofill/IME behavior, undo integration, and keyboard focus occlusion awareness. Dialogs/sheets should not trap unrelated document windows unnecessarily.
+- Under **App Sandbox**, request least-privilege entitlements (`com.apple.security.files.user-selected.read-write`) and persist user-granted folder access with **security-scoped bookmarks** rather than failing silently after relaunch.
+- For direct distribution outside the Mac App Store, enable Hardened Runtime, sign with Developer ID, and notarize (`xcrun notarytool submit` + `xcrun stapler staple`) so Gatekeeper never blocks users.
 
 ## Do/don't pairs
 
 | Do | Don't |
 |---|---|
-| real `NSButton`/menu command with keyboard equivalent | custom clickable image pretending to be a control |
-| toolbar/sidebar/menu conventions appropriate to app type | mobile tab bar pasted into macOS window |
-| document dirty/autosave/close flow | silently discarding edits on red close button |
-| VoiceOver/Full Keyboard Access verification | assuming pointer testing covers accessibility |
-| vector/PDF/high-resolution assets | blurry bitmap-only icons at Retina scale |
+| `DocumentGroup` / `NSDocument` with dirty dot, autosave, and Save prompt on close | Silently discard edits when clicking the red close button |
+| Wire active-window menu items via `.commands` + `@FocusedValue` or Responder Chain | Hard-code menu actions to a singleton window reference |
+| Check `accessibilityDisplayShouldReduceTransparency` & `IncreaseContrast` around `NSGlassEffectView`/`.glassEffect` | Ship unreadable translucent glass toolbars over high-contrast documents |
+| Provide `Settings` scene (`Cmd+,`) and native `NSToolbar` / sidebar navigation | Paste an iOS bottom tab bar or custom web-style hamburger drawer into macOS |
+| Persist folder access via security-scoped bookmarks in sandboxed builds | Assume raw POSIX paths survive relaunch under App Sandbox |
 
 ## Known traps
 
-Window restoration/state duplication, key equivalent conflicts, menu validation ownership, sheet/modal scope confusion, AppKit/SwiftUI interop lifecycle, custom focus ring removal, sandbox file permission failure, high-DPI asset mismatch, vibrancy/contrast legibility.
+Menu items staying enabled when no document window is key (missing `NSMenuItemValidation` / `@FocusedValue`), AppKit/SwiftUI `NSHostingView` sizing loops inside `NSTableView` cells, custom `NSWindow` titlebar removing drag/double-click zoom, keyboard shortcuts colliding with macOS system/IME bindings, unnotarized binaries failing Gatekeeper, unguarded `NSGlassEffectView` failing Reduce Transparency.
 
 ## Verification commands
 
 ```sh
 xcodebuild -scheme App -destination 'platform=macOS' build
 xcodebuild test -scheme App -destination 'platform=macOS'
+# For Developer ID release validation:
+codesign --verify --deep --strict build/App.app
+spctl --assess --type execute --verbose build/App.app
 ```
 
-Use real macOS runs, VoiceOver/Accessibility Inspector/Full Keyboard Access, resize/fullscreen/multiple-display tests, dark/high contrast/increased contrast modes, keyboard shortcuts, document close/crash flows, and menu validation inspection.
+`xcodebuild` and unit tests are `static` evidence. Run on real macOS across VoiceOver, Accessibility Inspector, Full Keyboard Access, Dark Mode, Increase Contrast, Reduce Transparency, Reduce Motion, multi-monitor/Retina resize, and document dirty-close flows for `rendered` evidence; label unavailable hardware/macOS versions `not-checked`.

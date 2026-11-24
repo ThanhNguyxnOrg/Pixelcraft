@@ -2,7 +2,7 @@
 
 ## Token mapping
 
-Evidence projects keep project settings in `evidence.config.yaml` and theme configuration in `theme.yaml` at the project root. Use the theme system for colors, palettes, and scales before local overrides; keep light/dark palettes paired and semantic rather than recoloring individual charts:
+Keep project settings in `evidence.config.yaml` and theme configuration in `theme.yaml` at the project root. Define paired light/dark palettes and color scales in `theme.yaml` before overriding individual components:
 
 ```yaml
 theme:
@@ -10,66 +10,81 @@ theme:
     primary:
       light: "#2563eb"
       dark: "#3b82f6"
+  colorPalettes:
+    default:
+      light: ["#2563eb", "#0d9488", "#d97706", "#7c3aed"]
+      dark: ["#60a5fa", "#2dd4bf", "#fbbf24", "#a78bfa"]
 ```
 
-Verify exact theme keys against the installed Evidence version because the project has evolved across releases.
+Verify exact theme keys against the installed `@evidence-dev/evidence` version because palette/theme schemas evolve across releases.
 
 ## Layout and responsive idioms
 
-Pages are Markdown files, normally under the configured `pages` directory. `evidence.config.yaml` can set defaults such as page width, cards, table of contents, and auto-refresh. Compose operational dashboards around reading order and decision density rather than filling width with equal cards. Test narrow screens, print/export/share links, long dimension names, and navigation depth.
+Pages are Markdown files under `pages/`. `evidence.config.yaml` sets defaults such as layout width, navigation, and appearance. Evidence compiles SQL extracts from `sources/` into local Parquet files queried in the browser via **Universal SQL (DuckDB-Wasm)**. Compose operational reports around reading order and decision density rather than equal-height KPI cards. Test narrow screens, print/export views, shared filter URLs, and long dimension names.
 
-## Typography/custom fonts
+## Typography and numeric precision
 
-Use project theme/layout settings for typography where supported. Keep numeric alignment, units, date granularity, and label truncation deliberate. Markdown prose is part of the product: explain what the query means, freshness, caveats, and action expected.
+Configure font families in `theme.yaml` where supported. Keep numeric format strings explicit (`fmt=usd0`, `fmt=pct1`, tabular alignment) and label time grain and timezone in headings or notes. Markdown prose is part of the product: document metric definitions, freshness timestamps, and caveats right beside the visuals.
 
-## Motion/reduced motion
+## Motion and reduced motion
 
-Evidence renders browser UI. Any custom motion must respect `prefers-reduced-motion`; do not use animated chart transitions as the only signal that data refreshed. Auto-refresh needs visible freshness/state feedback.
+Evidence renders Svelte browser UI. Any custom transitions must respect `prefers-reduced-motion`, and never rely on chart animation as the sole signal that filters or data updated.
 
 ## Accessibility specifics
 
-Use semantic Markdown headings and text alternatives for charts/tables. Validate keyboard reach and visible focus for filters/buttons, non-color encoding in charts, contrast of both light/dark theme palettes, and table summaries for screen-reader users. Component accessibility varies by version; inspect the rendered page rather than assuming BI components are accessible by default.
+Use semantic Markdown heading levels (`h1` -> `h2` -> `h3`) and plain-language summaries around charts and tables. Validate keyboard reach and visible focus on inputs (`Dropdown`, `DateRange`, `ButtonGroup`), contrast in both light and dark modes, non-color chart encodings, and table column labels in the rendered DOM rather than assuming BI components are accessible by default.
 
-## States idiom
+## States and Universal SQL idiom
 
-SQL fenced blocks define named queries; components consume them through `data` attributes. Handle empty results, warehouse/connectivity failure, invalid credentials, stale snapshots, partial query failure, auto-refresh pending/error, and no-permission states honestly:
+SQL fenced blocks define named client-side DuckDB-Wasm queries; Svelte components consume them through `{query_name}` props and reactive `${inputs.*}` bindings. Handle empty results, source-build failure, stale Parquet snapshots, and missing permissions explicitly:
 
 ````markdown
 ```sql daily_orders
-select * from demo.daily_orders limit 10
+select
+  order_date,
+  region,
+  revenue_usd
+from warehouse.daily_orders
+where region like '${inputs.region.value}'
+order by order_date desc
 ```
 
-{% table data="daily_orders" /%}
+<Dropdown data={regions} name=region value=region title="Region">
+  <DropdownOption value="%" valueLabel="All regions" />
+</Dropdown>
+
+{#if daily_orders.length === 0}
+  No orders match the selected region. Widen the filter or check the latest source build.
+{:else}
+  <BarChart data={daily_orders} x=order_date y=revenue_usd yFmt=usd0 title="Daily revenue" />
+  <DataTable data={daily_orders} search=true rows=15 />
+{/if}
 ````
 
-Syntax/version details change; verify against the project template before editing broadly.
+## Forms and filter idiom
 
-## Forms idiom
-
-Use labeled filters/input components supported by the installed version. Show active filters in text, preserve useful filter state across navigation/share links where supported, validate date/numeric ranges, and never expose raw SQL injection paths through interpolated user input.
+Use labeled Evidence input components (`Dropdown`, `DateRange`, `TextInput`, `ButtonGroup`). Reflect active filters in prose or headings, validate date/numeric bounds, and avoid constructing unquoted raw SQL identifiers from user text even against local DuckDB-Wasm snapshots.
 
 ## Do/don't pairs
 
 | Do | Don't |
 |---|---|
-| version-controlled `evidence.config.yaml`/`theme.yaml` | undocumented local-only theme or page settings |
-| named SQL blocks consumed by components | duplicated ad hoc SQL with inconsistent filters |
-| empty/error copy near the affected component | a blank chart region with no explanation |
-| light/dark palette contrast checks | one palette copied into both modes |
-| visible last-refreshed/source context | implying warehouse freshness without evidence |
+| Svelte component syntax (`<DataTable data={daily_orders} />`) | Liquid/Markdoc syntax (`{% table data="daily_orders" /%}`) that fails to compile |
+| Run `npm run sources` to refresh Parquet extracts before `npm run build` | Deploy stale `static/data` snapshots without checking source freshness |
+| Version-controlled `evidence.config.yaml` and `theme.yaml` | Undocumented local-only theme or connector settings |
+| `{#if query.length === 0}` empty states beside affected charts | Blank chart regions with no explanation |
+| Visible last-built timestamp and source caveats | Implying live warehouse queries when serving static Universal SQL extracts |
 
 ## Known traps
 
-Warehouse credential leakage, expensive unbounded queries, implicit timezone/date-grain mistakes, SQL dialect differences by connector, static deployment freshness, theme key/version drift, filter state confusion, component accessibility gaps, Markdown prose diverging from actual query logic.
+Warehouse credentials committed to `sources/*/connection.yaml` (use env vars), unbounded source queries bloating browser Parquet downloads, implicit timezone/date-grain mismatches between warehouse SQL and DuckDB-Wasm, SQL dialect differences across connectors, stale static builds, filter state confusion on narrow viewports, and prose diverging from SQL logic.
 
 ## Verification commands
 
 ```sh
-cat evidence.config.yaml
-cat theme.yaml
-cat package.json
+npm run sources
 npm run build
 npm run dev
 ```
 
-Exact scripts depend on the generated project. Browser inspection of the rendered report is rendered evidence; successful SQL/build output is static/data evidence only.
+`npm run sources` verifies connector extraction into Universal SQL / DuckDB-Wasm Parquet files (`static`/`data` evidence); `npm run build` validates Svelte/Markdown compilation (`static`); browser inspection across light/dark modes and narrow viewports is required for `rendered` evidence.

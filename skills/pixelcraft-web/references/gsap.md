@@ -4,62 +4,92 @@ Use GSAP when a timeline, coordinated sequence, SVG/plugin capability, or scroll
 
 ## Ownership and setup
 
-- Register only the plugins used by the affected route/component.
-- Check the installed GSAP version and exact plugin availability before relying on a plugin or API. Do not infer license/plan access from an old tutorial.
-- Keep one animation system as the owner of a given element/property. Avoid GSAP and Motion both writing transform on the same node.
-- Scope selectors and timelines to the component. Prefer a scoped context or the project's maintained React integration rather than global queries that survive route changes.
-- Revert the context/kill timelines and ScrollTriggers on teardown. Rebuild measurements after font/image/content changes where appropriate.
+- Register only the plugins used by the affected route/component (`gsap.registerPlugin(...)`).
+- **GSAP 3.13+ licensing**: starting with GSAP 3.13 (via Webflow), all formerly paid Club GSAP plugins (**SplitText, DrawSVGPlugin, MorphSVGPlugin, ScrollSmoother, Flip, Observer, InertiaPlugin, ScrambleTextPlugin, Physics2DPlugin**) are **100% free** for personal and commercial projects (subject to Webflow's standard no-competing-visual-builder clause). Still check `package.json` on older GSAP ≤ 3.12 codebases before assuming plugin availability.
+- Keep one animation system as the owner of a given element/property. Avoid GSAP and Motion both writing `transform` on the same node.
+- Scope selectors and timelines to the component root and revert all tweens, timelines, ScrollTriggers, and `matchMedia` listeners on teardown.
 
-## Timeline composition
+## Timeline and plugin matrix
 
-Use labels for semantic beats such as intro, reveal, detail, exit. Keep a master timeline small and compose section-level timelines; do not build one giant timeline for an entire application.
+Use labels for semantic beats such as `intro`, `reveal`, `detail`, `exit`. Keep timelines section-scoped rather than building one giant master timeline for an entire application.
 
-| Tool | Use |
-|---|---|
-| gsap.timeline | Ordered or overlapping sequence with labels and explicit ownership |
-| ScrollTrigger | Progress-linked scenes, pinning, scrub, snap, enter/leave callbacks |
-| SplitText | Headline/short editorial text sequencing while preserving a semantic source |
-| DrawSVGPlugin | SVG stroke drawing when the path itself communicates progress |
-| MotionPathPlugin | Movement along a meaningful SVG/path geometry |
-| CustomEase | A project-specific motion character reused through semantic tokens |
-| matchMedia | Responsive and reduced-motion-specific animation variants |
-
-A plugin's presence in a bundle is not proof that a given interaction uses it. Verify the route and state.
+| Tool | Use | Key idiom |
+|---|---|---|
+| `gsap.timeline` | Ordered or overlapping sequence with labels and explicit ownership | Attach to a scoped `useGSAP` / `gsap.context` / `gsap.matchMedia` |
+| `ScrollTrigger` | Progress-linked scenes, pinning, scrub, snap, enter/leave callbacks | Define `start`/`end` in content terms; call `ScrollTrigger.refresh()` only after layout-affecting media/fonts settle |
+| `SplitText` (3.13+) | Short headline/editorial text reveals with semantic preservation | Use `SplitText.create(el, { type: 'lines,words', mask: 'lines', autoSplit: true, aria: 'auto', onSplit(self) { ... } })` so screen readers read intact text and resize/font-load re-splits automatically |
+| `Flip` | Smooth layout transitions across DOM/grid/flex changes | `const state = Flip.getState(targets); mutateDOM(); Flip.from(state, { duration: 0.45, ease: 'power2.out', absolute: true });` |
+| `Observer` | Unified wheel/touch/pointer intent gestures | Normalize swipe/drag steps without breaking native page scroll unless explicitly scoped |
+| `gsap.quickTo` | High-frequency pointer/cursor/magnetic tracking | Pre-allocate `const xTo = gsap.quickTo(el, 'x', { duration: 0.25, ease: 'power3' })` once instead of spawning tweens on every `pointermove` |
+| `DrawSVGPlugin` / `MorphSVGPlugin` / `MotionPathPlugin` | SVG stroke progress, shape morphs, and path-aligned motion | Always preserve a legible static SVG fallback and accessible `<title>`/`aria-label` |
+| `gsap.matchMedia` | Responsive and `prefers-reduced-motion` animation variants | Pass `scope` (`gsap.matchMedia(rootRef)` or inside `useGSAP(..., { scope: rootRef })`) so selectors stay component-scoped |
 
 ## ScrollTrigger rules
 
 - Use normal document flow and native scroll. Pin only when a persistent artifact needs chapter context.
-- Define trigger/start/end in content terms and test fast/reverse scroll, scrollbar drag, resize, short viewport height, and late media.
-- Avoid pinned nested scrollers and multiple competing smooth-scroll systems.
-- Refresh only after layout-affecting content is ready; do not call refresh on every frame.
-- Do not make core content unreachable if ScrollTrigger fails or reduced motion is enabled.
+- Test fast/reverse scroll, scrollbar drag, resize, short viewport height, and late-loading images/fonts.
+- Avoid pinned nested scrollers and competing smooth-scroll engines (see [smooth-scroll.md](smooth-scroll.md) for Lenis / `ScrollSmoother` coordination).
+- Do not make core content unreachable if ScrollTrigger fails or `prefers-reduced-motion: reduce` is enabled.
 
-## React lifecycle
+## Scoped lifecycle & React (`@gsap/react`)
 
-- Initialize in an effect or the project's documented GSAP React integration.
-- Scope selectors under a component root.
-- Revert all created animations and triggers in cleanup.
-- Avoid recreating timelines on every state render; depend on stable inputs and explicitly rebuild when content changes.
-- Test React Strict Mode mount/cleanup/remount behavior in development.
-- Do not use a global query that accidentally animates another instance of a repeated component.
+**Scoping trap**: calling `const mm = gsap.matchMedia()` *outside* `gsap.context(..., rootRef)` creates an unscoped `matchMedia` context—selector strings like `'.chapter-item'` inside `mm.add(...)` will query the entire `document` and animate other component instances! Pass `rootRef` directly to `gsap.matchMedia(rootRef)` (vanilla/Vue/Svelte/Solid) or use **`useGSAP`** from `@gsap/react` (which scopes both `gsap` and `gsap.matchMedia()` automatically and reverts cleanly under React Strict Mode):
+
+```tsx
+// React: @gsap/react useGSAP (auto-scoped + Strict Mode safe cleanup)
+import { useRef } from 'react';
+import gsap from 'gsap';
+import { ScrollTrigger } from 'gsap/ScrollTrigger';
+import { SplitText } from 'gsap/SplitText';
+import { useGSAP } from '@gsap/react';
+
+gsap.registerPlugin(ScrollTrigger, SplitText);
+
+export function EditorialChapter() {
+  const rootRef = useRef<HTMLElement>(null);
+
+  useGSAP(
+    () => {
+      const mm = gsap.matchMedia();
+      mm.add('(prefers-reduced-motion: no-preference)', () => {
+        SplitText.create('.chapter-heading', {
+          type: 'lines',
+          mask: 'lines',
+          autoSplit: true,
+          aria: 'auto',
+          onSplit(self) {
+            return gsap.from(self.lines, {
+              yPercent: 100,
+              stagger: 0.08,
+              duration: 0.55,
+              ease: 'power3.out',
+              scrollTrigger: { trigger: rootRef.current, start: 'top 80%', once: true },
+            });
+          },
+        });
+      });
+    },
+    { scope: rootRef },
+  );
+
+  return (
+    <section ref={rootRef}>
+      <h2 className="chapter-heading">Quarterly release notes</h2>
+    </section>
+  );
+}
+```
 
 ```ts
-// Scoped GSAP + matchMedia cleanup (safe under React Strict Mode)
-const mm = gsap.matchMedia();
-const ctx = gsap.context(() => {
-  mm.add('(prefers-reduced-motion: no-preference)', () => {
-    gsap.from('.chapter-item', {
-      y: 24,
-      opacity: 0,
-      stagger: 0.08,
-      duration: 0.6,
-      ease: 'power3.out',
-      scrollTrigger: { trigger: rootRef.current, start: 'top 80%', once: true },
-    });
-  });
-}, rootRef);
-
-// Cleanup: ctx.revert(); mm.revert();
+// Framework-agnostic (Vue / Svelte / Solid / Astro / Vanilla): pass scope to matchMedia(rootEl)
+const mm = gsap.matchMedia(rootEl);
+mm.add('(prefers-reduced-motion: no-preference)', () => {
+  const xTo = gsap.quickTo('.magnet-target', 'x', { duration: 0.25, ease: 'power3.out' });
+  const onMove = (e: PointerEvent) => xTo(gsap.utils.clamp(-12, 12, e.movementX));
+  rootEl.addEventListener('pointermove', onMove);
+  return () => rootEl.removeEventListener('pointermove', onMove);
+});
+// Teardown: mm.revert();
 ```
 
 ## Official references
@@ -67,6 +97,6 @@ const ctx = gsap.context(() => {
 - GSAP docs: https://gsap.com/docs/v3/
 - ScrollTrigger: https://gsap.com/docs/v3/Plugins/ScrollTrigger/
 - SplitText: https://gsap.com/docs/v3/Plugins/SplitText/
-- DrawSVGPlugin: https://gsap.com/docs/v3/Plugins/DrawSVGPlugin/
-- MotionPathPlugin: https://gsap.com/docs/v3/Plugins/MotionPathPlugin/
-- React guidance: https://gsap.com/resources/React/
+- Flip: https://gsap.com/docs/v3/Plugins/Flip/
+- Observer: https://gsap.com/docs/v3/Plugins/Observer/
+- React guidance (`@gsap/react`): https://gsap.com/resources/React/

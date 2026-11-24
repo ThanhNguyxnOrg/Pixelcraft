@@ -1,7 +1,7 @@
 {
   "schemaVersion": 1,
   "id": "media-players",
-  "skill": "pixelcraft-media",
+  "skill": "pixelcraft-web",
   "title": "Select and implement adaptive video players, waveform audio, and Web Audio DSP safely",
   "contextSnapshot": {
     "surface": "course platform with HLS/DASH video lessons and 60-minute podcast waveform player",
@@ -11,7 +11,7 @@
     "constraints": ["no client-side 60-minute MP3 decode spike", "WCAG 1.2.2 captions", "clean unmount disposal"]
   },
   "prompt": "Implement an adaptive HLS/DASH video player that works on both Chromium and iOS Safari, plus a waveform player for hour-long podcasts and interactive Web Audio controls.",
-  "expectedRouting": ["pixelcraft-media", "references/media-players.md", "pixelcraft-accessibility"],
+  "expectedRouting": ["pixelcraft-web", "references/media-players.md", "pixelcraft-accessibility"],
   "forbiddenBehaviors": [
     "uses hls.js without checking video.canPlayType('application/vnd.apple.mpegurl') for iOS Safari fallback",
     "decodes an entire 60-minute audio file client-side in wavesurfer.js instead of passing pre-computed peaks and duration",

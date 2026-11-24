@@ -49,6 +49,61 @@ Tokenize semantic durations/easings (`feedback.instant`, `state.standard`, `scen
 | WebGL/shader accent | material/light/data inherently spatial or generative | one bounded canvas/scene; pause offscreen; static poster; GPU/memory budget | Metal/Vulkan/OpenGL/native scene only at signature surface | high-quality static image/canvas fallback | default orb/fluid/aurora background |
 | kinetic type/marquee | ticker/log/scoreboard semantics or deliberate print/poster voice | transform-only loop, pause on hover/focus, duplicate content accessibly | ticker view with reduced speed/control | static wrapped text | meaningless infinite marquee as faux award-site signal |
 
+## Modern native CSS motion primitives
+
+Prefer declarative browser primitives over JS animation runtimes when targeting modern web surfaces—always pair with `@supports` progressive enhancement and `@media (prefers-reduced-motion: reduce)`:
+
+```css
+/* 1. CSS linear() spring easing (approximated physics curve with zero JS runtime) */
+:root {
+  --ease-spring-snappy: linear(
+    0, 0.009, 0.035 2.1%, 0.141, 0.281 6.7%, 0.723 12.9%, 0.938 16.7%,
+    1.017, 1.077, 1.121, 1.149 24.3%, 1.159, 1.163, 1.161, 1.154 29.9%,
+    1.129 32.8%, 1.051 39.6%, 1.017 43.1%, 0.991, 0.977 51%, 0.974 53.8%,
+    0.975 57.1%, 0.997 69.8%, 1.003 76.9%, 1.004 83.8%, 1
+  );
+}
+
+/* 2. Entry/exit transitions for top-layer <dialog> and [popover] */
+dialog, [popover] {
+  opacity: 0;
+  transform: translateY(6px);
+  transition: opacity 160ms ease-out, transform 180ms var(--ease-spring-snappy),
+              overlay 180ms allow-discrete, display 180ms allow-discrete;
+}
+dialog[open], [popover]:popover-open {
+  opacity: 1;
+  transform: translateY(0);
+  @starting-style { opacity: 0; transform: translateY(6px); }
+}
+
+/* 3. Cross-document View Transitions + shared group styling */
+@view-transition { navigation: auto; }
+.card-media { view-transition-class: card-morph; }
+::view-transition-group(.card-morph) { animation-duration: 240ms; }
+
+/* 4. Scroll-driven animations gated by @supports and reduced-motion */
+@supports (animation-timeline: view()) {
+  @media (prefers-reduced-motion: no-preference) {
+    .reading-progress {
+      animation: grow-bar linear both;
+      animation-timeline: scroll(root block);
+    }
+    .chapter-figure {
+      animation: reveal-figure linear both;
+      animation-timeline: view();
+      animation-range: entry 10% cover 35%;
+    }
+  }
+}
+
+/* 5. Scroll-state container queries (sticky header elevation without JS scroll listeners) */
+.header-wrap { container-type: scroll-state; position: sticky; top: 0; }
+@container scroll-state(stuck: top) {
+  .site-header { border-bottom-color: var(--semantic-border-strong); }
+}
+```
+
 ## Scrolljacking boundary
 
 Default answer: **do not scrolljack**. Scroll manipulation commonly disorients users; when stakeholders insist, use it only for functional value, keep required scroll input small, make change visible quickly, preserve normal scrollbar/progress, provide direct section links, avoid precision-dependent reveals, and user-test the rate. Never hijack input, invert direction, suppress keyboard/scrollbar behavior, or make content vanish on a slight overscroll.

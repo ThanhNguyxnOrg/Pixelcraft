@@ -45,7 +45,7 @@ Semantic-version the token package when it is versioned as a package. Treat gene
 
 ## Deprecation procedure
 
-1. Mark the old token deprecated in `$description` or `$extensions` without changing its value.
+1. Mark the old token or group with the standard DTCG `"$deprecated"` field (`true` or a migration string such as `"$deprecated": "Use color.action.primary; removal planned in v3.0"`) without changing its resolved value.
 2. Add the replacement and migration example.
 3. Inventory consumers before removal; search generated artifacts and platform code, not only web CSS.
 4. Announce the removal window in the project’s normal change channel.

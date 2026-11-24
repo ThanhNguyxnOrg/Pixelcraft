@@ -1,55 +1,76 @@
 # Ionic / Capacitor
 
-## Token mapping
+## Token mapping & Ionic 8 palettes
 
-Ionic exposes CSS variables for theme and component customization. Bridge generated CSS variables into Ionic semantic variables in global CSS:
+Ionic 8 supports modern CSS **`light-dark()`** and built-in **high-contrast palettes** (`@ionic/core/css/palettes/dark.system.css`, `high-contrast.system.css`, `high-contrast-dark.system.css`). Bridge DTCG semantic CSS custom properties into Ionic's documented `--ion-*` tokens rather than piercing Shadow DOM internals:
 
 ```css
+@import '@ionic/core/css/palettes/dark.system.css';
+@import '@ionic/core/css/palettes/high-contrast.system.css';
+@import '@ionic/core/css/palettes/high-contrast-dark.system.css';
+
 :root {
-  --ion-color-primary: var(--semantic-color-action);
-  --ion-background-color: var(--semantic-color-background);
+  color-scheme: light dark;
+  --ion-color-primary: light-dark(var(--semantic-action-light), var(--semantic-action-dark));
+  --ion-background-color: var(--semantic-surface);
+  --ion-text-color: var(--semantic-on-surface);
 }
 ```
 
-Do not override internal shadow DOM with brittle selectors when documented CSS variables/parts exist.
+Use documented `::part(...)` selectors and `--ion-*` variables; never rely on fragile shadow-root traversal hacks.
 
-## Layout and responsive idioms
+## Capacitor 6–8 Android Edge-to-Edge & layout idioms
 
-Use Ionic page/content/header/footer/menu/router outlet idioms. Respect safe areas, split pane behavior, hardware/software back semantics, keyboard inset behavior, and mobile navigation rather than treating the app as a responsive website in a shell. Web responsive layout remains relevant inside content.
+Android 15/16 enforces edge-to-edge rendering. Configure Capacitor 6–8's **`SystemBars`** plugin / `adjustMarginsForEdgeToEdge` setting (or `@capacitor/status-bar` + explicit safe-area insets) alongside `<meta name="viewport" content="viewport-fit=cover, width=device-width, initial-scale=1.0">` and CSS `env(safe-area-inset-*)` so headers, bottom tabs, and CTAs never collide with cutouts or gesture bars.
 
-## Typography/custom fonts
+Use Ionic's `<ion-app>`, `<ion-page>`, `<ion-header>`, `<ion-content>`, `<ion-footer>`, `<ion-split-pane>`, and `<ion-router-outlet>` so swipe-back, hardware back, and scroll-to-top follow host conventions. Choose `mode` (`ios` / `md`) per host platform by default rather than locking Android users into iOS chrome or vice versa.
 
-Use web font loading plus platform-appropriate fallbacks. Ionic mode (`ios`/`md`) affects typography/platform behavior; choose intentionally rather than forcing one mode blindly everywhere. Text zoom/reflow must survive WebView settings and device font scaling.
+## Capacitor without Ionic (plain web frameworks + Konsta / Tailwind)
 
-## Motion/reduced motion
+You do **not** need Ionic Framework to ship a Capacitor app. Teams using React, Vue, Svelte, Solid, or Angular with **Tailwind CSS** (optionally paired with **Konsta UI** for iOS/Material Tailwind primitives) can target Capacitor directly without Ionic's Web Components / Shadow DOM layer. When opting out of Ionic, you explicitly own:
 
-Use Ionic component transitions/navigation idioms and CSS motion honoring `prefers-reduced-motion`. Capacitor plugins/native APIs may expose additional behavior, but do not fake system haptics/animation everywhere.
+- iOS swipe-back and Android hardware/predictive back handling (`@capacitor/app` `backButton` listener),
+- safe-area and keyboard inset padding (`@capacitor/keyboard` + `env(safe-area-inset-*)`),
+- native-feeling sheet/modal focus traps and scroll-container momentum,
+- 44pt / 48dp touch targets and tap-highlight suppression (`-webkit-tap-highlight-color: transparent` paired with intentional `:active` feedback).
 
-## Accessibility specifics
+## Forms idiom (Ionic 7/8 `label` / `labelPlacement`)
 
-Ionic components carry useful semantics but still require labels/names/focus management. Router transitions and modal/popover dismissal need focus restoration. Capacitor apps need real device testing because web accessibility behavior does not cover native shell/permissions/keyboards.
+Legacy standalone `<ion-label>` inside `<ion-item>` around form controls is **deprecated in Ionic 7/8**. Pass **`label`** and **`labelPlacement`** (`"stacked"`, `"floating"`, `"fixed"`, `"start"`) directly on `<ion-input>`, `<ion-textarea>`, `<ion-select>`, `<ion-toggle>`, `<ion-checkbox>`, and `<ion-radio>`, paired with `helper-text` and `error-text`:
 
-## States idiom
+```html
+<ion-input
+  label="Work email"
+  label-placement="stacked"
+  type="email"
+  autocomplete="email"
+  inputmode="email"
+  helper-text="Receipts are sent here."
+  error-text="Enter a valid email address."
+></ion-input>
+```
 
-Treat web data state and native device state separately: network offline/online, permission denied, background/resume, keyboard open/closed, deep link/app URL open, push notification cold start. Loading/empty/error/offline/optimistic states follow web rules plus native interruption recovery.
+Prefer `label-placement="stacked"` for dense or localized forms so long labels do not overlap values or clip on narrow screens.
 
-## Forms idiom
+## Typography, motion, accessibility, & states idioms
 
-Ionic inputs need persistent labels (`ion-label` or modern input label APIs), correct type/autocomplete/inputmode, clear helper/error copy, paste/autofill support, keyboard behavior, and validation timing. Do not use floating labels as the only memory aid in long forms without checking overlap/truncation.
+Bundle fonts locally (offline-ready) with platform fallbacks and ensure text reflows cleanly under WebView / OS text zoom. Honor `@media (prefers-reduced-motion: reduce)` in CSS and disable non-essential Ionic page transitions when requested.
+
+Manage focus explicitly on router navigation and modal/sheet dismissal (WebViews do not automatically restore focus reliably). Model both web data state (loading/empty/error/offline/optimistic) and native shell state (permission denied, `@capacitor/network` offline, `@capacitor/app` background/resume, deep-link cold start, keyboard open/closed).
 
 ## Do/don't pairs
 
 | Do | Don't |
 |---|---|
-| use documented `--ion-*` variables/parts | piercing shadow internals with fragile selectors |
-| platform-aware navigation/back behavior | forcing one navigation model because codebase is shared |
-| explicit focus restoration after modal close | assuming WebView automatically chooses correct focus |
-| device permission primer/fallback flow | looping the native permission prompt with no escape |
-| test keyboard-safe bottom action | placing fixed CTA beneath keyboard/home indicator |
+| `<ion-input label="Email" label-placement="stacked" error-text="...">` | Deprecated `<ion-item><ion-label>…</ion-label><ion-input /></ion-item>` |
+| Import Ionic 8 `dark.system.css` & `high-contrast.system.css` palettes | Hard-code light-only colors that wash out in high-contrast or dark mode |
+| Configure Capacitor `SystemBars` + `viewport-fit=cover` + `env(safe-area-inset-*)` | Leave Android 15/16 status/gesture bars overlapping app headers or tabs |
+| Documented `--ion-*` custom properties and `::part()` | Fragile selectors attempting to pierce internal Shadow DOM markup |
+| Handle `@capacitor/app` `backButton` and focus restoration explicitly | Assume browser history handles Android hardware back and modal escape |
 
 ## Known traps
 
-WebView version fragmentation, safe-area/keyboard mismatch, shadow DOM styling frustration, forced MD/iOS mode alien to users, native plugin permission lifecycle, hardware back duplication, deep-link cold start state, offline cache staleness, confusing PWA/mobile behavior.
+Android System WebView fragmentation, Android 15/16 edge-to-edge overlap when `SystemBars` / safe-area insets are unconfigured, fixed-bottom CTAs buried under the soft keyboard, stale `npx cap sync` native assets after web builds, permission prompt loops with no denied-state recovery, cold-start deep links dropping route state, Capacitor-without-Ionic apps missing hardware back handlers.
 
 ## Verification commands
 
@@ -58,8 +79,9 @@ npm run lint
 npm run test -- --watch=false
 npm run build
 npx cap sync
-npx cap run ios 2>/dev/null || true
-npx cap run android 2>/dev/null || true
+# Run on real device/emulator when Xcode or Android SDK is installed:
+npx cap run ios
+npx cap run android
 ```
 
-Use browser inspection for DOM plus real device/emulator tests for native shell, keyboard, permissions, back, gestures, screen readers, and offline behavior.
+Web build/unit tests provide `static` evidence; desktop browser DevTools verifies inner DOM only. Run real iOS/Android device or emulator builds to verify Android 15/16 edge-to-edge, keyboard insets, hardware/swipe back, native plugin permissions, VoiceOver/TalkBack, and offline recovery (`rendered`; mark unavailable targets `not-checked`).

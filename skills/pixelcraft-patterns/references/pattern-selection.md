@@ -12,8 +12,14 @@ Use this reference before applying any named product pattern. Patterns encode re
 | exploratory decision | comparison matrix/list-detail/filterable collection | forced linear narrative | stable comparison attributes, save/share state, reversible exploration |
 | ongoing monitoring | dashboard/instrument panel | marketing-style narrative cards | freshness/source/state; alarm hierarchy; drill-down without losing overview |
 | collaborative artifact | persistent canvas/document plus presence/history | isolated modal-per-action editing | ownership/conflict/restore/version behavior |
-| import/migration | staged preview → validate → commit → recover | direct blind commit | mapping memory, partial failure semantics, rollback/report |
-| setup/configuration | sensible defaults plus progressive advanced controls | expose every option at once | impact/copy validation, reset/undo, dependency explanation |
+| import/migration | staged preview -> validate -> commit -> recover | direct blind commit | mapping memory, partial failure semantics, rollback/report |
+| setup/configuration | sensible defaults plus progressive advanced controls | expose every option at once | inheritance badges, sticky dirty-save bar, reset/undo, danger-zone confirmation |
+| SaaS subscription / quota gating | transparent plan comparison, proration preview, soft/hard paywalls | silent charges or dark-pattern cancel flows | unit/cadence clarity, non-admin upgrade requests, dunning grace, self-serve cancel |
+| enterprise admin & access governance | workspace switcher, RBAC matrix, SSO dry-run, diffable audit logs | flat backend scope lists or unverified SSO enforcement | cross-tenant cache isolation, last-owner guard, one-time API key reveal |
+| attention & activity triage | grouped inbox with snooze/archive/undo + channel × event matrix | ungrouped bell dumps or scroll-jumping live feeds | `"N new updates"` pill, mark-all-read undo, quiet hours |
+| temporal planning & board triage | timezone-explicit calendars, Gantt timelines, Kanban boards | drag-only card moves or silent recurring overwrites | recurrence edit scopes, DST clarity, WCAG 2.5.7 single-pointer/keyboard move |
+| revision comparison & recovery | atomic undo stacks, named read-only snapshots, unified/split/JSON diffs | raw keystroke undo or destructive restore | multiplayer per-user undo, preview-before-restore, colorblind-safe diff cues |
+| embedded AI & offline-first work | inspectable NL-to-filter chips, inline diff previews, calm sync outbox | invisible AI writes or silent last-write-wins overwrites | human approval gates, queued-edit inspection, explicit conflict resolution |
 
 ## Navigation matrix
 

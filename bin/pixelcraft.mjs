@@ -120,13 +120,13 @@ Options:
 Symlink safety: installation refuses a symlinked target skills directory or skill
 directory instead of replacing files outside the project.
 
-Project locations: claude=.claude/skills; codex/agents/devin=.agents/skills;
+Project locations: claude=.claude/skills; codex/agents/devin/antigravity=.agents/skills;
 cursor=.cursor/skills; gemini=.gemini/skills; copilot=.github/skills;
-opencode=.opencode/skills; kiro=.kiro/skills; cline=.cline/skills;
-roo=.roo/skills; droid=.factory/skills. Windsurf and Kiro get native skills and
-router files. Claude/Cursor/Copilot adapter commands and rules are written
-alongside their skills. Universal .agents/skills remains available through the
-agents target and as a compatibility path in several hosts.
+windsurf=.windsurf/skills; opencode=.opencode/skills; kiro=.kiro/skills;
+cline=.cline/skills; roo=.roo/skills; droid=.factory/skills. Windsurf and Kiro
+get native skills and router files. Claude/Cursor/Copilot adapter commands and
+rules are written alongside their skills. Universal .agents/skills remains
+available through the agents target and as a compatibility path in several hosts.
 Global locations: claude=~/.claude/skills; codex/agents/devin=~/.agents/skills;
 cursor=~/.cursor/skills; gemini=~/.gemini/skills; copilot=~/.copilot/skills;
 windsurf=~/.codeium/windsurf/skills plus memories/global_rules.md;
@@ -297,7 +297,7 @@ function writeAgentAdapters(target, dryRun, force, selected) {
     write('rules/pixelcraft.mdc', `---\ndescription: Route UI design and review through Pixelcraft\nalwaysApply: true\n---\n\n# Pixelcraft router\n\n${adapterIntro(displayRoot)}`);
   } else if (target.agent === 'copilot') {
     write('copilot-instructions.md', `# Pixelcraft router\n\n${adapterIntro(displayRoot)}`, true);
-    write('instructions/pixelcraft.instructions.md', `---\napplyTo: "**/*.{html,css,scss,js,jsx,ts,tsx,vue,svelte,astro,py,rb,php,cs,java,kt,swift,dart,rs,go,lua,ex,exs,clj,cljs,elm,fs,scala}"\n---\n\nWhen editing interface or user-facing behavior, follow \`copilot-instructions.md\` and read the matching Pixelcraft skill before implementation or review.\n`);
+    write('instructions/pixelcraft.instructions.md', `---\napplyTo: "**/*.{html,css,scss,js,jsx,ts,tsx,vue,svelte,astro,mdx,razor,heex,erb,templ,mjml,typ,tex,py,rb,php,cs,java,kt,swift,dart,rs,go,lua,ex,exs,clj,cljs,elm,fs,scala,cpp,h,glsl,wgsl,qml,xaml,uxml,uss,gd,tscn,tcss,qss,r,jl}"\n---\n\nWhen editing interface or user-facing behavior, follow \`copilot-instructions.md\` and read the matching Pixelcraft skill before implementation or review.\n`);
     for (const [command, skill, task] of adapterActions.slice(1)) write(`prompts/${command}.prompt.md`, commandText(skill, task));
   } else if (target.type === 'windsurf' || target.type === 'kiro') {
     const supportRoot = path.join(base, 'skills');

@@ -2,52 +2,79 @@
 
 ## Token mapping
 
-Configure page/theme objects rather than styling every control ad hoc. Current Flet commonly uses `page.theme = ft.Theme(...)` and color-scheme-related properties; verify exact constructor against the installed version. Keep generated Python constants in a semantic module and map them once into theme/control styles.
+Store semantic colors, spacing, and typography roles in a Python module and wire them into `page.theme` and `page.dark_theme` (`ft.Theme` + `ft.ColorScheme`) once rather than passing hex literals to every control. Flet 0.25–1.0 evolved rapidly (introducing declarative `@ft.component` + hooks in 1.0 alongside imperative `page.add` / `page.update` in 0.25–0.28); inspect the installed `flet` version before choosing constructor names.
 
-## Layout and responsive idioms
+```python
+import flet as ft
 
-Use controls/containers/rows/columns/views/routes/expansion behavior according to app/window model. Flet can target desktop/web/mobile-like surfaces; do not assume browser DOM or mobile platform conventions automatically apply. Handle resize/orientation/window dimensions explicitly.
+class PcTokens:
+    ACTION = "#0074CA"
+    CONTROL_INLINE = 12
 
-## Typography/custom fonts
+# Declarative idiom (Flet 1.0+):
+@ft.component
+def InvoiceActions(on_save):
+    saving, set_saving = ft.use_state(False)
+    return ft.SafeArea(
+        ft.Column(
+            spacing=PcTokens.CONTROL_INLINE,
+            controls=[
+                ft.FilledButton(
+                    "Save invoice" if not saving else "Saving...",
+                    disabled=saving,
+                    on_click=lambda _: (set_saving(True), on_save()),
+                ),
+            ],
+        )
+    )
 
-Register/configure fonts and text styles deliberately. Verify fallback/glyph coverage and scaling. Fixed-size containers must not clip localized or scaled copy without intentional overflow behavior.
+def main(page: ft.Page):
+    page.adaptive = True  # renders Cupertino controls on iOS/macOS, Material on Android/Windows/Linux
+    page.theme = ft.Theme(color_scheme_seed=PcTokens.ACTION)
+    page.theme_mode = ft.ThemeMode.SYSTEM
+    page.render(lambda: InvoiceActions(on_save=lambda: None))
+```
 
-## Motion/reduced motion
+## Layout, adaptive controls, & SafeArea
 
-Use animation/transition properties purposefully and keep durations semantic. Platform reduced-motion behavior depends on target/host; expose an app-level reduced-motion setting if system integration is uncertain. Never rely on motion alone for state.
+- Always wrap top-level mobile screens in **`ft.SafeArea(...)`** so notches, Dynamic Island, status bars, and gesture navigation bars do not clip content or bottom actions.
+- Enable **`page.adaptive = True`** (or opt into `ft.CupertinoButton`, `ft.CupertinoNavigationBar`, `ft.CupertinoAlertDialog`, `ft.CupertinoSlidingSegmentedButton` explicitly on Apple targets) so iOS/macOS users do not receive foreign Material chrome.
+- Handle window/viewport resizing (`page.on_resized`) explicitly because Flet renders via Flutter across iOS, Android, macOS, Windows, Linux, and Web—do not freeze one desktop wireframe across every target.
 
-## Accessibility specifics
+## Typography, motion, & reduced motion
 
-Use semantic properties/labels/tooltips only as appropriate and inspect actual target behavior. Keyboard focus/traversal and screen-reader support vary by surface/version; custom-painted/control-heavy UI needs explicit verification. Do not fake buttons with gesture-only containers.
+Register custom font files via `page.fonts = {"Brand": "/fonts/Brand.ttf"}` and verify glyph coverage and fallback fonts on the actual target OS. Avoid fixed pixel `height` on text containers so localized or scaled copy does not clip.
 
-## States idiom
+Keep `animate`, `animate_opacity`, and `animate_position` durations brief and interruptible. Because system reduced-motion forwarding varies across Flutter/Flet hosts, expose an app-level reduced-motion toggle when animations carry motion and never use animation as the sole state cue.
 
-Understand page/update lifecycle and control tree ownership. Model loading/error/empty/offline/permission/background-task states explicitly. Async tasks need cancellation/error propagation and duplicate-submit protection. Preserve control values through route/navigation/session behavior.
+## Accessibility, states, & forms idioms
 
-## Forms idiom
+Use real interactive controls (`FilledButton`, `IconButton`, `Switch`, `Checkbox`, `TextField`) with `tooltip`, `label`, and `semantics_label` (`ft.Semantics`) rather than wrapping styled `ft.Text` in `ft.GestureDetector` or clickable `ft.Container`. Verify keyboard Tab order and VoiceOver/TalkBack/Narrator output on the shipped platform.
 
-Use labeled text fields/dropdowns/checkboxes, validation timing after completion/submit, focus traversal, correct keyboard/input behavior where exposed, paste/autofill capability verification, and input preservation across route changes.
+Model async state (`loading`, `empty`, `error`, `offline`) explicitly via reactive state or page controls with cancellation and duplicate-submit guards—never launch untracked `asyncio.create_task` loops that mutate detached controls. In forms, pair `ft.TextField` with persistent `label`, `keyboard_type`, `error_text` validated after completion/submit, and draft preservation across `page.views` / route changes.
 
 ## Do/don't pairs
 
 | Do | Don't |
 |---|---|
-| one semantic theme module | raw color/style constants repeated through controls |
-| real button/control semantics | clickable/gesture container as fake primary action |
-| explicit async task error/cancel state | fire-and-forget background work with silent failure |
-| resize-aware adaptive layout | fixed desktop wireframe scaled to every target |
-| preserve form draft through navigation | reconstructing blank controls on every route change |
+| Centralize tokens in `page.theme` / `page.dark_theme` + `ft.SafeArea` | Scatter raw hex strings and forget safe-area padding on iOS/Android |
+| Enable `page.adaptive = True` or `ft.Cupertino*` on Apple surfaces | Ship identical Material-only dialogs and controls to iOS users |
+| Use real `ft.FilledButton` / `ft.IconButton` + `ft.Semantics` | Build primary actions from `ft.Container(on_click=...)` with no semantics |
+| Track async tasks cleanly and guard against double-submit | Fire unawaited background coroutines that fail silently or race |
+| Preserve form values in state across route transitions | Re-instantiate blank `ft.TextField` controls on every route push |
 
 ## Known traps
 
-Version API churn, update batching/lifecycle confusion, control duplication, unclear async ownership, platform capability differences, font/glyph coverage, accessibility uncertainty, desktop/web behavior divergence.
+API differences between Flet 0.25–0.28 imperative apps and Flet 1.0 declarative `@ft.component` apps, forgetting `ft.SafeArea` on Android 15/16 edge-to-edge or notched iPhones, packaging failures in `flet build` when native Python C-extensions are not compiled for mobile ABIs, missing `page.update()` in imperative mode, unverified screen-reader trees on target OS.
 
 ## Verification commands
 
 ```sh
-flet run app.py 2>/dev/null || python app.py
-python -m pytest
 python -m compileall .
+python -m pytest
+# Interactive run and mobile/desktop packaging (requires Flutter SDK for flet build):
+flet run app.py
+flet build apk    # or: flet build ipa / flet build macos / flet build linux
 ```
 
-Inspect the actual target surface (browser/desktop/device). Python tests are state evidence only unless they drive the rendered target.
+`compileall` and `pytest` provide `static` / logic evidence only. Inspect actual `flet run` and packaged `flet build` outputs on target devices/OSes for safe areas, adaptive Cupertino/Material parity, dark mode, text scaling, and screen-reader behavior (`rendered`; label untested platforms `not-checked`).

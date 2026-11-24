@@ -18,11 +18,11 @@ Do not depend on motion. MJML is for resilient static-ish email; interactive/car
 
 ## Accessibility specifics
 
-MJML abstracts structure but does not guarantee meaningful email UX. Supply alt text, real text, semantic reading order, descriptive buttons/links, contrast-aware colors, plaintext counterpart, sensible preheader, and keyboard/touch target size on destination links/buttons where client capabilities permit.
+MJML abstracts table markup (`role="presentation"` is emitted automatically on layout tables), but authors still own semantics: set `lang` and `dir` on `<mjml lang="en" dir="ltr">`, add `<mj-title>` and `<mj-preview>`, supply meaningful `alt` text (or `alt=""` for decorative images), use real `<h1>`–`<h3>` inside `<mj-text>`, maintain contrast under dark-mode inversion, and pair with a `text/plain` version.
 
 ## States idiom
 
-Validate images off/blocked, dark mode, clipping, plaintext, forwarding, narrow viewport, high contrast, print, missing remote assets. Ensure CTA/meaning work if styling is degraded.
+Validate images off/blocked, dark mode, Gmail 102 KB clipping, plaintext, forwarding, narrow viewport, high contrast, print, and missing remote assets. Ensure CTA and core message survive if styling degrades.
 
 ## Forms idiom
 
@@ -32,21 +32,23 @@ Do not depend on forms in email. Link to secure web flows with preauthenticated 
 
 | Do | Don't |
 |---|---|
-| build reusable mj-section/component patterns | hand-editing compiled HTML after every build |
-| `mj-button` with real text/href/fallback color | image-only CTA |
-| isolated justified `mj-raw` escape hatch | raw HTML everywhere defeating MJML's purpose |
-| concise alt text such as `alt="Monthly usage chart"` | missing/useless alt like `alt="image"` |
-| inspect generated output/source size | assuming MJML abstraction guarantees client compatibility |
+| build reusable `mj-section`/`mj-attributes` patterns with `<mjml lang="..." dir="...">` | hand-editing compiled HTML after every build |
+| `mj-button` with real text, `href`, and solid fallback background color | image-only CTA |
+| isolated, justified `mj-raw` escape hatch (keeping New Outlook & Classic Outlook working) | raw HTML everywhere defeating MJML's purpose |
+| concise alt text such as `alt="Monthly usage chart"` | missing or useless alt like `alt="image"` |
+| check compiled HTML byte size against Gmail's 102 KB clipping cap | assuming MJML output stays compact automatically |
 
 ## Known traps
 
-Compiled output divergence from mental model, raw escape overuse, custom font assumptions, section/column nesting errors, dark-mode mutation, image blocking, Gmail clipping due size, Outlook-specific rendering surprises, plaintext not generated from same content model.
+Compiled output weight triggering Gmail 102 KB clipping, raw escape overuse breaking New Outlook vs Classic Outlook parity, custom font assumptions, section/column nesting errors, dark-mode mutation, image blocking, and plaintext not generated from the same content model.
 
 ## Verification commands
 
+Compile with strict validation and run the repo build without suppressing failures:
+
 ```sh
-npx mjml input.mjml -o output.html
-npm run build 2>/dev/null || true
+npx mjml input.mjml -o output.html --config.validationLevel strict
+npm run build
 ```
 
-Inspect compiled source and actual client previews. Validate image-off, dark mode, mobile width, plaintext, clipping, forwarding, links/UTM correctness, and accessibility manually or through a preview service.
+Inspect compiled HTML byte size (`static`) and actual client previews across New Outlook, Classic Outlook, Gmail, and Apple Mail with image-off, dark mode, mobile width, plaintext, forwarding, and accessibility checks (`rendered`).

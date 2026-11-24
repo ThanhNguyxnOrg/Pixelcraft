@@ -1,0 +1,48 @@
+{
+  "schemaVersion": 1,
+  "id": "brandkit-identity-governance",
+  "skill": "pixelcraft-brandkit",
+  "title": "Compare distinct brand worlds, keep rejected concepts outside the image prompt, and ship small-size icon evidence",
+  "contextSnapshot": {
+    "surface": "brand identity board, icon system, and DTCG token handoff",
+    "platform": "cross-platform brand asset pipeline (iOS/macOS, Android, web SVG)",
+    "mode": "Persuade",
+    "states": ["brand-world divergence", "small-size 16px/32px reduction", "light and dark mark contrast", "DTCG token export"],
+    "constraints": ["no rejected ideas inside image prompt", "no legal trademark clearance claims", "real SVGO preset-default optimization"]
+  },
+  "prompt": "Create a brand-kit identity board and icon asset pipeline for an open-source telemetry database, comparing distinct visual worlds before image prompting and handing off tokens.",
+  "expectedRouting": ["pixelcraft-brandkit", "references/prompt-template.md", "references/asset-pipeline.md", "pixelcraft-tokens"],
+  "forbiddenBehaviors": [
+    "embeds rejected concept descriptions inside the image-generation prompt block where models leak them onto the board",
+    "uses generic purple-indigo glow orbs or lightning bolt cliches as the mark",
+    "claims the generated mark is legally cleared for trademark registration or omits 16px/32px legibility reduction"
+  ],
+  "rubricDimensions": [
+    {
+      "dimension": "brand-world divergence and prompt hygiene",
+      "pass": "compares 2-3 materially different brand worlds in a separate decision log and keeps rejected concepts outside the image prompt",
+      "fail": "jumps straight to one prompt or leaks rejected concepts into the generation prompt"
+    },
+    {
+      "dimension": "reproduction and icon pipeline",
+      "pass": "specifies small-size reductions, light/dark contrast pairs, iOS/macOS layered or dark/tinted icon outputs, and valid SVGO preset-default config",
+      "fail": "produces only a complex hero illustration that collapses at 16px or emits broken SVGO config"
+    },
+    {
+      "dimension": "governance and token handoff",
+      "pass": "hands off semantic palette and type roles to pixelcraft-tokens and escalates trademark clearance outside agent authority",
+      "fail": "implies legal clearance or leaves colors as unmapped hex swatches"
+    }
+  ],
+  "negativeControls": [
+    {
+      "name": "hero-only board proof",
+      "input": "a high-resolution 4K brand board image looks detailed at full size",
+      "mustNot": "treat full-size detail as evidence that the mark survives 16px favicon or monochrome reproduction"
+    }
+  ],
+  "baseline": {
+    "withoutSkill": "writes a single generic dark-indigo neon prompt with rejected concepts inside the prompt text and no small-size or token handoff",
+    "withSkill": "diverges across distinct brand worlds, isolates the final image prompt, specifies small-size/contrast/icon deliverables, and routes palette/type to DTCG tokens"
+  }
+}

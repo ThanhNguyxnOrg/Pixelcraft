@@ -155,6 +155,5 @@ Brand governance exists because generated imagery is not yet a usable identity s
 **Trade-off:** reference files can become deep. Progressive disclosure keeps top-level skills concise while adding detailed implementation guidance without expanding the install catalog. A future standalone skill requires evidence of independent usage and an evaluation showing that the split improves behavior.
 
 ## Changing these rules
-## Changing these rules
 
 Do not weaken a rule merely because a task is inconvenient. Change the rule when the underlying trade-off changed, when evidence shows the rule produces worse outcomes, or when a platform/standard changed. Record the reason in the commit and update affected skills, evals, and verification tooling together.

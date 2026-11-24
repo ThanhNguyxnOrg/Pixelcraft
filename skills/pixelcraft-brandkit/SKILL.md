@@ -8,35 +8,35 @@ metadata:
 
 # Pixelcraft Brandkit
 
-You are an elite brand identity art director, logo designer, visual-system strategist, and presentation designer. Generate premium brand-kit images that feel like they came from a serious identity studio: intentional, premium, minimal, coherent, strategic, visually expensive, brand-system driven, and presentation-ready.
+Construct coherent, art-directed brand-kit and identity-board image briefs grounded in brand strategy, symbolic reduction, disciplined grids, and production usability.
 
-Do **not** generate generic logos, random mockups, or messy AI moodboards. Create a complete brand world in one image.
+Do **not** generate generic logos, uncoordinated mockups, or cluttered AI moodboards. Build one repeatable identity system in a single structured board.
 
 ## Core principle
 
-A premium brand kit is not decoration. It is a visual argument for why the brand exists. Every board must answer:
+A brand kit is a structured visual argument for what the brand stands for, not surface decoration. Every board must answer concretely:
 
 1. What does this brand represent?
 2. What is the core metaphor?
-3. How does the logo express that?
-4. How does the system scale across UI, print, image, and detail?
-5. Why does the whole system feel ownable?
+3. How does the mark express that metaphor cleanly at small and large sizes?
+4. How does the system hold together across UI, print, imagery, and detail?
+5. What single deliberate rule makes the system ownable?
 
 ## Quality bar and reference DNA
 
-Unless the brief says otherwise, aim for the presentation quality of premium brand-guidelines decks:
+Unless the brief specifies otherwise, enforce the layout discipline of production identity-guidelines boards:
 
-- dark charcoal or deliberate light outer canvas;
-- clean grid-based boards with strong gutters and consistent alignment;
-- restrained density, sparse typography, and large negative space;
-- cinematic brand atmosphere and simple memorable marks;
-- browser chrome, app headers, terminal frames, or app surfaces used as applications;
-- image-led panels with subtle overlays, halftone/grain/scanline/print texture where appropriate;
-- geometric construction diagrams, thin rules, alignment marks, small labels/page numbers;
-- muted but powerful accents repeated consistently;
-- one strong brand idea per board and the same logo logic across touchpoints.
+- deliberate dark charcoal or calibrated light outer canvas;
+- strict grid-based panels with consistent gutters and exact edge alignment;
+- restrained density, sparse legible typography, and generous negative space;
+- cohesive atmosphere and a single simple, memorable mark repeated consistently;
+- realistic touchpoints (browser chrome, app header, terminal frame, physical label, or icon crop) rather than dense fake dashboards;
+- image-led panels with purposeful surface treatments (halftone, paper grain, print registration, or photography) tied to the brand's material world;
+- geometric construction diagrams, hairlines, alignment marks, and sparse index labels;
+- one disciplined accent system repeated across panels without palette drift;
+- one core identity idea per board using identical mark proportions across every panel.
 
-References define the quality bar, restraint, and presentation rhythm—not a fixed style and never content to copy.
+References calibrate restraint, proportion, and presentation rhythm—never a fixed skin and never assets to copy.
 
 ## When to use
 
@@ -74,7 +74,7 @@ If a new logo is needed or requested, choose one logo method, or combine at most
 
 Default output is one brand-kit overview image in a `3 × 3` grid, with `4:3` or `16:10` aspect ratio. Honor requested width × height, aspect ratio, orientation, or layout over defaults. Canvas dimensions describe the whole output image, not panel count. If the generator cannot produce exact dimensions, use the closest supported ratio, explain the limitation, and report actual output size; ask only when cropping/resizing materially affects composition.
 
-Use `references/layouts.md` for `3×3`, `2×3`, `2×2`, `1×3`, `4×2`, custom layouts, panel rhythm, canvas adaptation, text/tagline/image/mockup/color rules, and premium detail language.
+Use `references/layouts.md` for `3×3`, `2×3`, `2×2`, `1×3`, `4×2`, custom layouts, panel rhythm, canvas adaptation, text/tagline/image/mockup/color rules, and finishing detail rules.
 
 ### 5. Visual mode and palette
 
@@ -98,7 +98,7 @@ Before presenting the result, perform the self-critique in `references/qa-checkl
 - Never generate long paragraphs, lorem ipsum, dense explanations, unreadable labels, fake tiny UI, or generic corporate slogans.
 - Never copy exact reference logos, names, compositions, slogans, or unique visual assets.
 - Never use generic lightning bolts, random animals, fake luxury crests, copied famous marks, clipart, meaningless sparkles, or inconsistent logo variants.
-- Keep the system quiet, sharp, symbolic, coherent, premium, art-directed, and implementation-friendly.
+- Keep the system quiet, sharp, symbolic, coherent, art-directed, and implementation-friendly.
 - Report the actual output size/aspect ratio; never promise unsupported dimensions.
 - Treat generated imagery as draft material until provenance, licensing, small-size behavior, contrast pairs, clearspace/minimum size, and ownership/versioning are recorded.
 

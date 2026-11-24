@@ -129,38 +129,6 @@
             }
           },
           {
-            "rule": "default-font-only",
-            "severity": "P2",
-            "line": 9,
-            "snippet": "body { margin: 0; font-family: Inter, sans-serif; background: #eef2ff; color: #1e293b; }",
-            "fix": "Choose type by voice/platform and provide deliberate fallbacks."
-          },
-          {
-            "rule": "transition-all",
-            "severity": "P2",
-            "line": 13,
-            "snippet": "input, select { width: 100%; box-sizing: border-box; padding: 14px 16px; margin-bottom: 14px; bo",
-            "fix": "Animate only intentional properties with semantic durations/easing."
-          },
-          {
-            "rule": "generic-copy",
-            "severity": "P2",
-            "line": 22,
-            "snippet": "<h1 data-slop=\"generic-copy\">Unlock your health journey today!</h1>",
-            "fix": "Replace template copy with concrete user/domain language.",
-            "pin": {
-              "x": 37.5,
-              "y": 12.1
-            }
-          },
-          {
-            "rule": "generic-copy",
-            "severity": "P2",
-            "line": 23,
-            "snippet": "<p>Book your appointment in seconds with our seamless platform.</p>",
-            "fix": "Replace template copy with concrete user/domain language."
-          },
-          {
             "rule": "placeholder-as-label",
             "severity": "P1",
             "line": 26,
@@ -219,6 +187,38 @@
             "line": 35,
             "snippet": "<input placeholder=\"Insurance member ID\">",
             "fix": "Use a persistent programmatic label; placeholder is only a hint."
+          },
+          {
+            "rule": "default-font-only",
+            "severity": "P2",
+            "line": 9,
+            "snippet": "body { margin: 0; font-family: Inter, sans-serif; background: #eef2ff; color: #1e293b; }",
+            "fix": "Choose type by voice/platform and provide deliberate fallbacks."
+          },
+          {
+            "rule": "transition-all",
+            "severity": "P2",
+            "line": 13,
+            "snippet": "input, select { width: 100%; box-sizing: border-box; padding: 14px 16px; margin-bottom: 14px; bo",
+            "fix": "Animate only intentional properties with semantic durations/easing."
+          },
+          {
+            "rule": "generic-copy",
+            "severity": "P2",
+            "line": 22,
+            "snippet": "<h1 data-slop=\"generic-copy\">Unlock your health journey today!</h1>",
+            "fix": "Replace template copy with concrete user/domain language.",
+            "pin": {
+              "x": 37.5,
+              "y": 12.1
+            }
+          },
+          {
+            "rule": "generic-copy",
+            "severity": "P2",
+            "line": 23,
+            "snippet": "<p>Book your appointment in seconds with our seamless platform.</p>",
+            "fix": "Replace template copy with concrete user/domain language."
           },
           {
             "rule": "purple-blue-gradient",

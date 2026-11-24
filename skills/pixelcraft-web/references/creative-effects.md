@@ -15,4 +15,45 @@
 
 Every effect states what pointer/keyboard/touch input changes, how it can be stopped/reset, whether it continues while hidden, and what a static user sees. Prefer subtle reaction over large movement. On touch, use an explicit control rather than pretending hover exists.
 
-For screenshots and visual regression, support a deterministic seed and frozen time. Record asset provenance and do not bundle third-party example assets without license review.
+## Deterministic seed & reduced-motion runtime pattern
+
+Avoid `Math.random()` inside particle pools or generative grids—it breaks screenshot baselines and visual regression. Seed a tiny deterministic PRNG (such as Mulberry32), honor optional QA query overrides (`?seed=42&t=0`), and listen to `prefers-reduced-motion` dynamically so toggling the OS preference pauses live evolution immediately:
+
+```ts
+// Deterministic Mulberry32 PRNG + live prefers-reduced-motion gate
+export function createSeededRng(seed: number): () => number {
+  let a = seed >>> 0;
+  return () => {
+    a = (a + 0x6d2b79f5) | 0;
+    let t = Math.imul(a ^ (a >>> 15), 1 | a);
+    t = (t + Math.imul(t ^ (t >>> 7), 61 | t)) ^ t;
+    return ((t ^ (t >>> 14)) >>> 0) / 4294967296;
+  };
+}
+
+export function createEffectRuntime(renderStatic: (t: number) => void, startLoop: () => () => void) {
+  const params = new URLSearchParams(window.location.search);
+  const frozenTime = params.has('t') ? Number(params.get('t')) : null;
+  const mql = window.matchMedia('(prefers-reduced-motion: reduce)');
+  let stopLoop: (() => void) | null = null;
+
+  const sync = () => {
+    stopLoop?.();
+    stopLoop = null;
+    if (frozenTime !== null || mql.matches) {
+      renderStatic(frozenTime ?? 0);
+    } else {
+      stopLoop = startLoop();
+    }
+  };
+
+  sync();
+  mql.addEventListener('change', sync);
+  return () => {
+    stopLoop?.();
+    mql.removeEventListener('change', sync);
+  };
+}
+```
+
+Record asset provenance and never bundle third-party example textures/models without license verification.

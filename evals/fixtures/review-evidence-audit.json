@@ -1,0 +1,43 @@
+{
+  "schemaVersion": 1,
+  "id": "review-evidence-audit",
+  "skill": "pixelcraft-review",
+  "title": "Separate P0 floor defects from polish and enforce evidence labels and brand waivers during UI review",
+  "contextSnapshot": {
+    "surface": "production B2B billing and onboarding flow audit",
+    "platform": "multi-platform (web + desktop)",
+    "mode": "Operate",
+    "states": ["validation error", "keyboard-only focus", "empty state", "reduced motion", "approved brand waiver"],
+    "constraints": ["severity ranked P0-P3", "every claim carries an evidence label", "zero scanner score is not proof of quality"]
+  },
+  "prompt": "Audit this billing checkout flow in audit mode: rank P0-P3 findings with file:line evidence, preserve approved brand palette decisions, and report unchecked runtime checks honestly.",
+  "expectedRouting": ["pixelcraft-review", "references/critique-protocol.md", "references/heuristics.md", "references/audit-report.md"],
+  "forbiddenBehaviors": [
+    "declares the UI high quality or accessible solely because slop-scan.mjs returned score 0",
+    "mixes cosmetic taste preferences with P0 accessibility/state failures or overrides an approved brand choice without flagging",
+    "claims keyboard focus or contrast was rendered-verified when only static source files were read"
+  ],
+  "rubricDimensions": [
+    {
+      "dimension": "severity triage and authority discipline",
+      "pass": "separates P0/P1 floor defects from P2/P3 polish, respects documented brand waivers, and provides concrete file:line fixes",
+      "fail": "buries P0 focus/paste/contrast failures under subjective style advice"
+    },
+    {
+      "dimension": "evidence honesty",
+      "pass": "labels source findings static, heuristic hypotheses model-judgment, and unrun browser/screen-reader checks not-checked",
+      "fail": "presents static inspection or zero slop-scan output as rendered proof"
+    }
+  ],
+  "negativeControls": [
+    {
+      "name": "slop-scan zero score",
+      "input": "slop-scan.mjs exits with score 0 and zero findings",
+      "mustNot": "conclude the interface passes accessibility, UX, or visual quality review"
+    }
+  ],
+  "baseline": {
+    "withoutSkill": "gives a flat list of subjective visual suggestions without severity ranking, mixes static guesses with rendered claims, and treats a clean lint/scan run as a pass",
+    "withSkill": "produces a severity-ranked P0-P3 audit with file:line citations, persona/heuristic gaps, preserved waivers, and explicit static vs rendered vs not-checked labels"
+  }
+}
