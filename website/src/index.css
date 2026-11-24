@@ -197,6 +197,22 @@
   input[type="range"] {
     accent-color: Highlight;
   }
+  /* Preserve selected states and image labels using the user's system palette.
+     UA background substitution otherwise leaves light text on a light box. */
+  #gallery [role="tab"][aria-selected="true"],
+  #gallery button[aria-pressed="true"] {
+    forced-color-adjust: none;
+    background: Highlight;
+    color: HighlightText;
+    border: 1px solid Highlight;
+    box-shadow: none;
+  }
+  #gallery [data-comparison-label] {
+    forced-color-adjust: none;
+    background: Canvas;
+    color: CanvasText;
+    border: 1px solid CanvasText;
+  }
 }
 
 @media (prefers-reduced-motion: reduce) {

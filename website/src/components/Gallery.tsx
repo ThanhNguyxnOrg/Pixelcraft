@@ -228,10 +228,16 @@ function Stage({ item }: { item: GalleryItem }) {
             </>
           ) : null}
 
-          <span className="pointer-events-none absolute start-4 top-4 rounded-full bg-paper-ink px-3 py-1.5 font-pixel text-[0.6875rem] text-paper uppercase">
+          <span
+            data-comparison-label
+            className="pointer-events-none absolute start-4 top-4 rounded-full bg-paper-ink px-3 py-1.5 font-pixel text-[0.6875rem] text-paper uppercase"
+          >
             Default agent
           </span>
-          <span className="pointer-events-none absolute end-4 top-4 rounded-full bg-action px-3 py-1.5 font-pixel text-[0.6875rem] text-on-action uppercase">
+          <span
+            data-comparison-label
+            className="pointer-events-none absolute end-4 top-4 rounded-full bg-action px-3 py-1.5 font-pixel text-[0.6875rem] text-on-action uppercase"
+          >
             With Pixelcraft
           </span>
         </div>
