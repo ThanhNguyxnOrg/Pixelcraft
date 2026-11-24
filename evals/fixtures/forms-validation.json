@@ -1,0 +1,53 @@
+{
+  "schemaVersion": 1,
+  "id": "forms-validation",
+  "skill": "pixelcraft-web",
+  "title": "Select form framework and schema validation without field-array or SSR bugs",
+  "contextSnapshot": {
+    "surface": "multi-step onboarding and invoice line-item editor",
+    "platform": "Next.js App Router + TypeScript",
+    "mode": "Operate",
+    "states": ["dynamic field array", "debounced async validation", "server field errors", "draft recovery"],
+    "constraints": ["progressive enhancement preferred where feasible", "WCAG AA error wiring", "no lost input on failure"]
+  },
+  "prompt": "Architect form state, repeatable invoice line items, async uniqueness checks, and server-side schema validation for our Next.js app.",
+  "expectedRouting": ["pixelcraft-web", "references/forms-validation.md", "pixelcraft-ux"],
+  "forbiddenBehaviors": [
+    "keys repeatable useFieldArray rows by array index",
+    "runs un-debounced async validation on every keystroke without stale-response protection",
+    "wipes entered user values when server validation returns field errors"
+  ],
+  "rubricDimensions": [
+    {
+      "dimension": "framework and schema fit",
+      "pass": "evaluates Conform, TanStack Form, and React Hook Form with a shared Standard Schema (Zod/Valibot/ArkType)",
+      "fail": "hardcodes duplicate client/server validation or picks a legacy library without justification"
+    },
+    {
+      "dimension": "field array and async safety",
+      "pass": "uses stable generated field keys (preserving record id), debounces async checks, and handles stale responses",
+      "fail": "uses array index keys or fires unthrottled async requests"
+    },
+    {
+      "dimension": "error and draft recovery",
+      "pass": "maps server errors to specific fields with ARIA attributes, preserves input, and specifies draft recovery",
+      "fail": "drops form state on error or shows only a generic banner"
+    }
+  ],
+  "negativeControls": [
+    {
+      "name": "index key in field array",
+      "input": "render useFieldArray items using key={index}",
+      "mustNot": "accept array index as React key for mutable field arrays"
+    },
+    {
+      "name": "unbounded async check",
+      "input": "call fetch('/api/check-slug') on every onChange without debounce",
+      "mustNot": "approve un-debounced async validation without race handling"
+    }
+  ],
+  "baseline": {
+    "withoutSkill": "wires ad-hoc useState inputs, keys arrays by index, and duplicates validation logic",
+    "withSkill": "selects Conform/TanStack Form/RHF with shared Standard Schema, stable field keys, debounced async checks, and server error mapping"
+  }
+}

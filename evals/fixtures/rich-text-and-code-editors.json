@@ -1,0 +1,53 @@
+{
+  "schemaVersion": 1,
+  "id": "rich-text-and-code-editors",
+  "skill": "pixelcraft-web",
+  "title": "Select and implement rich-text, code editor, and visual page builder engines safely",
+  "contextSnapshot": {
+    "surface": "collaborative knowledge base with embedded code blocks and page builder",
+    "platform": "Next.js App Router + TypeScript",
+    "mode": "Operate",
+    "states": ["SSR hydration", "collaborative editing", "dynamic theme switch", "keyboard focus escape"],
+    "constraints": ["no SSR hydration mismatch", "lightweight mobile code editing", "WCAG 2.1.2 no keyboard trap"]
+  },
+  "prompt": "Architect a collaborative rich-text document editor and embedded code editor for our Next.js app without SSR mismatches, history conflicts, or keyboard traps.",
+  "expectedRouting": ["pixelcraft-web", "references/rich-text-and-code-editors.md", "pixelcraft-accessibility"],
+  "forbiddenBehaviors": [
+    "builds a rich-text editor on raw contenteditable and document.execCommand",
+    "leaves Tiptap StarterKit undoRedo enabled alongside Yjs Collaboration or omits immediatelyRender: false in SSR",
+    "destroys and recreates CodeMirror 6 EditorView on theme/tabSize prop changes instead of using Compartment.reconfigure()"
+  ],
+  "rubricDimensions": [
+    {
+      "dimension": "editor engine selection",
+      "pass": "selects Tiptap/ProseMirror or Lexical for rich text and CodeMirror 6 (lightweight/mobile) vs lazy-loaded Monaco (IDE) with clear trade-offs",
+      "fail": "recommends raw contenteditable or bundles Monaco synchronously for mobile/small inputs"
+    },
+    {
+      "dimension": "SSR and lifecycle correctness",
+      "pass": "sets immediatelyRender: false and disables StarterKit undoRedo for Yjs in Tiptap, or uses CodeMirror 6 Compartment + destroy cleanup",
+      "fail": "causes SSR hydration mismatches, history conflicts, or memory leaks on unmount"
+    },
+    {
+      "dimension": "editor accessibility and XSS safety",
+      "pass": "provides accessible label, role=toolbar roving focus, Tab keyboard escape hatch, IME safety, and sanitized/JSON persistence",
+      "fail": "traps Tab focus or renders unsanitized editor HTML"
+    }
+  ],
+  "negativeControls": [
+    {
+      "name": "tiptap ssr and collaboration bug",
+      "input": "use useEditor({ extensions: [StarterKit, Collaboration] }) directly in Next.js without immediatelyRender: false or undoRedo: false",
+      "mustNot": "approve Tiptap SSR/collaboration config missing immediatelyRender: false and undoRedo: false"
+    },
+    {
+      "name": "codemirror view recreation",
+      "input": "destroy and recreate new EditorView inside useEffect whenever theme changes",
+      "mustNot": "recommend recreating EditorView instead of Compartment.reconfigure()"
+    }
+  ],
+  "baseline": {
+    "withoutSkill": "wires raw contenteditable or misconfigures Tiptap SSR/collaboration, recreates CodeMirror on prop updates, and traps keyboard Tab focus",
+    "withSkill": "selects right-sized editor engines with SSR-safe lifecycle, Compartment reconfiguration, Yjs history isolation, and WCAG keyboard/IME compliance"
+  }
+}

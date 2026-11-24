@@ -1,0 +1,53 @@
+{
+  "schemaVersion": 1,
+  "id": "component-testing",
+  "skill": "pixelcraft-web",
+  "title": "Design component workshop, real-browser testing, visual regression, and axe-core checks",
+  "contextSnapshot": {
+    "surface": "design system component library and SaaS web app",
+    "platform": "Vite + Vitest 4 + Storybook + Playwright",
+    "mode": "Operate",
+    "states": ["dialog open/confirm", "error banner", "dark mode visual diff", "WCAG AA axe scan"],
+    "constraints": ["real-browser verification for layout/focus", "no brittle testid-first queries", "stable visual snapshots"]
+  },
+  "prompt": "Set up Storybook interaction tests, Vitest Browser Mode, Playwright visual snapshots, and automated axe-core accessibility regression for our component library.",
+  "expectedRouting": ["pixelcraft-web", "references/component-testing.md", "pixelcraft-visual-qa"],
+  "forbiddenBehaviors": [
+    "claims jsdom unit tests prove visual layout or responsive rendering",
+    "defaults to data-testid queries and fireEvent instead of getByRole and userEvent.setup()",
+    "treats zero axe-core violations as complete WCAG compliance without keyboard/focus verification"
+  ],
+  "rubricDimensions": [
+    {
+      "dimension": "testing layer fit",
+      "pass": "separates unit/DOM logic tests from real-browser component tests (Vitest Browser Mode or Storybook/Playwright) and E2E journeys",
+      "fail": "uses jsdom to claim visual/layout correctness or recommends removed @playwright/experimental-ct-* on Playwright 1.63+"
+    },
+    {
+      "dimension": "accessibility-first queries and interactions",
+      "pass": "uses getByRole/getByLabelText, userEvent.setup(), Storybook CSF 3 play functions, and shared @axe-core/playwright fixtures",
+      "fail": "relies on brittle CSS selectors/testids or low-level fireEvent"
+    },
+    {
+      "dimension": "visual regression stability",
+      "pass": "stabilizes snapshots with animations disabled, fonts ready, and masked dynamic regions across states",
+      "fail": "takes unmasked screenshots with live timestamps or arbitrary sleep timeouts"
+    }
+  ],
+  "negativeControls": [
+    {
+      "name": "jsdom visual proof claim",
+      "input": "mark responsive layout as rendered PASS because the Vitest jsdom snapshot passed",
+      "mustNot": "accept jsdom tests as rendered visual or layout evidence"
+    },
+    {
+      "name": "axe-only a11y claim",
+      "input": "skip keyboard tab-order testing because AxeBuilder returned zero violations",
+      "mustNot": "claim automated axe scans alone guarantee full WCAG accessibility"
+    }
+  ],
+  "baseline": {
+    "withoutSkill": "writes jsdom-only tests with testids and fireEvent, uses outdated Vitest/Playwright CT config, and assumes axe covers all accessibility",
+    "withSkill": "combines CSF 3 play stories, Vitest 4 Browser Mode, Testing Library role queries + userEvent, stabilized Playwright visual diffs, and axe-core + keyboard checks"
+  }
+}

@@ -12,6 +12,19 @@ export const theme = { colors: { action: '#0074ca' }, spacing: { controlInline: 
 
 Do not copy hex constants into component style props. Map navigation/tab/header colors separately because React Navigation themes are not identical to component themes.
 
+## UI kits and styling engines
+
+Separate **styling engines** from **component kits** before choosing:
+
+| Tool | Layer | Trade-offs & best fit |
+|---|---|---|
+| **NativeWind** | Utility styling engine (Tailwind → RN `StyleSheet`) | Fast for Tailwind teams sharing web/mobile mental models; provides styling only—pair with your own or copy-in accessible primitives. |
+| **Tamagui** | Optimizing static compiler + tokens + UI kit | Strong web+native monorepo performance via static extraction; higher Metro/Babel/Next.js build-config complexity. |
+| **gluestack-ui** | Universal headless primitives + styled components | Approachable cross-platform RN+Web kit without static-compiler overhead; verify runtime footprint on dense lists. |
+| **React Native Paper** | Opinionated Material Design 3 component kit | Fastest path for MD3-aligned apps and internal tools; hard to bend into a bespoke brand or Cupertino iOS aesthetic. |
+
+Never combine two competing UI kits in one app; verify Expo SDK and New Architecture compatibility before adopting.
+
 ## Layout and responsive idioms
 
 Yoga/flex layout is the default. Use safe-area context/insets, keyboard avoiding behavior deliberately, orientation/window dimensions, platform-specific files/props sparingly, and scroll/flat-list semantics. Respect iOS vs Android navigation/back/gesture differences even when visuals share code.

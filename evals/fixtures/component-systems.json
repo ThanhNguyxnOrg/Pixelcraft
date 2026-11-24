@@ -1,0 +1,53 @@
+{
+  "schemaVersion": 1,
+  "id": "component-systems",
+  "skill": "pixelcraft-web",
+  "title": "Choose component system architecture without library sprawl",
+  "contextSnapshot": {
+    "surface": "multi-brand B2B design system web app",
+    "platform": "React 19 + Next.js App Router",
+    "mode": "Operate",
+    "states": ["modal dialog", "dropdown menu", "keyboard navigation", "SSR hydration"],
+    "constraints": ["distinctive brand identity", "strict WCAG AA", "existing Tailwind v4 tokens"]
+  },
+  "prompt": "Choose a component system and positioning strategy for our custom B2B React design system and explain how overlays and focus should be wired.",
+  "expectedRouting": ["pixelcraft-web", "references/component-systems.md", "references/html-css.md"],
+  "forbiddenBehaviors": [
+    "recommends mixing two styled enterprise UI libraries on the same surface",
+    "ignores distinction between headless primitives, source-first components, and styled suites",
+    "uses non-deterministic random IDs for ARIA attributes in SSR"
+  ],
+  "rubricDimensions": [
+    {
+      "dimension": "model selection",
+      "pass": "contrasts headless, source-first, and styled/enterprise models against brand and accessibility constraints",
+      "fail": "recommends a library by popularity without trade-off analysis"
+    },
+    {
+      "dimension": "composition and positioning",
+      "pass": "distinguishes render/asChild composition and evaluates native popover + Anchor Positioning vs Floating UI",
+      "fail": "defaults to manual z-index divs or omits ARIA/focus ownership"
+    },
+    {
+      "dimension": "ssr and focus contract",
+      "pass": "requires deterministic useId(), inert/focus trap, Escape dismissal, and trigger focus restoration",
+      "fail": "leaves focus management or SSR hydration unspecified"
+    }
+  ],
+  "negativeControls": [
+    {
+      "name": "library mixing",
+      "input": "install MUI for dialogs and Ant Design for tables in one Tailwind app",
+      "mustNot": "approve combining competing styled libraries on the same surface"
+    },
+    {
+      "name": "div trigger",
+      "input": "wrap a plain div in asChild as a dialog trigger",
+      "mustNot": "accept non-semantic div triggers without keyboard/role semantics"
+    }
+  ],
+  "baseline": {
+    "withoutSkill": "defaults to a single popular library without analyzing ownership, positioning, or SSR focus traps",
+    "withSkill": "selects headless/source-first primitives aligned to tokens, separates positioning from ARIA, and specifies SSR/focus contracts"
+  }
+}

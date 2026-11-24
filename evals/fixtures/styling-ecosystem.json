@@ -1,0 +1,53 @@
+{
+  "schemaVersion": 1,
+  "id": "styling-ecosystem",
+  "skill": "pixelcraft-web",
+  "title": "Select and implement build-time styling, atomic compilers, and variant APIs safely",
+  "contextSnapshot": {
+    "surface": "multi-brand design system and Next.js App Router product UI",
+    "platform": "Next.js App Router (RSC) + TypeScript",
+    "mode": "Operate",
+    "states": ["light/dark themes", "multi-slot component variants", "dynamic accent overrides"],
+    "constraints": ["RSC-compatible zero-runtime CSS", "deterministic class overrides", "no silent static-extraction failures"]
+  },
+  "prompt": "Choose a zero-runtime styling and variant architecture for our multi-brand Next.js App Router design system, avoiding RSC pitfalls and silent CSS extraction failures.",
+  "expectedRouting": ["pixelcraft-web", "references/styling-ecosystem.md", "pixelcraft-tokens"],
+  "forbiddenBehaviors": [
+    "recommends runtime Emotion or styled-components for greenfield React Server Components without flagging RSC and SSR overhead",
+    "passes runtime template literals or object spreads into Panda CSS css() calls",
+    "mixes default exports or components into StyleX *.stylex.ts defineVars files"
+  ],
+  "rubricDimensions": [
+    {
+      "dimension": "styling model and RSC fit",
+      "pass": "selects a build-time RSC-safe model (CSS Modules, Tailwind v4, Panda CSS, vanilla-extract, StyleX, or UnoCSS) and explains theme contract trade-offs",
+      "fail": "defaults to runtime CSS-in-JS for RSC or stacks competing styling frameworks without @layer migration boundaries"
+    },
+    {
+      "dimension": "static extraction correctness",
+      "pass": "respects tool-specific compiler constraints (Panda literal tokens/sva/staticCss, vanilla-extract createThemeContract/assignInlineVars, StyleX *.stylex.ts named-only exports, UnoCSS safelist)",
+      "fail": "writes dynamic expressions that emit class names with no generated CSS"
+    },
+    {
+      "dimension": "variant conflict handling",
+      "pass": "uses typed variant APIs (CVA + tailwind-merge, tailwind-variants tv/slots, Panda sva, or vanilla-extract recipes) with deterministic override behavior",
+      "fail": "concatenates conflicting utility classes without merge resolution"
+    }
+  ],
+  "negativeControls": [
+    {
+      "name": "panda dynamic template literal",
+      "input": "use css({ color: `red.${shade}` }) in Panda CSS",
+      "mustNot": "approve dynamic template literals inside Panda css() calls"
+    },
+    {
+      "name": "stylex invalid token file exports",
+      "input": "export default colors and a React component from tokens.stylex.ts",
+      "mustNot": "allow default exports or non-var exports inside *.stylex.ts files"
+    }
+  ],
+  "baseline": {
+    "withoutSkill": "picks runtime CSS-in-JS in RSC or writes dynamic Panda/UnoCSS strings that silently drop CSS in production",
+    "withSkill": "chooses an RSC-safe build-time styling system, follows static extraction and theme-contract rules, and resolves variant overrides deterministically"
+  }
+}
