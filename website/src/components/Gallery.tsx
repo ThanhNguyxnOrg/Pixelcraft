@@ -96,10 +96,7 @@ function Stage({ item }: { item: GalleryItem }) {
       scope: stage,
     },
   );
-  const pinned = useMemo(
-    () => item.scanBefore.findings.filter((f) => f.pin),
-    [item],
-  );
+  const findings = useMemo(() => grouped(item.scanBefore.findings), [item]);
   const w = galleryMeta.viewport.w;
   const h = galleryMeta.viewport.h;
 
@@ -174,27 +171,6 @@ function Stage({ item }: { item: GalleryItem }) {
                 height={h}
                 className="absolute inset-0 h-full w-full"
               />
-              <AnimatePresence>
-                {pins
-                  ? pinned.map((f, i) => (
-                      <motion.span
-                        key={f.rule}
-                        initial={{ opacity: 0, scale: 0.5 }}
-                        animate={{ opacity: 1, scale: 1 }}
-                        exit={{ opacity: 0 }}
-                        transition={{
-                          duration: 0.16,
-                          delay: i * 0.05,
-                          ease: [0.2, 0, 0, 1],
-                        }}
-                        className={`absolute grid h-7 -translate-x-1/2 -translate-y-1/2 place-items-center rounded-full border-2 bg-paper px-2.5 font-mono text-[0.6875rem] font-medium whitespace-nowrap ${SEV[f.severity]}`}
-                        style={{ left: `${f.pin!.x}%`, top: `${f.pin!.y}%` }}
-                      >
-                        {f.severity} {f.rule}
-                      </motion.span>
-                    ))
-                  : null}
-              </AnimatePresence>
             </div>
           ) : null}
 
@@ -232,6 +208,36 @@ function Stage({ item }: { item: GalleryItem }) {
           </span>
         </div>
       </div>
+
+      <AnimatePresence>
+        {pins ? (
+          <motion.div
+            initial={{ opacity: 0 }}
+            animate={{ opacity: 1 }}
+            exit={{ opacity: 0 }}
+            className="mt-4"
+          >
+            <p className="text-[0.8125rem] text-paper-ink-2">
+              Source findings across the full default page, including content
+              outside this captured frame.
+            </p>
+            <ul
+              aria-label="Default page scan findings"
+              className="mt-3 flex flex-wrap gap-2"
+            >
+              {findings.map(({ f, n }) => (
+                <li
+                  key={f.rule}
+                  className={`max-w-full rounded-tile border bg-paper px-3 py-2 font-mono text-[0.6875rem] break-words ${SEV[f.severity]}`}
+                >
+                  {f.severity} {f.rule}
+                  {n > 1 ? ` × ${n}` : ""}
+                </li>
+              ))}
+            </ul>
+          </motion.div>
+        ) : null}
+      </AnimatePresence>
 
       <div className="mt-4 flex flex-wrap items-center justify-between gap-3 font-mono text-[0.75rem] text-paper-ink-2">
         <span className="flex items-center gap-2.5">
