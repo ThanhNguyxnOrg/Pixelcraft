@@ -207,7 +207,8 @@
     border: 1px solid Highlight;
     box-shadow: none;
   }
-  #gallery [data-comparison-label] {
+  #gallery [data-comparison-label],
+  #film [data-promo-label] {
     forced-color-adjust: none;
     background: Canvas;
     color: CanvasText;

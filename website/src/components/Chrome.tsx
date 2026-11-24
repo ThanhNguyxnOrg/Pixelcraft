@@ -12,7 +12,7 @@ import {
 import { useMediaPlayback } from "../lib/useMediaPlayback";
 
 const NAV = [
-  ["#film", "Film"],
+  ["#film", "Demos"],
   ["#gallery", "Gallery"],
   ["#loop", "Loop"],
   ["#tools", "Tools"],
@@ -236,8 +236,8 @@ export function Footer() {
               <li className="flex flex-wrap items-baseline gap-3">
                 <EvidenceStamp label="rendered" />
                 <span>
-                  Gallery pages were captured in Chromium at 1440 × 900; film
-                  stills were inspected before the full render.
+                  Gallery pages were captured in Chromium at 1440 × 900. Promo
+                  studies are authored illustrations, not live AI runs.
                 </span>
               </li>
               <li className="flex flex-wrap items-baseline gap-3">

@@ -12,7 +12,7 @@ import { Receipt } from "./components/Receipt";
 import { SkillIndex } from "./components/SkillIndex";
 import { Tools } from "./components/Tools";
 import { Gallery } from "./components/Gallery";
-import { FilmPin } from "./components/FilmPin";
+import { MotionDemos } from "./components/MotionDemos";
 import { useGlobalMotion } from "./lib/useGlobalMotion";
 
 export default function App() {
@@ -32,7 +32,7 @@ export default function App() {
           <Header />
           <main id="main">
             <Hero />
-            <FilmPin />
+            <MotionDemos />
             <Gallery />
             <Loop />
             <Authority />
