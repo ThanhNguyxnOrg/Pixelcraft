@@ -43,13 +43,17 @@ export function evaluateEvidence(manifest, hasArtifact) {
   for (const id of new Set([...required, ...repaired, ...Object.keys(manifest.checks)])) {
     const entry = Object.hasOwn(manifest.checks, id) ? manifest.checks[id] : undefined;
     if (skipped.has(id) && entry?.result !== 'fail') continue;
-    const width = id === 'reflow-320' ? '320' : /^width-(\d+)(?:-|$)/.exec(id)?.[1];
+    const width = id === 'reflow-320' ? 320 : Number(/^width-([1-9]\d*)(?:-.+)?$/.exec(id)?.[1]);
+    if (id.startsWith('width-') && !Number.isSafeInteger(width)) {
+      notChecked.set(id, 'Invalid width check ID; use width-<px> or width-<px>-<defect>.');
+      continue;
+    }
     if (!record(entry) || !['pass', 'fail'].includes(entry.result) || entry.label !== 'rendered'
         || ![entry.method, entry.expected, entry.observed].every(present) || !hasArtifact(entry.artifact)
         || (id === 'outcome' && !present(entry.assertion))
         || (id === 'input' && !present(entry.focus))
         || (web && id === 'input' && entry.modality !== 'keyboard')
-        || (width !== undefined && entry.width !== Number(width))) {
+        || (Number.isSafeInteger(width) && entry.width !== width)) {
       notChecked.set(id, present(entry?.reason) ? entry.reason : 'Missing required rendered evidence or assertion.');
     } else if (entry.result === 'fail') {
       skipped.delete(id);

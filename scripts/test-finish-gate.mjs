@@ -91,3 +91,9 @@ const wrongWidth = evaluateEvidence({ ...scopedDefect,
 assert.equal(wrongWidth.status, 'NOT CHECKED');
 assert.ok(wrongWidth.notChecked['width-390-submit']);
 console.log('ok 4 - width-scoped defect IDs require the viewport encoded in their prefix');
+
+const malformedWidth = evaluateEvidence({ ...manifest, checks: { ...manifest.checks,
+  'width-390px-submit': { ...evidence, width: 768 } } }, hasArtifact);
+assert.equal(malformedWidth.status, 'NOT CHECKED');
+assert.ok(malformedWidth.notChecked['width-390px-submit']);
+console.log('ok 5 - malformed width IDs cannot bypass viewport validation');
