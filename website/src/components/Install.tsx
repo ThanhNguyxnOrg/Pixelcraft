@@ -200,7 +200,7 @@ function Builder() {
                     force,
                     setForce,
                     "--force",
-                    "Replace skill folders you named that already exist.",
+                    "Overwrite existing skill folders and agent integration files, including custom slash commands.",
                   ],
                 ] as const
               ).map(([v, set, flag, hint]) => (
