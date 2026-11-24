@@ -1,0 +1,1497 @@
+<!doctype html>
+<html lang="en" dir="ltr">
+<head>
+<meta charset="utf-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1" />
+<meta name="color-scheme" content="light dark" />
+<title>Helvetic Air LX-408 · Gate-Change MJML Email &amp; Client Inspector</title>
+<link rel="stylesheet" href="../../fonts/gallery.css" />
+<style>
+  :root {
+    --bench-bg: #E5E9EE;
+    --bench-bar: #DCE2E9;
+    --bench-rail: #EEF2F6;
+    --ticket-paper: #FFFFFF;
+    --paper-subtle: #F8FAFC;
+    --dark-slate: #0F172A;
+    --dark-surface: #1E293B;
+    --dark-rule: #334155;
+    --aviation-navy: #0B1F3A;
+    --navy-hover: #153259;
+    --gate-vermilion: #D92D20;
+    --vermilion-tint: #FEF2F2;
+    --vermilion-dark-bg: #3B1214;
+    --vermilion-dark-ink: #FCA5A5;
+    --confirmed-green: #157347;
+    --green-tint: #ECFDF3;
+    --green-dark-bg: #0D2E20;
+    --green-dark-ink: #6EE7B7;
+    --neutral-rule: #CBD5E1;
+    --ink-secondary: #334155;
+    --ink-muted: #475569;
+    --ink-on-dark: #F1F5F9;
+    --ink-muted-dark: #94A3B8;
+
+    --font-display: 'Archivo', 'Helvetica Neue', Helvetica, sans-serif;
+    --font-body: 'Public Sans', 'Helvetica Neue', Helvetica, sans-serif;
+    --font-mono: 'IBM Plex Mono', 'Courier New', Courier, monospace;
+  }
+
+  * {
+    box-sizing: border-box;
+  }
+
+  html,
+  body {
+    margin: 0;
+    padding: 0;
+    background-color: var(--bench-bg);
+    color: var(--aviation-navy);
+    font-family: var(--font-body);
+    font-size: 13px;
+    line-height: 1.4;
+    -webkit-font-smoothing: antialiased;
+  }
+
+  :focus-visible {
+    outline: 2px solid var(--gate-vermilion);
+    outline-offset: 2px;
+  }
+
+  .skip-nav {
+    position: absolute;
+    left: 16px;
+    top: -48px;
+    z-index: 50;
+    background-color: var(--aviation-navy);
+    color: var(--ticket-paper);
+    padding: 8px 14px;
+    font-family: var(--font-mono);
+    font-size: 12px;
+    text-decoration: none;
+  }
+
+  .skip-nav:focus {
+    top: 8px;
+  }
+
+  /* Top Multi-Client Compatibility Switcher Bar */
+  .inspector-topbar {
+    background-color: var(--aviation-navy);
+    color: var(--ticket-paper);
+    border-bottom: 2px solid var(--gate-vermilion);
+    padding: 7px 24px;
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    gap: 12px;
+    min-height: 48px;
+  }
+
+  .spec-cluster {
+    display: flex;
+    align-items: center;
+    gap: 10px;
+    white-space: nowrap;
+  }
+
+  .swiss-cross-badge {
+    width: 22px;
+    height: 22px;
+    background-color: var(--gate-vermilion);
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    flex-shrink: 0;
+  }
+
+  .spec-filename {
+    font-family: var(--font-mono);
+    font-size: 11.5px;
+    font-weight: 500;
+    color: var(--ticket-paper);
+  }
+
+  .spec-threshold {
+    font-family: var(--font-mono);
+    font-size: 10.5px;
+    color: var(--green-dark-ink);
+    background-color: var(--green-dark-bg);
+    border: 1px solid var(--confirmed-green);
+    padding: 2px 7px;
+  }
+
+  .switcher-cluster {
+    display: flex;
+    align-items: center;
+    gap: 10px;
+    white-space: nowrap;
+  }
+
+  .mode-group {
+    display: inline-flex;
+    background-color: var(--dark-slate);
+    border: 1px solid var(--dark-rule);
+    padding: 2px;
+    gap: 2px;
+  }
+
+  .mode-btn {
+    appearance: none;
+    background-color: transparent;
+    color: var(--ink-on-dark);
+    border: 1px solid transparent;
+    padding: 5px 10px;
+    font-family: var(--font-display);
+    font-size: 11.5px;
+    font-weight: 600;
+    letter-spacing: 0.01em;
+    cursor: pointer;
+    transition: border-color 120ms ease;
+  }
+
+  .mode-btn:hover {
+    background-color: var(--dark-surface);
+  }
+
+  .mode-btn[aria-pressed="true"] {
+    background-color: var(--ticket-paper);
+    color: var(--aviation-navy);
+    border-color: var(--ticket-paper);
+  }
+
+  .viewport-control {
+    display: inline-flex;
+    align-items: center;
+    gap: 6px;
+  }
+
+  .viewport-control label {
+    font-family: var(--font-mono);
+    font-size: 10.5px;
+    color: var(--ink-muted-dark);
+    text-transform: uppercase;
+    letter-spacing: 0.05em;
+  }
+
+  .viewport-select {
+    background-color: var(--dark-slate);
+    color: var(--ticket-paper);
+    border: 1px solid var(--dark-rule);
+    padding: 4px 7px;
+    font-family: var(--font-mono);
+    font-size: 11px;
+    cursor: pointer;
+    transition: border-color 120ms ease;
+  }
+
+  /* 3-Column Inspector Workbench (1440 x 900) */
+  .workbench-grid {
+    max-width: 1440px;
+    margin: 0 auto;
+    padding: 14px 24px 16px;
+    display: grid;
+    grid-template-columns: 312px 664px 368px;
+    gap: 24px;
+    align-items: start;
+  }
+
+  /* Side Inspector Rails */
+  .inspector-rail {
+    background-color: var(--ticket-paper);
+    border: 1px solid var(--neutral-rule);
+    display: flex;
+    flex-direction: column;
+  }
+
+  .rail-section {
+    padding: 12px 14px;
+    border-bottom: 1px solid var(--neutral-rule);
+  }
+
+  .rail-section:last-child {
+    border-bottom: 0;
+  }
+
+  .rail-heading {
+    margin: 0 0 8px;
+    font-family: var(--font-display);
+    font-size: 11px;
+    font-weight: 800;
+    letter-spacing: 0.08em;
+    text-transform: uppercase;
+    color: var(--aviation-navy);
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+  }
+
+  .evidence-tag {
+    font-family: var(--font-mono);
+    font-size: 10px;
+    font-weight: 500;
+    text-transform: lowercase;
+    letter-spacing: 0.02em;
+    padding: 1px 6px;
+    background-color: var(--paper-subtle);
+    border: 1px solid var(--neutral-rule);
+    color: var(--ink-secondary);
+  }
+
+  .envelope-list {
+    margin: 0;
+    display: grid;
+    grid-template-columns: 62px 1fr;
+    gap: 5px 8px;
+    font-size: 11.5px;
+  }
+
+  .envelope-list dt {
+    font-family: var(--font-mono);
+    font-size: 10.5px;
+    color: var(--ink-muted);
+    text-transform: uppercase;
+  }
+
+  .envelope-list dd {
+    margin: 0;
+    color: var(--aviation-navy);
+    word-break: break-word;
+  }
+
+  .mono-val {
+    font-family: var(--font-mono);
+    font-size: 11px;
+  }
+
+  .subject-strong {
+    font-family: var(--font-display);
+    font-weight: 700;
+    color: var(--aviation-navy);
+  }
+
+  .digest-preview {
+    background-color: var(--paper-subtle);
+    border: 1px solid var(--neutral-rule);
+    border-left: 3px solid var(--aviation-navy);
+    padding: 8px 10px;
+    font-size: 11.5px;
+    color: var(--ink-secondary);
+  }
+
+  .digest-kicker {
+    font-family: var(--font-mono);
+    font-size: 10px;
+    color: var(--ink-muted);
+    text-transform: uppercase;
+    letter-spacing: 0.05em;
+    margin-bottom: 3px;
+  }
+
+  .code-peek {
+    margin: 0;
+    padding: 8px 10px;
+    background-color: var(--dark-slate);
+    color: var(--ink-on-dark);
+    font-family: var(--font-mono);
+    font-size: 10.5px;
+    line-height: 1.45;
+    overflow-x: auto;
+    white-space: pre;
+  }
+
+  .mode-live-banner {
+    background-color: var(--paper-subtle);
+    border: 1px solid var(--neutral-rule);
+    padding: 8px 10px;
+    font-size: 11.5px;
+    color: var(--ink-secondary);
+  }
+
+  .mode-live-title {
+    font-family: var(--font-display);
+    font-weight: 700;
+    font-size: 12px;
+    color: var(--aviation-navy);
+    margin-bottom: 2px;
+  }
+
+  /* Center Email Stage */
+  .email-stage {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+  }
+
+  .stage-caption-bar {
+    width: 640px;
+    max-width: 100%;
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    padding: 0 2px 6px;
+    font-family: var(--font-mono);
+    font-size: 11px;
+    color: var(--ink-secondary);
+  }
+
+  .email-viewport-frame {
+    width: 640px;
+    background-color: var(--ticket-paper);
+    border: 1px solid var(--aviation-navy);
+    transition: width 160ms ease;
+  }
+
+  .email-viewport-frame[data-width="375"] {
+    width: 375px;
+  }
+
+  /* Email Document Surface (Light vs Gmail Dark Mode vs Images Blocked vs Plain-Text) */
+  .email-html-surface {
+    background-color: var(--ticket-paper);
+    color: var(--aviation-navy);
+  }
+
+  .email-plaintext-surface {
+    display: none;
+    background-color: var(--ticket-paper);
+    color: var(--aviation-navy);
+    padding: 18px 20px;
+    font-family: var(--font-mono);
+    font-size: 11.5px;
+    line-height: 1.52;
+    white-space: pre-wrap;
+    margin: 0;
+  }
+
+  .email-viewport-frame[data-client-mode="plaintext"] .email-html-surface {
+    display: none;
+  }
+
+  .email-viewport-frame[data-client-mode="plaintext"] .email-plaintext-surface {
+    display: block;
+  }
+
+  /* Bulletproof Table Email Cells */
+  .email-table {
+    width: 100%;
+    border-collapse: collapse;
+    border-spacing: 0;
+  }
+
+  .preheader-hidden {
+    display: none;
+    max-height: 0;
+    overflow: hidden;
+  }
+
+  /* First 110px: Carrier Strip (32px) + Gate Changed Band (64px) = 96px */
+  .carrier-strip-cell {
+    background-color: var(--aviation-navy);
+    color: var(--ticket-paper);
+    padding: 6px 20px;
+    height: 32px;
+  }
+
+  .carrier-lockup {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    gap: 8px;
+  }
+
+  .carrier-brand {
+    display: inline-flex;
+    align-items: center;
+    gap: 8px;
+    font-family: var(--font-display);
+    font-size: 12.5px;
+    font-weight: 800;
+    letter-spacing: 0.1em;
+    text-transform: uppercase;
+  }
+
+  .carrier-img-fallback {
+    display: none;
+    font-family: var(--font-mono);
+    font-size: 10px;
+    padding: 1px 5px;
+    border: 1px solid var(--neutral-rule);
+    color: var(--ticket-paper);
+  }
+
+  .carrier-dispatch-meta {
+    font-family: var(--font-mono);
+    font-size: 11px;
+    color: var(--neutral-rule);
+    font-variant-numeric: tabular-nums;
+  }
+
+  .gate-alert-cell {
+    background-color: var(--gate-vermilion);
+    color: var(--ticket-paper);
+    padding: 10px 20px 11px;
+    border-bottom: 3px solid var(--aviation-navy);
+  }
+
+  .gate-alert-heading {
+    margin: 0;
+    font-family: var(--font-display);
+    font-size: 18.5px;
+    font-stretch: 92%;
+    font-weight: 800;
+    line-height: 1.15;
+    letter-spacing: -0.01em;
+    color: var(--ticket-paper);
+  }
+
+  .gate-alert-sub {
+    margin: 4px 0 0;
+    font-family: var(--font-mono);
+    font-size: 11px;
+    font-weight: 500;
+    color: var(--ticket-paper);
+    letter-spacing: 0.005em;
+  }
+
+  /* Split-Flap Route Timetable */
+  .route-section-cell {
+    padding: 16px 20px 14px;
+    border-bottom: 2px solid var(--aviation-navy);
+  }
+
+  .route-status-bar {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    margin-bottom: 10px;
+    gap: 8px;
+    flex-wrap: wrap;
+  }
+
+  .route-eyebrow {
+    font-family: var(--font-mono);
+    font-size: 11px;
+    font-weight: 500;
+    text-transform: uppercase;
+    letter-spacing: 0.07em;
+    color: var(--ink-muted);
+  }
+
+  .ontime-badge {
+    display: inline-flex;
+    align-items: center;
+    gap: 5px;
+    background-color: var(--green-tint);
+    color: var(--confirmed-green);
+    border: 1px solid var(--confirmed-green);
+    padding: 2px 8px;
+    font-family: var(--font-mono);
+    font-size: 11px;
+    font-weight: 500;
+    letter-spacing: 0.04em;
+  }
+
+  .split-flap-route {
+    display: grid;
+    grid-template-columns: 1fr auto 1fr;
+    gap: 14px;
+    align-items: center;
+  }
+
+  .station-block-end {
+    text-align: right;
+  }
+
+  .iata-time {
+    font-family: var(--font-display);
+    font-size: 30px;
+    font-weight: 800;
+    line-height: 1.05;
+    letter-spacing: -0.02em;
+    font-variant-numeric: tabular-nums;
+    color: var(--aviation-navy);
+  }
+
+  .day-offset {
+    font-family: var(--font-mono);
+    font-size: 14px;
+    font-weight: 500;
+    vertical-align: super;
+    color: var(--gate-vermilion);
+  }
+
+  .station-meta {
+    margin-top: 3px;
+    font-size: 12px;
+    color: var(--ink-secondary);
+  }
+
+  .route-arrow-bridge {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    gap: 2px;
+    font-family: var(--font-mono);
+    font-size: 11px;
+    color: var(--ink-muted);
+  }
+
+  .route-arrow-glyph {
+    font-family: var(--font-display);
+    font-size: 22px;
+    font-weight: 800;
+    color: var(--aviation-navy);
+    line-height: 1;
+  }
+
+  /* Semantic Tabular Boarding Grid */
+  .timetable-grid {
+    width: 100%;
+    border-collapse: collapse;
+    border-bottom: 2px solid var(--aviation-navy);
+  }
+
+  .timetable-grid th {
+    padding: 8px 12px 3px;
+    text-align: left;
+    font-family: var(--font-mono);
+    font-size: 10px;
+    font-weight: 500;
+    text-transform: uppercase;
+    letter-spacing: 0.08em;
+    color: var(--ink-muted);
+    border-right: 1px solid var(--neutral-rule);
+    background-color: var(--paper-subtle);
+  }
+
+  .timetable-grid th:last-child {
+    border-right: 0;
+  }
+
+  .timetable-grid td {
+    padding: 3px 12px 10px;
+    font-family: var(--font-mono);
+    font-size: 15px;
+    font-weight: 500;
+    font-variant-numeric: tabular-nums;
+    color: var(--aviation-navy);
+    border-right: 1px solid var(--neutral-rule);
+    background-color: var(--paper-subtle);
+  }
+
+  .timetable-grid td:last-child {
+    border-right: 0;
+  }
+
+  .gate-old {
+    text-decoration: line-through;
+    color: var(--ink-muted);
+    font-size: 12px;
+    margin-right: 4px;
+  }
+
+  .gate-new {
+    background-color: var(--vermilion-tint);
+    color: var(--gate-vermilion);
+    border: 1px solid var(--gate-vermilion);
+    padding: 1px 6px;
+    font-weight: 700;
+  }
+
+  /* Wayfinding & Passenger Strip */
+  .wayfinding-cell {
+    padding: 11px 20px;
+    border-bottom: 1px dashed var(--aviation-navy);
+    background-color: var(--ticket-paper);
+  }
+
+  .wayfinding-row {
+    display: flex;
+    justify-content: space-between;
+    gap: 12px;
+    flex-wrap: wrap;
+    font-size: 12px;
+    margin-bottom: 5px;
+  }
+
+  .passenger-name {
+    font-family: var(--font-mono);
+    font-weight: 500;
+    color: var(--aviation-navy);
+  }
+
+  .transfer-directions {
+    margin: 0;
+    font-size: 12px;
+    color: var(--ink-secondary);
+  }
+
+  /* Perforated Boarding Stub: CTA + 2D Barcode */
+  .stub-cell {
+    padding: 14px 20px;
+    border-bottom: 1px solid var(--neutral-rule);
+  }
+
+  .stub-grid {
+    display: grid;
+    grid-template-columns: 1fr 196px;
+    gap: 18px;
+    align-items: center;
+  }
+
+  .cta-lead {
+    margin: 0 0 10px;
+    font-size: 12.5px;
+    color: var(--ink-secondary);
+  }
+
+  .bulletproof-cta {
+    display: inline-block;
+    background-color: var(--aviation-navy);
+    color: var(--ticket-paper);
+    text-decoration: none;
+    padding: 11px 18px;
+    font-family: var(--font-display);
+    font-size: 13px;
+    font-weight: 700;
+    letter-spacing: 0.01em;
+    border: 2px solid var(--aviation-navy);
+    transition: border-color 120ms ease;
+  }
+
+  .bulletproof-cta:hover {
+    background-color: var(--navy-hover);
+    border-color: var(--navy-hover);
+  }
+
+  .secondary-links {
+    margin-top: 9px;
+    display: flex;
+    gap: 14px;
+    flex-wrap: wrap;
+    font-size: 11.5px;
+  }
+
+  .secondary-links a {
+    color: var(--aviation-navy);
+    font-weight: 600;
+    text-decoration: underline;
+    text-underline-offset: 2px;
+  }
+
+  .cta-feedback {
+    margin-top: 6px;
+    font-family: var(--font-mono);
+    font-size: 11px;
+    color: var(--confirmed-green);
+    min-height: 15px;
+  }
+
+  /* 2D Boarding Barcode Quiet-Zone Pad + Image-Off Live HTML Fallback */
+  .barcode-frame {
+    background-color: var(--ticket-paper);
+    border: 1px solid var(--aviation-navy);
+    padding: 8px 10px;
+    text-align: center;
+  }
+
+  .barcode-svg-wrap {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    gap: 4px;
+  }
+
+  .barcode-caption {
+    font-family: var(--font-mono);
+    font-size: 10px;
+    color: var(--aviation-navy);
+    letter-spacing: 0.05em;
+  }
+
+  .barcode-blocked-fallback {
+    display: none;
+    text-align: left;
+    background-color: var(--paper-subtle);
+    border: 1px dashed var(--gate-vermilion);
+    padding: 7px 8px;
+    font-family: var(--font-mono);
+    font-size: 10.5px;
+    line-height: 1.4;
+    color: var(--aviation-navy);
+  }
+
+  .fallback-alert-tag {
+    display: block;
+    font-weight: 500;
+    color: var(--gate-vermilion);
+    margin-bottom: 3px;
+  }
+
+  /* Transactional Email Footer */
+  .email-footer-cell {
+    padding: 10px 20px 12px;
+    background-color: var(--paper-subtle);
+    font-size: 11px;
+    color: var(--ink-muted);
+    line-height: 1.45;
+  }
+
+  .email-footer-cell a {
+    color: var(--aviation-navy);
+    text-decoration: underline;
+  }
+
+  /* Client Mode: Gmail Dark Mode ([data-ogsc] / prefers-color-scheme: dark simulation) */
+  .email-viewport-frame[data-client-mode="dark"] {
+    border-color: var(--dark-rule);
+  }
+
+  .email-viewport-frame[data-client-mode="dark"] .email-html-surface,
+  .email-viewport-frame[data-client-mode="dark"] .wayfinding-cell {
+    background-color: var(--dark-slate);
+    color: var(--ink-on-dark);
+  }
+
+  .email-viewport-frame[data-client-mode="dark"] .route-section-cell,
+  .email-viewport-frame[data-client-mode="dark"] .timetable-grid {
+    border-bottom-color: var(--dark-rule);
+  }
+
+  .email-viewport-frame[data-client-mode="dark"] .wayfinding-cell {
+    border-bottom-color: var(--dark-rule);
+  }
+
+  .email-viewport-frame[data-client-mode="dark"] .iata-time,
+  .email-viewport-frame[data-client-mode="dark"] .route-arrow-glyph,
+  .email-viewport-frame[data-client-mode="dark"] .passenger-name {
+    color: var(--ink-on-dark);
+  }
+
+  .email-viewport-frame[data-client-mode="dark"] .station-meta,
+  .email-viewport-frame[data-client-mode="dark"] .transfer-directions,
+  .email-viewport-frame[data-client-mode="dark"] .cta-lead {
+    color: var(--ink-muted-dark);
+  }
+
+  .email-viewport-frame[data-client-mode="dark"] .route-eyebrow {
+    color: var(--ink-muted-dark);
+  }
+
+  .email-viewport-frame[data-client-mode="dark"] .ontime-badge {
+    background-color: var(--green-dark-bg);
+    color: var(--green-dark-ink);
+    border-color: var(--confirmed-green);
+  }
+
+  .email-viewport-frame[data-client-mode="dark"] .timetable-grid th,
+  .email-viewport-frame[data-client-mode="dark"] .timetable-grid td {
+    background-color: var(--dark-surface);
+    border-right-color: var(--dark-rule);
+    color: var(--ink-on-dark);
+  }
+
+  .email-viewport-frame[data-client-mode="dark"] .timetable-grid th {
+    color: var(--ink-muted-dark);
+  }
+
+  .email-viewport-frame[data-client-mode="dark"] .gate-new {
+    background-color: var(--vermilion-dark-bg);
+    color: var(--vermilion-dark-ink);
+    border-color: var(--gate-vermilion);
+  }
+
+  .email-viewport-frame[data-client-mode="dark"] .bulletproof-cta {
+    background-color: var(--ticket-paper);
+    color: var(--aviation-navy);
+    border-color: var(--ticket-paper);
+  }
+
+  .email-viewport-frame[data-client-mode="dark"] .secondary-links a,
+  .email-viewport-frame[data-client-mode="dark"] .email-footer-cell a {
+    color: var(--ink-on-dark);
+  }
+
+  .email-viewport-frame[data-client-mode="dark"] .stub-cell {
+    border-bottom-color: var(--dark-rule);
+  }
+
+  .email-viewport-frame[data-client-mode="dark"] .email-footer-cell {
+    background-color: var(--dark-surface);
+    color: var(--ink-muted-dark);
+  }
+
+  /* Client Mode: Images Blocked */
+  .email-viewport-frame[data-client-mode="blocked"] .carrier-mark-svg,
+  .email-viewport-frame[data-client-mode="blocked"] .barcode-svg-wrap {
+    display: none;
+  }
+
+  .email-viewport-frame[data-client-mode="blocked"] .carrier-img-fallback,
+  .email-viewport-frame[data-client-mode="blocked"] .barcode-blocked-fallback {
+    display: block;
+  }
+
+  /* Mobile 375px Responsive Collapse inside Inspector */
+  .email-viewport-frame[data-width="375"] .gate-alert-heading {
+    font-size: 17px;
+  }
+
+  .email-viewport-frame[data-width="375"] .iata-time {
+    font-size: 22px;
+  }
+
+  .email-viewport-frame[data-width="375"] .timetable-grid th,
+  .email-viewport-frame[data-width="375"] .timetable-grid td {
+    padding-left: 6px;
+    padding-right: 6px;
+    font-size: 12px;
+  }
+
+  .email-viewport-frame[data-width="375"] .stub-grid {
+    grid-template-columns: 1fr;
+  }
+
+  /* Right Email QA Checklist Rail */
+  .meter-header {
+    display: flex;
+    justify-content: space-between;
+    align-items: baseline;
+    margin-bottom: 5px;
+    font-family: var(--font-mono);
+    font-size: 11.5px;
+  }
+
+  .meter-track {
+    width: 100%;
+    height: 10px;
+    background-color: var(--bench-bg);
+    border: 1px solid var(--neutral-rule);
+    overflow: hidden;
+  }
+
+  .meter-fill {
+    width: 18%;
+    height: 100%;
+    background-color: var(--confirmed-green);
+  }
+
+  .meter-caption {
+    margin: 5px 0 0;
+    font-size: 11px;
+    color: var(--ink-muted);
+  }
+
+  .qa-checklist {
+    list-style: none;
+    margin: 0;
+    padding: 0;
+    display: flex;
+    flex-direction: column;
+    gap: 7px;
+  }
+
+  .qa-item {
+    display: grid;
+    grid-template-columns: 18px 1fr auto;
+    gap: 8px;
+    align-items: start;
+    font-size: 11.5px;
+    color: var(--ink-secondary);
+  }
+
+  .qa-pass-box {
+    width: 16px;
+    height: 16px;
+    background-color: var(--green-tint);
+    border: 1px solid var(--confirmed-green);
+    color: var(--confirmed-green);
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    margin-top: 1px;
+  }
+
+  .qa-item strong {
+    color: var(--aviation-navy);
+    font-weight: 600;
+  }
+
+  .auth-table {
+    width: 100%;
+    border-collapse: collapse;
+    font-family: var(--font-mono);
+    font-size: 11px;
+  }
+
+  .auth-table td {
+    padding: 4px 0;
+    border-bottom: 1px solid var(--bench-bg);
+  }
+
+  .auth-table tr:last-child td {
+    border-bottom: 0;
+  }
+
+  .auth-status {
+    text-align: right;
+    color: var(--confirmed-green);
+    font-weight: 500;
+  }
+
+  .specimen-honesty {
+    background-color: var(--paper-subtle);
+    border: 1px solid var(--neutral-rule);
+    padding: 9px 10px;
+    font-size: 11px;
+    color: var(--ink-secondary);
+    line-height: 1.45;
+  }
+
+  .specimen-honesty strong {
+    font-family: var(--font-mono);
+    font-size: 10.5px;
+    text-transform: uppercase;
+    letter-spacing: 0.04em;
+    color: var(--aviation-navy);
+    display: block;
+    margin-bottom: 2px;
+  }
+
+  @media (max-width: 1360px) {
+    .workbench-grid {
+      grid-template-columns: 1fr;
+      justify-items: center;
+    }
+    .inspector-rail {
+      width: 640px;
+      max-width: 100%;
+    }
+  }
+
+  @media (prefers-reduced-motion: reduce) {
+    *,
+    *::before,
+    *::after {
+      animation-duration: 0.01ms !important;
+      animation-iteration-count: 1 !important;
+      transition-duration: 0.01ms !important;
+      scroll-behavior: auto !important;
+    }
+  }
+</style>
+</head>
+<body>
+  <a class="skip-nav" href="#email-preview-stage">Skip to live 640px email specimen</a>
+
+  <header class="inspector-topbar">
+    <div class="spec-cluster">
+      <span class="swiss-cross-badge" aria-hidden="true">
+        <svg width="14" height="14" viewBox="0 0 14 14" fill="none">
+          <rect x="5.5" y="2" width="3" height="10" fill="var(--ticket-paper)" />
+          <rect x="2" y="5.5" width="10" height="3" fill="var(--ticket-paper)" />
+        </svg>
+      </span>
+      <span class="spec-filename">gate-change.mjml · 18.4 kB (&lt; 102 kB Gmail clip threshold)</span>
+      <span class="spec-threshold">MJML 4.15 strict · HTML + text/plain</span>
+    </div>
+
+    <div class="switcher-cluster">
+      <div class="mode-group" role="group" aria-label="Email client rendering mode">
+        <button type="button" class="mode-btn" data-mode="light" aria-pressed="true">Apple Mail Light</button>
+        <button type="button" class="mode-btn" data-mode="dark" aria-pressed="false">Gmail Dark Mode</button>
+        <button type="button" class="mode-btn" data-mode="blocked" aria-pressed="false">Images Blocked</button>
+        <button type="button" class="mode-btn" data-mode="plaintext" aria-pressed="false">Plain-Text MIME</button>
+      </div>
+
+      <div class="viewport-control">
+        <label for="viewport-width">Canvas</label>
+        <select id="viewport-width" class="viewport-select">
+          <option value="640" selected>640px Desktop</option>
+          <option value="375">375px Mobile</option>
+        </select>
+      </div>
+    </div>
+  </header>
+
+  <main class="workbench-grid">
+    <!-- Left Rail: Envelope, Inbox Summary & MJML/VML Architecture -->
+    <aside class="inspector-rail" aria-label="Envelope and MJML architecture">
+      <section class="rail-section">
+        <h2 class="rail-heading">
+          <span>Envelope &amp; Snippet</span>
+          <span class="evidence-tag">static</span>
+        </h2>
+        <dl class="envelope-list">
+          <dt>From</dt>
+          <dd>Helvetic Air Ops &lt;<span class="mono-val">ops@flight.helvetic-air.example</span>&gt;</dd>
+          <dt>To</dt>
+          <dd class="mono-val">m.lindqvist@example.ch</dd>
+          <dt>Subject</dt>
+          <dd class="subject-strong">▲ Gate E42 (was B14) · LX-408 to Tokyo HND · Boards 12:40</dd>
+          <dt>Preview</dt>
+          <dd>Terminal E via Skymetro (6 min). Seat 14A Zone 2 unchanged. &#847;&zwnj; spacer active.</dd>
+        </dl>
+      </section>
+
+      <section class="rail-section">
+        <h2 class="rail-heading">
+          <span>Inbox AI Summary Source</span>
+          <span class="evidence-tag">model-judgment</span>
+        </h2>
+        <div class="digest-preview">
+          <div class="digest-kicker">Apple Mail / Mobile Lock Screen</div>
+          Flight <strong>LX-408 (ZRH 13:20 → HND)</strong> moved from Gate B14 to <strong>Gate E42</strong> (Skymetro 6 min). Boarding 12:40; Seat 14A, PNR K8M4QF.
+        </div>
+      </section>
+
+      <section class="rail-section">
+        <h2 class="rail-heading">
+          <span>Active Client Behavior</span>
+          <span class="evidence-tag" id="mode-evidence-badge">rendered</span>
+        </h2>
+        <div class="mode-live-banner" aria-live="polite">
+          <div class="mode-live-title" id="mode-live-title">Apple Mail 18 · macOS / iOS Light</div>
+          <div id="mode-live-desc">Honors @font-face progressive enhancement, crisp #FFFFFF ticket contrast, inline SVG barcode, and one-tap .pkpass Wallet handoff.</div>
+        </div>
+      </section>
+
+      <section class="rail-section">
+        <h2 class="rail-heading">
+          <span>Dual-Safe Outlook CTA</span>
+          <span class="evidence-tag">static</span>
+        </h2>
+        <pre class="code-peek">&lt;!--[if mso]&gt;
+&lt;v:roundrect href="https://..."
+  style="height:40px;width:254px;"
+  fillcolor="#0B1F3A" stroke="f"&gt;
+&lt;![endif]--&gt;
+&lt;a href="#pkpass"&gt;Download updated
+  .pkpass / .ics&lt;/a&gt;
+&lt;!--[if mso]&gt;&lt;/v:roundrect&gt;&lt;![endif]--&gt;</pre>
+      </section>
+    </aside>
+
+    <!-- Center Stage: 640px Bulletproof Table-Structured MJML Output -->
+    <section class="email-stage" id="email-preview-stage" aria-label="Live email client preview">
+      <div class="stage-caption-bar">
+        <span id="stage-mime-label">MIME: text/html · role="presentation"</span>
+        <span id="stage-dimensions-label">640px · First 110px = Gate Alert</span>
+      </div>
+
+      <div class="email-viewport-frame" id="email-frame" data-client-mode="light" data-width="640">
+        <!-- HTML Email MIME Part -->
+        <div class="email-html-surface" dir="ltr">
+          <div class="preheader-hidden" aria-hidden="true">
+            Gate changed from B14 to E42 (Terminal E, Skymetro 6 min). Flight LX-408 ZRH 13:20 to HND 09:05+1, Boarding 12:40, Seat 14A, PNR K8M4QF.
+          </div>
+
+          <table class="email-table" role="presentation" cellpadding="0" cellspacing="0" border="0" width="100%">
+            <!-- Row 1: Carrier Identity Strip (32px) -->
+            <tr>
+              <td class="carrier-strip-cell">
+                <div class="carrier-lockup">
+                  <div class="carrier-brand">
+                    <svg class="carrier-mark-svg" width="16" height="16" viewBox="0 0 16 16" role="img" aria-label="Helvetic Air">
+                      <rect width="16" height="16" fill="var(--gate-vermilion)" />
+                      <rect x="6.5" y="2.5" width="3" height="11" fill="var(--ticket-paper)" />
+                      <rect x="2.5" y="6.5" width="11" height="3" fill="var(--ticket-paper)" />
+                    </svg>
+                    <span class="carrier-img-fallback">[Helvetic Air]</span>
+                    <span>HELVETIC AIR</span>
+                  </div>
+                  <span class="carrier-dispatch-meta">OPS ZRH · 24 NOV 11:58 CET · PNR K8M4QF</span>
+                </div>
+              </td>
+            </tr>
+
+            <!-- Row 2: First 110px Urgent Gate-Change Band -->
+            <tr>
+              <td class="gate-alert-cell">
+                <h1 class="gate-alert-heading">▲ GATE CHANGED: B14 → E42 (Terminal E · Skymetro 6 min)</h1>
+                <p class="gate-alert-sub">Departure 13:20 &amp; Seat 14A unchanged · Boarding opens 12:40 at Gate E42</p>
+              </td>
+            </tr>
+
+            <!-- Row 3: Vignelli Split-Flap Route Timetable -->
+            <tr>
+              <td class="route-section-cell">
+                <div class="route-status-bar">
+                  <span class="route-eyebrow">Operational Boarding Timetable · Airbus A350-900</span>
+                  <span class="ontime-badge">● ON TIME · 12H 45M</span>
+                </div>
+
+                <div class="split-flap-route">
+                  <div>
+                    <div class="iata-time">ZRH 13:20</div>
+                    <div class="station-meta">Zürich Airport · Terminal E</div>
+                  </div>
+
+                  <div class="route-arrow-bridge" aria-hidden="true">
+                    <span>LX-408</span>
+                    <span class="route-arrow-glyph">→</span>
+                    <span>NONSTOP</span>
+                  </div>
+
+                  <div class="station-block-end">
+                    <div class="iata-time">HND 09:05<span class="day-offset">+1</span></div>
+                    <div class="station-meta">Tokyo Haneda · Intl Term 3</div>
+                  </div>
+                </div>
+              </td>
+            </tr>
+
+            <!-- Row 4: Semantic Tabular Boarding Specifications -->
+            <tr>
+              <td style="padding: 0;">
+                <table class="timetable-grid" cellpadding="0" cellspacing="0" border="0" width="100%">
+                  <thead>
+                    <tr>
+                      <th scope="col">Flight</th>
+                      <th scope="col">Boarding</th>
+                      <th scope="col">New Gate</th>
+                      <th scope="col">Seat</th>
+                      <th scope="col">Zone</th>
+                      <th scope="col">PNR</th>
+                    </tr>
+                  </thead>
+                  <tbody>
+                    <tr>
+                      <td>LX-408</td>
+                      <td>12:40</td>
+                      <td><span class="gate-old">B14</span><span class="gate-new">E42</span></td>
+                      <td>14A Window</td>
+                      <td>2</td>
+                      <td>K8M4QF</td>
+                    </tr>
+                  </tbody>
+                </table>
+              </td>
+            </tr>
+
+            <!-- Row 5: Passenger & Concourse B -> Terminal E Wayfinding -->
+            <tr>
+              <td class="wayfinding-cell">
+                <div class="wayfinding-row">
+                  <span class="passenger-name">PASSENGER: LINDQVIST / MAJA</span>
+                  <span class="mono-val">E-TICKET: 724-8492011834 · GATE CLOSES 13:05</span>
+                </div>
+                <p class="transfer-directions">
+                  <strong>Transfer from Concourse B:</strong> Follow Terminal E signs to Level B0 Skymetro (trains every 3 min; 6 min transit) and clear passport control before Concourse E.
+                </p>
+              </td>
+            </tr>
+
+            <!-- Row 6: Perforated Boarding Stub — Real-Text CTA + 2D Barcode / Image-Off Fallback -->
+            <tr>
+              <td class="stub-cell">
+                <div class="stub-grid">
+                  <div>
+                    <p class="cta-lead">
+                      Refresh your mobile boarding pass and calendar entry with Gate E42 before boarding begins at 12:40:
+                    </p>
+                    <a href="#download-pkpass" class="bulletproof-cta" id="cta-pkpass">Download updated .pkpass / .ics</a>
+                    <div class="secondary-links">
+                      <a href="#terminal-e-map" id="cta-map">Zurich Terminal E transfer map (HTML)</a>
+                      <a href="#sms-alerts" id="cta-sms">SMS gate alerts</a>
+                    </div>
+                    <div class="cta-feedback" id="cta-feedback" aria-live="polite"></div>
+                  </div>
+
+                  <div class="barcode-frame">
+                    <div class="barcode-svg-wrap">
+                      <svg width="168" height="84" viewBox="0 0 168 84" role="img" aria-label="2D boarding barcode for Flight LX-408, PNR K8M4QF, Gate E42, Seat 14A">
+                        <rect width="168" height="84" fill="var(--ticket-paper)" />
+                        <!-- Outer finder bars -->
+                        <rect x="6" y="6" width="8" height="72" fill="var(--aviation-navy)" />
+                        <rect x="18" y="6" width="4" height="72" fill="var(--aviation-navy)" />
+                        <rect x="146" y="6" width="4" height="72" fill="var(--aviation-navy)" />
+                        <rect x="154" y="6" width="8" height="72" fill="var(--aviation-navy)" />
+                        <!-- Aztec center bullseye -->
+                        <rect x="68" y="26" width="32" height="32" fill="var(--aviation-navy)" />
+                        <rect x="73" y="31" width="22" height="22" fill="var(--ticket-paper)" />
+                        <rect x="78" y="36" width="12" height="12" fill="var(--aviation-navy)" />
+                        <rect x="82" y="40" width="4" height="4" fill="var(--ticket-paper)" />
+                        <!-- Data matrix modules left -->
+                        <rect x="26" y="8" width="8" height="8" fill="var(--aviation-navy)" />
+                        <rect x="38" y="8" width="12" height="8" fill="var(--aviation-navy)" />
+                        <rect x="54" y="8" width="8" height="14" fill="var(--aviation-navy)" />
+                        <rect x="26" y="20" width="14" height="6" fill="var(--aviation-navy)" />
+                        <rect x="44" y="20" width="6" height="12" fill="var(--aviation-navy)" />
+                        <rect x="26" y="30" width="6" height="14" fill="var(--aviation-navy)" />
+                        <rect x="36" y="36" width="10" height="8" fill="var(--aviation-navy)" />
+                        <rect x="50" y="30" width="14" height="6" fill="var(--aviation-navy)" />
+                        <rect x="54" y="40" width="10" height="12" fill="var(--aviation-navy)" />
+                        <rect x="26" y="48" width="12" height="8" fill="var(--aviation-navy)" />
+                        <rect x="42" y="48" width="8" height="14" fill="var(--aviation-navy)" />
+                        <rect x="26" y="60" width="12" height="6" fill="var(--aviation-navy)" />
+                        <rect x="54" y="56" width="8" height="10" fill="var(--aviation-navy)" />
+                        <rect x="26" y="70" width="20" height="8" fill="var(--aviation-navy)" />
+                        <rect x="50" y="70" width="14" height="8" fill="var(--aviation-navy)" />
+                        <!-- Top & bottom modules around bullseye -->
+                        <rect x="68" y="8" width="10" height="6" fill="var(--aviation-navy)" />
+                        <rect x="82" y="8" width="18" height="6" fill="var(--aviation-navy)" />
+                        <rect x="72" y="17" width="14" height="6" fill="var(--aviation-navy)" />
+                        <rect x="90" y="17" width="10" height="6" fill="var(--aviation-navy)" />
+                        <rect x="68" y="62" width="14" height="6" fill="var(--aviation-navy)" />
+                        <rect x="86" y="62" width="14" height="6" fill="var(--aviation-navy)" />
+                        <rect x="68" y="71" width="8" height="7" fill="var(--aviation-navy)" />
+                        <rect x="80" y="71" width="20" height="7" fill="var(--aviation-navy)" />
+                        <!-- Data matrix modules right -->
+                        <rect x="104" y="8" width="12" height="8" fill="var(--aviation-navy)" />
+                        <rect x="120" y="8" width="8" height="14" fill="var(--aviation-navy)" />
+                        <rect x="132" y="8" width="10" height="8" fill="var(--aviation-navy)" />
+                        <rect x="104" y="20" width="12" height="10" fill="var(--aviation-navy)" />
+                        <rect x="132" y="20" width="10" height="12" fill="var(--aviation-navy)" />
+                        <rect x="104" y="34" width="8" height="14" fill="var(--aviation-navy)" />
+                        <rect x="116" y="28" width="12" height="8" fill="var(--aviation-navy)" />
+                        <rect x="116" y="40" width="10" height="10" fill="var(--aviation-navy)" />
+                        <rect x="130" y="36" width="12" height="8" fill="var(--aviation-navy)" />
+                        <rect x="104" y="52" width="14" height="8" fill="var(--aviation-navy)" />
+                        <rect x="122" y="54" width="8" height="12" fill="var(--aviation-navy)" />
+                        <rect x="134" y="48" width="8" height="16" fill="var(--aviation-navy)" />
+                        <rect x="104" y="64" width="14" height="14" fill="var(--aviation-navy)" />
+                        <rect x="122" y="70" width="20" height="8" fill="var(--aviation-navy)" />
+                      </svg>
+                      <span class="barcode-caption">M1LINDQVIST/MAJA K8M4QF E42 14A</span>
+                    </div>
+
+                    <div class="barcode-blocked-fallback">
+                      <span class="fallback-alert-tag">[BARCODE IMAGE BLOCKED]</span>
+                      PNR: <strong>K8M4QF</strong> · FLT: <strong>LX-408</strong><br />
+                      GATE: <strong>E42</strong> · SEAT: <strong>14A</strong> · ZONE: <strong>2</strong><br />
+                      ETKT: 724-8492011834 (Scan ID at kiosk)
+                    </div>
+                  </div>
+                </div>
+              </td>
+            </tr>
+
+            <!-- Row 7: Transactional Operational Footer -->
+            <tr>
+              <td class="email-footer-cell">
+                Operational flight-change dispatch for booking <strong>K8M4QF</strong> (zero promotional content).
+                <a href="#notification-prefs">Manage operational SMS/email channels</a> ·
+                Helvetic Air AG, Zürich Airport (Fictional carrier · Illustrative MJML specimen).
+              </td>
+            </tr>
+          </table>
+        </div>
+
+        <!-- Plain-Text MIME Companion Part -->
+        <pre class="email-plaintext-surface">MIME-Version: 1.0
+Content-Type: text/plain; charset="utf-8"
+Content-Transfer-Encoding: quoted-printable
+
+HELVETIC AIR · OPERATIONAL DISPATCH ZRH (24 NOV 11:58 CET)
+================================================================
+
+▲ GATE CHANGED: B14 -> E42 (Terminal E · Skymetro 6 min)
+Departure 13:20 and Seat 14A unchanged. Boarding opens 12:40.
+
+TIMETABLE &amp; BOARDING CREDENTIALS
+----------------------------------------------------------------
+Route:      ZRH 13:20  ->  HND 09:05+1  (ON TIME · 12h 45m)
+            Zurich Term E  Tokyo Haneda Intl Term 3
+Flight:     LX-408 (Airbus A350-900)
+Boarding:   12:40 CET (Gate E42 closes 13:05)
+Previous:   Gate B14  ->  NEW GATE: E42
+Seat/Zone:  14A Window · Boarding Zone 2
+PNR:        K8M4QF
+Passenger:  LINDQVIST / MAJA
+E-Ticket:   724-8492011834
+
+TRANSFER DIRECTIONS (ZURICH AIRPORT)
+----------------------------------------------------------------
+From Concourse B: follow signs to Terminal E, board Skymetro on
+Level B0 (every 3 min, 6 min transit), clear passport control.
+
+UPDATED PASS &amp; CALENDAR LINKS
+----------------------------------------------------------------
+Download .pkpass / .ics:
+https://ops.helvetic-air.example/pass/K8M4QF/LX-408-E42.pkpass
+
+Terminal E transfer map (HTML):
+https://ops.helvetic-air.example/zrh/terminal-e-skymetro
+
+----------------------------------------------------------------
+Mandatory operational alert for PNR K8M4QF. No marketing content.
+Helvetic Air AG (Fictional carrier · Illustrative MJML specimen)</pre>
+      </div>
+    </section>
+
+    <!-- Right Rail: Email QA Checklist, Gmail Clipping Meter & BIMI/DMARC -->
+    <aside class="inspector-rail" aria-label="Email QA checklist and authentication">
+      <section class="rail-section">
+        <h2 class="rail-heading">
+          <span>Gmail 102 kB Clip Budget</span>
+          <span class="evidence-tag">static</span>
+        </h2>
+        <div class="meter-header">
+          <strong>18.4 / 102 kB HTML MIME</strong>
+          <span>18.0% used</span>
+        </div>
+        <div class="meter-track" role="progressbar" aria-label="Gmail HTML clipping budget" aria-valuenow="18" aria-valuemin="0" aria-valuemax="102">
+          <div class="meter-fill"></div>
+        </div>
+        <p class="meter-caption">
+          Inline &lt;style&gt; block is 3.1 / 8.0 kB (survives Gmail mobile &amp; GANGA IMAP strip without clipping footer).
+        </p>
+      </section>
+
+      <section class="rail-section">
+        <h2 class="rail-heading">
+          <span>Client Compatibility QA</span>
+          <span class="evidence-tag">rendered</span>
+        </h2>
+        <ul class="qa-checklist">
+          <li class="qa-item">
+            <span class="qa-pass-box" aria-hidden="true">
+              <svg width="10" height="10" viewBox="0 0 10 10" fill="none"><path d="M1.5 5.2L3.8 7.5L8.5 2.5" stroke="currentColor" stroke-width="1.6"/></svg>
+            </span>
+            <span><strong>Classic Outlook Word VML:</strong> Table widths explicit; MSO &lt;v:roundrect&gt; + HTML &lt;a&gt; dual-safe CTA pass.</span>
+            <span class="evidence-tag">static</span>
+          </li>
+          <li class="qa-item">
+            <span class="qa-pass-box" aria-hidden="true">
+              <svg width="10" height="10" viewBox="0 0 10 10" fill="none"><path d="M1.5 5.2L3.8 7.5L8.5 2.5" stroke="currentColor" stroke-width="1.6"/></svg>
+            </span>
+            <span><strong>First 110px Live Text:</strong> Gate B14 → E42 &amp; Skymetro time visible above fold without images.</span>
+            <span class="evidence-tag">rendered</span>
+          </li>
+          <li class="qa-item">
+            <span class="qa-pass-box" aria-hidden="true">
+              <svg width="10" height="10" viewBox="0 0 10 10" fill="none"><path d="M1.5 5.2L3.8 7.5L8.5 2.5" stroke="currentColor" stroke-width="1.6"/></svg>
+            </span>
+            <span><strong>Dark-Mode Barcode Pad:</strong> Quiet-zone #FFFFFF pad preserved so gate scanners read 2D code.</span>
+            <span class="evidence-tag">rendered</span>
+          </li>
+          <li class="qa-item">
+            <span class="qa-pass-box" aria-hidden="true">
+              <svg width="10" height="10" viewBox="0 0 10 10" fill="none"><path d="M1.5 5.2L3.8 7.5L8.5 2.5" stroke="currentColor" stroke-width="1.6"/></svg>
+            </span>
+            <span><strong>Images Blocked Parity:</strong> Live HTML fallback exposes PNR K8M4QF, Gate E42, Seat 14A &amp; ETKT.</span>
+            <span class="evidence-tag">rendered</span>
+          </li>
+          <li class="qa-item">
+            <span class="qa-pass-box" aria-hidden="true">
+              <svg width="10" height="10" viewBox="0 0 10 10" fill="none"><path d="M1.5 5.2L3.8 7.5L8.5 2.5" stroke="currentColor" stroke-width="1.6"/></svg>
+            </span>
+            <span><strong>Plain-Text MIME Parity:</strong> Generated from identical flight model with full URLs &amp; times.</span>
+            <span class="evidence-tag">static</span>
+          </li>
+        </ul>
+      </section>
+
+      <section class="rail-section">
+        <h2 class="rail-heading">
+          <span>BIMI &amp; DMARC Headers</span>
+          <span class="evidence-tag">static</span>
+        </h2>
+        <table class="auth-table">
+          <tbody>
+            <tr>
+              <td>SPF / DKIM (2048-bit)</td>
+              <td class="auth-status">PASS · ALIGNED</td>
+            </tr>
+            <tr>
+              <td>DMARC Policy</td>
+              <td class="auth-status">PASS (p=reject)</td>
+            </tr>
+            <tr>
+              <td>BIMI Selector</td>
+              <td class="auth-status">SVG Tiny-PS + VMC</td>
+            </tr>
+            <tr>
+              <td>Stream Class</td>
+              <td class="auth-status">Transactional Ops</td>
+            </tr>
+          </tbody>
+        </table>
+      </section>
+
+      <section class="rail-section">
+        <div class="specimen-honesty">
+          <strong>Fictional carrier · Illustrative MJML specimen</strong>
+          Helvetic Air, Flight LX-408, PNR K8M4QF, gates B14 → E42, and authentication headers are illustrative fixtures crafted with pixelcraft-email. Real Outlook/Gmail engines outside this inspector are labeled not-checked until ESP litmus run.
+        </div>
+      </section>
+    </aside>
+  </main>
+
+  <script>
+    (function () {
+      const frame = document.getElementById('email-frame');
+      const modeButtons = Array.from(document.querySelectorAll('.mode-btn'));
+      const widthSelect = document.getElementById('viewport-width');
+      const liveTitle = document.getElementById('mode-live-title');
+      const liveDesc = document.getElementById('mode-live-desc');
+      const mimeLabel = document.getElementById('stage-mime-label');
+      const dimLabel = document.getElementById('stage-dimensions-label');
+      const feedback = document.getElementById('cta-feedback');
+
+      const modeInfo = {
+        light: {
+          title: 'Apple Mail 18 · macOS / iOS Light',
+          desc: 'Honors @font-face progressive enhancement, crisp #FFFFFF ticket contrast, inline SVG barcode, and one-tap .pkpass Wallet handoff.',
+          mime: 'MIME: text/html · role="presentation"'
+        },
+        dark: {
+          title: 'Gmail Dark Mode · [data-ogsc] / Forced Dark',
+          desc: 'Applies #0F172A dark slate surface while preserving high-contrast Gate E42 alert and a #FFFFFF quiet-zone pad around the 2D scanner code.',
+          mime: 'MIME: text/html · dark-scheme active'
+        },
+        blocked: {
+          title: 'Corporate Client · Remote & Inline Images Blocked',
+          desc: 'Suppresses vector graphics and reveals live HTML boarding text (PNR K8M4QF, Gate E42, Seat 14A, E-Ticket) with zero loss of actionability.',
+          mime: 'MIME: text/html · images suppressed'
+        },
+        plaintext: {
+          title: 'Multipart text/plain Companion Stream',
+          desc: 'Renders the text/plain MIME part for watch notifications, console mailers, and strict accessibility readers with 100% field parity.',
+          mime: 'MIME: text/plain · multipart/alternative'
+        }
+      };
+
+      function setMode(mode) {
+        frame.setAttribute('data-client-mode', mode);
+        modeButtons.forEach(function (btn) {
+          btn.setAttribute('aria-pressed', btn.getAttribute('data-mode') === mode ? 'true' : 'false');
+        });
+        const info = modeInfo[mode] || modeInfo.light;
+        liveTitle.textContent = info.title;
+        liveDesc.textContent = info.desc;
+        mimeLabel.textContent = info.mime;
+      }
+
+      modeButtons.forEach(function (btn) {
+        btn.addEventListener('click', function () {
+          setMode(btn.getAttribute('data-mode'));
+        });
+      });
+
+      widthSelect.addEventListener('change', function () {
+        const w = widthSelect.value;
+        frame.setAttribute('data-width', w);
+        dimLabel.textContent = w + 'px · First 110px = Gate Alert';
+      });
+
+      const actionMessages = {
+        'cta-pkpass': 'Verified payload: LX-408-E42.pkpass + LX-408.ics (4.2 kB, Gate E42)',
+        'cta-map': 'Verified link: /zrh/terminal-e-skymetro (HTML fallback map)',
+        'cta-sms': 'Verified link: /alerts/K8M4QF (preauthenticated SMS toggle)'
+      };
+
+      Object.keys(actionMessages).forEach(function (id) {
+        const el = document.getElementById(id);
+        if (!el) return;
+        el.addEventListener('click', function (ev) {
+          ev.preventDefault();
+          feedback.textContent = actionMessages[id];
+        });
+      });
+    })();
+  </script>
+</body>
+</html>

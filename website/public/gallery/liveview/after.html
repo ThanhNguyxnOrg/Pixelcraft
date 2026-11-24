@@ -1,0 +1,1993 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Osteria Ferro · Architectural Floor-Plan & Live Seating (Elixir · Phoenix LiveView)</title>
+<link rel="stylesheet" href="../../fonts/gallery.css" />
+<style>
+  :root {
+    --travertine: #F4EDE1;
+    --travertine-deep: #EAE0CF;
+    --travertine-recess: #E2D5C0;
+    --parchment: #FAF6EE;
+    --parchment-tint: #F6F0E4;
+    --walnut: #231B15;
+    --umber: #5F5145;
+    --olive: #3B5334;
+    --olive-hover: #2E4228;
+    --olive-wash: #E6EFE3;
+    --olive-rule: #AFC4A8;
+    --terracotta: #B54826;
+    --terracotta-deep: #913619;
+    --terracotta-wash: #F8EAE4;
+    --terracotta-glow: #EAB69F;
+    --brass: #D6C8B4;
+    --brass-strong: #B6A48B;
+    --booked-wash: #EDE5D8;
+    --booked-hatch: #A39480;
+    --on-dark: #FAF6EE;
+    --shadow-warm: rgba(35, 27, 21, 0.06);
+    --shadow-lift: rgba(35, 27, 21, 0.11);
+    --grid-hairline: rgba(182, 164, 139, 0.26);
+
+    --font-display: 'Barlow Condensed', 'Arial Narrow', sans-serif;
+    --font-sans: 'Work Sans', system-ui, -apple-system, sans-serif;
+    --font-mono: 'IBM Plex Mono', ui-monospace, SFMono-Regular, monospace;
+
+    --radius-sheet: 8px;
+    --radius-control: 5px;
+    --radius-pill: 4px;
+  }
+
+  * {
+    box-sizing: border-box;
+  }
+
+  html,
+  body {
+    margin: 0;
+    padding: 0;
+    background-color: var(--travertine);
+    color: var(--walnut);
+    font-family: var(--font-sans);
+    font-size: 14px;
+    line-height: 1.42;
+    -webkit-font-smoothing: antialiased;
+  }
+
+  :focus-visible {
+    outline: 2px solid var(--terracotta);
+    outline-offset: 2px;
+  }
+
+  .skip-link {
+    position: absolute;
+    left: 16px;
+    top: -48px;
+    z-index: 30;
+    background-color: var(--walnut);
+    color: var(--on-dark);
+    padding: 8px 14px;
+    border-radius: var(--radius-control);
+    font-family: var(--font-mono);
+    font-size: 12px;
+    text-decoration: none;
+  }
+
+  .skip-link:focus {
+    top: 10px;
+  }
+
+  .tabular {
+    font-variant-numeric: tabular-nums;
+  }
+
+  /* Top Architectural & LiveView Bar */
+  .room-bar {
+    background-color: var(--parchment);
+    border-bottom: 1px solid var(--brass);
+    padding: 9px 26px;
+    display: flex;
+    flex-wrap: wrap;
+    align-items: center;
+    justify-content: space-between;
+    gap: 10px 18px;
+  }
+
+  .identity-cluster {
+    display: flex;
+    align-items: center;
+    gap: 12px;
+    flex-wrap: wrap;
+  }
+
+  .crest-mark {
+    width: 34px;
+    height: 34px;
+    border-radius: var(--radius-control);
+    background-color: var(--walnut);
+    color: var(--on-dark);
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    flex-shrink: 0;
+  }
+
+  .identity-copy {
+    display: flex;
+    flex-direction: column;
+    gap: 1px;
+  }
+
+  .identity-row {
+    display: flex;
+    align-items: baseline;
+    gap: 9px;
+    flex-wrap: wrap;
+  }
+
+  .bistro-name {
+    margin: 0;
+    font-family: var(--font-display);
+    font-size: 25px;
+    font-weight: 800;
+    letter-spacing: 0.04em;
+    text-transform: uppercase;
+    line-height: 1;
+    color: var(--walnut);
+  }
+
+  .bistro-hours {
+    font-family: var(--font-mono);
+    font-size: 11px;
+    color: var(--umber);
+    letter-spacing: 0.01em;
+  }
+
+  .bistro-sub {
+    font-size: 11.5px;
+    color: var(--umber);
+  }
+
+  .pubsub-pill {
+    display: inline-flex;
+    align-items: center;
+    gap: 6px;
+    padding: 4px 10px;
+    background-color: var(--olive-wash);
+    border: 1px solid var(--olive-rule);
+    border-radius: var(--radius-pill);
+    font-family: var(--font-mono);
+    font-size: 11px;
+    font-weight: 500;
+    color: var(--olive);
+    letter-spacing: 0.01em;
+  }
+
+  .pubsub-dot {
+    display: inline-block;
+    color: var(--olive);
+    animation: socket-heartbeat 2.2s ease-in-out infinite;
+  }
+
+  @keyframes socket-heartbeat {
+    0%, 100% { opacity: 1; }
+    50% { opacity: 0.45; }
+  }
+
+  .bar-controls {
+    display: flex;
+    align-items: flex-end;
+    gap: 14px;
+    flex-wrap: wrap;
+  }
+
+  .control-cluster {
+    display: flex;
+    flex-direction: column;
+    align-items: flex-start;
+    gap: 3px;
+  }
+
+  .cluster-label {
+    font-family: var(--font-mono);
+    font-size: 10px;
+    font-weight: 500;
+    text-transform: uppercase;
+    letter-spacing: 0.07em;
+    color: var(--umber);
+  }
+
+  .segmented-track {
+    display: inline-flex;
+    background-color: var(--travertine);
+    border: 1px solid var(--brass);
+    border-radius: var(--radius-control);
+    padding: 2px;
+    gap: 2px;
+  }
+
+  .seg-option {
+    appearance: none;
+    border: 1px solid transparent;
+    background-color: transparent;
+    color: var(--umber);
+    font-family: var(--font-mono);
+    font-size: 11px;
+    font-weight: 500;
+    padding: 4px 9px;
+    border-radius: var(--radius-pill);
+    cursor: pointer;
+    font-variant-numeric: tabular-nums;
+    transition: background-color 150ms ease, border-color 150ms ease, color 150ms ease;
+  }
+
+  .seg-option:hover {
+    color: var(--walnut);
+    background-color: var(--parchment-tint);
+  }
+
+  .seg-option[aria-pressed="true"] {
+    background-color: var(--walnut);
+    color: var(--on-dark);
+    border-color: var(--walnut);
+  }
+
+  /* Main Two-Stage Floor Console */
+  .floor-stage {
+    max-width: 1440px;
+    margin: 0 auto;
+    padding: 14px 26px 14px;
+    display: grid;
+    grid-template-columns: minmax(0, 1.56fr) minmax(396px, 0.94fr);
+    gap: 18px;
+    align-items: stretch;
+  }
+
+  .architectural-sheet,
+  .dossier-slip {
+    background-color: var(--parchment);
+    border: 1px solid var(--brass);
+    border-radius: var(--radius-sheet);
+    box-shadow: 0 2px 10px var(--shadow-warm);
+    display: flex;
+    flex-direction: column;
+  }
+
+  /* Left Stage: Architectural Dining Room Plan */
+  .architectural-sheet {
+    padding: 13px 16px 12px;
+    justify-content: space-between;
+    gap: 10px;
+  }
+
+  .sheet-header {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    gap: 10px;
+    flex-wrap: wrap;
+    padding-bottom: 9px;
+    border-bottom: 1px solid var(--brass);
+  }
+
+  .sheet-titles {
+    display: flex;
+    align-items: center;
+    gap: 10px;
+    flex-wrap: wrap;
+  }
+
+  .sheet-heading {
+    margin: 0;
+    font-family: var(--font-display);
+    font-size: 19px;
+    font-weight: 800;
+    letter-spacing: 0.045em;
+    text-transform: uppercase;
+    color: var(--walnut);
+  }
+
+  .room-tally {
+    font-family: var(--font-mono);
+    font-size: 11px;
+    color: var(--umber);
+    padding: 2px 8px;
+    background-color: var(--travertine);
+    border: 1px solid var(--brass);
+    border-radius: var(--radius-pill);
+  }
+
+  .status-legend {
+    display: flex;
+    align-items: center;
+    gap: 10px;
+    flex-wrap: wrap;
+    font-family: var(--font-mono);
+    font-size: 10.5px;
+    color: var(--walnut);
+  }
+
+  .legend-item {
+    display: inline-flex;
+    align-items: center;
+    gap: 5px;
+  }
+
+  .swatch {
+    width: 14px;
+    height: 11px;
+    border-radius: 2px;
+    display: inline-block;
+    flex-shrink: 0;
+  }
+
+  .swatch-available {
+    background-color: var(--olive-wash);
+    border: 1.5px solid var(--olive);
+  }
+
+  .swatch-held {
+    background-color: var(--terracotta-wash);
+    border: 1.5px dashed var(--terracotta);
+  }
+
+  .swatch-booked {
+    background-color: var(--booked-wash);
+    border: 1.5px solid var(--booked-hatch);
+    background-image: repeating-linear-gradient(
+      -45deg,
+      var(--booked-wash),
+      var(--booked-wash) 2.5px,
+      var(--booked-hatch) 2.5px,
+      var(--booked-hatch) 3.7px
+    );
+  }
+
+  .plan-canvas-wrap {
+    position: relative;
+    background-color: var(--parchment-tint);
+    border: 1px solid var(--brass);
+    border-radius: 6px;
+    overflow: hidden;
+  }
+
+  .floorplan-svg {
+    display: block;
+    width: 100%;
+    height: auto;
+  }
+
+  /* SVG Drafting & Interactive Table Styles */
+  .svg-wall {
+    fill: var(--travertine-recess);
+    stroke: var(--brass-strong);
+    stroke-width: 1.4;
+  }
+
+  .svg-floor {
+    fill: var(--parchment);
+  }
+
+  .svg-courtyard {
+    fill: var(--travertine);
+    stroke: var(--brass);
+    stroke-width: 1;
+  }
+
+  .svg-alcove-floor {
+    fill: var(--parchment-tint);
+    stroke: var(--brass);
+    stroke-width: 1;
+  }
+
+  .svg-zone-title {
+    font-family: var(--font-display);
+    font-size: 13.5px;
+    font-weight: 800;
+    letter-spacing: 0.08em;
+    text-transform: uppercase;
+    fill: var(--walnut);
+  }
+
+  .svg-zone-sub {
+    font-family: var(--font-mono);
+    font-size: 9.5px;
+    font-weight: 500;
+    letter-spacing: 0.05em;
+    fill: var(--umber);
+  }
+
+  .svg-chair {
+    fill: var(--travertine);
+    stroke: var(--brass-strong);
+    stroke-width: 1.15;
+  }
+
+  .plan-table {
+    cursor: pointer;
+  }
+
+  .plan-table[aria-disabled="true"] {
+    cursor: not-allowed;
+  }
+
+  .plan-table:focus-visible {
+    outline: 2px solid var(--terracotta);
+    outline-offset: 3px;
+  }
+
+  .table-surface {
+    transition: fill 150ms ease, stroke 150ms ease, stroke-width 150ms ease;
+  }
+
+  .plan-table.is-available .table-surface {
+    fill: var(--olive-wash);
+    stroke: var(--olive);
+    stroke-width: 1.8;
+  }
+
+  .plan-table.is-available:hover .table-surface {
+    fill: var(--parchment);
+    stroke: var(--olive-hover);
+    stroke-width: 2.3;
+  }
+
+  .plan-table.is-held .table-surface {
+    fill: var(--terracotta-wash);
+    stroke: var(--terracotta);
+    stroke-width: 1.8;
+    stroke-dasharray: 5 3;
+  }
+
+  .plan-table.is-booked .table-surface {
+    fill: url(#booked-hatch);
+    stroke: var(--booked-hatch);
+    stroke-width: 1.4;
+  }
+
+  .booked-knockout {
+    fill: var(--parchment);
+    stroke: var(--brass);
+    stroke-width: 0.8;
+    opacity: 0;
+    pointer-events: none;
+  }
+
+  .plan-table.is-booked .booked-knockout {
+    opacity: 0.94;
+  }
+
+  .table-id-label {
+    font-family: var(--font-display);
+    font-size: 16px;
+    font-weight: 800;
+    letter-spacing: 0.04em;
+    fill: var(--walnut);
+  }
+
+  .table-seats-label {
+    font-family: var(--font-mono);
+    font-size: 10px;
+    font-weight: 500;
+    fill: var(--umber);
+  }
+
+  .table-rule {
+    stroke: var(--brass);
+    stroke-width: 0.9;
+  }
+
+  .table-status-label {
+    font-family: var(--font-mono);
+    font-size: 10.2px;
+    font-weight: 500;
+    letter-spacing: 0.02em;
+  }
+
+  .plan-table.is-available .table-status-label {
+    fill: var(--olive);
+  }
+
+  .plan-table.is-held .table-status-label {
+    fill: var(--terracotta-deep);
+  }
+
+  .plan-table.is-booked .table-status-label {
+    fill: var(--walnut);
+  }
+
+  .selection-halo {
+    fill: none;
+    stroke: var(--terracotta);
+    stroke-width: 2.2;
+    stroke-dasharray: 7 4;
+    opacity: 0;
+    pointer-events: none;
+    transition: opacity 150ms ease;
+  }
+
+  .plan-table.is-selected .selection-halo {
+    opacity: 1;
+  }
+
+  .plan-table.is-selected .table-surface {
+    stroke: var(--terracotta);
+    stroke-width: 2.4;
+  }
+
+  .party-mismatch .table-surface {
+    opacity: 0.68;
+  }
+
+  .sheet-footer {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    gap: 12px;
+    flex-wrap: wrap;
+    padding-top: 6px;
+    border-top: 1px solid var(--brass);
+    font-family: var(--font-mono);
+    font-size: 11px;
+    color: var(--umber);
+  }
+
+  .scale-cluster {
+    display: inline-flex;
+    align-items: center;
+    gap: 8px;
+  }
+
+  .scale-bar {
+    display: inline-grid;
+    grid-template-columns: 18px 18px 36px;
+    height: 6px;
+    border: 1px solid var(--umber);
+  }
+
+  .scale-bar span:nth-child(1),
+  .scale-bar span:nth-child(3) {
+    background-color: var(--umber);
+  }
+
+  .scale-bar span:nth-child(2) {
+    background-color: var(--parchment);
+  }
+
+  .room-feedback {
+    color: var(--walnut);
+    font-weight: 500;
+  }
+
+  /* Right Stage: Live Table Dossier & Hold Slip */
+  .dossier-slip {
+    padding: 15px 18px 14px;
+    justify-content: space-between;
+    gap: 11px;
+  }
+
+  .dossier-top {
+    border-bottom: 1px solid var(--brass);
+    padding-bottom: 10px;
+  }
+
+  .dossier-kicker-row {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    gap: 8px;
+    margin-bottom: 5px;
+  }
+
+  .dossier-kicker {
+    font-family: var(--font-mono);
+    font-size: 10.5px;
+    font-weight: 500;
+    text-transform: uppercase;
+    letter-spacing: 0.08em;
+    color: var(--umber);
+  }
+
+  .fit-chip {
+    font-family: var(--font-mono);
+    font-size: 10.5px;
+    font-weight: 500;
+    padding: 2px 8px;
+    border-radius: var(--radius-pill);
+    background-color: var(--travertine);
+    border: 1px solid var(--brass);
+    color: var(--walnut);
+  }
+
+  .dossier-title-row {
+    display: flex;
+    align-items: baseline;
+    justify-content: space-between;
+    gap: 10px;
+  }
+
+  .dossier-heading {
+    margin: 0;
+    font-family: var(--font-display);
+    font-size: 34px;
+    font-weight: 800;
+    letter-spacing: 0.02em;
+    text-transform: uppercase;
+    line-height: 0.98;
+    color: var(--walnut);
+  }
+
+  .state-tag {
+    font-family: var(--font-mono);
+    font-size: 11px;
+    font-weight: 500;
+    padding: 3px 9px;
+    border-radius: var(--radius-pill);
+    background-color: var(--olive-wash);
+    border: 1px solid var(--olive-rule);
+    color: var(--olive);
+  }
+
+  .state-tag.is-held-self {
+    background-color: var(--terracotta-wash);
+    border-color: var(--terracotta);
+    color: var(--terracotta-deep);
+  }
+
+  .dossier-zone {
+    margin: 4px 0 0;
+    font-size: 13px;
+    color: var(--umber);
+    font-weight: 500;
+  }
+
+  /* Acoustic & Sightline Block */
+  .sensory-box {
+    background-color: var(--travertine);
+    border: 1px solid var(--brass);
+    border-radius: 6px;
+    padding: 10px 12px;
+  }
+
+  .sensory-summary {
+    margin: 0 0 8px;
+    font-family: var(--font-mono);
+    font-size: 12px;
+    font-weight: 500;
+    color: var(--walnut);
+    letter-spacing: -0.01em;
+  }
+
+  .sensory-grid {
+    display: grid;
+    grid-template-columns: repeat(3, minmax(0, 1fr));
+    gap: 8px;
+    border-top: 1px solid var(--brass);
+    padding-top: 8px;
+  }
+
+  .sensory-cell dt {
+    font-family: var(--font-mono);
+    font-size: 9.5px;
+    text-transform: uppercase;
+    letter-spacing: 0.07em;
+    color: var(--umber);
+  }
+
+  .sensory-cell dd {
+    margin: 2px 0 0;
+    font-size: 12px;
+    font-weight: 600;
+    color: var(--walnut);
+    line-height: 1.28;
+  }
+
+  /* Kitchen & Table Spec Strip */
+  .hearth-strip {
+    display: flex;
+    flex-direction: column;
+    gap: 3px;
+    padding: 8px 11px;
+    background-color: var(--parchment-tint);
+    border: 1px solid var(--brass);
+    border-radius: 6px;
+    font-size: 12px;
+    color: var(--umber);
+  }
+
+  .hearth-strip strong {
+    font-family: var(--font-mono);
+    font-size: 10.5px;
+    text-transform: uppercase;
+    letter-spacing: 0.06em;
+    color: var(--walnut);
+  }
+
+  /* Hold Form */
+  .hold-form {
+    display: flex;
+    flex-direction: column;
+    gap: 10px;
+  }
+
+  .field-group {
+    display: flex;
+    flex-direction: column;
+    gap: 4px;
+  }
+
+  .field-row-head {
+    display: flex;
+    justify-content: space-between;
+    align-items: baseline;
+  }
+
+  .field-label {
+    font-family: var(--font-mono);
+    font-size: 11px;
+    font-weight: 500;
+    text-transform: uppercase;
+    letter-spacing: 0.06em;
+    color: var(--walnut);
+  }
+
+  .field-hint {
+    font-family: var(--font-mono);
+    font-size: 10px;
+    color: var(--umber);
+  }
+
+  .slip-input {
+    width: 100%;
+    padding: 8px 11px;
+    border: 1px solid var(--brass-strong);
+    border-radius: var(--radius-control);
+    background-color: var(--parchment);
+    color: var(--walnut);
+    font-family: var(--font-sans);
+    font-size: 13.5px;
+    transition: border-color 150ms ease, background-color 150ms ease;
+  }
+
+  .slip-input:hover {
+    border-color: var(--walnut);
+  }
+
+  textarea.slip-input {
+    resize: vertical;
+    min-height: 50px;
+    line-height: 1.38;
+  }
+
+  /* Zero Booking Fee Guarantee */
+  .fee-guarantee {
+    display: flex;
+    align-items: flex-start;
+    gap: 9px;
+    padding: 9px 11px;
+    background-color: var(--olive-wash);
+    border: 1px solid var(--olive-rule);
+    border-radius: 6px;
+  }
+
+  .fee-icon {
+    width: 18px;
+    height: 18px;
+    border-radius: 999px;
+    background-color: var(--olive);
+    color: var(--on-dark);
+    font-family: var(--font-mono);
+    font-size: 11px;
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    flex-shrink: 0;
+    margin-top: 1px;
+  }
+
+  .fee-copy {
+    font-size: 12px;
+    color: var(--walnut);
+    line-height: 1.35;
+  }
+
+  .fee-copy strong {
+    display: block;
+    font-weight: 600;
+    color: var(--olive);
+  }
+
+  /* Primary Hold Action & Confirmed LiveView Ticket */
+  .action-stack {
+    display: flex;
+    flex-direction: column;
+    gap: 6px;
+  }
+
+  .hold-cta {
+    appearance: none;
+    width: 100%;
+    padding: 13px 16px;
+    border: 1px solid var(--terracotta);
+    border-radius: var(--radius-control);
+    background-color: var(--terracotta);
+    color: var(--on-dark);
+    font-family: var(--font-display);
+    font-size: 20px;
+    font-weight: 800;
+    letter-spacing: 0.04em;
+    text-transform: uppercase;
+    cursor: pointer;
+    box-shadow: 0 2px 6px var(--shadow-lift);
+    transition: background-color 150ms ease, border-color 150ms ease, transform 150ms ease;
+  }
+
+  .hold-cta:hover {
+    background-color: var(--terracotta-deep);
+    border-color: var(--terracotta-deep);
+  }
+
+  .hold-cta:active {
+    transform: translateY(1px);
+  }
+
+  .socket-footnote {
+    margin: 0;
+    font-family: var(--font-mono);
+    font-size: 10.5px;
+    color: var(--umber);
+    display: flex;
+    justify-content: space-between;
+    gap: 8px;
+  }
+
+  /* Confirmed 5-Minute LiveView Hold State */
+  .confirmed-ticket {
+    display: none;
+    flex-direction: column;
+    gap: 10px;
+    padding: 12px 14px;
+    background-color: var(--olive-wash);
+    border: 1.5px solid var(--olive);
+    border-radius: 6px;
+  }
+
+  .confirmed-ticket.is-active {
+    display: flex;
+  }
+
+  .hold-form.is-hidden {
+    display: none;
+  }
+
+  .ticket-head {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    gap: 8px;
+    border-bottom: 1px solid var(--olive-rule);
+    padding-bottom: 8px;
+  }
+
+  .ticket-badge {
+    font-family: var(--font-mono);
+    font-size: 11px;
+    font-weight: 500;
+    text-transform: uppercase;
+    letter-spacing: 0.06em;
+    color: var(--olive);
+  }
+
+  .ticket-timer {
+    font-family: var(--font-mono);
+    font-size: 14px;
+    font-weight: 500;
+    padding: 2px 8px;
+    border-radius: var(--radius-pill);
+    background-color: var(--olive);
+    color: var(--on-dark);
+  }
+
+  .ticket-details {
+    margin: 0;
+    display: grid;
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+    gap: 8px 12px;
+  }
+
+  .ticket-details dt {
+    font-family: var(--font-mono);
+    font-size: 9.5px;
+    text-transform: uppercase;
+    letter-spacing: 0.06em;
+    color: var(--umber);
+  }
+
+  .ticket-details dd {
+    margin: 2px 0 0;
+    font-size: 12.5px;
+    font-weight: 600;
+    color: var(--walnut);
+  }
+
+  .ticket-actions {
+    display: flex;
+    gap: 8px;
+    padding-top: 4px;
+  }
+
+  .release-btn {
+    appearance: none;
+    flex: 1;
+    padding: 9px 12px;
+    border: 1px solid var(--brass-strong);
+    border-radius: var(--radius-control);
+    background-color: var(--parchment);
+    color: var(--walnut);
+    font-family: var(--font-mono);
+    font-size: 11.5px;
+    font-weight: 500;
+    cursor: pointer;
+    transition: background-color 150ms ease, border-color 150ms ease;
+  }
+
+  .release-btn:hover {
+    background-color: var(--travertine);
+    border-color: var(--walnut);
+  }
+
+  /* Full-Width Architectural Folio & Wood-Fired Tasting Ledger */
+  .folio-ledger {
+    grid-column: 1 / -1;
+    background-color: var(--parchment);
+    border: 1px solid var(--brass);
+    border-radius: var(--radius-sheet);
+    box-shadow: 0 2px 8px var(--shadow-warm);
+    display: grid;
+    grid-template-columns: 1.05fr 1.1fr 1.1fr 1.15fr;
+  }
+
+  .ledger-cell {
+    padding: 12px 16px;
+    border-inline-end: 1px solid var(--brass);
+    display: flex;
+    flex-direction: column;
+    gap: 3px;
+  }
+
+  .ledger-cell:last-child {
+    border-inline-end: 0;
+  }
+
+  .ledger-kicker {
+    font-family: var(--font-mono);
+    font-size: 10px;
+    font-weight: 500;
+    text-transform: uppercase;
+    letter-spacing: 0.07em;
+    color: var(--terracotta-deep);
+  }
+
+  .ledger-title {
+    margin: 0;
+    font-family: var(--font-display);
+    font-size: 17px;
+    font-weight: 800;
+    letter-spacing: 0.03em;
+    text-transform: uppercase;
+    color: var(--walnut);
+    line-height: 1.08;
+  }
+
+  .ledger-note {
+    margin: 0;
+    font-size: 12px;
+    color: var(--umber);
+    line-height: 1.35;
+  }
+
+  @media (max-width: 1120px) {
+    .floor-stage {
+      grid-template-columns: 1fr;
+    }
+    .folio-ledger {
+      grid-template-columns: repeat(2, minmax(0, 1fr));
+    }
+  }
+
+  @media (prefers-reduced-motion: reduce) {
+    *,
+    *::before,
+    *::after {
+      animation-duration: 0.01ms !important;
+      animation-iteration-count: 1 !important;
+      transition-duration: 0.01ms !important;
+      scroll-behavior: auto !important;
+    }
+  }
+</style>
+</head>
+<body>
+  <a class="skip-link" href="#floor-console">Skip to dining room floor plan</a>
+
+  <header class="room-bar">
+    <div class="identity-cluster">
+      <div class="crest-mark" aria-hidden="true">
+        <svg width="20" height="20" viewBox="0 0 24 24" fill="none">
+          <path d="M4 19h16M6 19v-6a6 6 0 0 1 12 0v6M9.5 19v-3.5a2.5 2.5 0 0 1 5 0V19" stroke="var(--on-dark)" stroke-width="1.8" stroke-linecap="round"/>
+        </svg>
+      </div>
+      <div class="identity-copy">
+        <div class="identity-row">
+          <p class="bistro-name">Osteria Ferro</p>
+          <span class="bistro-hours tabular">47 Mercato Lane · Tue–Sun 17:30–22:30</span>
+        </div>
+        <span class="bistro-sub">Wood-Fired Neighborhood Bistro · Ground-Floor Dining Room</span>
+      </div>
+      <div class="pubsub-pill" role="status" aria-live="polite">
+        <span class="pubsub-dot" aria-hidden="true">●</span>
+        <span>Phoenix.PubSub live room state</span>
+      </div>
+    </div>
+
+    <div class="bar-controls">
+      <div class="control-cluster" role="group" aria-labelledby="seating-window-label">
+        <span class="cluster-label" id="seating-window-label">Seating Window</span>
+        <div class="segmented-track">
+          <button type="button" class="seg-option" data-window="18:00" aria-pressed="false">18:00 Early</button>
+          <button type="button" class="seg-option" data-window="19:45" aria-pressed="true">19:45 Prime</button>
+          <button type="button" class="seg-option" data-window="21:15" aria-pressed="false">21:15 Late</button>
+        </div>
+      </div>
+
+      <div class="control-cluster" role="group" aria-labelledby="party-size-label">
+        <span class="cluster-label" id="party-size-label">Party Size</span>
+        <div class="segmented-track">
+          <button type="button" class="seg-option" data-party="2" aria-pressed="false">2</button>
+          <button type="button" class="seg-option" data-party="4" aria-pressed="true">4</button>
+          <button type="button" class="seg-option" data-party="6" aria-pressed="false">6 guests</button>
+        </div>
+      </div>
+    </div>
+  </header>
+
+  <main class="floor-stage" id="floor-console">
+    <!-- Left Stage: Interactive SVG Dining Room Architectural Plan -->
+    <section class="architectural-sheet" aria-labelledby="plan-sheet-title">
+      <div class="sheet-header">
+        <div class="sheet-titles">
+          <h1 class="sheet-heading" id="plan-sheet-title">Dining Room Architectural Plan</h1>
+          <span class="room-tally tabular" id="room-tally">7 Available · 2 Held · 3 Booked</span>
+        </div>
+        <div class="status-legend" aria-label="Table status key">
+          <span class="legend-item"><span class="swatch swatch-available" aria-hidden="true"></span>Available</span>
+          <span class="legend-item"><span class="swatch swatch-held" aria-hidden="true"></span>Held 4m</span>
+          <span class="legend-item"><span class="swatch swatch-booked" aria-hidden="true"></span>Booked (hatch)</span>
+        </div>
+      </div>
+
+      <div class="plan-canvas-wrap">
+        <svg class="floorplan-svg" viewBox="0 0 860 558" role="group" aria-label="Osteria Ferro interactive ground-floor seating plan">
+          <defs>
+            <pattern id="drafting-grid" width="36" height="36" patternUnits="userSpaceOnUse">
+              <path d="M 36 0 L 0 0 0 36" fill="none" stroke="var(--grid-hairline)" stroke-width="0.7" />
+            </pattern>
+            <pattern id="booked-hatch" width="8" height="8" patternUnits="userSpaceOnUse" patternTransform="rotate(-45)">
+              <rect width="8" height="8" fill="var(--booked-wash)" />
+              <line x1="0" y1="0" x2="0" y2="8" stroke="var(--booked-hatch)" stroke-width="1.8" />
+            </pattern>
+          </defs>
+
+          <!-- Interior Travertine Slab & Drafting Grid -->
+          <rect x="20" y="16" width="820" height="526" class="svg-floor" />
+          <rect x="20" y="16" width="820" height="526" fill="url(#drafting-grid)" />
+
+          <!-- Vaulted Wine Alcove Floor & Groin-Vault Ribs (East Wing) -->
+          <rect x="562" y="28" width="266" height="366" class="svg-alcove-floor" />
+          <line x1="562" y1="28" x2="828" y2="210" stroke="var(--brass)" stroke-width="0.9" stroke-dasharray="4 4" />
+          <line x1="828" y1="28" x2="562" y2="210" stroke="var(--brass)" stroke-width="0.9" stroke-dasharray="4 4" />
+          <line x1="562" y1="210" x2="828" y2="394" stroke="var(--brass)" stroke-width="0.9" stroke-dasharray="4 4" />
+          <line x1="828" y1="210" x2="562" y2="394" stroke="var(--brass)" stroke-width="0.9" stroke-dasharray="4 4" />
+
+          <!-- Cellar Wine Rack Wall Ticks -->
+          <g stroke="var(--brass-strong)" stroke-width="1.3">
+            <line x1="816" y1="68" x2="826" y2="68" />
+            <line x1="816" y1="84" x2="826" y2="84" />
+            <line x1="816" y1="100" x2="826" y2="100" />
+            <line x1="816" y1="116" x2="826" y2="116" />
+            <line x1="816" y1="132" x2="826" y2="132" />
+            <line x1="816" y1="148" x2="826" y2="148" />
+            <line x1="816" y1="176" x2="826" y2="176" />
+            <line x1="816" y1="192" x2="826" y2="192" />
+            <line x1="816" y1="208" x2="826" y2="208" />
+            <line x1="816" y1="224" x2="826" y2="224" />
+            <line x1="816" y1="240" x2="826" y2="240" />
+            <line x1="816" y1="256" x2="826" y2="256" />
+            <line x1="816" y1="284" x2="826" y2="284" />
+            <line x1="816" y1="300" x2="826" y2="300" />
+            <line x1="816" y1="316" x2="826" y2="316" />
+            <line x1="816" y1="332" x2="826" y2="332" />
+            <line x1="816" y1="348" x2="826" y2="348" />
+            <line x1="816" y1="364" x2="826" y2="364" />
+          </g>
+
+          <!-- Courtyard Fig-Tree Pocket & Glazed West Mullion Wall -->
+          <rect x="30" y="232" width="72" height="258" class="svg-courtyard" />
+          <circle cx="66" cy="356" r="28" fill="var(--olive-wash)" stroke="var(--olive)" stroke-width="1.2" stroke-dasharray="3 2" />
+          <circle cx="66" cy="356" r="17" fill="none" stroke="var(--olive)" stroke-width="0.9" />
+          <circle cx="66" cy="356" r="3.5" fill="var(--umber)" />
+          <line x1="50" y1="356" x2="82" y2="356" stroke="var(--olive)" stroke-width="0.8" />
+          <line x1="66" y1="340" x2="66" y2="372" stroke="var(--olive)" stroke-width="0.8" />
+          <!-- Glazed Mullion Bar -->
+          <line x1="102" y1="232" x2="102" y2="490" stroke="var(--walnut)" stroke-width="2.2" />
+          <g fill="var(--parchment)" stroke="var(--walnut)" stroke-width="1.2">
+            <rect x="98" y="256" width="8" height="10" />
+            <rect x="98" y="318" width="8" height="10" />
+            <rect x="98" y="384" width="8" height="10" />
+            <rect x="98" y="448" width="8" height="10" />
+          </g>
+          <text x="66" y="252" text-anchor="middle" class="svg-zone-sub">FIG</text>
+          <text x="66" y="263" text-anchor="middle" class="svg-zone-sub">COURT</text>
+
+          <!-- Masonry Perimeter Walls & Structural Piers -->
+          <rect x="20" y="16" width="820" height="12" class="svg-wall" />
+          <rect x="20" y="16" width="12" height="216" class="svg-wall" />
+          <rect x="20" y="490" width="12" height="52" class="svg-wall" />
+          <rect x="828" y="16" width="12" height="526" class="svg-wall" />
+          <rect x="20" y="530" width="96" height="12" class="svg-wall" />
+          <rect x="204" y="530" width="636" height="12" class="svg-wall" />
+          <!-- Vaulted Alcove Masonry Piers -->
+          <rect x="554" y="28" width="12" height="62" class="svg-wall" />
+          <rect x="554" y="204" width="12" height="54" class="svg-wall" />
+          <rect x="554" y="370" width="12" height="28" class="svg-wall" />
+
+          <!-- Step-Free Entry Threshold (47 Mercato Lane) & Accessible Route -->
+          <path d="M 116 530 A 48 48 0 0 1 164 482" fill="none" stroke="var(--umber)" stroke-width="1.1" stroke-dasharray="3 3" />
+          <line x1="116" y1="530" x2="116" y2="482" stroke="var(--walnut)" stroke-width="2" />
+          <text x="160" y="523" class="svg-zone-sub">47 MERCATO LANE · STEP-FREE ENTRY</text>
+
+          <!-- Dynamic Accessible Step-Free Path & Warm Hearth Sightline Ray -->
+          <path id="step-free-path" d="M 156 512 L 156 474 L 210 474" fill="none" stroke="var(--olive)" stroke-width="1.4" stroke-dasharray="4 4" opacity="0.72" />
+          <line id="hearth-sightline" x1="210" y1="376" x2="124" y2="108" stroke="var(--terracotta)" stroke-width="1.25" stroke-dasharray="4 4" opacity="0.58" />
+
+          <!-- ZONE 1: OPEN HEARTH & PASS -->
+          <g aria-label="Open Hearth and Pass">
+            <rect x="44" y="38" width="498" height="84" rx="5" fill="var(--travertine)" stroke="var(--brass-strong)" stroke-width="1.4" />
+            <!-- Radiant Hearth Warmth Arcs -->
+            <path d="M 80 122 A 54 54 0 0 0 162 110" fill="none" stroke="var(--terracotta)" stroke-width="0.9" stroke-dasharray="3 3" opacity="0.55" />
+            <path d="M 68 134 A 70 70 0 0 0 172 116" fill="none" stroke="var(--terracotta)" stroke-width="0.8" stroke-dasharray="3 3" opacity="0.4" />
+            <!-- Wood-Fired Masonry Oven Dome -->
+            <circle cx="114" cy="80" r="34" fill="var(--terracotta-wash)" stroke="var(--terracotta)" stroke-width="1.8" />
+            <circle cx="114" cy="80" r="21" fill="var(--terracotta-glow)" stroke="var(--terracotta)" stroke-width="1.2" />
+            <circle cx="114" cy="80" r="8" fill="var(--terracotta)" />
+            <!-- Stacked Holm-Oak Fuel Niche -->
+            <rect x="54" y="48" width="18" height="64" rx="2" fill="var(--travertine-recess)" stroke="var(--umber)" stroke-width="1" />
+            <!-- Brass Plating Pass -->
+            <rect x="180" y="92" width="352" height="24" rx="3" fill="var(--parchment)" stroke="var(--brass-strong)" stroke-width="1.4" />
+            <circle cx="222" cy="104" r="4" fill="var(--terracotta-glow)" stroke="var(--terracotta)" stroke-width="1" />
+            <circle cx="315" cy="104" r="4" fill="var(--terracotta-glow)" stroke="var(--terracotta)" stroke-width="1" />
+            <circle cx="409" cy="104" r="4" fill="var(--terracotta-glow)" stroke="var(--terracotta)" stroke-width="1" />
+            <circle cx="500" cy="104" r="4" fill="var(--terracotta-glow)" stroke="var(--terracotta)" stroke-width="1" />
+            <text x="180" y="60" class="svg-zone-title">Open Hearth &amp; Pass</text>
+            <text x="180" y="75" class="svg-zone-sub">430°C HOLM-OAK EMBER OVEN · BRASS PLATING PASS</text>
+          </g>
+
+          <!-- ZONE 2: CHEF'S COUNTER (C1–C4) -->
+          <text x="180" y="135" class="svg-zone-sub">CHEF'S COUNTER (C1–C4) · DIRECT PASS VIEW</text>
+
+          <!-- Table C1 -->
+          <g class="plan-table is-available" id="node-C1" data-table="C1" role="button" tabindex="0" aria-pressed="false" aria-label="Table C1, Chef's Counter, 2 seats, Available">
+            <rect x="176" y="139" width="92" height="68" rx="6" class="selection-halo" />
+            <rect x="180" y="143" width="84" height="60" rx="4" class="table-surface" />
+            <rect x="186" y="148" width="72" height="49" rx="3" class="booked-knockout" />
+            <circle cx="206" cy="212" r="6" class="svg-chair" />
+            <circle cx="238" cy="212" r="6" class="svg-chair" />
+            <text x="190" y="162" class="table-id-label">C1</text>
+            <text x="254" y="161" text-anchor="end" class="table-seats-label">2 seats</text>
+            <line x1="190" y1="170" x2="254" y2="170" class="table-rule" />
+            <text x="222" y="189" text-anchor="middle" class="table-status-label" data-status-text="C1">● Available</text>
+          </g>
+
+          <!-- Table C2 -->
+          <g class="plan-table is-held" id="node-C2" data-table="C2" role="button" tabindex="0" aria-disabled="true" aria-pressed="false" aria-label="Table C2, Chef's Counter, 2 seats, Held 4m">
+            <rect x="270" y="139" width="92" height="68" rx="6" class="selection-halo" />
+            <rect x="274" y="143" width="84" height="60" rx="4" class="table-surface" />
+            <rect x="280" y="148" width="72" height="49" rx="3" class="booked-knockout" />
+            <circle cx="300" cy="212" r="6" class="svg-chair" />
+            <circle cx="332" cy="212" r="6" class="svg-chair" />
+            <text x="284" y="162" class="table-id-label">C2</text>
+            <text x="348" y="161" text-anchor="end" class="table-seats-label">2 seats</text>
+            <line x1="284" y1="170" x2="348" y2="170" class="table-rule" />
+            <text x="316" y="189" text-anchor="middle" class="table-status-label" data-status-text="C2">◷ Held 4m</text>
+          </g>
+
+          <!-- Table C3 -->
+          <g class="plan-table is-booked" id="node-C3" data-table="C3" role="button" tabindex="0" aria-disabled="true" aria-pressed="false" aria-label="Table C3, Chef's Counter, 2 seats, Booked">
+            <rect x="364" y="139" width="92" height="68" rx="6" class="selection-halo" />
+            <rect x="368" y="143" width="84" height="60" rx="4" class="table-surface" />
+            <rect x="374" y="148" width="72" height="49" rx="3" class="booked-knockout" />
+            <circle cx="394" cy="212" r="6" class="svg-chair" />
+            <circle cx="426" cy="212" r="6" class="svg-chair" />
+            <text x="378" y="162" class="table-id-label">C3</text>
+            <text x="442" y="161" text-anchor="end" class="table-seats-label">2 seats</text>
+            <line x1="378" y1="170" x2="442" y2="170" class="table-rule" />
+            <text x="410" y="189" text-anchor="middle" class="table-status-label" data-status-text="C3">╱ Booked</text>
+          </g>
+
+          <!-- Table C4 -->
+          <g class="plan-table is-available" id="node-C4" data-table="C4" role="button" tabindex="0" aria-pressed="false" aria-label="Table C4, Chef's Counter, 2 seats, Available">
+            <rect x="458" y="139" width="92" height="68" rx="6" class="selection-halo" />
+            <rect x="462" y="143" width="84" height="60" rx="4" class="table-surface" />
+            <rect x="468" y="148" width="72" height="49" rx="3" class="booked-knockout" />
+            <circle cx="488" cy="212" r="6" class="svg-chair" />
+            <circle cx="520" cy="212" r="6" class="svg-chair" />
+            <text x="472" y="162" class="table-id-label">C4</text>
+            <text x="536" y="161" text-anchor="end" class="table-seats-label">2 seats</text>
+            <line x1="472" y1="170" x2="536" y2="170" class="table-rule" />
+            <text x="504" y="189" text-anchor="middle" class="table-status-label" data-status-text="C4">● Available</text>
+          </g>
+
+          <!-- ZONE 3: COURTYARD FIG-TREE WINDOW (T01–T04) -->
+          <text x="128" y="241" class="svg-zone-title">Courtyard Fig-Tree Window</text>
+          <text x="322" y="240" class="svg-zone-sub">WEST MULLION DAYLIGHT · T01–T04</text>
+
+          <!-- Table T01 -->
+          <g class="plan-table is-booked" id="node-T01" data-table="T01" role="button" tabindex="0" aria-disabled="true" aria-pressed="false" aria-label="Table T01, Courtyard Fig-Tree Window, 2 seats, Booked">
+            <rect x="124" y="254" width="160" height="86" rx="8" class="selection-halo" />
+            <rect x="188" y="248" width="32" height="7" rx="3" class="svg-chair" />
+            <rect x="188" y="339" width="32" height="7" rx="3" class="svg-chair" />
+            <rect x="128" y="258" width="152" height="78" rx="5" class="table-surface" />
+            <rect x="136" y="264" width="136" height="24" rx="3" class="booked-knockout" />
+            <rect x="164" y="301" width="80" height="21" rx="3" class="booked-knockout" />
+            <text x="142" y="282" class="table-id-label">T01</text>
+            <text x="266" y="281" text-anchor="end" class="table-seats-label">2 seats</text>
+            <line x1="142" y1="292" x2="266" y2="292" class="table-rule" />
+            <text x="204" y="316" text-anchor="middle" class="table-status-label" data-status-text="T01">╱ Booked</text>
+          </g>
+
+          <!-- Table T02 -->
+          <g class="plan-table is-available" id="node-T02" data-table="T02" role="button" tabindex="0" aria-pressed="false" aria-label="Table T02, Courtyard Fig-Tree Window, 2 seats, Available">
+            <rect x="316" y="254" width="160" height="86" rx="8" class="selection-halo" />
+            <rect x="380" y="248" width="32" height="7" rx="3" class="svg-chair" />
+            <rect x="380" y="339" width="32" height="7" rx="3" class="svg-chair" />
+            <rect x="320" y="258" width="152" height="78" rx="5" class="table-surface" />
+            <rect x="328" y="264" width="136" height="24" rx="3" class="booked-knockout" />
+            <rect x="356" y="301" width="80" height="21" rx="3" class="booked-knockout" />
+            <text x="334" y="282" class="table-id-label">T02</text>
+            <text x="458" y="281" text-anchor="end" class="table-seats-label">2 seats</text>
+            <line x1="334" y1="292" x2="458" y2="292" class="table-rule" />
+            <text x="396" y="316" text-anchor="middle" class="table-status-label" data-status-text="T02">● Available</text>
+          </g>
+
+          <!-- Table T03 (Default Selected on Load) -->
+          <g class="plan-table is-available is-selected" id="node-T03" data-table="T03" role="button" tabindex="0" aria-pressed="true" aria-label="Table T03, Courtyard Fig-Tree Window, 4 seats, Available, Selected">
+            <rect x="124" y="372" width="172" height="98" rx="8" class="selection-halo" />
+            <rect x="156" y="366" width="32" height="7" rx="3" class="svg-chair" />
+            <rect x="224" y="366" width="32" height="7" rx="3" class="svg-chair" />
+            <rect x="156" y="469" width="32" height="7" rx="3" class="svg-chair" />
+            <rect x="224" y="469" width="32" height="7" rx="3" class="svg-chair" />
+            <rect x="128" y="376" width="164" height="90" rx="5" class="table-surface" />
+            <rect x="136" y="384" width="148" height="24" rx="3" class="booked-knockout" />
+            <rect x="154" y="421" width="112" height="36" rx="3" class="booked-knockout" />
+            <text x="142" y="402" class="table-id-label">T03</text>
+            <text x="278" y="401" text-anchor="end" class="table-seats-label">4 seats</text>
+            <line x1="142" y1="412" x2="278" y2="412" class="table-rule" />
+            <text x="210" y="435" text-anchor="middle" class="table-status-label" data-status-text="T03">● Available</text>
+            <text x="210" y="453" text-anchor="middle" class="svg-zone-sub" data-sub-note="T03">61 dBA · HEARTH LINE</text>
+          </g>
+
+          <!-- Table T04 -->
+          <g class="plan-table is-held" id="node-T04" data-table="T04" role="button" tabindex="0" aria-disabled="true" aria-pressed="false" aria-label="Table T04, Courtyard Fig-Tree Window, 4 seats, Held 4m">
+            <rect x="316" y="372" width="172" height="98" rx="8" class="selection-halo" />
+            <rect x="348" y="366" width="32" height="7" rx="3" class="svg-chair" />
+            <rect x="416" y="366" width="32" height="7" rx="3" class="svg-chair" />
+            <rect x="348" y="469" width="32" height="7" rx="3" class="svg-chair" />
+            <rect x="416" y="469" width="32" height="7" rx="3" class="svg-chair" />
+            <rect x="320" y="376" width="164" height="90" rx="5" class="table-surface" />
+            <rect x="328" y="384" width="148" height="24" rx="3" class="booked-knockout" />
+            <rect x="346" y="421" width="112" height="36" rx="3" class="booked-knockout" />
+            <text x="334" y="402" class="table-id-label">T04</text>
+            <text x="470" y="401" text-anchor="end" class="table-seats-label">4 seats</text>
+            <line x1="334" y1="412" x2="470" y2="412" class="table-rule" />
+            <text x="402" y="435" text-anchor="middle" class="table-status-label" data-status-text="T04">◷ Held 4m</text>
+            <text x="402" y="453" text-anchor="middle" class="svg-zone-sub" data-sub-note="T04">SESSION LOCK</text>
+          </g>
+
+          <!-- ZONE 4: VAULTED WINE ALCOVE (T05–T07) -->
+          <text x="584" y="50" class="svg-zone-title">Vaulted Wine Alcove</text>
+          <text x="584" y="64" class="svg-zone-sub">BRICK GROIN VAULT · 56 dBA · T05–T07</text>
+
+          <!-- Table T05 -->
+          <g class="plan-table is-available" id="node-T05" data-table="T05" role="button" tabindex="0" aria-pressed="false" aria-label="Table T05, Vaulted Wine Alcove, 4 seats, Available">
+            <rect x="580" y="76" width="218" height="86" rx="8" class="selection-halo" />
+            <rect x="624" y="70" width="34" height="7" rx="3" class="svg-chair" />
+            <rect x="720" y="70" width="34" height="7" rx="3" class="svg-chair" />
+            <rect x="624" y="161" width="34" height="7" rx="3" class="svg-chair" />
+            <rect x="720" y="161" width="34" height="7" rx="3" class="svg-chair" />
+            <rect x="584" y="80" width="210" height="78" rx="5" class="table-surface" />
+            <rect x="594" y="86" width="190" height="24" rx="3" class="booked-knockout" />
+            <rect x="646" y="123" width="86" height="21" rx="3" class="booked-knockout" />
+            <text x="600" y="104" class="table-id-label">T05</text>
+            <text x="778" y="103" text-anchor="end" class="table-seats-label">4 seats</text>
+            <line x1="600" y1="114" x2="778" y2="114" class="table-rule" />
+            <text x="689" y="138" text-anchor="middle" class="table-status-label" data-status-text="T05">● Available</text>
+          </g>
+
+          <!-- Table T06 -->
+          <g class="plan-table is-booked" id="node-T06" data-table="T06" role="button" tabindex="0" aria-disabled="true" aria-pressed="false" aria-label="Table T06, Vaulted Wine Alcove, 4 seats, Booked">
+            <rect x="580" y="178" width="218" height="86" rx="8" class="selection-halo" />
+            <rect x="624" y="172" width="34" height="7" rx="3" class="svg-chair" />
+            <rect x="720" y="172" width="34" height="7" rx="3" class="svg-chair" />
+            <rect x="624" y="263" width="34" height="7" rx="3" class="svg-chair" />
+            <rect x="720" y="263" width="34" height="7" rx="3" class="svg-chair" />
+            <rect x="584" y="182" width="210" height="78" rx="5" class="table-surface" />
+            <rect x="594" y="188" width="190" height="24" rx="3" class="booked-knockout" />
+            <rect x="646" y="225" width="86" height="21" rx="3" class="booked-knockout" />
+            <text x="600" y="206" class="table-id-label">T06</text>
+            <text x="778" y="205" text-anchor="end" class="table-seats-label">4 seats</text>
+            <line x1="600" y1="216" x2="778" y2="216" class="table-rule" />
+            <text x="689" y="240" text-anchor="middle" class="table-status-label" data-status-text="T06">╱ Booked</text>
+          </g>
+
+          <!-- Table T07 (6-seat Oval Cellar Table) -->
+          <g class="plan-table is-available" id="node-T07" data-table="T07" role="button" tabindex="0" aria-pressed="false" aria-label="Table T07, Vaulted Wine Alcove, 6 seats, Available">
+            <rect x="580" y="280" width="218" height="94" rx="28" class="selection-halo" />
+            <rect x="614" y="274" width="28" height="7" rx="3" class="svg-chair" />
+            <rect x="675" y="274" width="28" height="7" rx="3" class="svg-chair" />
+            <rect x="736" y="274" width="28" height="7" rx="3" class="svg-chair" />
+            <rect x="614" y="373" width="28" height="7" rx="3" class="svg-chair" />
+            <rect x="675" y="373" width="28" height="7" rx="3" class="svg-chair" />
+            <rect x="736" y="373" width="28" height="7" rx="3" class="svg-chair" />
+            <rect x="584" y="284" width="210" height="86" rx="24" class="table-surface" />
+            <rect x="600" y="292" width="178" height="24" rx="6" class="booked-knockout" />
+            <rect x="646" y="331" width="86" height="21" rx="3" class="booked-knockout" />
+            <text x="606" y="310" class="table-id-label">T07</text>
+            <text x="772" y="309" text-anchor="end" class="table-seats-label">6 seats</text>
+            <line x1="606" y1="320" x2="772" y2="320" class="table-rule" />
+            <text x="689" y="346" text-anchor="middle" class="table-status-label" data-status-text="T07">● Available</text>
+          </g>
+
+          <!-- ZONE 5: COMMUNAL OAK TABLE (T08) -->
+          <text x="536" y="418" class="svg-zone-title">Communal Oak Table</text>
+          <text x="698" y="417" class="svg-zone-sub">UMBRIAN SLAB · T08</text>
+
+          <!-- Table T08 -->
+          <g class="plan-table is-available" id="node-T08" data-table="T08" role="button" tabindex="0" aria-pressed="false" aria-label="Table T08, Communal Oak Table, 6 seats, Available">
+            <rect x="532" y="430" width="276" height="88" rx="7" class="selection-halo" />
+            <rect x="568" y="424" width="32" height="7" rx="3" class="svg-chair" />
+            <rect x="654" y="424" width="32" height="7" rx="3" class="svg-chair" />
+            <rect x="740" y="424" width="32" height="7" rx="3" class="svg-chair" />
+            <rect x="568" y="517" width="32" height="7" rx="3" class="svg-chair" />
+            <rect x="654" y="517" width="32" height="7" rx="3" class="svg-chair" />
+            <rect x="740" y="517" width="32" height="7" rx="3" class="svg-chair" />
+            <rect x="536" y="434" width="268" height="80" rx="4" class="table-surface" />
+            <rect x="546" y="440" width="248" height="24" rx="3" class="booked-knockout" />
+            <rect x="627" y="478" width="86" height="21" rx="3" class="booked-knockout" />
+            <text x="552" y="458" class="table-id-label">T08</text>
+            <text x="788" y="457" text-anchor="end" class="table-seats-label">6 seats</text>
+            <line x1="552" y1="468" x2="788" y2="468" class="table-rule" />
+            <text x="670" y="493" text-anchor="middle" class="table-status-label" data-status-text="T08">● Available</text>
+          </g>
+        </svg>
+      </div>
+
+      <div class="sheet-footer">
+        <div class="scale-cluster">
+          <span class="scale-bar" aria-hidden="true"><span></span><span></span><span></span></span>
+          <span class="tabular">Scale 0 — 1m — 2m — 4m</span>
+        </div>
+        <span class="room-feedback" id="room-feedback" role="status" aria-live="polite">
+          Selected Table T03 · Click any Available table on the plan to inspect acoustics &amp; hold
+        </span>
+      </div>
+    </section>
+
+    <!-- Right Stage: Live Table Dossier & Hold Slip -->
+    <aside class="dossier-slip" aria-labelledby="dossier-table-heading">
+      <div class="dossier-top">
+        <div class="dossier-kicker-row">
+          <span class="dossier-kicker">Live Table Dossier &amp; Hold Slip</span>
+          <span class="fit-chip tabular" id="dossier-fit-chip">Fits 4 guests · 110×110 cm</span>
+        </div>
+        <div class="dossier-title-row">
+          <h2 class="dossier-heading" id="dossier-table-heading">Table T03</h2>
+          <span class="state-tag" id="dossier-state-tag">● Available</span>
+        </div>
+        <p class="dossier-zone" id="dossier-zone-label">Courtyard Fig-Tree Window · West Glazed Mullion Bay</p>
+      </div>
+
+      <div class="sensory-box" aria-label="Acoustic and sightline dossier">
+        <p class="sensory-summary tabular" id="sensory-summary">
+          61 dBA · Warm hearth sightline · Step-free route
+        </p>
+        <dl class="sensory-grid" style="margin: 0;">
+          <div class="sensory-cell">
+            <dt>Room Level</dt>
+            <dd class="tabular" id="spec-dba">61 dBA</dd>
+          </div>
+          <div class="sensory-cell">
+            <dt>Sightline</dt>
+            <dd id="spec-sightline">Warm hearth &amp; fig</dd>
+          </div>
+          <div class="sensory-cell">
+            <dt>Access Route</dt>
+            <dd id="spec-access">Step-free · 1.2m</dd>
+          </div>
+        </dl>
+      </div>
+
+      <div class="hearth-strip">
+        <strong>Tonight at the Wood Hearth (Illustrative Menu)</strong>
+        <span id="table-craft-note">Hand-rubbed walnut four-top · Tajarin al ragù d’anatra, ember-charred puntarelle, whole sea bream over holm oak.</span>
+      </div>
+
+      <!-- Active Hold Slip Form -->
+      <form class="hold-form" id="hold-form" novalidate>
+        <div class="field-group">
+          <div class="field-row-head">
+            <label class="field-label" for="guest-name">Guest Name</label>
+            <span class="field-hint">Host stand check-in</span>
+          </div>
+          <input
+            class="slip-input"
+            id="guest-name"
+            name="guest_name"
+            type="text"
+            value="Elena Marchetti"
+            placeholder="Name for the reservation ledger"
+            autocomplete="name"
+            required
+          />
+        </div>
+
+        <div class="field-group">
+          <div class="field-row-head">
+            <label class="field-label" for="dietary-notes">Dietary Notes &amp; Seating Requests</label>
+            <span class="field-hint">Optional · Kitchen &amp; floor</span>
+          </div>
+          <textarea
+            class="slip-input"
+            id="dietary-notes"
+            name="dietary_notes"
+            rows="2"
+            placeholder="Allergies, cellar pairing, high chair, or mobility clearance"
+          >No shellfish at seat 2 · low-glare side preferred</textarea>
+        </div>
+
+        <div class="fee-guarantee">
+          <span class="fee-icon" aria-hidden="true">✓</span>
+          <div class="fee-copy">
+            <strong>Zero booking fee · $0 card hold required</strong>
+            Locks this exact table for 5 minutes across all connected room views via Phoenix.PubSub; releases automatically if unconfirmed.
+          </div>
+        </div>
+
+        <div class="action-stack">
+          <button class="hold-cta tabular" id="hold-cta-btn" type="submit">
+            Hold Table T03 · 4 Guests · 19:45
+          </button>
+          <p class="socket-footnote tabular">
+            <span id="phx-topic-label">phx-submit="hold_table" · room:47-mercato:1945</span>
+            <span>Fictional trattoria</span>
+          </p>
+        </div>
+      </form>
+
+      <!-- Confirmed 5-Minute LiveView Hold Panel -->
+      <div class="confirmed-ticket" id="confirmed-ticket" role="region" aria-live="polite" aria-label="Confirmed 5-minute table hold">
+        <div class="ticket-head">
+          <span class="ticket-badge">● LiveView 5-Minute Hold Active</span>
+          <span class="ticket-timer tabular" id="hold-countdown">05:00</span>
+        </div>
+        <dl class="ticket-details">
+          <div>
+            <dt>Held Table &amp; Window</dt>
+            <dd class="tabular" id="ticket-table-window">Table T03 · 19:45 Prime</dd>
+          </div>
+          <div>
+            <dt>Party &amp; Guest</dt>
+            <dd id="ticket-guest-party">Elena Marchetti · 4 Guests</dd>
+          </div>
+          <div>
+            <dt>PubSub Reference</dt>
+            <dd class="tabular" id="ticket-ref">FERRO-T03-1945</dd>
+          </div>
+          <div>
+            <dt>Booking Fee</dt>
+            <dd>$0.00 · Host desk notified</dd>
+          </div>
+        </dl>
+        <p class="fee-copy" id="ticket-notes-echo" style="margin: 0;">
+          Kitchen note logged: No shellfish at seat 2 · low-glare side preferred
+        </p>
+        <div class="ticket-actions">
+          <button type="button" class="release-btn" id="release-hold-btn">Release Hold &amp; Modify Slip</button>
+        </div>
+      </div>
+    </aside>
+
+    <section class="folio-ledger" aria-label="Wood-fired tasting ledger and LiveView specification">
+      <div class="ledger-cell">
+        <span class="ledger-kicker">Antipasti · Forno</span>
+        <h3 class="ledger-title">Ember Puntarelle &amp; Pane</h3>
+        <p class="ledger-note">Rosemary schiacciata blistered at 430°C, Cetara colatura, pressed Taggiasca olive oil.</p>
+      </div>
+      <div class="ledger-cell">
+        <span class="ledger-kicker">Primi · Pasta Fresca</span>
+        <h3 class="ledger-title">36-Yolk Duck Tajarin</h3>
+        <p class="ledger-note">Hand-cut Piedmont egg ribbons, wood-braised Muscovy duck ragù, aged Vacche Rosse.</p>
+      </div>
+      <div class="ledger-cell">
+        <span class="ledger-kicker">Secondi · Holm-Oak Grill</span>
+        <h3 class="ledger-title">Whole Orbetello Sea Bream</h3>
+        <p class="ledger-note">Roasted over white oak coals with charred Amalfi lemon, wild fennel, and caper brine.</p>
+      </div>
+      <div class="ledger-cell">
+        <span class="ledger-kicker tabular">Elixir · Phoenix LiveView</span>
+        <h3 class="ledger-title">47 Mercato Lane · Room Spec</h3>
+        <p class="ledger-note">Server-rendered state over PubSub; step-free travertine threshold. Fictional trattoria &amp; menu.</p>
+      </div>
+    </section>
+  </main>
+
+  <script>
+    (function () {
+      const TABLES = {
+        C1: {
+          id: 'C1',
+          seats: 2,
+          zone: "Chef's Counter · Brass Pass West Station",
+          dimensions: 'Counter 62 cm deep',
+          summary: '67 dBA · Direct hearth & pass sightline · Step-free low stool',
+          dba: '67 dBA',
+          sightline: 'Direct ember oven',
+          access: 'Step-free · low stool',
+          craft: 'Solid chestnut bar counter · Watch handmade tajarin finished in duck Jus right at the pass.',
+          anchor: [222, 143],
+          hearthTarget: [124, 96],
+          routePath: 'M 156 512 L 156 226 L 222 226 L 222 214'
+        },
+        C2: {
+          id: 'C2',
+          seats: 2,
+          zone: "Chef's Counter · Center-Left Pass",
+          dimensions: 'Counter 62 cm deep',
+          summary: '68 dBA · Center plating pass sightline · Step-free low stool',
+          dba: '68 dBA',
+          sightline: 'Plating pass center',
+          access: 'Step-free · low stool',
+          craft: 'Solid chestnut bar counter · Front-row view of wood-roasted sea bream service.',
+          anchor: [316, 143],
+          hearthTarget: [128, 96],
+          routePath: 'M 156 512 L 156 226 L 316 226 L 316 214'
+        },
+        C3: {
+          id: 'C3',
+          seats: 2,
+          zone: "Chef's Counter · Center-Right Pass",
+          dimensions: 'Counter 62 cm deep',
+          summary: '67 dBA · Pastry & hearth pass sightline · Step-free low stool',
+          dba: '67 dBA',
+          sightline: 'Pass & antipasti',
+          access: 'Step-free · low stool',
+          craft: 'Solid chestnut bar counter · Warm brass lamp glow along the main pass.',
+          anchor: [410, 143],
+          hearthTarget: [130, 96],
+          routePath: 'M 156 512 L 156 226 L 410 226 L 410 214'
+        },
+        C4: {
+          id: 'C4',
+          seats: 2,
+          zone: "Chef's Counter · East Corner Station",
+          dimensions: 'Counter 62 cm deep',
+          summary: '64 dBA · Angled hearth & cellar sightline · Step-free aisle',
+          dba: '64 dBA',
+          sightline: 'Pass & cellar arch',
+          access: 'Step-free · end seat',
+          craft: 'Quiet end of the chestnut pass counter · Ideal for two sharing small wood-fired plates.',
+          anchor: [504, 143],
+          hearthTarget: [132, 96],
+          routePath: 'M 156 512 L 156 226 L 504 226 L 504 214'
+        },
+        T01: {
+          id: 'T01',
+          seats: 2,
+          zone: 'Courtyard Fig-Tree Window · North Mullion',
+          dimensions: '80×80 cm walnut',
+          summary: '60 dBA · Fig courtyard & hearth glow · Step-free route',
+          dba: '60 dBA',
+          sightline: 'Fig tree & oven',
+          access: 'Step-free · 1.2m',
+          craft: 'Square walnut bistro two-top beside the iron-framed courtyard glazing.',
+          anchor: [204, 258],
+          hearthTarget: [122, 106],
+          routePath: 'M 156 512 L 156 352 L 204 352 L 204 342'
+        },
+        T02: {
+          id: 'T02',
+          seats: 2,
+          zone: 'Courtyard Fig-Tree Window · Center Aisle',
+          dimensions: '80×80 cm walnut',
+          summary: '62 dBA · Open hearth & courtyard sightline · Step-free route',
+          dba: '62 dBA',
+          sightline: 'Hearth & fig glass',
+          access: 'Step-free · 1.3m',
+          craft: 'Square walnut bistro two-top with balanced sightlines to both kitchen pass and courtyard.',
+          anchor: [396, 258],
+          hearthTarget: [126, 106],
+          routePath: 'M 156 512 L 156 356 L 396 356 L 396 342'
+        },
+        T03: {
+          id: 'T03',
+          seats: 4,
+          zone: 'Courtyard Fig-Tree Window · West Glazed Mullion Bay',
+          dimensions: '110×110 cm',
+          summary: '61 dBA · Warm hearth sightline · Step-free route',
+          dba: '61 dBA',
+          sightline: 'Warm hearth & fig',
+          access: 'Step-free · 1.2m',
+          craft: 'Hand-rubbed walnut four-top · Tajarin al ragù d’anatra, ember-charred puntarelle, whole sea bream over holm oak.',
+          anchor: [210, 376],
+          hearthTarget: [124, 108],
+          routePath: 'M 156 512 L 156 474 L 210 474'
+        },
+        T04: {
+          id: 'T04',
+          seats: 4,
+          zone: 'Courtyard Fig-Tree Window · Central Hall',
+          dimensions: '110×110 cm',
+          summary: '63 dBA · Full room & hearth sightline · Step-free route',
+          dba: '63 dBA',
+          sightline: 'Central hearth axis',
+          access: 'Step-free · 1.4m',
+          craft: 'Generous walnut four-top anchored at the center of the travertine room.',
+          anchor: [402, 376],
+          hearthTarget: [128, 108],
+          routePath: 'M 156 512 L 402 512 L 402 476'
+        },
+        T05: {
+          id: 'T05',
+          seats: 4,
+          zone: 'Vaulted Wine Alcove · North Cellar Bay',
+          dimensions: '120×90 cm booth',
+          summary: '55 dBA · Quiet vaulted cellar sightline · Step-free route',
+          dba: '55 dBA',
+          sightline: 'Brick vault & racks',
+          access: 'Step-free · 1.1m',
+          craft: 'Acoustic brick groin-vault booth · Surrounded by 480 Piedmont & Etna bottles.',
+          anchor: [584, 119],
+          hearthTarget: [148, 96],
+          routePath: 'M 156 512 L 516 512 L 516 119 L 578 119'
+        },
+        T06: {
+          id: 'T06',
+          seats: 4,
+          zone: 'Vaulted Wine Alcove · Center Cellar Bay',
+          dimensions: '120×90 cm booth',
+          summary: '56 dBA · Sheltered cellar sightline · Step-free route',
+          dba: '56 dBA',
+          sightline: 'Cellar racking wall',
+          access: 'Step-free · 1.1m',
+          craft: 'Sheltered brick-vaulted table suited for unhurried conversation.',
+          anchor: [584, 221],
+          hearthTarget: [148, 100],
+          routePath: 'M 156 512 L 516 512 L 516 221 L 578 221'
+        },
+        T07: {
+          id: 'T07',
+          seats: 6,
+          zone: 'Vaulted Wine Alcove · South Oval Apse',
+          dimensions: '165×105 cm oval',
+          summary: '57 dBA · Framed hearth & cellar sightline · Step-free route',
+          dba: '57 dBA',
+          sightline: 'Framed hearth arch',
+          access: 'Step-free · 1.2m',
+          craft: 'Sculpted oval walnut six-top tucked under the south brick vault for family-style wood-fired feasts.',
+          anchor: [584, 327],
+          hearthTarget: [144, 104],
+          routePath: 'M 156 512 L 516 512 L 516 327 L 578 327'
+        },
+        T08: {
+          id: 'T08',
+          seats: 6,
+          zone: 'Communal Oak Table · South Timber Hall',
+          dimensions: '220×95 cm slab oak',
+          summary: '64 dBA · Sweeping room & hearth sightline · Step-free route',
+          dba: '64 dBA',
+          sightline: 'Full dining hall',
+          access: 'Step-free · 1.5m',
+          craft: 'Single-slab Umbrian oak refectory table · Built for shared magnum pours and whole roasted fish.',
+          anchor: [536, 474],
+          hearthTarget: [138, 108],
+          routePath: 'M 156 512 L 530 512 L 530 474'
+        }
+      };
+
+      const WINDOW_STATES = {
+        '18:00': {
+          label: '18:00 Early',
+          states: {
+            C1: 'available', C2: 'available', C3: 'held', C4: 'available',
+            T01: 'available', T02: 'available', T03: 'available', T04: 'booked',
+            T05: 'available', T06: 'available', T07: 'held', T08: 'available'
+          }
+        },
+        '19:45': {
+          label: '19:45 Prime',
+          states: {
+            C1: 'available', C2: 'held', C3: 'booked', C4: 'available',
+            T01: 'booked', T02: 'available', T03: 'available', T04: 'held',
+            T05: 'available', T06: 'booked', T07: 'available', T08: 'available'
+          }
+        },
+        '21:15': {
+          label: '21:15 Late',
+          states: {
+            C1: 'available', C2: 'available', C3: 'available', C4: 'held',
+            T01: 'available', T02: 'booked', T03: 'available', T04: 'available',
+            T05: 'held', T06: 'available', T07: 'available', T08: 'booked'
+          }
+        }
+      };
+
+      let currentWindow = '19:45';
+      let currentParty = 4;
+      let selectedTableId = 'T03';
+      let activeHold = null;
+      let countdownTimer = null;
+      let remainingSeconds = 300;
+
+      const windowButtons = document.querySelectorAll('[data-window]');
+      const partyButtons = document.querySelectorAll('[data-party]');
+      const tableNodes = document.querySelectorAll('.plan-table');
+      const tallyEl = document.getElementById('room-tally');
+      const feedbackEl = document.getElementById('room-feedback');
+      const sightlineEl = document.getElementById('hearth-sightline');
+      const stepPathEl = document.getElementById('step-free-path');
+
+      const headingEl = document.getElementById('dossier-table-heading');
+      const fitChipEl = document.getElementById('dossier-fit-chip');
+      const stateTagEl = document.getElementById('dossier-state-tag');
+      const zoneLabelEl = document.getElementById('dossier-zone-label');
+      const sensorySummaryEl = document.getElementById('sensory-summary');
+      const specDbaEl = document.getElementById('spec-dba');
+      const specSightlineEl = document.getElementById('spec-sightline');
+      const specAccessEl = document.getElementById('spec-access');
+      const craftNoteEl = document.getElementById('table-craft-note');
+      const ctaBtn = document.getElementById('hold-cta-btn');
+      const phxTopicEl = document.getElementById('phx-topic-label');
+
+      const holdForm = document.getElementById('hold-form');
+      const confirmedTicket = document.getElementById('confirmed-ticket');
+      const guestInput = document.getElementById('guest-name');
+      const notesInput = document.getElementById('dietary-notes');
+      const countdownEl = document.getElementById('hold-countdown');
+      const ticketTableWindowEl = document.getElementById('ticket-table-window');
+      const ticketGuestPartyEl = document.getElementById('ticket-guest-party');
+      const ticketRefEl = document.getElementById('ticket-ref');
+      const ticketNotesEchoEl = document.getElementById('ticket-notes-echo');
+      const releaseBtn = document.getElementById('release-hold-btn');
+
+      function effectiveState(tableId) {
+        if (activeHold && activeHold.window === currentWindow && activeHold.tableId === tableId) {
+          return 'held-self';
+        }
+        return WINDOW_STATES[currentWindow].states[tableId];
+      }
+
+      function formatStatusWord(state) {
+        if (state === 'available') return '● Available';
+        if (state === 'held-self') return '● Held 5m (You)';
+        if (state === 'held') return '◷ Held 4m';
+        return '╱ Booked';
+      }
+
+      function formatCountdown(sec) {
+        const m = String(Math.floor(sec / 60)).padStart(2, '0');
+        const s = String(sec % 60).padStart(2, '0');
+        return m + ':' + s;
+      }
+
+      function ensureValidSelection() {
+        const st = effectiveState(selectedTableId);
+        if (st === 'available' || st === 'held-self') return;
+        const preferred = Object.keys(TABLES).find(function (id) {
+          return effectiveState(id) === 'available' && TABLES[id].seats >= currentParty;
+        });
+        const fallback = Object.keys(TABLES).find(function (id) {
+          return effectiveState(id) === 'available';
+        });
+        if (preferred || fallback) {
+          selectedTableId = preferred || fallback;
+        }
+      }
+
+      function renderRoom() {
+        ensureValidSelection();
+        let availCount = 0;
+        let heldCount = 0;
+        let bookedCount = 0;
+
+        tableNodes.forEach(function (node) {
+          const id = node.getAttribute('data-table');
+          const table = TABLES[id];
+          const state = effectiveState(id);
+          const isSelected = id === selectedTableId;
+
+          if (state === 'available') availCount += 1;
+          else if (state === 'held' || state === 'held-self') heldCount += 1;
+          else bookedCount += 1;
+
+          node.classList.remove('is-available', 'is-held', 'is-booked', 'is-selected', 'party-mismatch');
+          if (state === 'available') node.classList.add('is-available');
+          else if (state === 'held' || state === 'held-self') node.classList.add('is-held');
+          else node.classList.add('is-booked');
+
+          if (isSelected) node.classList.add('is-selected');
+          if (state === 'available' && table.seats < currentParty && !isSelected) {
+            node.classList.add('party-mismatch');
+          }
+
+          const selectable = state === 'available' || state === 'held-self';
+          node.setAttribute('aria-disabled', selectable ? 'false' : 'true');
+          node.setAttribute('aria-pressed', isSelected ? 'true' : 'false');
+
+          const statusWord = state === 'available' ? 'Available' : (state === 'held-self' ? 'Held 5 minutes by you' : (state === 'held' ? 'Held 4m' : 'Booked'));
+          node.setAttribute(
+            'aria-label',
+            'Table ' + id + ', ' + table.zone.split('·')[0].trim() + ', ' + table.seats + ' seats, ' + statusWord + (isSelected ? ', Selected' : '')
+          );
+
+          const textEl = document.querySelector('[data-status-text="' + id + '"]');
+          if (textEl) textEl.textContent = formatStatusWord(state);
+        });
+
+        tallyEl.textContent = availCount + ' Available · ' + heldCount + ' Held · ' + bookedCount + ' Booked';
+
+        const selected = TABLES[selectedTableId];
+        const selState = effectiveState(selectedTableId);
+
+        sightlineEl.setAttribute('x1', String(selected.anchor[0]));
+        sightlineEl.setAttribute('y1', String(selected.anchor[1]));
+        sightlineEl.setAttribute('x2', String(selected.hearthTarget[0]));
+        sightlineEl.setAttribute('y2', String(selected.hearthTarget[1]));
+        stepPathEl.setAttribute('d', selected.routePath);
+
+        headingEl.textContent = 'Table ' + selected.id;
+        fitChipEl.textContent = 'Fits ' + selected.seats + ' guests · ' + selected.dimensions;
+        zoneLabelEl.textContent = selected.zone;
+        sensorySummaryEl.textContent = selected.summary;
+        specDbaEl.textContent = selected.dba;
+        specSightlineEl.textContent = selected.sightline;
+        specAccessEl.textContent = selected.access;
+        craftNoteEl.textContent = selected.craft;
+
+        const guestWord = currentParty === 1 ? 'Guest' : 'Guests';
+        ctaBtn.textContent = 'Hold Table ' + selected.id + ' · ' + currentParty + ' ' + guestWord + ' · ' + currentWindow;
+        phxTopicEl.textContent = 'phx-submit="hold_table" · room:47-mercato:' + currentWindow.replace(':', '');
+
+        const isHeldHere = selState === 'held-self';
+        if (isHeldHere) {
+          stateTagEl.textContent = '● Held 5m (You)';
+          stateTagEl.classList.add('is-held-self');
+          holdForm.classList.add('is-hidden');
+          confirmedTicket.classList.add('is-active');
+        } else {
+          stateTagEl.textContent = '● Available';
+          stateTagEl.classList.remove('is-held-self');
+          holdForm.classList.remove('is-hidden');
+          confirmedTicket.classList.remove('is-active');
+        }
+      }
+
+      function selectTable(id) {
+        const state = effectiveState(id);
+        if (state !== 'available' && state !== 'held-self') {
+          const reason = state === 'held'
+            ? 'Table ' + id + ' is locked by another live session (4m remaining). Choose an Available table.'
+            : 'Table ' + id + ' is booked for the ' + currentWindow + ' seating. Choose an Available table.';
+          feedbackEl.textContent = reason;
+          return;
+        }
+        selectedTableId = id;
+        if (TABLES[id].seats < currentParty) {
+          feedbackEl.textContent = 'Selected Table ' + id + ' (' + TABLES[id].seats + ' seats) · Adjust Party Size or choose a ' + currentParty + '-seat table';
+        } else {
+          feedbackEl.textContent = 'Selected Table ' + id + ' · ' + TABLES[id].summary;
+        }
+        renderRoom();
+      }
+
+      tableNodes.forEach(function (node) {
+        node.addEventListener('click', function () {
+          selectTable(node.getAttribute('data-table'));
+        });
+        node.addEventListener('keydown', function (event) {
+          if (event.key === 'Enter' || event.key === ' ') {
+            event.preventDefault();
+            selectTable(node.getAttribute('data-table'));
+          }
+        });
+      });
+
+      windowButtons.forEach(function (btn) {
+        btn.addEventListener('click', function () {
+          currentWindow = btn.getAttribute('data-window');
+          windowButtons.forEach(function (b) {
+            b.setAttribute('aria-pressed', b === btn ? 'true' : 'false');
+          });
+          feedbackEl.textContent = 'Switched room state to ' + WINDOW_STATES[currentWindow].label + ' via Phoenix.PubSub';
+          renderRoom();
+        });
+      });
+
+      partyButtons.forEach(function (btn) {
+        btn.addEventListener('click', function () {
+          currentParty = Number(btn.getAttribute('data-party'));
+          partyButtons.forEach(function (b) {
+            b.setAttribute('aria-pressed', b === btn ? 'true' : 'false');
+          });
+          if (TABLES[selectedTableId].seats < currentParty || effectiveState(selectedTableId) !== 'available') {
+            const match = Object.keys(TABLES).find(function (id) {
+              return effectiveState(id) === 'available' && TABLES[id].seats >= currentParty;
+            });
+            if (match) selectedTableId = match;
+          }
+          feedbackEl.textContent = 'Filtered fit for ' + currentParty + ' guests · Selected Table ' + selectedTableId;
+          renderRoom();
+        });
+      });
+
+      holdForm.addEventListener('submit', function (event) {
+        event.preventDefault();
+        const guestName = (guestInput.value || '').trim() || 'Walk-In Guest';
+        const dietary = (notesInput.value || '').trim();
+
+        activeHold = {
+          tableId: selectedTableId,
+          window: currentWindow,
+          party: currentParty,
+          guestName: guestName,
+          dietary: dietary
+        };
+
+        remainingSeconds = 300;
+        countdownEl.textContent = formatCountdown(remainingSeconds);
+        if (countdownTimer) clearInterval(countdownTimer);
+        countdownTimer = setInterval(function () {
+          remainingSeconds = Math.max(0, remainingSeconds - 1);
+          countdownEl.textContent = formatCountdown(remainingSeconds);
+          if (remainingSeconds === 0) {
+            clearInterval(countdownTimer);
+            activeHold = null;
+            feedbackEl.textContent = '5-minute hold expired; table returned to Available pool.';
+            renderRoom();
+          }
+        }, 1000);
+
+        ticketTableWindowEl.textContent = 'Table ' + selectedTableId + ' · ' + WINDOW_STATES[currentWindow].label;
+        ticketGuestPartyEl.textContent = guestName + ' · ' + currentParty + ' Guests';
+        ticketRefEl.textContent = 'FERRO-' + selectedTableId + '-' + currentWindow.replace(':', '');
+        ticketNotesEchoEl.textContent = dietary
+          ? 'Kitchen & floor note logged: ' + dietary
+          : 'No dietary notes entered · Step-free host escort ready at 47 Mercato Lane.';
+
+        feedbackEl.textContent = 'Confirmed 5-minute LiveView hold on Table ' + selectedTableId + ' for ' + guestName + ' ($0 fee)';
+        renderRoom();
+      });
+
+      releaseBtn.addEventListener('click', function () {
+        if (countdownTimer) clearInterval(countdownTimer);
+        const releasedId = activeHold ? activeHold.tableId : selectedTableId;
+        activeHold = null;
+        feedbackEl.textContent = 'Released hold on Table ' + releasedId + ' · Room state broadcast to connected clients';
+        renderRoom();
+      });
+
+      renderRoom();
+    })();
+  </script>
+</body>
+</html>

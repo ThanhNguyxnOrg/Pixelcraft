@@ -1,0 +1,1859 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1" />
+<title>Ampere Home &amp; EV · Smart EV &amp; Solar Load Scheduler (with Pixelcraft)</title>
+<link rel="stylesheet" href="../../fonts/gallery.css" />
+<style>
+  :root {
+    /* Dieter Rams / Braun Industrial Palette */
+    --al-chassis: #E4E2DC;
+    --al-recess: #D7D4CC;
+    --al-seam: #BEB9AE;
+    --al-hairline: #CCC8BE;
+    --chalk-face: #F7F6F1;
+    --chalk-well: #EDEBE4;
+    --graphite-housing: #191B1E;
+    --graphite-surface: #23262B;
+    --graphite-seam: #353A42;
+    --graphite-muted: #A7AFB8;
+    --signal-vermilion: #DF4722;
+    --vermilion-tint: rgba(223, 71, 34, 0.11);
+    --vermilion-border: rgba(223, 71, 34, 0.38);
+    --solar-green: #197442;
+    --solar-arc-bright: #33B66F;
+    --solar-tint: rgba(25, 116, 66, 0.12);
+    --solar-border: rgba(25, 116, 66, 0.36);
+    --neutral-slate: #525860;
+    --bevel-light: rgba(255, 255, 255, 0.65);
+    --shadow-recess: rgba(25, 27, 30, 0.08);
+
+    /* Typography */
+    --font-display: 'Archivo', system-ui, -apple-system, sans-serif;
+    --font-ui: 'Work Sans', system-ui, -apple-system, sans-serif;
+    --font-mono: 'IBM Plex Mono', ui-monospace, SFMono-Regular, monospace;
+
+    /* Machined Radii */
+    --radius-module: 8px;
+    --radius-well: 6px;
+    --radius-key: 5px;
+  }
+
+  * {
+    box-sizing: border-box;
+  }
+
+  html, body {
+    margin: 0;
+    padding: 0;
+    background-color: var(--al-chassis);
+    color: var(--graphite-housing);
+    font-family: var(--font-ui);
+    font-size: 13px;
+    line-height: 1.38;
+    -webkit-font-smoothing: antialiased;
+  }
+
+  :focus-visible {
+    outline: 2px solid var(--signal-vermilion);
+    outline-offset: 2px;
+  }
+
+  .skip-link {
+    position: absolute;
+    left: 14px;
+    top: -52px;
+    z-index: 50;
+    background-color: var(--graphite-housing);
+    color: var(--chalk-face);
+    font-family: var(--font-mono);
+    font-size: 12px;
+    font-weight: 500;
+    padding: 8px 14px;
+    border-radius: var(--radius-key);
+    text-decoration: none;
+  }
+
+  .skip-link:focus {
+    top: 10px;
+  }
+
+  .tabular {
+    font-variant-numeric: tabular-nums;
+  }
+
+  /* Adaptive Flutter Tablet Frame (1440 x 900) */
+  .tablet-shell {
+    max-width: 1440px;
+    min-height: 900px;
+    margin: 0 auto;
+    display: grid;
+    grid-template-columns: 72px minmax(0, 1fr);
+    background-color: var(--al-chassis);
+  }
+
+  /* Flutter NavigationRail */
+  .nav-rail {
+    background-color: var(--al-recess);
+    border-right: 1px solid var(--al-seam);
+    padding: 12px 10px;
+    display: flex;
+    flex-direction: column;
+    justify-content: space-between;
+    align-items: stretch;
+  }
+
+  .rail-stack {
+    display: flex;
+    flex-direction: column;
+    gap: 8px;
+  }
+
+  .rail-vent {
+    display: grid;
+    grid-template-columns: repeat(4, 4px);
+    gap: 4px;
+    padding: 4px 12px 10px;
+    border-bottom: 1px solid var(--al-seam);
+    margin-bottom: 4px;
+  }
+
+  .rail-vent span {
+    width: 4px;
+    height: 4px;
+    border-radius: 50%;
+    background-color: var(--neutral-slate);
+    opacity: 0.45;
+  }
+
+  .rail-btn {
+    appearance: none;
+    min-height: 52px;
+    width: 100%;
+    border: 1px solid transparent;
+    border-radius: var(--radius-well);
+    background-color: transparent;
+    color: var(--neutral-slate);
+    font-family: var(--font-mono);
+    font-size: 9px;
+    font-weight: 500;
+    letter-spacing: 0.05em;
+    text-transform: uppercase;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+    gap: 4px;
+    padding: 6px 2px;
+    cursor: pointer;
+    transition: background-color 140ms ease, border-color 140ms ease, color 140ms ease;
+  }
+
+  .rail-btn:hover {
+    background-color: var(--chalk-face);
+    border-color: var(--al-seam);
+    color: var(--graphite-housing);
+  }
+
+  .rail-btn[aria-current="page"] {
+    background-color: var(--chalk-face);
+    border-color: var(--graphite-housing);
+    color: var(--graphite-housing);
+    box-shadow: inset 0 1px 0 var(--bevel-light);
+  }
+
+  .rail-btn svg {
+    width: 18px;
+    height: 18px;
+    stroke: currentColor;
+    fill: none;
+    stroke-width: 1.75;
+    stroke-linecap: round;
+    stroke-linejoin: round;
+  }
+
+  .rail-led {
+    width: 6px;
+    height: 6px;
+    border-radius: 50%;
+    background-color: var(--signal-vermilion);
+  }
+
+  .rail-footer {
+    border-top: 1px solid var(--al-seam);
+    padding-top: 10px;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    gap: 4px;
+    font-family: var(--font-mono);
+    font-size: 9px;
+    color: var(--neutral-slate);
+    text-align: center;
+  }
+
+  /* Main Workbench Surface */
+  .workbench-column {
+    display: flex;
+    flex-direction: column;
+    min-width: 0;
+  }
+
+  /* Top Anodized Telemetry Bar */
+  .instrument-topbar {
+    height: 54px;
+    padding: 0 20px;
+    background-color: var(--al-chassis);
+    border-bottom: 1px solid var(--al-seam);
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    gap: 16px;
+  }
+
+  .brand-identity {
+    display: flex;
+    align-items: center;
+    gap: 12px;
+  }
+
+  .braun-stator {
+    width: 30px;
+    height: 30px;
+    border-radius: var(--radius-key);
+    background-color: var(--graphite-housing);
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    flex-shrink: 0;
+  }
+
+  .brand-lockup-text {
+    display: flex;
+    align-items: baseline;
+    gap: 10px;
+    flex-wrap: wrap;
+  }
+
+  .brand-wordmark {
+    margin: 0;
+    font-family: var(--font-display);
+    font-size: 17px;
+    font-weight: 800;
+    letter-spacing: 0.04em;
+    text-transform: uppercase;
+    color: var(--graphite-housing);
+  }
+
+  .hardware-spec-tag {
+    font-family: var(--font-mono);
+    font-size: 11px;
+    color: var(--neutral-slate);
+    background-color: var(--chalk-face);
+    border: 1px solid var(--al-seam);
+    border-radius: var(--radius-key);
+    padding: 2px 8px;
+  }
+
+  .bus-telemetry {
+    display: flex;
+    align-items: center;
+    gap: 14px;
+    flex-wrap: wrap;
+  }
+
+  .bus-datum {
+    display: flex;
+    align-items: baseline;
+    gap: 6px;
+    font-family: var(--font-mono);
+    font-size: 11px;
+    padding-right: 14px;
+    border-right: 1px solid var(--al-seam);
+  }
+
+  .bus-datum:last-child {
+    padding-right: 0;
+    border-right: none;
+  }
+
+  .bus-key {
+    color: var(--neutral-slate);
+    text-transform: uppercase;
+    font-size: 10px;
+    letter-spacing: 0.06em;
+  }
+
+  .bus-val {
+    font-weight: 500;
+    color: var(--graphite-housing);
+  }
+
+  .bus-val.solar {
+    color: var(--solar-green);
+  }
+
+  .bus-val.vermilion {
+    color: var(--signal-vermilion);
+  }
+
+  /* Two-Pane Operate Grid */
+  .workbench-grid {
+    flex: 1;
+    padding: 12px 16px 14px;
+    display: grid;
+    grid-template-columns: 516px minmax(0, 1fr);
+    gap: 14px;
+    align-items: stretch;
+  }
+
+  .instrument-module {
+    background-color: var(--chalk-face);
+    border: 1px solid var(--al-seam);
+    border-radius: var(--radius-module);
+    box-shadow: inset 0 1px 0 var(--bevel-light), 0 1px 2px var(--shadow-recess);
+    padding: 13px 16px;
+    display: flex;
+    flex-direction: column;
+  }
+
+  .module-header {
+    display: flex;
+    align-items: flex-start;
+    justify-content: space-between;
+    gap: 12px;
+    padding-bottom: 9px;
+    border-bottom: 1px solid var(--al-hairline);
+  }
+
+  .module-kicker {
+    margin: 0 0 2px;
+    font-family: var(--font-mono);
+    font-size: 10px;
+    font-weight: 500;
+    letter-spacing: 0.08em;
+    text-transform: uppercase;
+    color: var(--neutral-slate);
+  }
+
+  .module-title {
+    margin: 0;
+    font-family: var(--font-display);
+    font-size: 17px;
+    font-weight: 700;
+    letter-spacing: -0.01em;
+    color: var(--graphite-housing);
+  }
+
+  .plug-badge {
+    font-family: var(--font-mono);
+    font-size: 11px;
+    font-weight: 500;
+    color: var(--solar-green);
+    background-color: var(--solar-tint);
+    border: 1px solid var(--solar-border);
+    border-radius: var(--radius-key);
+    padding: 4px 9px;
+    white-space: nowrap;
+  }
+
+  /* Left Module: Vehicle & Battery Bay */
+  .battery-bay {
+    justify-content: space-between;
+    gap: 10px;
+  }
+
+  /* Deep Graphite Dial Housing (#191B1E) */
+  .dial-housing {
+    background-color: var(--graphite-housing);
+    color: var(--chalk-face);
+    border-radius: var(--radius-well);
+    padding: 12px 14px;
+    display: grid;
+    grid-template-columns: 224px minmax(0, 1fr);
+    gap: 12px;
+    align-items: center;
+    border: 1px solid var(--graphite-seam);
+  }
+
+  .rotary-dial-wrap {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+  }
+
+  .rotary-svg {
+    width: 220px;
+    height: 194px;
+    display: block;
+  }
+
+  .arc-progress {
+    transition: stroke-dasharray 240ms ease, stroke 180ms ease;
+  }
+
+  .dial-needle-group {
+    transition: transform 240ms ease;
+    transform-origin: 110px 106px;
+  }
+
+  .drum-readouts {
+    display: flex;
+    flex-direction: column;
+    gap: 7px;
+  }
+
+  .drum-cell {
+    background-color: var(--graphite-surface);
+    border: 1px solid var(--graphite-seam);
+    border-radius: var(--radius-key);
+    padding: 7px 11px;
+    display: flex;
+    flex-direction: column;
+    gap: 2px;
+  }
+
+  .drum-label {
+    font-family: var(--font-mono);
+    font-size: 10px;
+    letter-spacing: 0.07em;
+    text-transform: uppercase;
+    color: var(--graphite-muted);
+  }
+
+  .drum-value-row {
+    display: flex;
+    align-items: baseline;
+    justify-content: space-between;
+    gap: 8px;
+  }
+
+  .drum-value {
+    font-family: var(--font-display);
+    font-size: 24px;
+    font-weight: 800;
+    letter-spacing: -0.02em;
+    color: var(--chalk-face);
+    line-height: 1.05;
+  }
+
+  .drum-value.cost-alert {
+    color: var(--signal-vermilion);
+  }
+
+  .drum-sub {
+    font-family: var(--font-mono);
+    font-size: 10px;
+    color: var(--graphite-muted);
+  }
+
+  .drum-sub.solar-note {
+    color: var(--solar-arc-bright);
+  }
+
+  /* Tactile Braun Switch Banks (>= 48x48dp Mobile Touch Compliance) */
+  .control-stack {
+    display: flex;
+    flex-direction: column;
+    gap: 10px;
+  }
+
+  .control-group {
+    display: flex;
+    flex-direction: column;
+    gap: 4px;
+  }
+
+  .control-header {
+    display: flex;
+    justify-content: space-between;
+    align-items: baseline;
+    gap: 8px;
+  }
+
+  .control-label {
+    font-family: var(--font-mono);
+    font-size: 11px;
+    font-weight: 500;
+    letter-spacing: 0.06em;
+    text-transform: uppercase;
+    color: var(--graphite-housing);
+  }
+
+  .control-hint {
+    font-family: var(--font-mono);
+    font-size: 11px;
+    color: var(--neutral-slate);
+  }
+
+  .keybank {
+    display: grid;
+    gap: 6px;
+    background-color: var(--chalk-well);
+    border: 1px solid var(--al-seam);
+    border-radius: var(--radius-well);
+    padding: 4px;
+  }
+
+  .keybank.cols-4 {
+    grid-template-columns: repeat(4, minmax(0, 1fr));
+  }
+
+  .keybank.cols-3 {
+    grid-template-columns: repeat(3, minmax(0, 1fr));
+  }
+
+  .tactile-key {
+    appearance: none;
+    min-height: 48px;
+    border: 1px solid var(--al-hairline);
+    border-radius: var(--radius-key);
+    background-color: var(--chalk-face);
+    color: var(--graphite-housing);
+    font-family: var(--font-display);
+    font-size: 14px;
+    font-weight: 700;
+    padding: 6px 8px;
+    cursor: pointer;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+    gap: 2px;
+    position: relative;
+    transition: background-color 140ms ease, border-color 140ms ease, color 140ms ease;
+  }
+
+  .tactile-key:hover {
+    border-color: var(--neutral-slate);
+  }
+
+  .tactile-key[aria-pressed="true"] {
+    background-color: var(--graphite-housing);
+    border-color: var(--graphite-housing);
+    color: var(--chalk-face);
+  }
+
+  .key-pip {
+    width: 14px;
+    height: 3px;
+    border-radius: 2px;
+    background-color: var(--al-seam);
+    transition: background-color 140ms ease;
+  }
+
+  .tactile-key[aria-pressed="true"] .key-pip {
+    background-color: var(--signal-vermilion);
+  }
+
+  .tactile-key[aria-pressed="true"].solar-key .key-pip {
+    background-color: var(--solar-arc-bright);
+  }
+
+  .key-micro {
+    font-family: var(--font-mono);
+    font-size: 10px;
+    font-weight: 400;
+    color: var(--neutral-slate);
+  }
+
+  .tactile-key[aria-pressed="true"] .key-micro {
+    color: var(--graphite-muted);
+  }
+
+  /* Labeled Hardware Current Trim Slider */
+  .current-trim-box {
+    background-color: var(--chalk-well);
+    border: 1px solid var(--al-seam);
+    border-radius: var(--radius-well);
+    padding: 7px 12px;
+    display: flex;
+    flex-direction: column;
+    gap: 3px;
+  }
+
+  .trim-input-row {
+    display: grid;
+    grid-template-columns: minmax(0, 1fr) 88px;
+    align-items: center;
+    gap: 12px;
+  }
+
+  .braun-slider {
+    width: 100%;
+    height: 34px;
+    margin: 0;
+    accent-color: var(--signal-vermilion);
+    cursor: pointer;
+  }
+
+  .amp-number-input {
+    min-height: 38px;
+    width: 100%;
+    border: 1px solid var(--al-seam);
+    border-radius: var(--radius-key);
+    background-color: var(--chalk-face);
+    color: var(--graphite-housing);
+    font-family: var(--font-mono);
+    font-size: 13px;
+    font-weight: 500;
+    padding: 5px 8px;
+    text-align: right;
+    transition: border-color 140ms ease;
+  }
+
+  .bay-footer {
+    padding-top: 7px;
+    border-top: 1px solid var(--al-hairline);
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    gap: 8px;
+    font-family: var(--font-mono);
+    font-size: 10.5px;
+    color: var(--neutral-slate);
+    white-space: nowrap;
+  }
+
+  /* Right Column: CustomPainter Tariff Curve + Circuit Breakers */
+  .right-stack {
+    display: flex;
+    flex-direction: column;
+    gap: 12px;
+    min-width: 0;
+  }
+
+  .chart-module {
+    gap: 9px;
+  }
+
+  .painter-tag {
+    font-family: var(--font-mono);
+    font-size: 10px;
+    color: var(--graphite-housing);
+    background-color: var(--chalk-well);
+    border: 1px solid var(--al-seam);
+    border-radius: var(--radius-key);
+    padding: 4px 8px;
+    white-space: nowrap;
+  }
+
+  .chart-frame {
+    background-color: var(--chalk-well);
+    border: 1px solid var(--al-seam);
+    border-radius: var(--radius-well);
+    padding: 9px 12px 7px;
+  }
+
+  .tariff-svg {
+    width: 100%;
+    height: 272px;
+    display: block;
+  }
+
+  .scrubber-strip {
+    display: grid;
+    grid-template-columns: auto minmax(0, 1fr) auto;
+    align-items: center;
+    gap: 12px;
+    background-color: var(--chalk-well);
+    border: 1px solid var(--al-seam);
+    border-radius: var(--radius-well);
+    padding: 4px 12px;
+    min-height: 48px;
+  }
+
+  .scrubber-label {
+    font-family: var(--font-mono);
+    font-size: 11px;
+    font-weight: 500;
+    color: var(--graphite-housing);
+    text-transform: uppercase;
+    letter-spacing: 0.05em;
+  }
+
+  .scrubber-readout {
+    font-family: var(--font-mono);
+    font-size: 11px;
+    color: var(--graphite-housing);
+    background-color: var(--chalk-face);
+    border: 1px solid var(--al-seam);
+    border-radius: var(--radius-key);
+    padding: 4px 9px;
+    white-space: nowrap;
+  }
+
+  /* Household Circuit Breaker Load Bars */
+  .breaker-module {
+    flex: 1;
+    justify-content: space-between;
+    gap: 9px;
+  }
+
+  .breaker-list {
+    display: flex;
+    flex-direction: column;
+    gap: 8px;
+  }
+
+  .breaker-row {
+    appearance: none;
+    width: 100%;
+    min-height: 58px;
+    text-align: left;
+    background-color: var(--chalk-well);
+    border: 1px solid var(--al-seam);
+    border-radius: var(--radius-well);
+    padding: 8px 13px;
+    color: var(--graphite-housing);
+    cursor: pointer;
+    display: grid;
+    grid-template-columns: 184px minmax(0, 1fr) 118px;
+    align-items: center;
+    gap: 14px;
+    transition: background-color 140ms ease, border-color 140ms ease;
+  }
+
+  .breaker-row:hover {
+    background-color: var(--chalk-face);
+    border-color: var(--neutral-slate);
+  }
+
+  .breaker-row[aria-pressed="true"] {
+    background-color: var(--chalk-face);
+    border-color: var(--graphite-housing);
+    box-shadow: inset 3px 0 0 var(--signal-vermilion);
+  }
+
+  .breaker-name-block {
+    display: flex;
+    flex-direction: column;
+    gap: 2px;
+  }
+
+  .breaker-title {
+    font-family: var(--font-display);
+    font-size: 15px;
+    font-weight: 700;
+    color: var(--graphite-housing);
+  }
+
+  .breaker-circuit-id {
+    font-family: var(--font-mono);
+    font-size: 10px;
+    color: var(--neutral-slate);
+  }
+
+  .breaker-bar-group {
+    display: flex;
+    flex-direction: column;
+    gap: 4px;
+  }
+
+  .breaker-track {
+    position: relative;
+    height: 10px;
+    background-color: var(--chalk-face);
+    border: 1px solid var(--al-seam);
+    border-radius: 3px;
+    overflow: hidden;
+  }
+
+  .breaker-fill {
+    height: 100%;
+    transition: width 220ms ease, background-color 160ms ease;
+  }
+
+  .breaker-fill.active-solar {
+    background-color: var(--solar-green);
+  }
+
+  .breaker-fill.deferred-vermilion {
+    background-color: var(--signal-vermilion);
+    background-image: repeating-linear-gradient(
+      -45deg,
+      transparent,
+      transparent 4px,
+      rgba(247, 246, 241, 0.35) 4px,
+      rgba(247, 246, 241, 0.35) 8px
+    );
+  }
+
+  .breaker-fill.ready-graphite {
+    background-color: var(--graphite-housing);
+  }
+
+  .breaker-detail {
+    font-family: var(--font-mono);
+    font-size: 10px;
+    color: var(--neutral-slate);
+  }
+
+  .breaker-status {
+    justify-self: end;
+    display: inline-flex;
+    align-items: center;
+    gap: 5px;
+    font-family: var(--font-mono);
+    font-size: 11px;
+    font-weight: 500;
+    padding: 4px 9px;
+    border-radius: var(--radius-key);
+    border: 1px solid transparent;
+    white-space: nowrap;
+  }
+
+  .breaker-status.st-active {
+    color: var(--solar-green);
+    background-color: var(--solar-tint);
+    border-color: var(--solar-border);
+  }
+
+  .breaker-status.st-deferred {
+    color: var(--signal-vermilion);
+    background-color: var(--vermilion-tint);
+    border-color: var(--vermilion-border);
+  }
+
+  .breaker-status.st-ready {
+    color: var(--graphite-housing);
+    background-color: var(--chalk-face);
+    border-color: var(--al-seam);
+  }
+
+  .breaker-footer {
+    padding-top: 7px;
+    border-top: 1px solid var(--al-hairline);
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    gap: 10px;
+    flex-wrap: wrap;
+    font-family: var(--font-mono);
+    font-size: 10.5px;
+    color: var(--neutral-slate);
+  }
+
+  .sr-only {
+    position: absolute;
+    width: 1px;
+    height: 1px;
+    padding: 0;
+    margin: -1px;
+    overflow: hidden;
+    clip: rect(0, 0, 0, 0);
+    white-space: nowrap;
+    border: 0;
+  }
+
+  @media (max-width: 1160px) {
+    .tablet-shell {
+      grid-template-columns: 1fr;
+    }
+    .nav-rail {
+      flex-direction: row;
+      border-right: none;
+      border-bottom: 1px solid var(--al-seam);
+    }
+    .rail-stack {
+      flex-direction: row;
+    }
+    .rail-vent, .rail-footer {
+      display: none;
+    }
+    .workbench-grid {
+      grid-template-columns: 1fr;
+    }
+  }
+
+  @media (prefers-reduced-motion: reduce) {
+    *, *::before, *::after {
+      animation-duration: 0.01ms !important;
+      animation-iteration-count: 1 !important;
+      transition-duration: 0.01ms !important;
+      scroll-behavior: auto !important;
+    }
+  }
+</style>
+</head>
+<body>
+  <a class="skip-link" href="#workbench-main">Skip to charge &amp; tariff workbench</a>
+
+  <div class="tablet-shell">
+    <!-- Adaptive Flutter NavigationRail -->
+    <nav class="nav-rail" aria-label="Ampere sections">
+      <div class="rail-stack">
+        <div class="rail-vent" aria-hidden="true">
+          <span></span><span></span><span></span><span></span>
+          <span></span><span></span><span></span><span></span>
+        </div>
+
+        <button type="button" class="rail-btn" aria-current="page" data-rail-focus="limit-80">
+          <svg viewBox="0 0 24 24" aria-hidden="true">
+            <rect x="4" y="7" width="14" height="10" rx="2"></rect>
+            <line x1="20" y1="10" x2="20" y2="14"></line>
+            <path d="M11 10l-2 2h4l-2 2"></path>
+          </svg>
+          <span>Charge</span>
+          <span class="rail-led" aria-hidden="true"></span>
+        </button>
+
+        <button type="button" class="rail-btn" data-rail-focus="hour-inspector">
+          <svg viewBox="0 0 24 24" aria-hidden="true">
+            <polyline points="3 17 9 11 13 15 21 7"></polyline>
+            <polyline points="16 7 21 7 21 12"></polyline>
+          </svg>
+          <span>Tariff</span>
+        </button>
+
+        <button type="button" class="rail-btn" data-rail-focus="mode-solar">
+          <svg viewBox="0 0 24 24" aria-hidden="true">
+            <circle cx="12" cy="12" r="4"></circle>
+            <line x1="12" y1="3" x2="12" y2="5"></line>
+            <line x1="12" y1="19" x2="12" y2="21"></line>
+            <line x1="3" y1="12" x2="5" y2="12"></line>
+            <line x1="19" y1="12" x2="21" y2="12"></line>
+          </svg>
+          <span>Solar</span>
+        </button>
+
+        <button type="button" class="rail-btn" data-rail-focus="breaker-wallbox">
+          <svg viewBox="0 0 24 24" aria-hidden="true">
+            <rect x="5" y="4" width="14" height="16" rx="2"></rect>
+            <line x1="9" y1="9" x2="15" y2="9"></line>
+            <line x1="9" y1="13" x2="15" y2="13"></line>
+            <circle cx="9" cy="17" r="1"></circle>
+          </svg>
+          <span>Circuits</span>
+        </button>
+      </div>
+
+      <div class="rail-footer">
+        <span>IMPELLER</span>
+        <span class="tabular">WB-PRO</span>
+      </div>
+    </nav>
+
+    <div class="workbench-column">
+      <!-- Top Instrument Strip -->
+      <header class="instrument-topbar">
+        <div class="brand-identity">
+          <span class="braun-stator" aria-hidden="true">
+            <svg width="20" height="20" viewBox="0 0 20 20" fill="none">
+              <circle cx="10" cy="10" r="7" stroke="var(--chalk-face)" stroke-width="1.5"/>
+              <line x1="10" y1="10" x2="14.5" y2="5.5" stroke="var(--signal-vermilion)" stroke-width="2" stroke-linecap="round"/>
+              <circle cx="10" cy="10" r="2" fill="var(--chalk-face)"/>
+            </svg>
+          </span>
+          <div class="brand-lockup-text">
+            <h1 class="brand-wordmark">Ampere Home &amp; EV</h1>
+            <span class="hardware-spec-tag">Ampere Wallbox Pro · Flutter · Impeller</span>
+          </div>
+        </div>
+
+        <div class="bus-telemetry tabular" aria-label="Live household power bus">
+          <div class="bus-datum">
+            <span class="bus-key">Rooftop PV</span>
+            <span class="bus-val solar">● 4.8 kW Live</span>
+          </div>
+          <div class="bus-datum">
+            <span class="bus-key">Home Load</span>
+            <span class="bus-val">1.1 kW</span>
+          </div>
+          <div class="bus-datum">
+            <span class="bus-key">Wallbox</span>
+            <span class="bus-val" id="top-wallbox-draw">3.7 kW Solar</span>
+          </div>
+          <div class="bus-datum">
+            <span class="bus-key">Clock</span>
+            <span class="bus-val">Tue 14:20 CET · Illustrative</span>
+          </div>
+        </div>
+      </header>
+
+      <!-- Main Adaptive Tablet Split Workbench -->
+      <main id="workbench-main" class="workbench-grid">
+        <!-- LEFT HARDWARE MODULE: Vehicle & Battery Bay -->
+        <section class="instrument-module battery-bay" aria-labelledby="bay-heading">
+          <div class="module-header">
+            <div>
+              <p class="module-kicker">01 · Vehicle &amp; Battery Bay</p>
+              <h2 class="module-title" id="bay-heading">Polestar 2 Long Range · 76.2 kWh Pack</h2>
+            </div>
+            <span class="plug-badge">● Type 2 Locked · 3P</span>
+          </div>
+
+          <!-- Deep Graphite Dial Housing (#191B1E) -->
+          <div class="dial-housing">
+            <div class="rotary-dial-wrap">
+              <svg class="rotary-svg" viewBox="0 0 220 198" role="img" aria-labelledby="dial-svg-title dial-svg-desc">
+                <title id="dial-svg-title">Rotary battery state-of-charge gauge</title>
+                <desc id="dial-svg-desc">Current battery is 38 percent. Target charge limit is set to 80 percent, adding 32.0 kilowatt-hours for 314 kilometers of range.</desc>
+
+                <!-- Exact Polar Ticks (center 110,106; 270 deg sweep from 135 deg to 405 deg; r=78..84) -->
+                <g stroke="var(--graphite-seam)" stroke-width="1.5" stroke-linecap="round">
+                  <!-- 0% (135°) -->
+                  <line x1="54.8" y1="161.2" x2="50.6" y2="165.4"/>
+                  <!-- 20% (189°) -->
+                  <line x1="33.0" y1="93.8" x2="27.0" y2="92.9"/>
+                  <!-- 38% Current SoC Tick (237.6°) -->
+                  <line x1="68.2" y1="40.2" x2="64.0" y2="33.6" stroke="var(--chalk-face)" stroke-width="2"/>
+                  <!-- 40% (243°) -->
+                  <line x1="74.6" y1="36.5" x2="71.9" y2="31.2"/>
+                  <!-- 50% Top Center (270°) -->
+                  <line x1="110" y1="28" x2="110" y2="23"/>
+                  <!-- 60% (297°) -->
+                  <line x1="145.4" y1="36.5" x2="148.1" y2="31.2"/>
+                  <!-- 80% (351°) -->
+                  <line x1="187.0" y1="93.8" x2="193.0" y2="92.9"/>
+                  <!-- 100% (45°) -->
+                  <line x1="165.2" y1="161.2" x2="169.4" y2="165.4"/>
+                </g>
+
+                <!-- Exact Polar Scale Labels (r=94) -->
+                <g font-family="var(--font-mono)" font-size="9.5" fill="var(--graphite-muted)" text-anchor="middle">
+                  <text x="43" y="176">0</text>
+                  <text x="16" y="95">20</text>
+                  <text x="66" y="25">40</text>
+                  <text x="154" y="25">60</text>
+                  <text x="204" y="95">80</text>
+                  <text x="177" y="176">100</text>
+                </g>
+
+                <!-- Full 270° Recessed Track (r=67, C=420.97, 270°=315.73) -->
+                <circle
+                  cx="110" cy="106" r="67"
+                  fill="none"
+                  stroke="var(--graphite-surface)"
+                  stroke-width="13"
+                  stroke-dasharray="315.73 420.97"
+                  stroke-linecap="butt"
+                  transform="rotate(135 110 106)"
+                />
+
+                <!-- Scheduled Added SoC Arc (0% -> Target SoC, 80% of 315.73 = 252.58) -->
+                <circle
+                  id="dial-target-arc"
+                  class="arc-progress"
+                  cx="110" cy="106" r="67"
+                  fill="none"
+                  stroke="var(--solar-arc-bright)"
+                  stroke-width="13"
+                  stroke-dasharray="252.58 420.97"
+                  stroke-linecap="butt"
+                  transform="rotate(135 110 106)"
+                />
+
+                <!-- Current 38% SoC Arc (38% of 315.73 = 119.98) -->
+                <circle
+                  cx="110" cy="106" r="67"
+                  fill="none"
+                  stroke="var(--chalk-face)"
+                  stroke-width="13"
+                  stroke-dasharray="119.98 420.97"
+                  stroke-linecap="butt"
+                  transform="rotate(135 110 106)"
+                />
+
+                <!-- Target Vermilion Detent Pointer (at 80% default -> rotate(81deg) from 12 o'clock) -->
+                <g id="dial-needle" class="dial-needle-group" style="transform: rotate(81deg);">
+                  <line x1="110" y1="30" x2="110" y2="47" stroke="var(--signal-vermilion)" stroke-width="3.5" stroke-linecap="round"/>
+                  <circle cx="110" cy="29" r="3.5" fill="var(--signal-vermilion)"/>
+                </g>
+
+                <!-- Center Readout -->
+                <text x="110" y="93" text-anchor="middle" font-family="var(--font-mono)" font-size="10.5" fill="var(--graphite-muted)">38% now → Target</text>
+                <text id="dial-center-soc" x="110" y="123" text-anchor="middle" font-family="var(--font-display)" font-size="34" font-weight="800" fill="var(--chalk-face)">80%</text>
+                <text id="dial-center-ready" x="110" y="143" text-anchor="middle" font-family="var(--font-mono)" font-size="10" fill="var(--solar-arc-bright)">Ready by 07:30</text>
+              </svg>
+            </div>
+
+            <!-- Live Computed Session Drums -->
+            <div class="drum-readouts tabular" aria-live="polite">
+              <div class="drum-cell">
+                <span class="drum-label">Added Energy</span>
+                <div class="drum-value-row">
+                  <span class="drum-value" id="readout-kwh">+32.0 kWh</span>
+                </div>
+                <span class="drum-sub" id="readout-kwh-note">38% → 80% (+42% SoC)</span>
+              </div>
+
+              <div class="drum-cell">
+                <span class="drum-label">Departure Range</span>
+                <div class="drum-value-row">
+                  <span class="drum-value" id="readout-range">314 km</span>
+                </div>
+                <span class="drum-sub" id="readout-range-note">+165 km over 149 km now</span>
+              </div>
+
+              <div class="drum-cell">
+                <span class="drum-label">Est. Session Cost</span>
+                <div class="drum-value-row">
+                  <span class="drum-value" id="readout-cost">€3.84</span>
+                </div>
+                <span class="drum-sub solar-note" id="readout-cost-note">Saves €7.04 vs peak rate</span>
+              </div>
+            </div>
+          </div>
+
+          <!-- Tactile Hardware Controls -->
+          <div class="control-stack">
+            <!-- 1. Charge Limit (60% · 80% · 90% · 100%) -->
+            <div class="control-group" role="group" aria-labelledby="lbl-charge-limit">
+              <div class="control-header">
+                <span class="control-label" id="lbl-charge-limit">Charge Limit</span>
+                <span class="control-hint" id="hint-charge-limit">Daily LFP/NMC longevity sweet spot</span>
+              </div>
+              <div class="keybank cols-4 tabular">
+                <button type="button" class="tactile-key" data-limit="60" aria-pressed="false">
+                  <span class="key-pip" aria-hidden="true"></span>
+                  <span>60%</span>
+                  <span class="key-micro">236 km</span>
+                </button>
+                <button type="button" class="tactile-key" id="limit-80" data-limit="80" aria-pressed="true">
+                  <span class="key-pip" aria-hidden="true"></span>
+                  <span>80%</span>
+                  <span class="key-micro">314 km</span>
+                </button>
+                <button type="button" class="tactile-key" data-limit="90" aria-pressed="false">
+                  <span class="key-pip" aria-hidden="true"></span>
+                  <span>90%</span>
+                  <span class="key-micro">353 km</span>
+                </button>
+                <button type="button" class="tactile-key" data-limit="100" aria-pressed="false">
+                  <span class="key-pip" aria-hidden="true"></span>
+                  <span>100%</span>
+                  <span class="key-micro">393 km</span>
+                </button>
+              </div>
+            </div>
+
+            <!-- 2. Departure Time (06:30 · 07:30 · 09:00) -->
+            <div class="control-group" role="group" aria-labelledby="lbl-departure">
+              <div class="control-header">
+                <span class="control-label" id="lbl-departure">Departure Time</span>
+                <span class="control-hint" id="hint-departure">Cabin pre-heat 15 min prior</span>
+              </div>
+              <div class="keybank cols-3 tabular">
+                <button type="button" class="tactile-key" data-departure="06:30" aria-pressed="false">
+                  <span class="key-pip" aria-hidden="true"></span>
+                  <span>06:30</span>
+                  <span class="key-micro">Early shift</span>
+                </button>
+                <button type="button" class="tactile-key" data-departure="07:30" aria-pressed="true">
+                  <span class="key-pip" aria-hidden="true"></span>
+                  <span>07:30</span>
+                  <span class="key-micro">Weekday</span>
+                </button>
+                <button type="button" class="tactile-key" data-departure="09:00" aria-pressed="false">
+                  <span class="key-pip" aria-hidden="true"></span>
+                  <span>09:00</span>
+                  <span class="key-micro">+Morning PV</span>
+                </button>
+              </div>
+            </div>
+
+            <!-- 3. Charge Mode (Solar Surplus · Off-Peak Tariff · Immediate 11 kW) -->
+            <div class="control-group" role="group" aria-labelledby="lbl-mode">
+              <div class="control-header">
+                <span class="control-label" id="lbl-mode">Dispatch Mode</span>
+                <span class="control-hint" id="hint-mode">PV surplus first, €0.11 night top-up</span>
+              </div>
+              <div class="keybank cols-3">
+                <button type="button" class="tactile-key solar-key" id="mode-solar" data-mode="solar" aria-pressed="true">
+                  <span class="key-pip" aria-hidden="true"></span>
+                  <span>Solar Surplus</span>
+                  <span class="key-micro">PV + €0.11 cap</span>
+                </button>
+                <button type="button" class="tactile-key" data-mode="offpeak" aria-pressed="false">
+                  <span class="key-pip" aria-hidden="true"></span>
+                  <span>Off-Peak Tariff</span>
+                  <span class="key-micro">00:00–06:00</span>
+                </button>
+                <button type="button" class="tactile-key" data-mode="immediate" aria-pressed="false">
+                  <span class="key-pip" aria-hidden="true"></span>
+                  <span>Immediate 11 kW</span>
+                  <span class="key-micro">Bypass cap</span>
+                </button>
+              </div>
+            </div>
+
+            <!-- 4. Explicit Programmatically Labeled Current Trim Controls -->
+            <div class="current-trim-box">
+              <div class="control-header">
+                <label class="control-label" for="wallbox-amp-slider">Max Wallbox Current (6–16 A)</label>
+                <span class="control-hint tabular" id="amp-power-readout">16 A · 11.0 kW ceiling</span>
+              </div>
+              <div class="trim-input-row">
+                <input
+                  id="wallbox-amp-slider"
+                  class="braun-slider"
+                  type="range"
+                  min="6"
+                  max="16"
+                  step="2"
+                  value="16"
+                />
+                <div>
+                  <label class="sr-only" for="wallbox-amp-number">Wallbox current amperes</label>
+                  <input
+                    id="wallbox-amp-number"
+                    class="amp-number-input tabular"
+                    type="number"
+                    min="6"
+                    max="16"
+                    step="2"
+                    value="16"
+                  />
+                </div>
+              </div>
+            </div>
+          </div>
+
+          <div class="bay-footer tabular">
+            <span>lib/ui/charge_dial.dart · Semantics</span>
+            <span id="charge-duration-note">Active draw: 4h 34m (11.0 kW cap)</span>
+          </div>
+        </section>
+
+        <!-- RIGHT COLUMN: CustomPainter 24-Hour Curve + Circuit Breakers -->
+        <div class="right-stack">
+          <!-- UPPER RIGHT: 24-Hour Electricity Tariff + Rooftop PV SVG Chart -->
+          <section class="instrument-module chart-module" aria-labelledby="chart-heading">
+            <div class="module-header">
+              <div>
+                <p class="module-kicker">02 · CustomPainter · 24-Hour Schedule</p>
+                <h2 class="module-title" id="chart-heading">Electricity Tariff (€/kWh), Rooftop PV &amp; Wallbox Load (kW)</h2>
+              </div>
+              <span class="painter-tag tabular" id="schedule-window-badge">Window: 11:00–15:30 PV + 02:00–04:00 Night</span>
+            </div>
+
+            <div class="chart-frame">
+              <svg class="tariff-svg" id="tariff-chart-svg" viewBox="0 0 760 272" role="img" aria-labelledby="svg-tariff-title svg-tariff-desc">
+                <title id="svg-tariff-title">24-hour electricity tariff, rooftop solar generation, and scheduled EV wallbox load</title>
+                <desc id="svg-tariff-desc">Zero-baseline 24-hour chart. Off-peak tariff is 0.11 euros per kilowatt-hour from 00:00 to 06:00. Rooftop PV peaks at 5.2 kilowatts at 13:00. Evening peak tariff is 0.34 euros per kilowatt-hour from 17:00 to 21:00, marked with diagonal vermilion hatching where EV charging pauses.</desc>
+
+                <defs>
+                  <!-- Redundant Diagonal Hatching for Evening Peak Tariff -->
+                  <pattern id="peakHatchPattern" width="8" height="8" patternUnits="userSpaceOnUse" patternTransform="rotate(45)">
+                    <line x1="0" y1="0" x2="0" y2="8" stroke="var(--signal-vermilion)" stroke-width="1.6" stroke-opacity="0.34"/>
+                  </pattern>
+                </defs>
+
+                <!-- Plot Area: x=46..710 (width=664, 27.67px/hr), y=24..236 (height=212, zero at y=236) -->
+                <g stroke="var(--al-hairline)" stroke-width="1">
+                  <line x1="46" y1="24" x2="710" y2="24"/>
+                  <line x1="46" y1="77" x2="710" y2="77"/>
+                  <line x1="46" y1="130" x2="710" y2="130"/>
+                  <line x1="46" y1="183" x2="710" y2="183"/>
+                  <line x1="46" y1="236" x2="710" y2="236" stroke="var(--neutral-slate)" stroke-width="1.2"/>
+                </g>
+
+                <!-- Off-Peak Band (00:00-06:00, €0.11/kWh -> y = 177.7) -->
+                <rect x="46" y="177.7" width="166" height="58.3" fill="var(--chalk-face)" opacity="0.85"/>
+
+                <!-- Peak Tariff Hatched Zone (17:00-21:00 -> x=516.3..627.0, €0.34/kWh -> y = 55.8) -->
+                <rect x="516.3" y="55.8" width="110.7" height="180.2" fill="var(--vermilion-tint)"/>
+                <rect x="516.3" y="55.8" width="110.7" height="180.2" fill="url(#peakHatchPattern)"/>
+
+                <!-- Dynamic Scheduled Wallbox Load Bars Container -->
+                <g id="wallbox-bars-layer"></g>
+
+                <!-- Rooftop PV Solar Area & Curve (06:30 to 19:30, Peak 5.2 kW at 13:00 -> y = 144.1) -->
+                <path
+                  d="M 225.8 236 C 260 232, 292 204, 336 172 C 366 151, 388 144.1, 405.7 144.1 C 424 144.1, 448 152, 478 176 C 512 204, 548 231, 585.5 236 Z"
+                  fill="var(--solar-tint)"
+                />
+                <path
+                  d="M 225.8 236 C 260 232, 292 204, 336 172 C 366 151, 388 144.1, 405.7 144.1 C 424 144.1, 448 152, 478 176 C 512 204, 548 231, 585.5 236"
+                  fill="none"
+                  stroke="var(--solar-green)"
+                  stroke-width="2.75"
+                />
+                <circle cx="405.7" cy="144.1" r="4.5" fill="var(--solar-green)" stroke="var(--chalk-face)" stroke-width="1.5"/>
+
+                <!-- 24h Step Tariff Curve -->
+                <path
+                  d="M 46 177.7 H 212 V 124.7 H 516.3 V 55.8 H 627.0 V 135.3 H 710"
+                  fill="none"
+                  stroke="var(--graphite-housing)"
+                  stroke-width="2"
+                  stroke-dasharray="5 3"
+                />
+                <!-- Highlight Peak Cap Top Rail in Vermilion -->
+                <line x1="516.3" y1="55.8" x2="627.0" y2="55.8" stroke="var(--signal-vermilion)" stroke-width="3"/>
+
+                <!-- Departure Marker Line -->
+                <g id="departure-marker-group">
+                  <line id="departure-line" x1="253.5" y1="26" x2="253.5" y2="236" stroke="var(--graphite-housing)" stroke-width="1.5" stroke-dasharray="3 3"/>
+                  <rect id="departure-pill" x="214" y="26" width="79" height="18" rx="3" fill="var(--graphite-housing)"/>
+                  <text id="departure-label" x="253.5" y="38" text-anchor="middle" font-family="var(--font-mono)" font-size="9.5" fill="var(--chalk-face)">Depart 07:30</text>
+                </g>
+
+                <!-- Current Time Hairline (14:20 -> x = 442.5) -->
+                <line x1="442.5" y1="24" x2="442.5" y2="236" stroke="var(--neutral-slate)" stroke-width="1.2"/>
+                <text x="446" y="35" font-family="var(--font-mono)" font-size="9.5" fill="var(--neutral-slate)">NOW 14:20</text>
+
+                <!-- Interactive Hour Inspector Cursor (default 14:00 -> x=447.2) -->
+                <line id="inspector-cursor" x1="447.2" y1="24" x2="447.2" y2="236" stroke="var(--signal-vermilion)" stroke-width="1.5" opacity="0.85"/>
+
+                <!-- DIRECT CURVE LABELS (Placed cleanly with leader pins so bars never collide) -->
+                <!-- 1. Off-peak €0.11/kWh (Leader to 00:30 tariff rail at y=177.7) -->
+                <line x1="64" y1="74" x2="64" y2="177.7" stroke="var(--neutral-slate)" stroke-width="1" stroke-dasharray="2 2"/>
+                <circle cx="64" cy="177.7" r="3" fill="var(--graphite-housing)"/>
+                <rect x="52" y="55" width="128" height="19" rx="3" fill="var(--chalk-face)" stroke="var(--al-seam)"/>
+                <text x="116" y="68" text-anchor="middle" font-family="var(--font-mono)" font-size="10.5" font-weight="500" fill="var(--graphite-housing)">Off-peak €0.11/kWh</text>
+
+                <!-- 2. PV Peak 5.2 kW (Directly anchored to 13:00 solar apex) -->
+                <line x1="405.7" y1="129" x2="405.7" y2="140" stroke="var(--solar-green)" stroke-width="1.2"/>
+                <rect x="336" y="109" width="104" height="19" rx="3" fill="var(--chalk-face)" stroke="var(--solar-border)"/>
+                <text x="388" y="122" text-anchor="middle" font-family="var(--font-mono)" font-size="10.5" font-weight="500" fill="var(--solar-green)">PV Peak 5.2 kW</text>
+
+                <!-- 3. Peak €0.34/kWh (Anchored to hatched 17:00-21:00 cap) -->
+                <rect x="519" y="31" width="105" height="19" rx="3" fill="var(--graphite-housing)"/>
+                <text x="571.5" y="44" text-anchor="middle" font-family="var(--font-mono)" font-size="10.5" font-weight="500" fill="var(--chalk-face)">Peak €0.34/kWh</text>
+                <text x="571.5" y="72" text-anchor="middle" font-family="var(--font-mono)" font-size="9.5" font-weight="500" fill="var(--signal-vermilion)">▲ Hatched cap</text>
+
+                <!-- Left Y-Axis Labels (kW) -->
+                <g font-family="var(--font-mono)" font-size="10" fill="var(--neutral-slate)" text-anchor="end">
+                  <text x="40" y="28">12 kW</text>
+                  <text x="40" y="81">9 kW</text>
+                  <text x="40" y="134">6 kW</text>
+                  <text x="40" y="187">3 kW</text>
+                  <text x="40" y="240">0 kW</text>
+                </g>
+
+                <!-- Right Y-Axis Labels (€/kWh) -->
+                <g font-family="var(--font-mono)" font-size="10" fill="var(--neutral-slate)" text-anchor="start">
+                  <text x="716" y="28">€0.40</text>
+                  <text x="716" y="81">€0.30</text>
+                  <text x="716" y="134">€0.20</text>
+                  <text x="716" y="187">€0.10</text>
+                  <text x="716" y="240">€0.00</text>
+                </g>
+
+                <!-- X-Axis Time Ticks -->
+                <g font-family="var(--font-mono)" font-size="10" fill="var(--graphite-housing)" text-anchor="middle">
+                  <text x="46" y="255">00:00</text>
+                  <text x="129" y="255">03:00</text>
+                  <text x="212" y="255">06:00</text>
+                  <text x="295" y="255">09:00</text>
+                  <text x="378" y="255">12:00</text>
+                  <text x="461" y="255">15:00</text>
+                  <text x="544" y="255">18:00</text>
+                  <text x="627" y="255">21:00</text>
+                  <text x="706" y="255">24:00</text>
+                </g>
+              </svg>
+            </div>
+
+            <!-- Keyboard & Touch Hour Scrubber (No Hover-Only Lockout) -->
+            <div class="scrubber-strip tabular">
+              <label class="scrubber-label" for="hour-inspector">Inspect Hour</label>
+              <input
+                id="hour-inspector"
+                class="braun-slider"
+                type="range"
+                min="0"
+                max="23"
+                step="1"
+                value="14"
+              />
+              <span class="scrubber-readout" id="scrubber-output" aria-live="polite">
+                14:00 · Tariff €0.21/kWh · PV 4.8 kW · EV 4.0 kW
+              </span>
+            </div>
+          </section>
+
+          <!-- LOWER RIGHT: Household Circuit Breaker Load Bars -->
+          <section class="instrument-module breaker-module" aria-labelledby="breaker-heading">
+            <div class="module-header">
+              <div>
+                <p class="module-kicker">03 · Main Breaker Panel · 3×25A Service (17.2 kW Cap)</p>
+                <h2 class="module-title" id="breaker-heading">Household Circuit Load Sharing</h2>
+              </div>
+              <span class="painter-tag tabular" id="total-panel-load">Panel Load: 9.2 / 17.2 kW (53%)</span>
+            </div>
+
+            <div class="breaker-list tabular" role="group" aria-label="Circuit breaker channels">
+              <!-- Channel 1: Wallbox 7.4 kW ● Active -->
+              <button type="button" class="breaker-row" id="breaker-wallbox" data-circuit="wallbox" aria-pressed="true">
+                <div class="breaker-name-block">
+                  <span class="breaker-title" id="wallbox-breaker-title">Wallbox 7.4 kW</span>
+                  <span class="breaker-circuit-id">Circuit B1 · Ampere Wallbox Pro</span>
+                </div>
+                <div class="breaker-bar-group">
+                  <div class="breaker-track">
+                    <div class="breaker-fill active-solar" id="wallbox-breaker-fill" style="width: 67%;"></div>
+                  </div>
+                  <span class="breaker-detail" id="wallbox-breaker-detail">Modulating to PV surplus + 02:00 off-peak slot · Zero peak draw</span>
+                </div>
+                <span class="breaker-status st-active" id="wallbox-breaker-badge">● Active</span>
+              </button>
+
+              <!-- Channel 2: Heat Pump 1.8 kW ▲ Deferred -->
+              <button type="button" class="breaker-row" data-circuit="heatpump" aria-pressed="false">
+                <div class="breaker-name-block">
+                  <span class="breaker-title">Heat Pump 1.8 kW</span>
+                  <span class="breaker-circuit-id">Circuit B2 · Hydronic Buffer</span>
+                </div>
+                <div class="breaker-bar-group">
+                  <div class="breaker-track">
+                    <div class="breaker-fill deferred-vermilion" style="width: 24%;"></div>
+                  </div>
+                  <span class="breaker-detail">Tank at 51°C · Compressor paused during EV ramp &amp; €0.34 cap</span>
+                </div>
+                <span class="breaker-status st-deferred">▲ Deferred</span>
+              </button>
+
+              <!-- Channel 3: Home Battery 92% ● Ready -->
+              <button type="button" class="breaker-row" data-circuit="battery" aria-pressed="false">
+                <div class="breaker-name-block">
+                  <span class="breaker-title">Home Battery 92%</span>
+                  <span class="breaker-circuit-id">Circuit B3 · 13.5 kWh LFP</span>
+                </div>
+                <div class="breaker-bar-group">
+                  <div class="breaker-track">
+                    <div class="breaker-fill ready-graphite" style="width: 92%;"></div>
+                  </div>
+                  <span class="breaker-detail">12.4 kWh stored · Reserved to cover household load 17:00–21:00</span>
+                </div>
+                <span class="breaker-status st-ready">● Ready</span>
+              </button>
+            </div>
+
+            <div class="breaker-footer tabular">
+              <span id="phase-ledger">B1 Phases: L1 10.7 A · L2 10.7 A · L3 10.7 A (3P)</span>
+              <span>Symbol + word status · Fictional Ampere hardware; rates illustrative</span>
+            </div>
+          </section>
+        </div>
+      </main>
+    </div>
+  </div>
+
+  <script>
+    (function () {
+      var CURRENT_SOC = 38;
+      var PACK_KWH = 76.2;
+      var FULL_RANGE_KM = 392.5;
+      var ARC_SWEEP_LEN = 315.73;
+      var ARC_CIRCUMFERENCE = 420.97;
+
+      // Hourly illustrative tariff (€/kWh) and rooftop PV curve (kW) across 0..23h
+      var HOURLY_TARIFF = [
+        0.11, 0.11, 0.11, 0.11, 0.11, 0.11,
+        0.21, 0.21, 0.21, 0.21, 0.21, 0.21,
+        0.21, 0.21, 0.21, 0.21, 0.21,
+        0.34, 0.34, 0.34, 0.34,
+        0.19, 0.19, 0.19
+      ];
+
+      var HOURLY_PV = [
+        0.0, 0.0, 0.0, 0.0, 0.0, 0.0,
+        0.2, 0.9, 1.9, 3.1, 4.1, 4.7,
+        5.0, 5.2, 4.8, 3.9, 2.5,
+        1.1, 0.3, 0.0, 0.0,
+        0.0, 0.0, 0.0
+      ];
+
+      var state = {
+        limit: 80,
+        departure: '07:30',
+        mode: 'solar',
+        amps: 16,
+        inspectHour: 14,
+        selectedCircuit: 'wallbox'
+      };
+
+      var dialTargetArc = document.getElementById('dial-target-arc');
+      var dialNeedle = document.getElementById('dial-needle');
+      var dialCenterSoc = document.getElementById('dial-center-soc');
+      var dialCenterReady = document.getElementById('dial-center-ready');
+      var dialSvgDesc = document.getElementById('dial-svg-desc');
+
+      var readoutKwh = document.getElementById('readout-kwh');
+      var readoutKwhNote = document.getElementById('readout-kwh-note');
+      var readoutRange = document.getElementById('readout-range');
+      var readoutRangeNote = document.getElementById('readout-range-note');
+      var readoutCost = document.getElementById('readout-cost');
+      var readoutCostNote = document.getElementById('readout-cost-note');
+
+      var hintLimit = document.getElementById('hint-charge-limit');
+      var hintDeparture = document.getElementById('hint-departure');
+      var hintMode = document.getElementById('hint-mode');
+      var ampSlider = document.getElementById('wallbox-amp-slider');
+      var ampNumber = document.getElementById('wallbox-amp-number');
+      var ampPowerReadout = document.getElementById('amp-power-readout');
+      var durationNote = document.getElementById('charge-duration-note');
+      var topWallboxDraw = document.getElementById('top-wallbox-draw');
+      var scheduleWindowBadge = document.getElementById('schedule-window-badge');
+
+      var barsLayer = document.getElementById('wallbox-bars-layer');
+      var departLine = document.getElementById('departure-line');
+      var departPill = document.getElementById('departure-pill');
+      var departLabel = document.getElementById('departure-label');
+      var hourInspector = document.getElementById('hour-inspector');
+      var inspectorCursor = document.getElementById('inspector-cursor');
+      var scrubberOutput = document.getElementById('scrubber-output');
+
+      var wallboxBreakerTitle = document.getElementById('wallbox-breaker-title');
+      var wallboxBreakerFill = document.getElementById('wallbox-breaker-fill');
+      var wallboxBreakerDetail = document.getElementById('wallbox-breaker-detail');
+      var wallboxBreakerBadge = document.getElementById('wallbox-breaker-badge');
+      var totalPanelLoad = document.getElementById('total-panel-load');
+      var phaseLedger = document.getElementById('phase-ledger');
+
+      var currentScheduleKw = new Array(24).fill(0);
+
+      function computeSchedule(addedKwh, maxKw) {
+        var bars = new Array(24).fill(0);
+        var remaining = addedKwh;
+        var i;
+
+        if (state.mode === 'solar') {
+          // Afternoon solar surplus slots (11:00..15:00) + optional 07:00..08:00 if 09:00 departure
+          var pvSlots = [12, 13, 14, 11, 15];
+          if (state.departure === '09:00') {
+            pvSlots.push(8, 7);
+          }
+          for (i = 0; i < pvSlots.length && remaining > 0.05; i += 1) {
+            var h = pvSlots[i];
+            var surplus = Math.max(0, +(HOURLY_PV[h] - 0.8).toFixed(1));
+            var alloc = Math.min(remaining, maxKw, surplus);
+            bars[h] = +alloc.toFixed(1);
+            remaining = +(remaining - alloc).toFixed(2);
+          }
+          // Overnight off-peak top-up before departure
+          var nightSlots = state.departure === '06:30' ? [1, 2, 3, 4, 5, 0] : [1, 2, 3, 4, 5, 0];
+          for (i = 0; i < nightSlots.length && remaining > 0.05; i += 1) {
+            var nh = nightSlots[i];
+            var nAlloc = Math.min(remaining, Math.min(maxKw, 7.4));
+            bars[nh] = +nAlloc.toFixed(1);
+            remaining = +(remaining - nAlloc).toFixed(2);
+          }
+        } else if (state.mode === 'offpeak') {
+          var offSlots = state.departure === '06:30' ? [0, 1, 2, 3, 4, 5] : [1, 2, 3, 4, 5, 0];
+          for (i = 0; i < offSlots.length && remaining > 0.05; i += 1) {
+            var oh = offSlots[i];
+            var oAlloc = Math.min(remaining, maxKw);
+            bars[oh] = +oAlloc.toFixed(1);
+            remaining = +(remaining - oAlloc).toFixed(2);
+          }
+          // Spill into 22:00-23:00 shoulder only if needed at low amp limits
+          var spill = [23, 22];
+          for (i = 0; i < spill.length && remaining > 0.05; i += 1) {
+            var sh = spill[i];
+            var sAlloc = Math.min(remaining, maxKw);
+            bars[sh] = +sAlloc.toFixed(1);
+            remaining = +(remaining - sAlloc).toFixed(2);
+          }
+        } else {
+          // Immediate 11 kW starting at 14:00 right into evening peak
+          var immSlots = [14, 15, 16, 17, 18, 19, 20, 21];
+          for (i = 0; i < immSlots.length && remaining > 0.05; i += 1) {
+            var ih = immSlots[i];
+            var iAlloc = Math.min(remaining, maxKw);
+            bars[ih] = +iAlloc.toFixed(1);
+            remaining = +(remaining - iAlloc).toFixed(2);
+          }
+        }
+        return bars;
+      }
+
+      function computeSessionCost(addedKwh) {
+        // Exact deterministic calibration matching 80% / 07:30 / Solar Surplus = €3.84
+        var baseFactor = addedKwh / 32.0;
+        var depDelta = state.departure === '09:00' ? -0.36 : (state.departure === '06:30' ? 0.18 : 0.0);
+        if (state.mode === 'solar') {
+          return Math.max(0.9, +(3.84 * baseFactor + depDelta * baseFactor).toFixed(2));
+        }
+        if (state.mode === 'offpeak') {
+          var ampSpill = state.amps < 10 && state.limit >= 90 ? 0.65 : 0.0;
+          return +(addedKwh * 0.11 + ampSpill).toFixed(2);
+        }
+        // Immediate 11 kW hits shoulder + €0.34 evening peak
+        return +(addedKwh * 0.285).toFixed(2);
+      }
+
+      function renderChartBars(bars) {
+        while (barsLayer.firstChild) {
+          barsLayer.removeChild(barsLayer.firstChild);
+        }
+        var ns = 'http://www.w3.org/2000/svg';
+        for (var h = 0; h < 24; h += 1) {
+          var kw = bars[h];
+          if (kw <= 0) continue;
+          var x = 46 + h * 27.67 + 4;
+          var w = 19.5;
+          var barH = (kw / 12) * 212;
+          var y = 236 - barH;
+          var rect = document.createElementNS(ns, 'rect');
+          rect.setAttribute('x', x.toFixed(1));
+          rect.setAttribute('y', y.toFixed(1));
+          rect.setAttribute('width', w.toFixed(1));
+          rect.setAttribute('height', barH.toFixed(1));
+          rect.setAttribute('rx', '2');
+          var isPeakHour = h >= 17 && h <= 20;
+          var isPvHour = h >= 7 && h <= 15 && state.mode === 'solar';
+          rect.setAttribute(
+            'fill',
+            isPeakHour
+              ? 'var(--signal-vermilion)'
+              : (isPvHour ? 'var(--solar-green)' : 'var(--graphite-housing)')
+          );
+          rect.setAttribute('opacity', isPvHour ? '0.78' : '0.82');
+          barsLayer.appendChild(rect);
+        }
+      }
+
+      function updateDepartureMarker() {
+        var depHour = state.departure === '06:30' ? 6.5 : (state.departure === '07:30' ? 7.5 : 9.0);
+        var x = 46 + depHour * 27.67;
+        departLine.setAttribute('x1', x.toFixed(1));
+        departLine.setAttribute('x2', x.toFixed(1));
+        departPill.setAttribute('x', (x - 39.5).toFixed(1));
+        departLabel.setAttribute('x', x.toFixed(1));
+        departLabel.textContent = 'Depart ' + state.departure;
+      }
+
+      function updateScrubberReadout() {
+        var h = state.inspectHour;
+        var x = 46 + (h + 0.5) * 27.67;
+        inspectorCursor.setAttribute('x1', x.toFixed(1));
+        inspectorCursor.setAttribute('x2', x.toFixed(1));
+        var hh = (h < 10 ? '0' : '') + h + ':00';
+        var tariff = HOURLY_TARIFF[h].toFixed(2);
+        var pv = HOURLY_PV[h].toFixed(1);
+        var ev = currentScheduleKw[h].toFixed(1);
+        scrubberOutput.textContent =
+          hh + ' · Tariff €' + tariff + '/kWh · PV ' + pv + ' kW · EV ' + ev + ' kW';
+      }
+
+      function updatePhaseLedger() {
+        if (state.selectedCircuit === 'heatpump') {
+          phaseLedger.textContent =
+            'Selected B2 Phases: L1 7.8 A · L2 0.0 A · L3 0.0 A (1P Hydronic Compressor · Deferred)';
+          return;
+        }
+        if (state.selectedCircuit === 'battery') {
+          phaseLedger.textContent =
+            'Selected B3 Phases: L1 0.0 A · L2 0.0 A · L3 0.0 A (92% Standby · Armed for 17:00 Peak)';
+          return;
+        }
+        var activeKw = state.mode === 'immediate' ? +((state.amps * 230 * 3) / 1000).toFixed(1) : (state.mode === 'offpeak' ? 0.0 : 7.4);
+        var perPhaseA = activeKw > 0 ? ((activeKw * 1000) / (230 * 3)).toFixed(1) : '0.0';
+        phaseLedger.textContent =
+          'Selected B1 Phases: L1 ' + perPhaseA + ' A · L2 ' + perPhaseA + ' A · L3 ' + perPhaseA + ' A (Balanced 3P)';
+      }
+
+      function updateUI() {
+        var deltaSoc = state.limit - CURRENT_SOC;
+        var addedKwh = +((deltaSoc / 100) * PACK_KWH).toFixed(1);
+        var rangeKm = Math.round((state.limit / 100) * FULL_RANGE_KM);
+        var nowRangeKm = Math.round((CURRENT_SOC / 100) * FULL_RANGE_KM);
+        var maxKw = +((state.amps * 230 * 3) / 1000).toFixed(1);
+        var costEur = computeSessionCost(addedKwh);
+        var peakBaselineEur = +(addedKwh * 0.34).toFixed(2);
+        var savedEur = +(peakBaselineEur - costEur).toFixed(2);
+
+        // Rotary SVG Arc & Needle
+        var targetLen = +((state.limit / 100) * ARC_SWEEP_LEN).toFixed(2);
+        dialTargetArc.setAttribute('stroke-dasharray', targetLen + ' ' + ARC_CIRCUMFERENCE);
+        dialTargetArc.setAttribute(
+          'stroke',
+          state.mode === 'immediate' ? 'var(--signal-vermilion)' : 'var(--solar-arc-bright)'
+        );
+
+        // 0% is -135deg from top (12 o'clock), 100% is +135deg from top
+        var needleDeg = -135 + (state.limit / 100) * 270;
+        dialNeedle.style.transform = 'rotate(' + needleDeg.toFixed(1) + 'deg)';
+        dialCenterSoc.textContent = state.limit + '%';
+        dialCenterReady.textContent =
+          state.mode === 'immediate' ? 'Fast 11 kW active' : 'Ready by ' + state.departure;
+        dialCenterReady.setAttribute(
+          'fill',
+          state.mode === 'immediate' ? 'var(--signal-vermilion)' : 'var(--solar-arc-bright)'
+        );
+        dialSvgDesc.textContent =
+          'Current battery is 38 percent. Target charge limit is set to ' +
+          state.limit + ' percent, adding ' + addedKwh.toFixed(1) +
+          ' kilowatt-hours for ' + rangeKm + ' kilometers of range.';
+
+        // Drum Readouts
+        readoutKwh.textContent = '+' + addedKwh.toFixed(1) + ' kWh';
+        readoutKwhNote.textContent = '38% → ' + state.limit + '% (+' + deltaSoc + '% SoC)';
+        readoutRange.textContent = rangeKm + ' km';
+        readoutRangeNote.textContent = '+' + (rangeKm - nowRangeKm) + ' km over ' + nowRangeKm + ' km now';
+        readoutCost.textContent = '€' + costEur.toFixed(2);
+
+        if (state.mode === 'immediate') {
+          readoutCost.classList.add('cost-alert');
+          readoutCostNote.classList.remove('solar-note');
+          readoutCostNote.textContent = 'Enters €0.34/kWh peak (+€' + (costEur - +(3.84 * (addedKwh / 32)).toFixed(2)).toFixed(2) + ')';
+        } else {
+          readoutCost.classList.remove('cost-alert');
+          readoutCostNote.classList.add('solar-note');
+          readoutCostNote.textContent = 'Saves €' + savedEur.toFixed(2) + ' vs peak rate';
+        }
+
+        // Control Hints & Duration
+        hintLimit.textContent =
+          state.limit === 100
+            ? 'Full pack for long-distance trip'
+            : (state.limit === 60 ? 'Light commuter buffer' : 'Daily LFP/NMC longevity sweet spot');
+        hintDeparture.textContent =
+          state.departure === '09:00'
+            ? 'Captures 07:00–09:00 morning PV ramp'
+            : 'Cabin pre-heat 15 min prior';
+        hintMode.textContent =
+          state.mode === 'solar'
+            ? 'PV surplus first, €0.11 night top-up'
+            : (state.mode === 'offpeak' ? 'Locked to 00:00–06:00 €0.11/kWh slot' : 'Draws max current immediately');
+
+        ampPowerReadout.textContent = state.amps + ' A · ' + maxKw.toFixed(1) + ' kW ceiling';
+        var estHours = Math.max(1.2, addedKwh / Math.min(maxKw, state.mode === 'solar' ? 7.0 : maxKw));
+        var wholeH = Math.floor(estHours);
+        var mins = Math.round((estHours - wholeH) * 60);
+        if (mins === 60) { wholeH += 1; mins = 0; }
+        durationNote.textContent =
+          'Est. active draw: ' + wholeH + 'h ' + (mins < 10 ? '0' : '') + mins + 'm (' + maxKw.toFixed(1) + ' kW cap)';
+
+        // Schedule Bars & Top Telemetry
+        currentScheduleKw = computeSchedule(addedKwh, maxKw);
+        renderChartBars(currentScheduleKw);
+        updateDepartureMarker();
+        updateScrubberReadout();
+
+        // Update Wallbox Breaker Row & Header Status
+        if (state.mode === 'solar') {
+          var solarCapKw = Math.min(7.4, maxKw).toFixed(1);
+          topWallboxDraw.textContent = '3.7 kW Solar';
+          scheduleWindowBadge.textContent = 'Window: 12:00–15:30 PV + 01:00–05:00 Night';
+          wallboxBreakerTitle.textContent = 'Wallbox ' + solarCapKw + ' kW';
+          wallboxBreakerFill.style.width = Math.round((parseFloat(solarCapKw) / 11) * 100) + '%';
+          wallboxBreakerFill.className = 'breaker-fill active-solar';
+          wallboxBreakerDetail.textContent = 'Modulating to PV surplus + 01:00 off-peak slot · Zero peak draw';
+          wallboxBreakerBadge.className = 'breaker-status st-active';
+          wallboxBreakerBadge.textContent = '● Active';
+          totalPanelLoad.textContent = 'Panel Load: ' + (parseFloat(solarCapKw) + 1.8).toFixed(1) + ' / 17.2 kW';
+        } else if (state.mode === 'offpeak') {
+          topWallboxDraw.textContent = '0.0 kW Armed';
+          scheduleWindowBadge.textContent = 'Window: 00:00–06:00 Off-Peak (€0.11/kWh)';
+          wallboxBreakerTitle.textContent = 'Wallbox 0.0 kW';
+          wallboxBreakerFill.style.width = '8%';
+          wallboxBreakerFill.className = 'breaker-fill ready-graphite';
+          wallboxBreakerDetail.textContent = 'Queued for 00:00 €0.11/kWh tariff · Ready by ' + state.departure;
+          wallboxBreakerBadge.className = 'breaker-status st-ready';
+          wallboxBreakerBadge.textContent = '◆ Queued';
+          totalPanelLoad.textContent = 'Panel Load: 1.8 / 17.2 kW (10%)';
+        } else {
+          topWallboxDraw.textContent = maxKw.toFixed(1) + ' kW Immediate';
+          scheduleWindowBadge.textContent = 'Window: 14:20 Immediate (Enters €0.34 Peak)';
+          wallboxBreakerTitle.textContent = 'Wallbox ' + maxKw.toFixed(1) + ' kW';
+          wallboxBreakerFill.style.width = Math.round((maxKw / 11) * 100) + '%';
+          wallboxBreakerFill.className = 'breaker-fill deferred-vermilion';
+          wallboxBreakerDetail.textContent = 'Bypassing tariff cap · Overlaps €0.34/kWh evening peak';
+          wallboxBreakerBadge.className = 'breaker-status st-deferred';
+          wallboxBreakerBadge.textContent = '▲ Peak Draw';
+          totalPanelLoad.textContent = 'Panel Load: ' + (maxKw + 1.8).toFixed(1) + ' / 17.2 kW';
+        }
+
+        updatePhaseLedger();
+      }
+
+      // Bind Charge Limit Buttons
+      document.querySelectorAll('[data-limit]').forEach(function (btn) {
+        btn.addEventListener('click', function () {
+          state.limit = parseInt(btn.getAttribute('data-limit'), 10);
+          document.querySelectorAll('[data-limit]').forEach(function (b) {
+            b.setAttribute('aria-pressed', b === btn ? 'true' : 'false');
+          });
+          updateUI();
+        });
+      });
+
+      // Bind Departure Buttons
+      document.querySelectorAll('[data-departure]').forEach(function (btn) {
+        btn.addEventListener('click', function () {
+          state.departure = btn.getAttribute('data-departure');
+          document.querySelectorAll('[data-departure]').forEach(function (b) {
+            b.setAttribute('aria-pressed', b === btn ? 'true' : 'false');
+          });
+          updateUI();
+        });
+      });
+
+      // Bind Mode Buttons
+      document.querySelectorAll('[data-mode]').forEach(function (btn) {
+        btn.addEventListener('click', function () {
+          state.mode = btn.getAttribute('data-mode');
+          document.querySelectorAll('[data-mode]').forEach(function (b) {
+            b.setAttribute('aria-pressed', b === btn ? 'true' : 'false');
+          });
+          updateUI();
+        });
+      });
+
+      // Bind Current Ceiling Slider + Number Input
+      function syncAmps(raw) {
+        var parsed = parseInt(raw, 10);
+        if (isNaN(parsed)) return;
+        var clamped = Math.max(6, Math.min(16, parsed));
+        state.amps = clamped;
+        ampSlider.value = String(clamped);
+        ampNumber.value = String(clamped);
+        updateUI();
+      }
+      ampSlider.addEventListener('input', function () { syncAmps(ampSlider.value); });
+      ampNumber.addEventListener('change', function () { syncAmps(ampNumber.value); });
+
+      // Bind Hour Inspector Slider + Pointer Scrub on Chart SVG
+      hourInspector.addEventListener('input', function () {
+        state.inspectHour = parseInt(hourInspector.value, 10);
+        updateScrubberReadout();
+      });
+
+      var chartSvg = document.getElementById('tariff-chart-svg');
+      chartSvg.addEventListener('pointermove', function (e) {
+        var rect = chartSvg.getBoundingClientRect();
+        var relX = ((e.clientX - rect.left) / rect.width) * 760;
+        if (relX < 46 || relX > 710) return;
+        var hr = Math.max(0, Math.min(23, Math.floor((relX - 46) / 27.67)));
+        if (hr !== state.inspectHour) {
+          state.inspectHour = hr;
+          hourInspector.value = String(hr);
+          updateScrubberReadout();
+        }
+      });
+
+      // Bind Circuit Breaker Selection
+      document.querySelectorAll('[data-circuit]').forEach(function (row) {
+        row.addEventListener('click', function () {
+          state.selectedCircuit = row.getAttribute('data-circuit');
+          document.querySelectorAll('[data-circuit]').forEach(function (r) {
+            r.setAttribute('aria-pressed', r === row ? 'true' : 'false');
+          });
+          updatePhaseLedger();
+        });
+      });
+
+      // Bind NavigationRail Jump Focus
+      document.querySelectorAll('[data-rail-focus]').forEach(function (btn) {
+        btn.addEventListener('click', function () {
+          document.querySelectorAll('[data-rail-focus]').forEach(function (b) {
+            if (b === btn) b.setAttribute('aria-current', 'page');
+            else b.removeAttribute('aria-current');
+          });
+          var targetId = btn.getAttribute('data-rail-focus');
+          var targetEl = document.getElementById(targetId);
+          if (targetEl) targetEl.focus();
+        });
+      });
+
+      updateUI();
+    })();
+  </script>
+</body>
+</html>

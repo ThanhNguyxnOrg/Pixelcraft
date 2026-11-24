@@ -1,0 +1,2241 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>MetroLine Pass · Urban Rail, Crowding &amp; Wear OS Companion (Jetpack Compose · M3E)</title>
+  <link rel="stylesheet" href="../../fonts/gallery.css" />
+  <style>
+    :root {
+      /* Mandatory brief palette tokens */
+      --bg-transit-stone: #ECEEE7;
+      --m3-surface-container: #F8FAF3;
+      --ink-forest-slate: #111C16;
+      --accent-commuter-pine: #17633B;
+      --signal-saffron: #C86D00;
+      --signal-crimson: #B91C1C;
+
+      /* Supporting M3E Pistachio Clay & Forest Slate tonal roles */
+      --m3-surface-bright: #FCFDF9;
+      --m3-surface-low: #F2F5EC;
+      --m3-surface-high: #E3E8DC;
+      --m3-surface-highest: #D6DFCE;
+      --m3-pistachio-tint: #D6EBDD;
+      --m3-on-pine: #FFFFFF;
+      --m3-pine-deep: #0D4226;
+      --m3-saffron-tint: #FDECC8;
+      --m3-on-saffron-tint: #5C3100;
+      --m3-crimson-tint: #FADEDE;
+      --m3-on-crimson-tint: #6E1010;
+
+      /* Ink & outline hierarchy */
+      --ink-secondary: #39493F;
+      --ink-muted: #55665B;
+      --outline-soft: #C5CFC3;
+      --outline-strong: #748579;
+
+      /* Hardware & Wear OS OLED tokens */
+      --device-chassis: #18231D;
+      --device-bezel-edge: #2E3E34;
+      --watch-oled: #09110D;
+      --watch-oled-ambient: #050806;
+      --watch-surface: #15241C;
+      --watch-surface-high: #1E3328;
+      --watch-mint: #7BE3A8;
+      --watch-saffron: #FFC168;
+      --watch-crimson: #FF8A8A;
+      --watch-ink: #F1F7F3;
+      --watch-ink-muted: #A6B9AE;
+
+      /* Typography */
+      --font-display: 'Archivo', 'Work Sans', sans-serif;
+      --font-sans: 'Work Sans', sans-serif;
+      --font-mono: 'IBM Plex Mono', monospace;
+    }
+
+    * {
+      box-sizing: border-box;
+    }
+
+    html,
+    body {
+      margin: 0;
+      padding: 0;
+      width: 100%;
+      min-height: 900px;
+      background-color: var(--bg-transit-stone);
+      color: var(--ink-forest-slate);
+      font-family: var(--font-sans);
+      line-height: 1.4;
+      -webkit-font-smoothing: antialiased;
+    }
+
+    button,
+    input,
+    select {
+      font-family: inherit;
+      color: inherit;
+    }
+
+    :focus-visible {
+      outline: 3px solid var(--accent-commuter-pine);
+      outline-offset: 2px;
+    }
+
+    .watch-viewport :focus-visible {
+      outline: 3px solid var(--watch-mint);
+      outline-offset: 2px;
+    }
+
+    /* Top Workbench Bar */
+    .workbench-header {
+      height: 50px;
+      padding: 0 26px;
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      gap: 16px;
+      background-color: var(--m3-surface-container);
+      border-bottom: 1px solid var(--outline-soft);
+    }
+
+    .brand-group {
+      display: flex;
+      align-items: center;
+      gap: 11px;
+    }
+
+    .brand-mark {
+      width: 28px;
+      height: 28px;
+      border-radius: 9px;
+      background-color: var(--accent-commuter-pine);
+      color: var(--m3-on-pine);
+      display: inline-flex;
+      align-items: center;
+      justify-content: center;
+      flex-shrink: 0;
+    }
+
+    .brand-title {
+      font-family: var(--font-display);
+      font-size: 16px;
+      font-weight: 800;
+      letter-spacing: -0.02em;
+      color: var(--ink-forest-slate);
+    }
+
+    .brand-authority {
+      font-size: 12.5px;
+      font-weight: 500;
+      color: var(--ink-secondary);
+    }
+
+    .stack-badge {
+      font-family: var(--font-mono);
+      font-size: 11px;
+      font-weight: 500;
+      padding: 3px 9px;
+      border-radius: 999px;
+      background-color: var(--m3-pistachio-tint);
+      color: var(--m3-pine-deep);
+      border: 1px solid var(--outline-soft);
+    }
+
+    .header-controls {
+      display: flex;
+      align-items: center;
+      gap: 14px;
+    }
+
+    .station-lookup-field {
+      display: flex;
+      align-items: center;
+      gap: 8px;
+    }
+
+    .station-lookup-field label {
+      font-size: 12px;
+      font-weight: 600;
+      color: var(--ink-secondary);
+    }
+
+    .station-lookup-field input {
+      width: 196px;
+      height: 32px;
+      padding: 0 11px;
+      border-radius: 9px;
+      border: 1px solid var(--outline-strong);
+      background-color: var(--m3-surface-bright);
+      font-size: 12.5px;
+      font-weight: 500;
+      transition: border-color 160ms cubic-bezier(0.2, 0, 0, 1), background-color 160ms cubic-bezier(0.2, 0, 0, 1);
+    }
+
+    .sync-status-pill {
+      display: inline-flex;
+      align-items: center;
+      gap: 7px;
+      padding: 5px 11px;
+      border-radius: 999px;
+      background-color: var(--m3-surface-low);
+      border: 1px solid var(--outline-soft);
+      font-family: var(--font-mono);
+      font-size: 11px;
+      font-weight: 500;
+      color: var(--m3-pine-deep);
+    }
+
+    .sync-dot {
+      width: 8px;
+      height: 8px;
+      border-radius: 50%;
+      background-color: var(--accent-commuter-pine);
+    }
+
+    /* Main 3-Column Stage (fits cleanly in 1440x900) */
+    .workbench-stage {
+      max-width: 1440px;
+      margin: 0 auto;
+      padding: 10px 26px 8px;
+      display: grid;
+      grid-template-columns: 458px 444px 1fr;
+      gap: 20px;
+      align-items: stretch;
+    }
+
+    /* COLUMN 1: Android Pixel 9 Device Frame */
+    .phone-stage {
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+    }
+
+    .pixel-chassis {
+      width: 454px;
+      height: 796px;
+      padding: 10px;
+      border-radius: 40px;
+      background-color: var(--device-chassis);
+      border: 2px solid var(--device-bezel-edge);
+      position: relative;
+      display: flex;
+      flex-direction: column;
+    }
+
+    /* Subtle hardware side buttons */
+    .pixel-chassis::after {
+      content: '';
+      position: absolute;
+      right: -4px;
+      top: 148px;
+      width: 3px;
+      height: 86px;
+      border-radius: 0 3px 3px 0;
+      background-color: var(--device-bezel-edge);
+    }
+
+    .pixel-screen {
+      flex: 1;
+      border-radius: 31px;
+      background-color: var(--bg-transit-stone);
+      overflow: hidden;
+      display: flex;
+      flex-direction: column;
+      justify-content: space-between;
+      padding: 0 14px 8px;
+    }
+
+    /* Android 15/16 Edge-to-Edge Status Bar */
+    .android-status-bar {
+      height: 28px;
+      padding: 4px 6px 0;
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      font-family: var(--font-mono);
+      font-size: 11px;
+      font-weight: 500;
+      color: var(--ink-forest-slate);
+      position: relative;
+    }
+
+    .camera-cutout {
+      width: 11px;
+      height: 11px;
+      border-radius: 50%;
+      background-color: var(--device-chassis);
+      position: absolute;
+      left: 50%;
+      top: 8px;
+      transform: translateX(-50%);
+    }
+
+    .status-icons {
+      display: inline-flex;
+      align-items: center;
+      gap: 7px;
+    }
+
+    /* Compose App Top Bar */
+    .compose-topbar {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      padding: 4px 2px 6px;
+    }
+
+    .station-heading {
+      margin: 0;
+      font-family: var(--font-display);
+      font-size: 18px;
+      font-weight: 800;
+      letter-spacing: -0.02em;
+      color: var(--ink-forest-slate);
+    }
+
+    .station-sub {
+      font-size: 11.5px;
+      color: var(--ink-secondary);
+      font-weight: 500;
+    }
+
+    .insets-tag {
+      font-family: var(--font-mono);
+      font-size: 10px;
+      padding: 3px 7px;
+      border-radius: 6px;
+      background-color: var(--m3-surface-high);
+      color: var(--ink-secondary);
+    }
+
+    /* M3E Connected ButtonGroup Route Switcher (>= 48dp height) */
+    .route-switcher {
+      display: grid;
+      grid-template-columns: repeat(3, 1fr);
+      gap: 5px;
+      padding: 4px;
+      background-color: var(--m3-surface-high);
+      border-radius: 18px;
+      margin-bottom: 8px;
+    }
+
+    .route-btn {
+      min-height: 48px;
+      padding: 6px 8px;
+      border: 1px solid transparent;
+      border-radius: 14px;
+      background-color: var(--m3-surface-container);
+      color: var(--ink-forest-slate);
+      cursor: pointer;
+      display: flex;
+      flex-direction: column;
+      align-items: flex-start;
+      justify-content: center;
+      text-align: left;
+      transition: background-color 180ms cubic-bezier(0.2, 0, 0, 1),
+                  color 180ms cubic-bezier(0.2, 0, 0, 1),
+                  border-radius 220ms cubic-bezier(0.34, 1.4, 0.64, 1),
+                  border-color 180ms cubic-bezier(0.2, 0, 0, 1);
+    }
+
+    .route-btn:hover {
+      background-color: var(--m3-surface-bright);
+    }
+
+    .route-btn[aria-pressed="true"] {
+      background-color: var(--accent-commuter-pine);
+      color: var(--m3-on-pine);
+      border-radius: 22px;
+      border-color: var(--m3-pine-deep);
+    }
+
+    .route-btn-code {
+      font-family: var(--font-display);
+      font-size: 12.5px;
+      font-weight: 800;
+      letter-spacing: -0.01em;
+    }
+
+    .route-btn-dest {
+      font-size: 10.5px;
+      opacity: 0.92;
+      font-weight: 500;
+    }
+
+    /* Live Platform Countdown Surface */
+    .departure-surface {
+      background-color: var(--m3-surface-container);
+      border: 1px solid var(--outline-soft);
+      border-radius: 20px;
+      padding: 11px 14px;
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      gap: 10px;
+      margin-bottom: 8px;
+    }
+
+    .departure-left {
+      display: flex;
+      flex-direction: column;
+      gap: 4px;
+    }
+
+    .line-header-row {
+      display: flex;
+      align-items: center;
+      gap: 7px;
+      flex-wrap: wrap;
+    }
+
+    .line-pill {
+      font-family: var(--font-display);
+      font-size: 13px;
+      font-weight: 800;
+      padding: 2px 9px;
+      border-radius: 8px;
+      background-color: var(--accent-commuter-pine);
+      color: var(--m3-on-pine);
+    }
+
+    .platform-pill {
+      font-family: var(--font-mono);
+      font-size: 11.5px;
+      font-weight: 500;
+      padding: 2px 8px;
+      border-radius: 7px;
+      background-color: var(--m3-surface-high);
+      color: var(--ink-forest-slate);
+    }
+
+    .destination-name {
+      font-family: var(--font-display);
+      font-size: 15.5px;
+      font-weight: 700;
+      color: var(--ink-forest-slate);
+    }
+
+    .headway-meta {
+      font-size: 11.5px;
+      color: var(--ink-secondary);
+    }
+
+    .departure-right {
+      text-align: right;
+      display: flex;
+      flex-direction: column;
+      align-items: flex-end;
+      gap: 4px;
+    }
+
+    .countdown-value {
+      font-family: var(--font-display);
+      font-size: 30px;
+      line-height: 1;
+      font-weight: 900;
+      letter-spacing: -0.03em;
+      font-variant-numeric: tabular-nums;
+      color: var(--ink-forest-slate);
+    }
+
+    .status-badge {
+      display: inline-flex;
+      align-items: center;
+      gap: 5px;
+      padding: 3px 8px;
+      border-radius: 999px;
+      font-size: 11px;
+      font-weight: 700;
+    }
+
+    .status-badge.tone-pine {
+      background-color: var(--m3-pistachio-tint);
+      color: var(--m3-pine-deep);
+    }
+
+    .status-badge.tone-saffron {
+      background-color: var(--m3-saffron-tint);
+      color: var(--m3-on-saffron-tint);
+      border: 1px solid var(--signal-saffron);
+    }
+
+    .status-badge.tone-crimson {
+      background-color: var(--m3-crimson-tint);
+      color: var(--m3-on-crimson-tint);
+      border: 1px solid var(--signal-crimson);
+    }
+
+    /* 6-Car Train Carriage Crowding Diagram */
+    .consist-surface {
+      background-color: var(--m3-surface-container);
+      border: 1px solid var(--outline-soft);
+      border-radius: 20px;
+      padding: 11px 12px;
+      margin-bottom: 8px;
+    }
+
+    .consist-head {
+      display: flex;
+      align-items: baseline;
+      justify-content: space-between;
+      margin-bottom: 8px;
+    }
+
+    .consist-title {
+      margin: 0;
+      font-family: var(--font-display);
+      font-size: 13.5px;
+      font-weight: 800;
+      color: var(--ink-forest-slate);
+    }
+
+    .consist-hint {
+      font-family: var(--font-mono);
+      font-size: 10.5px;
+      color: var(--ink-muted);
+    }
+
+    .consist-grid {
+      display: grid;
+      grid-template-columns: repeat(6, 1fr);
+      gap: 5px;
+      margin-bottom: 6px;
+    }
+
+    .car-unit {
+      min-height: 116px;
+      padding: 6px 4px;
+      border-radius: 12px;
+      border: 1.5px solid var(--outline-soft);
+      background-color: var(--m3-surface-bright);
+      cursor: pointer;
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      justify-content: space-between;
+      transition: transform 180ms cubic-bezier(0.34, 1.4, 0.64, 1),
+                  border-color 160ms cubic-bezier(0.2, 0, 0, 1),
+                  background-color 160ms cubic-bezier(0.2, 0, 0, 1);
+    }
+
+    .car-unit:first-child {
+      border-top-left-radius: 20px;
+    }
+
+    .car-unit:last-child {
+      border-top-right-radius: 20px;
+    }
+
+    .car-unit.recommended {
+      border-color: var(--accent-commuter-pine);
+      background-color: var(--m3-surface-low);
+    }
+
+    .car-unit[aria-pressed="true"] {
+      border-width: 2px;
+      border-color: var(--ink-forest-slate);
+      transform: translateY(-2px);
+      background-color: var(--m3-pistachio-tint);
+    }
+
+    .car-top {
+      width: 100%;
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      padding: 0 2px;
+      font-family: var(--font-mono);
+      font-size: 10.5px;
+      font-weight: 500;
+      color: var(--ink-secondary);
+    }
+
+    .car-bars-svg {
+      width: 44px;
+      height: 36px;
+      display: block;
+    }
+
+    .car-load-chip {
+      width: 100%;
+      padding: 3px 2px;
+      border-radius: 7px;
+      font-family: var(--font-display);
+      font-size: 10.5px;
+      font-weight: 800;
+      text-align: center;
+      line-height: 1.15;
+      font-variant-numeric: tabular-nums;
+    }
+
+    .car-load-chip.level-low {
+      background-color: var(--m3-pistachio-tint);
+      color: var(--m3-pine-deep);
+    }
+
+    .car-load-chip.level-mod {
+      background-color: var(--m3-saffron-tint);
+      color: var(--m3-on-saffron-tint);
+    }
+
+    .car-load-chip.level-full {
+      background-color: var(--m3-crimson-tint);
+      color: var(--m3-on-crimson-tint);
+    }
+
+    .rail-track {
+      height: 5px;
+      border-radius: 999px;
+      background-color: var(--m3-surface-highest);
+      margin-bottom: 8px;
+      position: relative;
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      padding: 0 14px;
+    }
+
+    .sector-marker {
+      font-family: var(--font-mono);
+      font-size: 9px;
+      color: var(--ink-muted);
+      background-color: var(--m3-surface-container);
+      padding: 0 4px;
+    }
+
+    .boarding-advisory {
+      display: flex;
+      align-items: center;
+      gap: 9px;
+      padding: 8px 10px;
+      border-radius: 12px;
+      background-color: var(--m3-pistachio-tint);
+      color: var(--m3-pine-deep);
+      border: 1px solid var(--accent-commuter-pine);
+    }
+
+    .advisory-icons {
+      display: inline-flex;
+      align-items: center;
+      gap: 4px;
+      flex-shrink: 0;
+    }
+
+    .advisory-copy {
+      font-size: 12px;
+      font-weight: 700;
+      line-height: 1.28;
+    }
+
+    .advisory-sub {
+      display: block;
+      font-size: 10.5px;
+      font-weight: 500;
+      color: var(--ink-secondary);
+    }
+
+    /* Corridor Stop Sequence & Transfer Strip */
+    .corridor-strip {
+      background-color: var(--m3-surface-container);
+      border: 1px solid var(--outline-soft);
+      border-radius: 18px;
+      padding: 9px 12px;
+      display: flex;
+      flex-direction: column;
+      gap: 6px;
+    }
+
+    .corridor-head {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      font-size: 11px;
+      font-weight: 700;
+      color: var(--ink-secondary);
+    }
+
+    .corridor-exit-note {
+      font-family: var(--font-mono);
+      font-size: 10px;
+      padding: 2px 7px;
+      border-radius: 999px;
+      background-color: var(--m3-surface-high);
+      color: var(--ink-forest-slate);
+    }
+
+    .corridor-stops {
+      display: grid;
+      grid-template-columns: repeat(3, 1fr);
+      gap: 6px;
+      position: relative;
+    }
+
+    .stop-node {
+      padding: 5px 7px;
+      border-radius: 10px;
+      background-color: var(--m3-surface-low);
+      border: 1px solid var(--outline-soft);
+      display: flex;
+      flex-direction: column;
+      gap: 1px;
+    }
+
+    .stop-node.current {
+      background-color: var(--m3-pistachio-tint);
+      border-color: var(--accent-commuter-pine);
+    }
+
+    .stop-time {
+      font-family: var(--font-mono);
+      font-size: 10px;
+      font-weight: 500;
+      color: var(--m3-pine-deep);
+    }
+
+    .stop-name {
+      font-size: 11px;
+      font-weight: 700;
+      color: var(--ink-forest-slate);
+      white-space: nowrap;
+      overflow: hidden;
+      text-overflow: ellipsis;
+    }
+
+    /* Bottom Thumb-Zone NFC & QR Express Pass */
+    .pass-surface {
+      background-color: var(--m3-surface-bright);
+      border: 1.5px solid var(--outline-strong);
+      border-radius: 22px;
+      padding: 10px 12px;
+      display: flex;
+      flex-direction: column;
+      gap: 8px;
+    }
+
+    .pass-surface.is-validated {
+      background-color: var(--m3-pistachio-tint);
+      border-color: var(--accent-commuter-pine);
+    }
+
+    .pass-row {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      gap: 10px;
+    }
+
+    .pass-meta {
+      display: flex;
+      flex-direction: column;
+      gap: 3px;
+    }
+
+    .pass-eyebrow {
+      font-family: var(--font-mono);
+      font-size: 10.5px;
+      font-weight: 500;
+      color: var(--m3-pine-deep);
+      display: inline-flex;
+      align-items: center;
+      gap: 5px;
+    }
+
+    .pass-zone-title {
+      font-family: var(--font-display);
+      font-size: 14.5px;
+      font-weight: 800;
+      color: var(--ink-forest-slate);
+    }
+
+    .pass-fare-detail {
+      font-size: 11.5px;
+      color: var(--ink-secondary);
+    }
+
+    .qr-box {
+      width: 58px;
+      height: 58px;
+      padding: 4px;
+      border-radius: 10px;
+      background-color: var(--m3-surface-bright);
+      border: 1px solid var(--outline-soft);
+      flex-shrink: 0;
+    }
+
+    .pass-action-row {
+      display: flex;
+      align-items: center;
+      gap: 8px;
+    }
+
+    .pass-activate-btn {
+      flex: 1;
+      min-height: 48px;
+      padding: 8px 12px;
+      border-radius: 15px;
+      border: 1px solid var(--m3-pine-deep);
+      background-color: var(--accent-commuter-pine);
+      color: var(--m3-on-pine);
+      font-family: var(--font-display);
+      font-size: 13px;
+      font-weight: 800;
+      cursor: pointer;
+      display: inline-flex;
+      align-items: center;
+      justify-content: center;
+      gap: 8px;
+      transition: background-color 160ms cubic-bezier(0.2, 0, 0, 1),
+                  transform 160ms cubic-bezier(0.2, 0, 0, 1);
+    }
+
+    .pass-activate-btn:hover {
+      background-color: var(--m3-pine-deep);
+    }
+
+    .pass-undo-btn {
+      min-height: 48px;
+      padding: 8px 11px;
+      border-radius: 14px;
+      border: 1px solid var(--outline-strong);
+      background-color: var(--m3-surface-bright);
+      color: var(--ink-forest-slate);
+      font-size: 11.5px;
+      font-weight: 700;
+      cursor: pointer;
+    }
+
+    .pass-undo-btn[hidden] {
+      display: none;
+    }
+
+    .gesture-pill-bar {
+      height: 14px;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      padding-top: 4px;
+    }
+
+    .gesture-pill {
+      width: 108px;
+      height: 4px;
+      border-radius: 999px;
+      background-color: var(--ink-muted);
+      opacity: 0.55;
+    }
+
+    /* COLUMN 2: Round Wear OS Watch Companion (416 x 416 circular bezel) */
+    .watch-stage {
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      justify-content: space-between;
+      height: 796px;
+    }
+
+    .stage-label-bar {
+      width: 100%;
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      padding: 2px 4px;
+      font-family: var(--font-mono);
+      font-size: 11px;
+      color: var(--ink-secondary);
+    }
+
+    .watch-hardware-wrap {
+      position: relative;
+      width: 416px;
+      height: 444px;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+    }
+
+    .watch-band-top,
+    .watch-band-bottom {
+      position: absolute;
+      left: 50%;
+      transform: translateX(-50%);
+      width: 164px;
+      height: 28px;
+      background-color: var(--device-bezel-edge);
+      border: 2px solid var(--device-chassis);
+    }
+
+    .watch-band-top {
+      top: 0;
+      border-radius: 14px 14px 0 0;
+    }
+
+    .watch-band-bottom {
+      bottom: 0;
+      border-radius: 0 0 14px 14px;
+    }
+
+    /* Tactile Rotary Crown on right edge of 416x416 bezel */
+    .watch-crown {
+      position: absolute;
+      right: -8px;
+      top: 190px;
+      width: 12px;
+      height: 48px;
+      border-radius: 4px;
+      background-color: var(--device-bezel-edge);
+      border: 1px solid var(--ink-forest-slate);
+      z-index: 2;
+    }
+
+    .watch-side-key {
+      position: absolute;
+      right: -5px;
+      top: 136px;
+      width: 8px;
+      height: 28px;
+      border-radius: 3px;
+      background-color: var(--device-bezel-edge);
+      z-index: 2;
+    }
+
+    .watch-bezel {
+      width: 416px;
+      height: 416px;
+      border-radius: 50%;
+      padding: 18px;
+      background-color: var(--device-chassis);
+      border: 3px solid var(--device-bezel-edge);
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      position: relative;
+      z-index: 1;
+    }
+
+    .watch-viewport {
+      width: 100%;
+      height: 100%;
+      border-radius: 50%;
+      background-color: var(--watch-oled);
+      color: var(--watch-ink);
+      padding: 22px 30px 18px;
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      justify-content: space-between;
+      overflow: hidden;
+      transition: background-color 200ms cubic-bezier(0.2, 0, 0, 1);
+    }
+
+    .watch-viewport.ambient-aod {
+      background-color: var(--watch-oled-ambient);
+    }
+
+    .watch-timetext {
+      display: flex;
+      align-items: center;
+      gap: 8px;
+      font-family: var(--font-mono);
+      font-size: 12px;
+      color: var(--watch-ink-muted);
+    }
+
+    .watch-sync-chip {
+      display: inline-flex;
+      align-items: center;
+      gap: 5px;
+      padding: 2px 8px;
+      border-radius: 999px;
+      background-color: var(--watch-surface);
+      color: var(--watch-mint);
+      font-size: 11px;
+      font-weight: 500;
+    }
+
+    .watch-sync-led {
+      width: 6px;
+      height: 6px;
+      border-radius: 50%;
+      background-color: var(--watch-mint);
+    }
+
+    .watch-complication-main {
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      gap: 4px;
+    }
+
+    .watch-glance-headline {
+      font-family: var(--font-display);
+      font-size: 27px;
+      font-weight: 900;
+      letter-spacing: -0.02em;
+      font-variant-numeric: tabular-nums;
+      color: var(--watch-ink);
+    }
+
+    .watch-route-sub {
+      font-size: 12px;
+      color: var(--watch-ink-muted);
+      font-weight: 500;
+    }
+
+    /* TransformingLazyColumn Car Complication Chip */
+    .watch-car-pill {
+      width: 100%;
+      max-width: 288px;
+      padding: 8px 14px;
+      border-radius: 18px;
+      background-color: var(--watch-surface-high);
+      border: 1px solid var(--watch-mint);
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      gap: 8px;
+    }
+
+    .watch-viewport.ambient-aod .watch-car-pill,
+    .watch-viewport.ambient-aod .watch-haptic-row,
+    .watch-viewport.ambient-aod .watch-edge-btn {
+      background-color: transparent;
+      border-color: var(--ink-muted);
+    }
+
+    .watch-car-primary {
+      font-family: var(--font-display);
+      font-size: 15px;
+      font-weight: 800;
+      color: var(--watch-mint);
+    }
+
+    .watch-car-detail {
+      font-family: var(--font-mono);
+      font-size: 11.5px;
+      color: var(--watch-ink);
+    }
+
+    /* Wear OS Haptic Toggle Row (>= 48px touch height) */
+    .watch-haptic-row {
+      width: 100%;
+      max-width: 288px;
+      min-height: 48px;
+      padding: 6px 14px;
+      border-radius: 18px;
+      background-color: var(--watch-surface);
+      border: 1px solid var(--device-bezel-edge);
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      gap: 10px;
+    }
+
+    .watch-haptic-label {
+      display: flex;
+      flex-direction: column;
+      cursor: pointer;
+    }
+
+    .watch-haptic-title {
+      font-size: 12.5px;
+      font-weight: 700;
+      color: var(--watch-ink);
+    }
+
+    .watch-haptic-state {
+      font-family: var(--font-mono);
+      font-size: 10.5px;
+      color: var(--watch-ink-muted);
+    }
+
+    .watch-switch-input {
+      appearance: none;
+      -webkit-appearance: none;
+      width: 46px;
+      height: 26px;
+      border-radius: 999px;
+      background-color: var(--device-bezel-edge);
+      border: 1.5px solid var(--watch-ink-muted);
+      position: relative;
+      cursor: pointer;
+      margin: 0;
+      flex-shrink: 0;
+      transition: background-color 160ms cubic-bezier(0.2, 0, 0, 1),
+                  border-color 160ms cubic-bezier(0.2, 0, 0, 1);
+    }
+
+    .watch-switch-input::after {
+      content: '';
+      position: absolute;
+      top: 3px;
+      left: 3px;
+      width: 17px;
+      height: 17px;
+      border-radius: 50%;
+      background-color: var(--watch-ink);
+      transition: transform 180ms cubic-bezier(0.34, 1.4, 0.64, 1),
+                  background-color 160ms cubic-bezier(0.2, 0, 0, 1);
+    }
+
+    .watch-switch-input:checked {
+      background-color: var(--accent-commuter-pine);
+      border-color: var(--watch-mint);
+    }
+
+    .watch-switch-input:checked::after {
+      transform: translateX(20px);
+      background-color: var(--watch-mint);
+    }
+
+    /* Wear OS M3E Bezel-Hugging EdgeButton */
+    .watch-edge-btn {
+      width: 234px;
+      min-height: 48px;
+      padding: 8px 16px;
+      border-radius: 18px 18px 36px 36px;
+      border: 1px solid var(--watch-mint);
+      background-color: var(--accent-commuter-pine);
+      color: var(--m3-on-pine);
+      font-family: var(--font-display);
+      font-size: 12.5px;
+      font-weight: 800;
+      cursor: pointer;
+      transition: background-color 160ms cubic-bezier(0.2, 0, 0, 1);
+    }
+
+    /* Companion DataClient & Rotary Ergonomics Box */
+    .companion-telemetry-box {
+      width: 100%;
+      background-color: var(--m3-surface-container);
+      border: 1px solid var(--outline-soft);
+      border-radius: 20px;
+      padding: 12px 14px;
+      display: flex;
+      flex-direction: column;
+      gap: 9px;
+    }
+
+    .telemetry-head {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+    }
+
+    .telemetry-title {
+      margin: 0;
+      font-family: var(--font-display);
+      font-size: 13.5px;
+      font-weight: 800;
+      color: var(--ink-forest-slate);
+    }
+
+    .telemetry-badge {
+      font-family: var(--font-mono);
+      font-size: 10.5px;
+      padding: 2px 8px;
+      border-radius: 999px;
+      background-color: var(--m3-pistachio-tint);
+      color: var(--m3-pine-deep);
+      font-weight: 500;
+    }
+
+    .dataclient-payload {
+      margin: 0;
+      padding: 8px 10px;
+      border-radius: 11px;
+      background-color: var(--m3-surface-low);
+      border: 1px solid var(--outline-soft);
+      font-family: var(--font-mono);
+      font-size: 10.5px;
+      line-height: 1.45;
+      color: var(--ink-forest-slate);
+      white-space: pre-wrap;
+    }
+
+    .wrist-controls-bar {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      gap: 10px;
+      padding-top: 1px;
+    }
+
+    .rotary-group {
+      display: inline-flex;
+      align-items: center;
+      gap: 6px;
+    }
+
+    .rotary-btn {
+      min-height: 34px;
+      padding: 4px 10px;
+      border-radius: 9px;
+      border: 1px solid var(--outline-strong);
+      background-color: var(--m3-surface-bright);
+      font-family: var(--font-mono);
+      font-size: 11px;
+      font-weight: 500;
+      cursor: pointer;
+      transition: background-color 150ms cubic-bezier(0.2, 0, 0, 1);
+    }
+
+    .rotary-btn:hover {
+      background-color: var(--m3-surface-high);
+    }
+
+    .aod-toggle-wrap {
+      display: inline-flex;
+      align-items: center;
+      gap: 7px;
+      font-size: 11.5px;
+      font-weight: 600;
+      color: var(--ink-secondary);
+    }
+
+    .aod-toggle-wrap input {
+      width: 17px;
+      height: 17px;
+      accent-color: var(--accent-commuter-pine);
+      cursor: pointer;
+    }
+
+    /* COLUMN 3: Right Compose Spec & Accessibility Column */
+    .spec-column {
+      display: flex;
+      flex-direction: column;
+      justify-content: space-between;
+      height: 796px;
+      gap: 10px;
+    }
+
+    .spec-block {
+      background-color: var(--m3-surface-container);
+      border: 1px solid var(--outline-soft);
+      border-radius: 18px;
+      padding: 12px 15px;
+    }
+
+    .spec-header {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      gap: 8px;
+      margin-bottom: 8px;
+    }
+
+    .spec-title {
+      margin: 0;
+      font-family: var(--font-display);
+      font-size: 13.5px;
+      font-weight: 800;
+      color: var(--ink-forest-slate);
+    }
+
+    .spec-chip {
+      font-family: var(--font-mono);
+      font-size: 10px;
+      padding: 2px 7px;
+      border-radius: 6px;
+      background-color: var(--m3-surface-high);
+      color: var(--ink-secondary);
+    }
+
+    .spec-table {
+      width: 100%;
+      border-collapse: collapse;
+      font-size: 11.5px;
+    }
+
+    .spec-table th,
+    .spec-table td {
+      padding: 5px 4px;
+      text-align: left;
+      border-bottom: 1px solid var(--m3-surface-high);
+      vertical-align: top;
+    }
+
+    .spec-table tr:last-child td {
+      border-bottom: 0;
+    }
+
+    .spec-table th {
+      font-family: var(--font-mono);
+      font-size: 10px;
+      text-transform: uppercase;
+      letter-spacing: 0.04em;
+      color: var(--ink-muted);
+    }
+
+    .mono-token {
+      font-family: var(--font-mono);
+      font-size: 10.5px;
+      color: var(--m3-pine-deep);
+      font-weight: 500;
+    }
+
+    .kotlin-snippet {
+      margin: 0;
+      padding: 9px 11px;
+      border-radius: 11px;
+      background-color: var(--device-chassis);
+      color: var(--watch-ink);
+      font-family: var(--font-mono);
+      font-size: 10.5px;
+      line-height: 1.45;
+      overflow-x: auto;
+    }
+
+    .kt-kw {
+      color: var(--watch-saffron);
+    }
+
+    .kt-str {
+      color: var(--watch-mint);
+    }
+
+    .spec-caption {
+      margin: 7px 0 0;
+      font-size: 11.5px;
+      color: var(--ink-secondary);
+      line-height: 1.35;
+    }
+
+    /* TalkBack Traversal List */
+    .traversal-list {
+      margin: 0;
+      padding: 0;
+      list-style: none;
+      display: flex;
+      flex-direction: column;
+      gap: 6px;
+    }
+
+    .traversal-item {
+      display: grid;
+      grid-template-columns: 22px 1fr auto;
+      align-items: center;
+      gap: 8px;
+      padding: 5px 8px;
+      border-radius: 9px;
+      background-color: var(--m3-surface-low);
+      font-size: 11.5px;
+    }
+
+    .traversal-idx {
+      width: 20px;
+      height: 20px;
+      border-radius: 6px;
+      background-color: var(--accent-commuter-pine);
+      color: var(--m3-on-pine);
+      font-family: var(--font-mono);
+      font-size: 10.5px;
+      font-weight: 500;
+      display: inline-flex;
+      align-items: center;
+      justify-content: center;
+    }
+
+    .traversal-target {
+      font-family: var(--font-mono);
+      font-size: 10px;
+      color: var(--ink-muted);
+    }
+
+    /* Verification Evidence Ledger */
+    .evidence-row {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      gap: 8px;
+      padding: 4px 0;
+      border-bottom: 1px solid var(--m3-surface-high);
+      font-size: 11.5px;
+    }
+
+    .evidence-row:last-child {
+      border-bottom: 0;
+      padding-bottom: 0;
+    }
+
+    .evidence-tag {
+      font-family: var(--font-mono);
+      font-size: 10px;
+      padding: 2px 7px;
+      border-radius: 999px;
+      font-weight: 500;
+      flex-shrink: 0;
+    }
+
+    .evidence-tag.ev-rendered {
+      background-color: var(--m3-pistachio-tint);
+      color: var(--m3-pine-deep);
+    }
+
+    .evidence-tag.ev-static {
+      background-color: var(--m3-surface-high);
+      color: var(--ink-forest-slate);
+    }
+
+    .evidence-tag.ev-unchecked {
+      background-color: var(--m3-saffron-tint);
+      color: var(--m3-on-saffron-tint);
+    }
+
+    /* Honest Footer */
+    .workbench-footer {
+      height: 34px;
+      padding: 0 26px;
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      border-top: 1px solid var(--outline-soft);
+      background-color: var(--m3-surface-low);
+      font-size: 11.5px;
+      color: var(--ink-secondary);
+    }
+
+    .footer-mono {
+      font-family: var(--font-mono);
+      font-size: 10.5px;
+      color: var(--ink-muted);
+    }
+
+    @media (prefers-reduced-motion: reduce) {
+      *,
+      *::before,
+      *::after {
+        animation-duration: 0.01ms !important;
+        animation-iteration-count: 1 !important;
+        transition-duration: 0.01ms !important;
+        scroll-behavior: auto !important;
+      }
+    }
+  </style>
+</head>
+<body>
+  <header class="workbench-header">
+    <div class="brand-group">
+      <span class="brand-mark" aria-hidden="true">
+        <svg width="18" height="18" viewBox="0 0 24 24" fill="none">
+          <rect x="5" y="3" width="14" height="15" rx="3.5" stroke="currentColor" stroke-width="2.2" />
+          <path d="M5 11H19" stroke="currentColor" stroke-width="2" />
+          <circle cx="9" cy="14.8" r="1.3" fill="currentColor" />
+          <circle cx="15" cy="14.8" r="1.3" fill="currentColor" />
+          <path d="M8 21L10.5 18M16 21L13.5 18" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" />
+        </svg>
+      </span>
+      <span class="brand-title">MetroLine Pass</span>
+      <span class="brand-authority">MetroLine Zürich-West · Operate Mode</span>
+      <span class="stack-badge">Jetpack Compose · M3E + Wear OS 6</span>
+    </div>
+
+    <div class="header-controls">
+      <div class="station-lookup-field">
+        <label for="station-filter-input">Station lookup</label>
+        <input
+          id="station-filter-input"
+          type="search"
+          value="Zürich Hardbrücke"
+          list="zurich-west-stations"
+        />
+        <datalist id="zurich-west-stations">
+          <option value="Zürich Hardbrücke"></option>
+          <option value="Zürich Altstetten"></option>
+          <option value="Paradeplatz Quai"></option>
+        </datalist>
+      </div>
+      <div class="sync-status-pill" id="header-sync-pill" aria-live="polite">
+        <span class="sync-dot" aria-hidden="true"></span>
+        <span>DataClient · 100% Synced</span>
+      </div>
+    </div>
+  </header>
+
+  <main class="workbench-stage">
+    <!-- COLUMN 1: Android Pixel 9 Frame (Jetpack Compose · Material 3 Expressive) -->
+    <section class="phone-stage" aria-label="Android Pixel 9 Jetpack Compose Material 3 Expressive screen">
+      <div class="pixel-chassis">
+        <div class="pixel-screen">
+          <div>
+            <!-- Android 15/16 Edge-to-Edge Status Bar -->
+            <div class="android-status-bar">
+              <span>08:14</span>
+              <span class="camera-cutout" aria-hidden="true"></span>
+              <span class="status-icons">
+                <span>NFC</span>
+                <span>5G</span>
+                <svg width="16" height="10" viewBox="0 0 18 11" fill="none" aria-hidden="true">
+                  <rect x="0.8" y="1" width="14.4" height="9" rx="2" stroke="currentColor" stroke-width="1.4" />
+                  <rect x="2.5" y="2.7" width="10.5" height="5.6" rx="1" fill="currentColor" />
+                  <rect x="16" y="3.5" width="1.5" height="4" rx="0.7" fill="currentColor" />
+                </svg>
+                <span>88%</span>
+              </span>
+            </div>
+
+            <!-- Station Header -->
+            <div class="compose-topbar">
+              <div>
+                <h1 class="station-heading" id="phone-station-name">Zürich Hardbrücke</h1>
+                <div class="station-sub" id="phone-station-zone">Zone 110 · Level-access concourse West</div>
+              </div>
+              <span class="insets-tag">safeDrawing</span>
+            </div>
+
+            <!-- M3E Connected ButtonGroup Route Switcher -->
+            <div class="route-switcher" role="group" aria-label="Active transit route">
+              <button type="button" class="route-btn" data-route="s4" aria-pressed="true">
+                <span class="route-btn-code">S4 Airport Express</span>
+                <span class="route-btn-dest">Pl. 3 · 4 min</span>
+              </button>
+              <button type="button" class="route-btn" data-route="u2" aria-pressed="false">
+                <span class="route-btn-code">U2 Harbour Loop</span>
+                <span class="route-btn-dest">Pl. 1 · 2 min</span>
+              </button>
+              <button type="button" class="route-btn" data-route="t11" aria-pressed="false">
+                <span class="route-btn-code">Tram 11 Kunsthaus</span>
+                <span class="route-btn-dest">Stop B · 6 min</span>
+              </button>
+            </div>
+
+            <!-- Live Platform Departure Countdown -->
+            <div class="departure-surface" aria-live="polite">
+              <div class="departure-left">
+                <div class="line-header-row">
+                  <span class="line-pill" id="phone-line-code">S4</span>
+                  <span class="platform-pill" id="phone-platform">Pl. 3 · Sector B–C</span>
+                </div>
+                <div class="destination-name" id="phone-destination">Zürich Flughafen (Airport)</div>
+                <div class="headway-meta" id="phone-headway">08:18 dep · 10 min headway · Next 14 min</div>
+              </div>
+              <div class="departure-right">
+                <div class="countdown-value" id="phone-countdown">4 min</div>
+                <span class="status-badge tone-pine" id="phone-status-badge">
+                  <svg width="12" height="12" viewBox="0 0 16 16" fill="none" aria-hidden="true">
+                    <path d="M3 8.5L6.5 12L13 4.5" stroke="currentColor" stroke-width="2.1" stroke-linecap="round" stroke-linejoin="round" />
+                  </svg>
+                  <span id="phone-status-text">On schedule</span>
+                </span>
+              </div>
+            </div>
+
+            <!-- 6-Car Train Carriage Crowding Diagram -->
+            <div class="consist-surface">
+              <div class="consist-head">
+                <h2 class="consist-title">6-Car Carriage Load · Axle Telemetry</h2>
+                <span class="consist-hint">Tap car → wrist</span>
+              </div>
+
+              <div class="consist-grid" id="consist-grid" role="group" aria-label="6-car carriage crowding diagram">
+                <!-- Populated & synced by deterministic inline controller; static initial markup rendered immediately -->
+                <button type="button" class="car-unit" data-car="1" aria-pressed="false">
+                  <span class="car-top"><span>C1</span><span>Cab</span></span>
+                  <svg class="car-bars-svg" viewBox="0 0 44 36" aria-hidden="true">
+                    <rect x="4" y="21" width="7" height="12" rx="1.5" fill="var(--signal-crimson)" />
+                    <rect x="14" y="16" width="7" height="17" rx="1.5" fill="var(--signal-crimson)" />
+                    <rect x="24" y="10" width="7" height="23" rx="1.5" fill="var(--signal-crimson)" />
+                    <rect x="34" y="4" width="7" height="29" rx="1.5" fill="var(--signal-crimson)" />
+                  </svg>
+                  <span class="car-load-chip level-full">Full 94%</span>
+                </button>
+
+                <button type="button" class="car-unit recommended" data-car="2" aria-pressed="true">
+                  <span class="car-top">
+                    <span>C2</span>
+                    <svg width="12" height="12" viewBox="0 0 16 16" fill="none" aria-label="Wheelchair space">
+                      <circle cx="8.5" cy="3" r="1.5" fill="var(--accent-commuter-pine)" />
+                      <path d="M7.5 5.5V9.5H11.5L13 13.5" stroke="var(--accent-commuter-pine)" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round" />
+                      <path d="M9.5 11.8A3.2 3.2 0 1 1 6 7.8" stroke="var(--accent-commuter-pine)" stroke-width="1.6" stroke-linecap="round" />
+                    </svg>
+                  </span>
+                  <svg class="car-bars-svg" viewBox="0 0 44 36" aria-hidden="true">
+                    <rect x="4" y="21" width="7" height="12" rx="1.5" fill="var(--accent-commuter-pine)" />
+                    <rect x="14" y="16" width="7" height="17" rx="1.5" fill="var(--m3-surface-highest)" />
+                    <rect x="24" y="10" width="7" height="23" rx="1.5" fill="var(--m3-surface-highest)" />
+                    <rect x="34" y="4" width="7" height="29" rx="1.5" fill="var(--m3-surface-highest)" />
+                  </svg>
+                  <span class="car-load-chip level-low">Low 28%</span>
+                </button>
+
+                <button type="button" class="car-unit" data-car="3" aria-pressed="false">
+                  <span class="car-top"><span>C3</span><span>2nd</span></span>
+                  <svg class="car-bars-svg" viewBox="0 0 44 36" aria-hidden="true">
+                    <rect x="4" y="21" width="7" height="12" rx="1.5" fill="var(--signal-saffron)" />
+                    <rect x="14" y="16" width="7" height="17" rx="1.5" fill="var(--signal-saffron)" />
+                    <rect x="24" y="10" width="7" height="23" rx="1.5" fill="var(--signal-saffron)" />
+                    <rect x="34" y="4" width="7" height="29" rx="1.5" fill="var(--m3-surface-highest)" />
+                  </svg>
+                  <span class="car-load-chip level-mod">Mod 61%</span>
+                </button>
+
+                <button type="button" class="car-unit" data-car="4" aria-pressed="false">
+                  <span class="car-top"><span>C4</span><span>2nd</span></span>
+                  <svg class="car-bars-svg" viewBox="0 0 44 36" aria-hidden="true">
+                    <rect x="4" y="21" width="7" height="12" rx="1.5" fill="var(--signal-saffron)" />
+                    <rect x="14" y="16" width="7" height="17" rx="1.5" fill="var(--signal-saffron)" />
+                    <rect x="24" y="10" width="7" height="23" rx="1.5" fill="var(--signal-saffron)" />
+                    <rect x="34" y="4" width="7" height="29" rx="1.5" fill="var(--m3-surface-highest)" />
+                  </svg>
+                  <span class="car-load-chip level-mod">Mod 64%</span>
+                </button>
+
+                <button type="button" class="car-unit recommended" data-car="5" aria-pressed="false">
+                  <span class="car-top">
+                    <span>C5</span>
+                    <svg width="13" height="12" viewBox="0 0 18 16" fill="none" aria-label="Bike space">
+                      <circle cx="4.5" cy="11.5" r="2.7" stroke="var(--accent-commuter-pine)" stroke-width="1.5" />
+                      <circle cx="13.5" cy="11.5" r="2.7" stroke="var(--accent-commuter-pine)" stroke-width="1.5" />
+                      <path d="M4.5 11.5L8 6.5H12L10 11.5M11 5H13.2" stroke="var(--accent-commuter-pine)" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round" />
+                    </svg>
+                  </span>
+                  <svg class="car-bars-svg" viewBox="0 0 44 36" aria-hidden="true">
+                    <rect x="4" y="21" width="7" height="12" rx="1.5" fill="var(--accent-commuter-pine)" />
+                    <rect x="14" y="16" width="7" height="17" rx="1.5" fill="var(--m3-surface-highest)" />
+                    <rect x="24" y="10" width="7" height="23" rx="1.5" fill="var(--m3-surface-highest)" />
+                    <rect x="34" y="4" width="7" height="29" rx="1.5" fill="var(--m3-surface-highest)" />
+                  </svg>
+                  <span class="car-load-chip level-low">Low 31%</span>
+                </button>
+
+                <button type="button" class="car-unit" data-car="6" aria-pressed="false">
+                  <span class="car-top"><span>C6</span><span>1st</span></span>
+                  <svg class="car-bars-svg" viewBox="0 0 44 36" aria-hidden="true">
+                    <rect x="4" y="21" width="7" height="12" rx="1.5" fill="var(--signal-crimson)" />
+                    <rect x="14" y="16" width="7" height="17" rx="1.5" fill="var(--signal-crimson)" />
+                    <rect x="24" y="10" width="7" height="23" rx="1.5" fill="var(--signal-crimson)" />
+                    <rect x="34" y="4" width="7" height="29" rx="1.5" fill="var(--signal-crimson)" />
+                  </svg>
+                  <span class="car-load-chip level-full">Full 89%</span>
+                </button>
+              </div>
+
+              <div class="rail-track" aria-hidden="true">
+                <span class="sector-marker">Sector A</span>
+                <span class="sector-marker">Sector B</span>
+                <span class="sector-marker">Sector C</span>
+              </div>
+
+              <div class="boarding-advisory">
+                <span class="advisory-icons" aria-hidden="true">
+                  <svg width="18" height="18" viewBox="0 0 20 20" fill="none">
+                    <circle cx="10.5" cy="4" r="1.8" fill="currentColor" />
+                    <path d="M9 7V12H14L15.8 16.5" stroke="currentColor" stroke-width="1.9" stroke-linecap="round" stroke-linejoin="round" />
+                    <path d="M11.8 14.5A3.8 3.8 0 1 1 7.3 9.8" stroke="currentColor" stroke-width="1.9" stroke-linecap="round" />
+                  </svg>
+                </span>
+                <div class="advisory-copy">
+                  <span id="phone-advisory-main">Board Car 2 or 5 for level wheelchair &amp; bike space</span>
+                  <span class="advisory-sub" id="phone-advisory-sub">Pinned: Car 2 (Low 28%) · Stops opposite Lift B</span>
+                </div>
+              </div>
+            </div>
+
+            <!-- Corridor Stop Progression & Concourse Transfer Strip -->
+            <div class="corridor-strip">
+              <div class="corridor-head">
+                <span>Corridor Stop Sequence</span>
+                <span class="corridor-exit-note" id="phone-exit-note">Lift B → Check-in 2</span>
+              </div>
+              <div class="corridor-stops" id="phone-corridor-stops">
+                <div class="stop-node current">
+                  <span class="stop-time">08:18 · Dep</span>
+                  <span class="stop-name">Hardbrücke</span>
+                </div>
+                <div class="stop-node">
+                  <span class="stop-time">08:23 · +5m</span>
+                  <span class="stop-name">Oerlikon Pl. 7</span>
+                </div>
+                <div class="stop-node">
+                  <span class="stop-time">08:29 · +11m</span>
+                  <span class="stop-name">Flughafen</span>
+                </div>
+              </div>
+            </div>
+          </div>
+
+          <!-- Thumb-Zone Tap-to-Validate NFC + QR Pass -->
+          <div>
+            <div class="pass-surface" id="phone-pass-surface">
+              <div class="pass-row">
+                <div class="pass-meta">
+                  <span class="pass-eyebrow">
+                    <svg width="13" height="13" viewBox="0 0 16 16" fill="none" aria-hidden="true">
+                      <path d="M4 11C5.5 9.2 5.5 6.8 4 5M7 12.8C9.6 9.9 9.6 6.1 7 3.2M10.2 14.5C13.9 10.6 13.9 5.4 10.2 1.5" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" />
+                    </svg>
+                    <span id="pass-nfc-state">NFC HCE Ready · Aztec QR Token</span>
+                  </span>
+                  <div class="pass-zone-title" id="pass-title">Zone 110 · Single &amp; Transfer Pass</div>
+                  <div class="pass-fare-detail" id="pass-detail">2nd Class · Unlimited rail, tram &amp; bus for 90 min</div>
+                </div>
+
+                <!-- Crisp deterministic Aztec/QR SVG matrix -->
+                <div class="qr-box" aria-hidden="true">
+                  <svg viewBox="0 0 40 40" width="48" height="48" fill="var(--ink-forest-slate)">
+                    <path d="M2 2h12v12H2V2zm2 2v8h8V4H4zm2 2h4v4H6V6zm20-4h12v12H26V2zm2 2v8h8V4h-8zm2 2h4v4h-4V6zM2 26h12v12H2V26zm2 2v8h8v-8H4zm2 2h4v4H6v-4z" />
+                    <rect x="16" y="4" width="3" height="3" />
+                    <rect x="20" y="7" width="3" height="6" />
+                    <rect x="16" y="15" width="10" height="10" fill="var(--accent-commuter-pine)" />
+                    <rect x="19" y="18" width="4" height="4" fill="var(--m3-surface-bright)" />
+                    <rect x="4" y="17" width="9" height="3" />
+                    <rect x="29" y="17" width="7" height="4" />
+                    <rect x="17" y="28" width="4" height="8" />
+                    <rect x="24" y="27" width="6" height="4" />
+                    <rect x="32" y="25" width="6" height="6" />
+                    <rect x="25" y="34" width="11" height="4" />
+                  </svg>
+                </div>
+              </div>
+
+              <div class="pass-action-row">
+                <button type="button" class="pass-activate-btn" id="pass-activate-btn">
+                  <span>Tap to Activate 90-min Zone 110 Pass · CHF 4.40</span>
+                </button>
+                <button type="button" class="pass-undo-btn" id="pass-undo-btn" hidden>
+                  Undo (30s)
+                </button>
+              </div>
+            </div>
+
+            <div class="gesture-pill-bar" aria-hidden="true">
+              <span class="gesture-pill"></span>
+            </div>
+          </div>
+        </div>
+      </div>
+    </section>
+
+    <!-- COLUMN 2: Round Wear OS Watch Companion (416 x 416 circular bezel) -->
+    <section class="watch-stage" aria-label="Wear OS 6 round watch companion tile">
+      <div class="stage-label-bar">
+        <span>Wear OS 6 · ProtoLayout Tile</span>
+        <span>416 × 416 px Round Bezel</span>
+      </div>
+
+      <div class="watch-hardware-wrap">
+        <span class="watch-band-top" aria-hidden="true"></span>
+        <span class="watch-band-bottom" aria-hidden="true"></span>
+        <span class="watch-side-key" aria-hidden="true"></span>
+        <span class="watch-crown" aria-hidden="true"></span>
+        <div class="watch-bezel">
+          <div class="watch-viewport" id="watch-viewport">
+            <!-- Curved top TimeText + 100% Synced state -->
+            <div class="watch-timetext">
+              <span>08:14</span>
+              <span class="watch-sync-chip">
+                <span class="watch-sync-led" aria-hidden="true"></span>
+                <span id="watch-sync-label">100% Synced</span>
+              </span>
+            </div>
+
+            <!-- Primary Glanceable Wrist Complication -->
+            <div class="watch-complication-main" aria-live="polite">
+              <div class="watch-glance-headline" id="watch-glance-main">S4 · Pl. 3 · 4 min</div>
+              <div class="watch-route-sub" id="watch-route-sub">Hardbrücke → Airport</div>
+            </div>
+
+            <!-- Pinned Car Complication -->
+            <div class="watch-car-pill">
+              <div>
+                <div class="watch-car-primary" id="watch-car-label">Car 2 Low</div>
+                <div class="watch-car-detail" id="watch-car-sub">28% load · Level access</div>
+              </div>
+              <svg width="34" height="24" viewBox="0 0 34 24" aria-hidden="true" id="watch-car-bars">
+                <rect x="2" y="13" width="6" height="9" rx="1.2" fill="var(--watch-mint)" />
+                <rect x="10" y="9" width="6" height="13" rx="1.2" fill="var(--device-bezel-edge)" />
+                <rect x="18" y="5" width="6" height="17" rx="1.2" fill="var(--device-bezel-edge)" />
+                <rect x="26" y="2" width="6" height="20" rx="1.2" fill="var(--device-bezel-edge)" />
+              </svg>
+            </div>
+
+            <!-- Wrist Haptic Alert Toggle (with explicit <label for>) -->
+            <div class="watch-haptic-row">
+              <label class="watch-haptic-label" for="watch-haptic-input">
+                <span class="watch-haptic-title">2-min Wrist Haptic</span>
+                <span class="watch-haptic-state" id="watch-haptic-status">Armed · Double-pulse</span>
+              </label>
+              <input
+                class="watch-switch-input"
+                type="checkbox"
+                id="watch-haptic-input"
+                checked
+              />
+            </div>
+
+            <!-- Bezel-Hugging EdgeButton -->
+            <button type="button" class="watch-edge-btn" id="watch-pass-btn">
+              Activate CHF 4.40 Pass
+            </button>
+          </div>
+        </div>
+      </div>
+
+      <!-- DataClient Sync Telemetry & Constrained Wrist Controls -->
+      <div class="companion-telemetry-box">
+        <div class="telemetry-head">
+          <h2 class="telemetry-title">Wearable DataClient · Live State Mirror</h2>
+          <span class="telemetry-badge" id="telemetry-sync-badge">BLE · 100% Synced</span>
+        </div>
+
+        <pre class="dataclient-payload" id="dataclient-payload" aria-live="polite">/metroline/active_trip · rev 14 · 100% synced
+route: "S4" | plat: "Pl. 3" | eta: "4 min"
+car: "Car 2 Low (28%)" | haptic: true | pass: "READY"</pre>
+
+        <div class="wrist-controls-bar">
+          <div class="rotary-group" role="group" aria-label="Simulate Wear OS rotary crown">
+            <button type="button" class="rotary-btn" id="crown-prev-btn">Crown − Car</button>
+            <button type="button" class="rotary-btn" id="crown-next-btn">Crown + Car</button>
+          </div>
+          <div class="aod-toggle-wrap">
+            <input type="checkbox" id="watch-aod-input" />
+            <label for="watch-aod-input">Ambient OLED (AOD)</label>
+          </div>
+        </div>
+      </div>
+    </section>
+
+    <!-- COLUMN 3: Right Compose Spec Column -->
+    <aside class="spec-column" aria-label="Jetpack Compose and Accessibility Architecture Specification">
+      <!-- 1. WindowSizeClass & Edge-to-Edge -->
+      <section class="spec-block">
+        <div class="spec-header">
+          <h2 class="spec-title">Adaptive Layout &amp; WindowSizeClass</h2>
+          <span class="spec-chip">material3-adaptive</span>
+        </div>
+        <table class="spec-table">
+          <thead>
+            <tr>
+              <th>Surface Class</th>
+              <th>Compose Scaffold &amp; Motion</th>
+            </tr>
+          </thead>
+          <tbody>
+            <tr>
+              <td><span class="mono-token">COMPACT</span><br />Phone &lt; 600.dp</td>
+              <td><span class="mono-token">WindowInsets.safeDrawing</span> + thumb-zone NFC pass + <span class="mono-token">PredictiveBackHandler</span></td>
+            </tr>
+            <tr>
+              <td><span class="mono-token">EXPANDED</span><br />Fold / Tablet</td>
+              <td><span class="mono-token">SupportingPaneScaffold</span> pairs 6-car telemetry alongside corridor map</td>
+            </tr>
+            <tr>
+              <td><span class="mono-token">WATCH_ROUND</span><br />416 × 416 px</td>
+              <td><span class="mono-token">ScreenScaffold</span> + <span class="mono-token">TransformingLazyColumn</span> + <span class="mono-token">rotaryScrollable</span> + <span class="mono-token">EdgeButton</span></td>
+            </tr>
+          </tbody>
+        </table>
+      </section>
+
+      <!-- 2. Semantics(liveRegion = Polite) -->
+      <section class="spec-block">
+        <div class="spec-header">
+          <h2 class="spec-title">Semantics(liveRegion = Polite)</h2>
+          <span class="spec-chip">Compose 1.8 UI</span>
+        </div>
+        <pre class="kotlin-snippet"><code><span class="kt-kw">Modifier</span>.semantics(mergeDescendants = <span class="kt-kw">true</span>) {
+  liveRegion = <span class="kt-kw">LiveRegionMode</span>.Polite
+  stateDescription = <span class="kt-str">"S4 Pl. 3, 4 min, Car 2 Low 28%"</span>
+  traversalIndex = 1f
+}.minimumInteractiveComponentSize() <span class="kt-str">// &gt;= 48x48.dp</span></code></pre>
+        <p class="spec-caption">
+          Polite live-region semantics queue headway updates after active speech finishes; crowding chips pair bar height + explicit <span class="mono-token">Low / Mod / Full %</span> text.
+        </p>
+      </section>
+
+      <!-- 3. TalkBack Traversal Order -->
+      <section class="spec-block">
+        <div class="spec-header">
+          <h2 class="spec-title">TalkBack Traversal Order</h2>
+          <span class="spec-chip">isTraversalGroup = true</span>
+        </div>
+        <ol class="traversal-list">
+          <li class="traversal-item">
+            <span class="traversal-idx">1</span>
+            <span>Route <span class="mono-token">ButtonGroup</span> (S4 · U2 · Tram 11)</span>
+            <span class="traversal-target">48×48 dp</span>
+          </li>
+          <li class="traversal-item">
+            <span class="traversal-idx">2</span>
+            <span>Platform Departure Summary (<span class="mono-token">Polite</span>)</span>
+            <span class="traversal-target">Merged</span>
+          </li>
+          <li class="traversal-item">
+            <span class="traversal-idx">3</span>
+            <span>6-Car Consist + Level Boarding Advisory</span>
+            <span class="traversal-target">Role.Button</span>
+          </li>
+          <li class="traversal-item">
+            <span class="traversal-idx">4</span>
+            <span>Zone 110 NFC Pass CTA + 30s Undo</span>
+            <span class="traversal-target">Thumb zone</span>
+          </li>
+          <li class="traversal-item">
+            <span class="traversal-idx">5</span>
+            <span>Wear OS Tile Complication &amp; Haptic Switch</span>
+            <span class="traversal-target">Rotary + Touch</span>
+          </li>
+        </ol>
+      </section>
+
+      <!-- 4. Honest Evidence Labels -->
+      <section class="spec-block">
+        <div class="spec-header">
+          <h2 class="spec-title">Verification Evidence Matrix</h2>
+          <span class="spec-chip">Operate Floor</span>
+        </div>
+        <div class="evidence-row">
+          <span>Non-color car load bars (<span class="mono-token">Low 28% · Mod 61% · Full 94%</span>)</span>
+          <span class="evidence-tag ev-rendered">rendered</span>
+        </div>
+        <div class="evidence-row">
+          <span>Tokenized palette, focus ring &amp; <span class="mono-token">prefers-reduced-motion</span></span>
+          <span class="evidence-tag ev-static">static</span>
+        </div>
+        <div class="evidence-row">
+          <span>Pixel 9 TalkBack &amp; Pixel Watch 3 hardware crown</span>
+          <span class="evidence-tag ev-unchecked">not-checked</span>
+        </div>
+      </section>
+    </aside>
+  </main>
+
+  <footer class="workbench-footer">
+    <span>MetroLine Zürich-West · Fictional transit network · Illustrative headways and CHF Zone 110 fares</span>
+    <span class="footer-mono">Jetpack Compose Material 3 Expressive · Wear OS 6 ProtoLayout Companion</span>
+  </footer>
+
+  <script>
+    (function () {
+      const ROUTES = {
+        s4: {
+          code: 'S4',
+          name: 'S4 Airport Express',
+          destination: 'Zürich Flughafen (Airport)',
+          watchTarget: 'Airport',
+          platform: 'Pl. 3 · Sector B–C',
+          watchPlatform: 'Pl. 3',
+          eta: '4 min',
+          headway: '08:18 dep · 10 min headway · Next 14 min',
+          statusTone: 'tone-pine',
+          statusIcon: 'check',
+          statusText: 'On schedule',
+          exitNote: 'Lift B → Check-in 2',
+          stops: [
+            { time: '08:18 · Dep', name: 'Hardbrücke' },
+            { time: '08:23 · +5m', name: 'Oerlikon Pl. 7' },
+            { time: '08:29 · +11m', name: 'Flughafen' }
+          ],
+          advisory: 'Board Car 2 or 5 for level wheelchair & bike space',
+          defaultCar: 2,
+          cars: [
+            { num: 1, tag: 'Cab', level: 'full', label: 'Full 94%', pct: 94, bars: 4, note: 'Front cab · Standing room near stairs' },
+            { num: 2, tag: 'W/C', level: 'low', label: 'Low 28%', pct: 28, bars: 1, rec: true, icon: 'wheelchair', note: 'Stops opposite Lift B · Level boarding' },
+            { num: 3, tag: '2nd', level: 'mod', label: 'Mod 61%', pct: 61, bars: 3, note: 'Upper deck seats available' },
+            { num: 4, tag: '2nd', level: 'mod', label: 'Mod 64%', pct: 64, bars: 3, note: 'Mid-platform escalator sector' },
+            { num: 5, tag: 'Bike', level: 'low', label: 'Low 31%', pct: 31, bars: 1, rec: true, icon: 'bike', note: '6 bike hooks + level stroller bay' },
+            { num: 6, tag: '1st', level: 'full', label: 'Full 89%', pct: 89, bars: 4, note: 'Rear 1st class quiet coach' }
+          ]
+        },
+        u2: {
+          code: 'U2',
+          name: 'U2 Harbour Loop',
+          destination: 'Tiefenbrunnen Harbour',
+          watchTarget: 'Harbour',
+          platform: 'Pl. 1B · Sector A–B',
+          watchPlatform: 'Pl. 1B',
+          eta: '2 min',
+          headway: '08:16 dep · 6 min headway · Next 8 min',
+          statusTone: 'tone-saffron',
+          statusIcon: 'alert',
+          statusText: 'Short berth · Sector A–B',
+          exitNote: 'Ramp A → Ferry Pier',
+          stops: [
+            { time: '08:16 · Dep', name: 'Hardbrücke' },
+            { time: '08:21 · +5m', name: 'Stadelhofen' },
+            { time: '08:25 · +9m', name: 'Tiefenbrunnen' }
+          ],
+          advisory: 'Board Car 2 or 5 for level wheelchair & bike space',
+          defaultCar: 2,
+          cars: [
+            { num: 1, tag: 'Cab', level: 'mod', label: 'Mod 58%', pct: 58, bars: 2, note: 'Harbour ramp exit alignment' },
+            { num: 2, tag: 'W/C', level: 'low', label: 'Low 24%', pct: 24, bars: 1, rec: true, icon: 'wheelchair', note: 'Level platform gap filler active' },
+            { num: 3, tag: '2nd', level: 'full', label: 'Full 91%', pct: 91, bars: 4, note: 'Central transfer stair crowd' },
+            { num: 4, tag: '2nd', level: 'mod', label: 'Mod 63%', pct: 63, bars: 3, note: 'Standing bays clear' },
+            { num: 5, tag: 'Bike', level: 'low', label: 'Low 29%', pct: 29, bars: 1, rec: true, icon: 'bike', note: 'Multi-purpose harbour bike bay' },
+            { num: 6, tag: '2nd', level: 'mod', label: 'Mod 52%', pct: 52, bars: 2, note: 'Rear cab · Ramp Sector B' }
+          ]
+        },
+        t11: {
+          code: 'T11',
+          name: 'Tram 11 Kunsthaus',
+          destination: 'Kunsthaus · Rehalp',
+          watchTarget: 'Kunsthaus',
+          platform: 'Stop B · Quai Forecourt',
+          watchPlatform: 'Stop B',
+          eta: '6 min',
+          headway: '08:20 est · 7 min headway · Next 13 min',
+          statusTone: 'tone-crimson',
+          statusIcon: 'alert',
+          statusText: '+2 min Paradeplatz hold',
+          exitNote: 'Step-free Forecourt',
+          stops: [
+            { time: '08:20 · Est', name: 'Hardbrücke B' },
+            { time: '08:28 · +8m', name: 'Paradeplatz' },
+            { time: '08:33 · +13m', name: 'Kunsthaus' }
+          ],
+          advisory: 'Board Car 2 or 5 for level wheelchair & bike space',
+          defaultCar: 5,
+          cars: [
+            { num: 1, tag: 'Mod1', level: 'full', label: 'Full 94%', pct: 94, bars: 4, note: 'Front driver module · Tight aisle' },
+            { num: 2, tag: 'W/C', level: 'low', label: 'Low 33%', pct: 33, bars: 1, rec: true, icon: 'wheelchair', note: 'Wide double-door boarding ramp' },
+            { num: 3, tag: 'Mod3', level: 'mod', label: 'Mod 67%', pct: 67, bars: 3, note: 'Perch seating module' },
+            { num: 4, tag: 'Mod4', level: 'mod', label: 'Mod 59%', pct: 59, bars: 3, note: 'Ticket validator module' },
+            { num: 5, tag: 'Bike', level: 'low', label: 'Low 26%', pct: 26, bars: 1, rec: true, icon: 'bike', note: 'Open stroller & folding bike bay' },
+            { num: 6, tag: 'Mod6', level: 'mod', label: 'Mod 61%', pct: 61, bars: 3, note: 'Rear module · Steps to seats' }
+          ]
+        }
+      };
+
+      const state = {
+        routeKey: 's4',
+        selectedCar: 2,
+        passActive: false,
+        hapticArmed: true,
+        ambientAod: false,
+        revision: 14,
+        station: 'Zürich Hardbrücke'
+      };
+
+      const routeBtns = document.querySelectorAll('.route-btn');
+      const consistGrid = document.getElementById('consist-grid');
+      const passActivateBtn = document.getElementById('pass-activate-btn');
+      const passUndoBtn = document.getElementById('pass-undo-btn');
+      const watchPassBtn = document.getElementById('watch-pass-btn');
+      const hapticInput = document.getElementById('watch-haptic-input');
+      const aodInput = document.getElementById('watch-aod-input');
+      const stationInput = document.getElementById('station-filter-input');
+      const crownPrevBtn = document.getElementById('crown-prev-btn');
+      const crownNextBtn = document.getElementById('crown-next-btn');
+
+      function iconSvg(kind) {
+        if (kind === 'wheelchair') {
+          return '<svg width="12" height="12" viewBox="0 0 16 16" fill="none" aria-hidden="true"><circle cx="8.5" cy="3" r="1.5" fill="var(--accent-commuter-pine)"/><path d="M7.5 5.5V9.5H11.5L13 13.5" stroke="var(--accent-commuter-pine)" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round"/><path d="M9.5 11.8A3.2 3.2 0 1 1 6 7.8" stroke="var(--accent-commuter-pine)" stroke-width="1.6" stroke-linecap="round"/></svg>';
+        }
+        if (kind === 'bike') {
+          return '<svg width="13" height="12" viewBox="0 0 18 16" fill="none" aria-hidden="true"><circle cx="4.5" cy="11.5" r="2.7" stroke="var(--accent-commuter-pine)" stroke-width="1.5"/><circle cx="13.5" cy="11.5" r="2.7" stroke="var(--accent-commuter-pine)" stroke-width="1.5"/><path d="M4.5 11.5L8 6.5H12L10 11.5M11 5H13.2" stroke="var(--accent-commuter-pine)" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"/></svg>';
+        }
+        return '';
+      }
+
+      function barColorVar(level, forWatch) {
+        if (level === 'low') return forWatch ? 'var(--watch-mint)' : 'var(--accent-commuter-pine)';
+        if (level === 'mod') return forWatch ? 'var(--watch-saffron)' : 'var(--signal-saffron)';
+        return forWatch ? 'var(--watch-crimson)' : 'var(--signal-crimson)';
+      }
+
+      function renderBarsSvg(car, forWatch) {
+        const activeFill = barColorVar(car.level, forWatch);
+        const emptyFill = forWatch ? 'var(--device-bezel-edge)' : 'var(--m3-surface-highest)';
+        const heights = forWatch
+          ? [
+              { x: 2, y: 13, w: 6, h: 9 },
+              { x: 10, y: 9, w: 6, h: 13 },
+              { x: 18, y: 5, w: 6, h: 17 },
+              { x: 26, y: 2, w: 6, h: 20 }
+            ]
+          : [
+              { x: 4, y: 21, w: 7, h: 12 },
+              { x: 14, y: 16, w: 7, h: 17 },
+              { x: 24, y: 10, w: 7, h: 23 },
+              { x: 34, y: 4, w: 7, h: 29 }
+            ];
+        return heights
+          .map(function (b, idx) {
+            const fill = idx < car.bars ? activeFill : emptyFill;
+            return '<rect x="' + b.x + '" y="' + b.y + '" width="' + b.w + '" height="' + b.h + '" rx="1.4" fill="' + fill + '" />';
+          })
+          .join('');
+      }
+
+      function render() {
+        const route = ROUTES[state.routeKey];
+        const car = route.cars.find(function (c) { return c.num === state.selectedCar; }) || route.cars[1];
+
+        // Station header
+        const cleanStation = state.station.trim() || 'Zürich Hardbrücke';
+        const shortOrigin = cleanStation.replace(/^Zürich\s+/i, '');
+        document.getElementById('phone-station-name').textContent = cleanStation;
+
+        // Route buttons
+        routeBtns.forEach(function (btn) {
+          btn.setAttribute('aria-pressed', String(btn.getAttribute('data-route') === state.routeKey));
+        });
+
+        // Phone departure
+        document.getElementById('phone-line-code').textContent = route.code;
+        document.getElementById('phone-platform').textContent = route.platform;
+        document.getElementById('phone-destination').textContent = route.destination;
+        document.getElementById('phone-headway').textContent = route.headway;
+        document.getElementById('phone-countdown').textContent = route.eta;
+
+        const statusBadge = document.getElementById('phone-status-badge');
+        statusBadge.className = 'status-badge ' + route.statusTone;
+        const statusSvg = route.statusIcon === 'check'
+          ? '<svg width="12" height="12" viewBox="0 0 16 16" fill="none" aria-hidden="true"><path d="M3 8.5L6.5 12L13 4.5" stroke="currentColor" stroke-width="2.1" stroke-linecap="round" stroke-linejoin="round"/></svg>'
+          : '<svg width="12" height="12" viewBox="0 0 16 16" fill="none" aria-hidden="true"><path d="M8 2.2L14.3 13.2H1.7L8 2.2Z" stroke="currentColor" stroke-width="1.6" stroke-linejoin="round"/><path d="M8 6.3V9.3M8 11.4H8.01" stroke="currentColor" stroke-width="1.7" stroke-linecap="round"/></svg>';
+        statusBadge.innerHTML = statusSvg + '<span>' + route.statusText + '</span>';
+
+        // Render 6-car consist
+        consistGrid.innerHTML = route.cars
+          .map(function (c) {
+            const isSelected = c.num === car.num;
+            const recClass = c.rec ? ' recommended' : '';
+            const rightTop = c.icon ? iconSvg(c.icon) : '<span>' + c.tag + '</span>';
+            return (
+              '<button type="button" class="car-unit' + recClass + '" data-car="' + c.num + '" aria-pressed="' + isSelected + '" aria-label="Car ' + c.num + ', ' + c.label + ', ' + c.note + '">' +
+              '<span class="car-top"><span>C' + c.num + '</span>' + rightTop + '</span>' +
+              '<svg class="car-bars-svg" viewBox="0 0 44 36" aria-hidden="true">' + renderBarsSvg(c, false) + '</svg>' +
+              '<span class="car-load-chip level-' + c.level + '">' + c.label + '</span>' +
+              '</button>'
+            );
+          })
+          .join('');
+
+        consistGrid.querySelectorAll('.car-unit').forEach(function (btn) {
+          btn.addEventListener('click', function () {
+            state.selectedCar = Number(btn.getAttribute('data-car'));
+            state.revision += 1;
+            render();
+          });
+        });
+
+        document.getElementById('phone-advisory-main').textContent = route.advisory;
+        document.getElementById('phone-advisory-sub').textContent =
+          'Pinned: Car ' + car.num + ' (' + car.label + ') · ' + car.note;
+
+        // Corridor stops
+        document.getElementById('phone-exit-note').textContent = route.exitNote;
+        const stopsEl = document.getElementById('phone-corridor-stops');
+        stopsEl.replaceChildren(
+          ...route.stops.map(function (st, idx) {
+            const node = document.createElement('div');
+            node.className = 'stop-node' + (idx === 0 ? ' current' : '');
+            const timeEl = document.createElement('span');
+            timeEl.className = 'stop-time';
+            timeEl.textContent = st.time;
+            const nameEl = document.createElement('span');
+            nameEl.className = 'stop-name';
+            nameEl.textContent = idx === 0 ? shortOrigin : st.name;
+            node.append(timeEl, nameEl);
+            return node;
+          })
+        );
+
+        // Pass state on Phone
+        const passSurface = document.getElementById('phone-pass-surface');
+        if (state.passActive) {
+          passSurface.classList.add('is-validated');
+          document.getElementById('pass-nfc-state').textContent = 'Pass Active · Token ML-ZH-1104 · 89:59 left';
+          document.getElementById('pass-activate-btn').textContent = 'Zone 110 Pass Active · Hold Near Reader';
+          passUndoBtn.hidden = false;
+        } else {
+          passSurface.classList.remove('is-validated');
+          document.getElementById('pass-nfc-state').textContent = 'NFC HCE Ready · Aztec QR Token';
+          document.getElementById('pass-activate-btn').textContent = 'Tap to Activate 90-min Zone 110 Pass · CHF 4.40';
+          passUndoBtn.hidden = true;
+        }
+
+        // Sync Wear OS Watch Companion (100% synced)
+        const watchViewport = document.getElementById('watch-viewport');
+        watchViewport.classList.toggle('ambient-aod', state.ambientAod);
+
+        document.getElementById('watch-glance-main').textContent =
+          route.code + ' · ' + route.watchPlatform + ' · ' + route.eta;
+        document.getElementById('watch-route-sub').textContent =
+          shortOrigin + ' → ' + route.watchTarget;
+
+        const shortLevel = car.level === 'low' ? 'Low' : car.level === 'mod' ? 'Mod' : 'Full';
+        const watchCarEl = document.getElementById('watch-car-label');
+        watchCarEl.textContent = 'Car ' + car.num + ' ' + shortLevel;
+        watchCarEl.style.color = barColorVar(car.level, true);
+        document.getElementById('watch-car-sub').textContent =
+          car.pct + '% load · ' + (car.rec ? 'Level access' : car.tag);
+        document.getElementById('watch-car-bars').innerHTML = renderBarsSvg(car, true);
+
+        document.getElementById('watch-haptic-status').textContent =
+          state.hapticArmed ? 'Armed · Double-pulse' : 'Muted on wrist';
+
+        watchPassBtn.textContent = state.passActive
+          ? 'Zone 110 Active · 89:59'
+          : 'Activate CHF 4.40 Pass';
+
+        document.getElementById('dataclient-payload').textContent =
+          '/metroline/active_trip · rev ' + state.revision + ' · 100% synced\n' +
+          'route: "' + route.code + '" | plat: "' + route.watchPlatform + '" | eta: "' + route.eta + '"\n' +
+          'car: "Car ' + car.num + ' ' + shortLevel + ' (' + car.pct + '%)" | haptic: ' + state.hapticArmed + ' | pass: "' + (state.passActive ? 'ACTIVE' : 'READY') + '"';
+      }
+
+      routeBtns.forEach(function (btn) {
+        btn.addEventListener('click', function () {
+          const nextKey = btn.getAttribute('data-route');
+          if (ROUTES[nextKey]) {
+            state.routeKey = nextKey;
+            state.selectedCar = ROUTES[nextKey].defaultCar;
+            state.revision += 1;
+            render();
+          }
+        });
+      });
+
+      passActivateBtn.addEventListener('click', function () {
+        state.passActive = !state.passActive;
+        state.revision += 1;
+        render();
+      });
+
+      passUndoBtn.addEventListener('click', function () {
+        state.passActive = false;
+        state.revision += 1;
+        render();
+      });
+
+      watchPassBtn.addEventListener('click', function () {
+        state.passActive = !state.passActive;
+        state.revision += 1;
+        render();
+      });
+
+      hapticInput.addEventListener('change', function () {
+        state.hapticArmed = hapticInput.checked;
+        state.revision += 1;
+        render();
+      });
+
+      aodInput.addEventListener('change', function () {
+        state.ambientAod = aodInput.checked;
+        render();
+      });
+
+      stationInput.addEventListener('input', function () {
+        state.station = stationInput.value;
+        state.revision += 1;
+        render();
+      });
+
+      crownPrevBtn.addEventListener('click', function () {
+        state.selectedCar = state.selectedCar <= 1 ? 6 : state.selectedCar - 1;
+        state.revision += 1;
+        render();
+      });
+
+      crownNextBtn.addEventListener('click', function () {
+        state.selectedCar = state.selectedCar >= 6 ? 1 : state.selectedCar + 1;
+        state.revision += 1;
+        render();
+      });
+
+      render();
+    })();
+  </script>
+</body>
+</html>

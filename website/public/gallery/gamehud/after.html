@@ -1,0 +1,1843 @@
+<!doctype html>
+<html lang="en" data-vision="standard" data-scale="100">
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
+  <title>AEGIS-07 · Orbital Salvage Hangar HUD &amp; Reactor Balancer (Godot 4.5 Control)</title>
+  <link rel="stylesheet" href="../../fonts/gallery.css" />
+  <style>
+    :root {
+      --gunmetal-bulkhead: #0B0F13;
+      --bay-panel: #121820;
+      --bay-recess: #070A0E;
+      --bay-raised: #18212C;
+      --chamfer-border: #283442;
+      --chamfer-strong: #3A4B5E;
+      --telemetry-bone: #EEF2F6;
+      --stencil-gray: #8A99AD;
+      --stencil-muted: #637387;
+      --hazard-ochre: #F59E0B;
+      --vector-cyan: #22D3EE;
+      --thermal-coral: #FB7185;
+
+      --cyan-tint: rgba(34, 211, 238, 0.12);
+      --cyan-line: rgba(34, 211, 238, 0.42);
+      --ochre-tint: rgba(245, 158, 11, 0.14);
+      --ochre-line: rgba(245, 158, 11, 0.48);
+      --coral-tint: rgba(251, 113, 133, 0.15);
+      --coral-line: rgba(251, 113, 133, 0.52);
+      --grid-hairline: rgba(138, 153, 173, 0.08);
+      --bevel-highlight: rgba(238, 242, 246, 0.05);
+
+      --font-display: 'Barlow Condensed', sans-serif;
+      --font-ui: 'Archivo', sans-serif;
+      --font-mono: 'IBM Plex Mono', ui-monospace, monospace;
+      --hud-scale: 1;
+    }
+
+    html[data-vision="deuteranopia"] {
+      --vector-cyan: #38BDF8;
+      --hazard-ochre: #FACC15;
+      --thermal-coral: #FB923C;
+      --cyan-tint: rgba(56, 189, 248, 0.15);
+      --cyan-line: rgba(56, 189, 248, 0.55);
+      --ochre-tint: rgba(250, 204, 21, 0.16);
+      --ochre-line: rgba(250, 204, 21, 0.58);
+      --coral-tint: rgba(251, 146, 60, 0.2);
+      --coral-line: rgba(251, 146, 60, 0.68);
+    }
+
+    html[data-scale="115"] {
+      --hud-scale: 1.15;
+    }
+
+    * {
+      box-sizing: border-box;
+    }
+
+    html,
+    body {
+      margin: 0;
+      padding: 0;
+      min-height: 900px;
+      background-color: var(--gunmetal-bulkhead);
+      background-image:
+        linear-gradient(to right, var(--grid-hairline) 1px, transparent 1px),
+        linear-gradient(to bottom, var(--grid-hairline) 1px, transparent 1px);
+      background-size: 36px 36px;
+      color: var(--telemetry-bone);
+      font-family: var(--font-ui);
+      font-size: calc(13px * var(--hud-scale));
+      line-height: 1.35;
+      -webkit-font-smoothing: antialiased;
+    }
+
+    :focus-visible {
+      outline: 2px solid var(--vector-cyan);
+      outline-offset: 2px;
+    }
+
+    .skip-control {
+      position: absolute;
+      left: 18px;
+      top: -52px;
+      z-index: 50;
+      padding: 8px 14px;
+      background-color: var(--vector-cyan);
+      color: var(--bay-recess);
+      font-family: var(--font-mono);
+      font-size: 12px;
+      font-weight: 500;
+      text-decoration: none;
+    }
+
+    .skip-control:focus {
+      top: 10px;
+    }
+
+    .tabular {
+      font-variant-numeric: tabular-nums;
+    }
+
+    /* Safe-Area Root Shell (1440 x 900) */
+    .hangar-hud {
+      max-width: 1440px;
+      min-height: 900px;
+      margin-inline: auto;
+      padding: 10px 16px 8px;
+      display: flex;
+      flex-direction: column;
+      gap: 8px;
+      position: relative;
+    }
+
+    /* Top Safe-Area HUD Bar */
+    .top-safe-bar {
+      background-color: var(--bay-panel);
+      border: 1px solid var(--chamfer-border);
+      box-shadow: inset 0 1px 0 var(--bevel-highlight);
+      padding: 7px 14px;
+      display: flex;
+      flex-wrap: wrap;
+      align-items: center;
+      justify-content: space-between;
+      gap: 8px 12px;
+      clip-path: polygon(
+        0 0,
+        calc(100% - 10px) 0,
+        100% 10px,
+        100% 100%,
+        10px 100%,
+        0 calc(100% - 10px)
+      );
+    }
+
+    .bay-identity {
+      display: flex;
+      align-items: center;
+      gap: 10px;
+      flex-wrap: wrap;
+    }
+
+    .reticle-mark {
+      width: 26px;
+      height: 26px;
+      background-color: var(--bay-recess);
+      border: 1px solid var(--chamfer-strong);
+      display: inline-flex;
+      align-items: center;
+      justify-content: center;
+      flex-shrink: 0;
+    }
+
+    .bay-heading {
+      margin: 0;
+      font-family: var(--font-display);
+      font-size: calc(20px * var(--hud-scale));
+      font-weight: 800;
+      letter-spacing: 0.05em;
+      text-transform: uppercase;
+      color: var(--telemetry-bone);
+      line-height: 1;
+    }
+
+    .engine-tag {
+      font-family: var(--font-mono);
+      font-size: calc(10.5px * var(--hud-scale));
+      color: var(--vector-cyan);
+      background-color: var(--cyan-tint);
+      border: 1px solid var(--cyan-line);
+      padding: 2px 8px;
+      letter-spacing: 0.02em;
+    }
+
+    .glyph-strip {
+      display: flex;
+      align-items: center;
+      gap: 6px;
+      flex-wrap: wrap;
+    }
+
+    .glyph-btn,
+    .glyph-readout {
+      display: inline-flex;
+      align-items: center;
+      gap: 5px;
+      background-color: var(--bay-recess);
+      border: 1px solid var(--chamfer-border);
+      padding: 4px 8px;
+      font-family: var(--font-mono);
+      font-size: calc(10.5px * var(--hud-scale));
+      color: var(--stencil-gray);
+    }
+
+    .glyph-btn {
+      appearance: none;
+      cursor: pointer;
+      color: var(--telemetry-bone);
+      transition: background-color 130ms ease, border-color 130ms ease, color 130ms ease;
+    }
+
+    .glyph-btn:hover {
+      background-color: var(--bay-raised);
+      border-color: var(--vector-cyan);
+    }
+
+    .keycap {
+      color: var(--hazard-ochre);
+      font-weight: 500;
+    }
+
+    .vision-cluster {
+      display: flex;
+      align-items: center;
+      gap: 8px;
+      flex-wrap: wrap;
+    }
+
+    .cluster-caption {
+      font-family: var(--font-mono);
+      font-size: 10px;
+      letter-spacing: 0.08em;
+      text-transform: uppercase;
+      color: var(--stencil-gray);
+    }
+
+    .switcher-rail {
+      display: inline-flex;
+      background-color: var(--bay-recess);
+      border: 1px solid var(--chamfer-border);
+      padding: 2px;
+      gap: 2px;
+    }
+
+    .mode-btn {
+      appearance: none;
+      border: 1px solid transparent;
+      background-color: transparent;
+      color: var(--stencil-gray);
+      font-family: var(--font-mono);
+      font-size: calc(10.5px * var(--hud-scale));
+      font-weight: 500;
+      padding: 4px 8px;
+      cursor: pointer;
+      transition: background-color 130ms ease, border-color 130ms ease, color 130ms ease;
+    }
+
+    .mode-btn:hover {
+      color: var(--telemetry-bone);
+      background-color: var(--bay-panel);
+    }
+
+    .mode-btn[aria-pressed="true"] {
+      background-color: var(--bay-raised);
+      border-color: var(--vector-cyan);
+      color: var(--vector-cyan);
+    }
+
+    /* Main 3-Column Tactical Deck */
+    .tactical-deck {
+      flex: 1;
+      display: grid;
+      grid-template-columns: 364px minmax(0, 1fr) 378px;
+      gap: 10px;
+      align-items: stretch;
+    }
+
+    .bulkhead-box {
+      background-color: var(--bay-panel);
+      border: 1px solid var(--chamfer-border);
+      box-shadow: inset 0 1px 0 var(--bevel-highlight);
+      padding: 10px 12px;
+      display: flex;
+      flex-direction: column;
+      gap: 8px;
+    }
+
+    .section-head {
+      display: flex;
+      align-items: baseline;
+      justify-content: space-between;
+      gap: 8px;
+      padding-bottom: 6px;
+      border-bottom: 1px solid var(--chamfer-border);
+    }
+
+    .section-title {
+      margin: 0;
+      font-family: var(--font-display);
+      font-size: calc(16px * var(--hud-scale));
+      font-weight: 800;
+      letter-spacing: 0.06em;
+      text-transform: uppercase;
+      color: var(--telemetry-bone);
+      white-space: nowrap;
+    }
+
+    .section-meta {
+      font-family: var(--font-mono);
+      font-size: 10px;
+      color: var(--stencil-gray);
+      letter-spacing: 0.03em;
+      white-space: nowrap;
+    }
+
+    /* Left Tactical Column: Hardpoint Rack */
+    .preset-row {
+      display: grid;
+      grid-template-columns: repeat(3, minmax(0, 1fr));
+      gap: 5px;
+    }
+
+    .preset-btn {
+      appearance: none;
+      background-color: var(--bay-recess);
+      border: 1px solid var(--chamfer-border);
+      color: var(--stencil-gray);
+      font-family: var(--font-mono);
+      font-size: 10px;
+      padding: 5px 4px;
+      cursor: pointer;
+      white-space: nowrap;
+      transition: background-color 130ms ease, border-color 130ms ease, color 130ms ease;
+    }
+
+    .preset-btn:hover {
+      background-color: var(--bay-raised);
+      color: var(--telemetry-bone);
+      border-color: var(--chamfer-strong);
+    }
+
+    .preset-btn.is-active {
+      border-color: var(--hazard-ochre);
+      color: var(--hazard-ochre);
+      background-color: var(--ochre-tint);
+    }
+
+    .hardpoint-list {
+      display: flex;
+      flex-direction: column;
+      gap: 7px;
+      flex: 1;
+    }
+
+    .hardpoint-btn {
+      appearance: none;
+      width: 100%;
+      text-align: left;
+      background-color: var(--bay-recess);
+      border: 1px solid var(--chamfer-border);
+      padding: 9px 11px;
+      color: var(--telemetry-bone);
+      cursor: pointer;
+      display: flex;
+      flex-direction: column;
+      gap: 5px;
+      position: relative;
+      transition: background-color 130ms ease, border-color 130ms ease;
+    }
+
+    .hardpoint-btn:hover,
+    .hardpoint-btn.is-linked-hover {
+      background-color: var(--bay-raised);
+      border-color: var(--chamfer-strong);
+    }
+
+    .hardpoint-btn[aria-pressed="true"] {
+      background-color: var(--bay-raised);
+      border-color: var(--vector-cyan);
+    }
+
+    .hardpoint-btn[aria-pressed="true"].is-thermal-driver {
+      border-color: var(--hazard-ochre);
+    }
+
+    .hp-top {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      gap: 8px;
+    }
+
+    .hp-slot-code {
+      font-family: var(--font-mono);
+      font-size: calc(10px * var(--hud-scale));
+      color: var(--hazard-ochre);
+      letter-spacing: 0.05em;
+    }
+
+    .hp-state-pill {
+      font-family: var(--font-mono);
+      font-size: calc(10px * var(--hud-scale));
+      font-weight: 500;
+      padding: 1px 7px;
+      border: 1px solid var(--chamfer-border);
+      color: var(--stencil-gray);
+      background-color: var(--bay-panel);
+    }
+
+    .hardpoint-btn[aria-pressed="true"] .hp-state-pill {
+      color: var(--vector-cyan);
+      border-color: var(--cyan-line);
+      background-color: var(--cyan-tint);
+    }
+
+    .hp-name {
+      font-family: var(--font-display);
+      font-size: calc(17.5px * var(--hud-scale));
+      font-weight: 600;
+      letter-spacing: 0.03em;
+      color: var(--telemetry-bone);
+      line-height: 1.06;
+    }
+
+    .hp-spec {
+      font-size: calc(11px * var(--hud-scale));
+      color: var(--stencil-gray);
+    }
+
+    .hp-metrics {
+      display: flex;
+      flex-wrap: wrap;
+      gap: 6px;
+      padding-top: 3px;
+      border-top: 1px solid var(--chamfer-border);
+      font-family: var(--font-mono);
+      font-size: calc(10px * var(--hud-scale));
+    }
+
+    .hp-chip {
+      color: var(--telemetry-bone);
+      background-color: var(--bay-panel);
+      border: 1px solid var(--chamfer-border);
+      padding: 1px 6px;
+    }
+
+    .hp-chip.heat-high {
+      color: var(--hazard-ochre);
+      border-color: var(--ochre-line);
+    }
+
+    .focus-telemetry-box {
+      background-color: var(--bay-recess);
+      border: 1px solid var(--chamfer-border);
+      padding: 7px 10px;
+      display: flex;
+      flex-direction: column;
+      gap: 2px;
+      font-family: var(--font-mono);
+      font-size: calc(10px * var(--hud-scale));
+      color: var(--stencil-gray);
+    }
+
+    .focus-telemetry-box strong {
+      color: var(--vector-cyan);
+      font-weight: 500;
+    }
+
+    /* Center Column: Diegetic SVG Rig Schematic & Orbital Azimuth Ring */
+    .schematic-column {
+      background-color: var(--bay-panel);
+      border: 1px solid var(--chamfer-border);
+      box-shadow: inset 0 1px 0 var(--bevel-highlight);
+      padding: 10px 12px;
+      display: flex;
+      flex-direction: column;
+      gap: 7px;
+    }
+
+    .schematic-well {
+      position: relative;
+      flex: 1;
+      min-height: 590px;
+      background-color: var(--bay-recess);
+      border: 1px solid var(--chamfer-border);
+      overflow: hidden;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+    }
+
+    .safe-corner {
+      position: absolute;
+      width: 14px;
+      height: 14px;
+      border-color: var(--stencil-muted);
+      border-style: solid;
+      pointer-events: none;
+    }
+
+    .safe-corner.tl { top: 8px; left: 8px; border-width: 2px 0 0 2px; }
+    .safe-corner.tr { top: 8px; right: 8px; border-width: 2px 2px 0 0; }
+    .safe-corner.bl { bottom: 8px; left: 8px; border-width: 0 0 2px 2px; }
+    .safe-corner.br { bottom: 8px; right: 8px; border-width: 0 2px 2px 0; }
+
+    .rig-svg {
+      width: 100%;
+      height: 100%;
+      max-height: 100%;
+      display: block;
+    }
+
+    .radar-sweep-arm {
+      transform-origin: 310px 310px;
+      animation: azimuth-sweep 16s linear infinite;
+    }
+
+    @keyframes azimuth-sweep {
+      from { transform: rotate(0deg); }
+      to { transform: rotate(360deg); }
+    }
+
+    .svg-assembly {
+      transition: opacity 150ms ease;
+    }
+
+    .svg-assembly.is-unmounted {
+      opacity: 0.38;
+      stroke-dasharray: 5 4;
+    }
+
+    .svg-assembly.is-highlighted {
+      filter: drop-shadow(0 0 5px var(--cyan-line));
+    }
+
+    .leader-path {
+      fill: none;
+      stroke: var(--vector-cyan);
+      stroke-width: 1.5;
+      transition: stroke 140ms ease, opacity 140ms ease;
+    }
+
+    .leader-path.is-unmounted {
+      stroke: var(--stencil-muted);
+      stroke-dasharray: 4 4;
+      opacity: 0.75;
+    }
+
+    .leader-path.is-active-focus {
+      stroke: var(--hazard-ochre);
+      stroke-width: 2.3;
+    }
+
+    /* 4 Clickable Diegetic Hardpoint Callouts */
+    .callout-node {
+      position: absolute;
+      z-index: 4;
+      width: 218px;
+      appearance: none;
+      text-align: left;
+      background-color: var(--bay-panel);
+      border: 1px solid var(--vector-cyan);
+      padding: 7px 10px;
+      color: var(--telemetry-bone);
+      cursor: pointer;
+      display: flex;
+      flex-direction: column;
+      gap: 2px;
+      transition: background-color 130ms ease, border-color 130ms ease;
+    }
+
+    .callout-node:hover,
+    .callout-node.is-linked-hover {
+      background-color: var(--bay-raised);
+      border-color: var(--hazard-ochre);
+    }
+
+    .callout-node[aria-pressed="false"] {
+      border-color: var(--chamfer-strong);
+      background-color: var(--bay-recess);
+      color: var(--stencil-gray);
+    }
+
+    .callout-node.pos-tl { top: 16px; left: 16px; }
+    .callout-node.pos-tr { top: 16px; right: 16px; }
+    .callout-node.pos-bl { bottom: 16px; left: 16px; }
+    .callout-node.pos-br { bottom: 16px; right: 16px; }
+
+    .callout-title {
+      font-family: var(--font-display);
+      font-size: calc(15px * var(--hud-scale));
+      font-weight: 800;
+      letter-spacing: 0.03em;
+      color: var(--telemetry-bone);
+    }
+
+    .callout-node[aria-pressed="false"] .callout-title {
+      color: var(--stencil-gray);
+    }
+
+    .callout-telemetry {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      font-family: var(--font-mono);
+      font-size: calc(10px * var(--hud-scale));
+      color: var(--vector-cyan);
+    }
+
+    .callout-node[aria-pressed="false"] .callout-telemetry {
+      color: var(--stencil-gray);
+    }
+
+    .azimuth-bar {
+      background-color: var(--bay-recess);
+      border: 1px solid var(--chamfer-border);
+      padding: 6px 11px;
+      display: flex;
+      flex-wrap: wrap;
+      align-items: center;
+      justify-content: space-between;
+      gap: 8px;
+      font-family: var(--font-mono);
+      font-size: calc(10.5px * var(--hud-scale));
+      color: var(--stencil-gray);
+    }
+
+    .azimuth-bar b {
+      color: var(--telemetry-bone);
+      font-weight: 500;
+    }
+
+    /* Right Tactical Column: Reactor Draw, Heat Dissipation, Mass Ratio, Launch */
+    .telemetry-pod {
+      background-color: var(--bay-recess);
+      border: 1px solid var(--chamfer-border);
+      padding: 9px 11px;
+      display: flex;
+      flex-direction: column;
+      gap: 6px;
+    }
+
+    .telemetry-pod.is-overheat {
+      border-color: var(--thermal-coral);
+      background-color: var(--coral-tint);
+    }
+
+    .pod-label-row {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      gap: 8px;
+    }
+
+    .pod-kicker {
+      font-family: var(--font-mono);
+      font-size: calc(10px * var(--hud-scale));
+      letter-spacing: 0.07em;
+      text-transform: uppercase;
+      color: var(--stencil-gray);
+    }
+
+    .status-flag {
+      font-family: var(--font-mono);
+      font-size: calc(10.5px * var(--hud-scale));
+      font-weight: 500;
+      padding: 2px 7px;
+      border: 1px solid var(--cyan-line);
+      background-color: var(--cyan-tint);
+      color: var(--vector-cyan);
+    }
+
+    .status-flag.caution {
+      border-color: var(--ochre-line);
+      background-color: var(--ochre-tint);
+      color: var(--hazard-ochre);
+    }
+
+    .status-flag.critical {
+      border-color: var(--coral-line);
+      background-color: var(--coral-tint);
+      color: var(--thermal-coral);
+    }
+
+    .big-readout-row {
+      display: flex;
+      align-items: baseline;
+      justify-content: space-between;
+      gap: 8px;
+    }
+
+    .big-readout {
+      font-family: var(--font-display);
+      font-size: calc(32px * var(--hud-scale));
+      font-weight: 800;
+      line-height: 0.95;
+      letter-spacing: 0.02em;
+      color: var(--telemetry-bone);
+    }
+
+    .big-unit {
+      font-family: var(--font-mono);
+      font-size: calc(11px * var(--hud-scale));
+      color: var(--stencil-gray);
+    }
+
+    /* Segmented Cassette-Futurist Gauge Track */
+    .segment-meter {
+      display: grid;
+      grid-template-columns: repeat(20, minmax(0, 1fr));
+      gap: 3px;
+      height: 13px;
+      padding: 2px;
+      background-color: var(--bay-panel);
+      border: 1px solid var(--chamfer-border);
+    }
+
+    .seg-cell {
+      background-color: var(--gunmetal-bulkhead);
+      border: 1px solid var(--chamfer-border);
+      transition: background-color 120ms ease, border-color 120ms ease;
+    }
+
+    .seg-cell.lit-cyan {
+      background-color: var(--vector-cyan);
+      border-color: var(--vector-cyan);
+    }
+
+    .seg-cell.lit-ochre {
+      background-color: var(--hazard-ochre);
+      border-color: var(--hazard-ochre);
+    }
+
+    .seg-cell.lit-coral {
+      background-color: var(--thermal-coral);
+      border-color: var(--thermal-coral);
+      background-image: repeating-linear-gradient(
+        -45deg,
+        transparent 0 3px,
+        var(--bay-recess) 3px 5px
+      );
+    }
+
+    .meter-subline {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      font-family: var(--font-mono);
+      font-size: calc(10px * var(--hud-scale));
+      color: var(--stencil-gray);
+    }
+
+    /* Thermal Track with 85% Redline Marker */
+    .thermal-bar-wrap {
+      position: relative;
+      height: 15px;
+      background-color: var(--bay-panel);
+      border: 1px solid var(--chamfer-border);
+      overflow: hidden;
+    }
+
+    .thermal-danger-zone {
+      position: absolute;
+      left: 85%;
+      right: 0;
+      top: 0;
+      bottom: 0;
+      background-image: repeating-linear-gradient(
+        -45deg,
+        var(--coral-tint) 0 4px,
+        transparent 4px 8px
+      );
+      border-left: 2px solid var(--thermal-coral);
+      pointer-events: none;
+    }
+
+    .thermal-fill {
+      height: 100%;
+      width: 64%;
+      background-color: var(--vector-cyan);
+      transition: width 160ms ease, background-color 160ms ease;
+    }
+
+    .thermal-fill.caution {
+      background-color: var(--hazard-ochre);
+    }
+
+    .thermal-fill.critical {
+      background-color: var(--thermal-coral);
+      background-image: repeating-linear-gradient(
+        -45deg,
+        transparent 0 5px,
+        var(--bay-recess) 5px 8px
+      );
+    }
+
+    /* Pilot Auth & Drop Sequence Form */
+    .auth-deck {
+      margin-top: auto;
+      background-color: var(--bay-recess);
+      border: 1px solid var(--chamfer-strong);
+      padding: 10px 11px;
+      display: flex;
+      flex-direction: column;
+      gap: 7px;
+    }
+
+    .field-label {
+      display: flex;
+      align-items: baseline;
+      justify-content: space-between;
+      font-family: var(--font-mono);
+      font-size: calc(10.5px * var(--hud-scale));
+      font-weight: 500;
+      letter-spacing: 0.06em;
+      text-transform: uppercase;
+      color: var(--telemetry-bone);
+    }
+
+    .field-label span {
+      font-size: 10px;
+      color: var(--stencil-gray);
+    }
+
+    .callsign-input {
+      width: 100%;
+      background-color: var(--bay-panel);
+      border: 1px solid var(--chamfer-strong);
+      color: var(--telemetry-bone);
+      font-family: var(--font-mono);
+      font-size: calc(12.5px * var(--hud-scale));
+      font-weight: 500;
+      letter-spacing: 0.05em;
+      padding: 7px 10px;
+      transition: border-color 130ms ease, background-color 130ms ease;
+    }
+
+    .callsign-input:hover {
+      border-color: var(--vector-cyan);
+    }
+
+    .field-hint {
+      margin: 0;
+      font-family: var(--font-mono);
+      font-size: 10px;
+      color: var(--stencil-gray);
+    }
+
+    .arm-drop-btn {
+      appearance: none;
+      width: 100%;
+      background-color: var(--hazard-ochre);
+      border: 1px solid var(--hazard-ochre);
+      color: var(--bay-recess);
+      font-family: var(--font-display);
+      font-size: calc(18px * var(--hud-scale));
+      font-weight: 800;
+      letter-spacing: 0.03em;
+      padding: 9px 10px;
+      cursor: pointer;
+      white-space: nowrap;
+      transition: background-color 130ms ease, border-color 130ms ease, color 130ms ease;
+      clip-path: polygon(
+        0 0,
+        calc(100% - 8px) 0,
+        100% 8px,
+        100% 100%,
+        8px 100%,
+        0 calc(100% - 8px)
+      );
+    }
+
+    .arm-drop-btn:hover {
+      background-color: var(--telemetry-bone);
+      border-color: var(--telemetry-bone);
+    }
+
+    .arm-drop-btn.is-interlocked {
+      background-color: var(--coral-tint);
+      border-color: var(--thermal-coral);
+      color: var(--thermal-coral);
+    }
+
+    .arm-drop-btn.is-armed {
+      background-color: var(--vector-cyan);
+      border-color: var(--vector-cyan);
+      color: var(--bay-recess);
+    }
+
+    .drop-readout {
+      font-family: var(--font-mono);
+      font-size: 10px;
+      padding: 6px 8px;
+      background-color: var(--bay-panel);
+      border: 1px solid var(--chamfer-border);
+      color: var(--stencil-gray);
+    }
+
+    .drop-readout.armed {
+      border-color: var(--cyan-line);
+      color: var(--vector-cyan);
+    }
+
+    .drop-readout.locked {
+      border-color: var(--coral-line);
+      color: var(--thermal-coral);
+    }
+
+    /* Bottom Godot 4.5 Telemetry Footer */
+    .scenetree-strip {
+      background-color: var(--bay-panel);
+      border: 1px solid var(--chamfer-border);
+      padding: 5px 12px;
+      display: flex;
+      flex-wrap: wrap;
+      align-items: center;
+      justify-content: space-between;
+      gap: 8px;
+      font-family: var(--font-mono);
+      font-size: 10px;
+      color: var(--stencil-gray);
+    }
+
+    .scenetree-strip code {
+      font-family: var(--font-mono);
+      color: var(--telemetry-bone);
+    }
+
+    @media (max-width: 1220px) {
+      .tactical-deck {
+        grid-template-columns: 1fr;
+      }
+      .schematic-well {
+        min-height: 540px;
+      }
+    }
+
+    @media (prefers-reduced-motion: reduce) {
+      *,
+      *::before,
+      *::after {
+        animation-duration: 0.01ms !important;
+        animation-iteration-count: 1 !important;
+        transition-duration: 0.01ms !important;
+      }
+      .radar-sweep-arm {
+        animation: none !important;
+      }
+    }
+  </style>
+</head>
+<body>
+  <a href="#hardpoint-rack" class="skip-control">Skip to Hardpoint Loadout Controls</a>
+
+  <div class="hangar-hud">
+    <!-- Top Safe-Area HUD Bar -->
+    <header class="top-safe-bar">
+      <div class="bay-identity">
+        <span class="reticle-mark" aria-hidden="true">
+          <svg width="18" height="18" viewBox="0 0 18 18" fill="none">
+            <polygon points="9,2 16,6 16,12 9,16 2,12 2,6" stroke="var(--hazard-ochre)" stroke-width="1.5" />
+            <circle cx="9" cy="9" r="2.2" fill="var(--vector-cyan)" />
+          </svg>
+        </span>
+        <h1 class="bay-heading" id="bay-title">AEGIS-07 // ORBITAL BAY 04</h1>
+        <span class="engine-tag">Godot 4.5 Control + FocusNeighbor</span>
+      </div>
+
+      <div class="glyph-strip" role="group" aria-label="Controller and keyboard input hints">
+        <button type="button" class="glyph-btn" id="cycle-bay-btn" title="Cycle orbital salvage bay ([ or ])">
+          <span class="keycap">[LB/RB]</span>
+          <span>Bay</span>
+        </button>
+        <span class="glyph-readout">
+          <span class="keycap">[A/Enter]</span>
+          <span>Mount</span>
+        </span>
+        <span class="glyph-readout">
+          <span class="keycap">[1-4]</span>
+          <span>Hardpoint</span>
+        </span>
+      </div>
+
+      <div class="vision-cluster" role="group" aria-label="Vision and HUD scale switcher">
+        <span class="cluster-caption">Vision &amp; Scale</span>
+        <div class="switcher-rail">
+          <button type="button" class="mode-btn" id="mode-standard" aria-pressed="true">Standard</button>
+          <button type="button" class="mode-btn" id="mode-deuteranopia" aria-pressed="false">Deuteranopia Safe</button>
+          <button type="button" class="mode-btn" id="mode-scale" aria-pressed="false">HUD Scale 115%</button>
+        </div>
+      </div>
+    </header>
+
+    <!-- 3-Column Tactical Hangar Grid -->
+    <main class="tactical-deck">
+      <!-- Left Panel: Hardpoint Module Toggles -->
+      <section class="bulkhead-box" id="hardpoint-rack" aria-labelledby="rack-heading">
+        <div class="section-head">
+          <h2 class="section-title" id="rack-heading">Hardpoint Rack</h2>
+          <span class="section-meta tabular" id="mounted-count">3 / 4 MOUNTED</span>
+        </div>
+
+        <div class="preset-row" role="group" aria-label="Tactical loadout presets">
+          <button type="button" class="preset-btn is-active" data-preset="breacher">Breacher · 78 MW</button>
+          <button type="button" class="preset-btn" data-preset="cutter">Salvage · 64 MW</button>
+          <button type="button" class="preset-btn" data-preset="overload">Full Rig · 96% ▲</button>
+        </div>
+
+        <div class="hardpoint-list">
+          <button
+            type="button"
+            class="hardpoint-btn tabular"
+            data-slot="r-arm"
+            aria-pressed="true"
+          >
+            <div class="hp-top">
+              <span class="hp-slot-code">[1] R-ARM // SLOT 01</span>
+              <span class="hp-state-pill" data-state-label>● MOUNTED</span>
+            </div>
+            <div class="hp-name">R-ARM: Rail-Lance Mk.IV</div>
+            <div class="hp-spec">1,840 m/s linear penetrator · hull anchor shear</div>
+            <div class="hp-metrics">
+              <span class="hp-chip">34 MW</span>
+              <span class="hp-chip heat-high">+26% HEAT</span>
+              <span class="hp-chip">6.8 t</span>
+            </div>
+          </button>
+
+          <button
+            type="button"
+            class="hardpoint-btn is-thermal-driver tabular"
+            data-slot="l-arm"
+            aria-pressed="false"
+          >
+            <div class="hp-top">
+              <span class="hp-slot-code">[2] L-ARM // SLOT 02</span>
+              <span class="hp-state-pill" data-state-label>○ STANDBY</span>
+            </div>
+            <div class="hp-name">L-ARM: Plasma Cutter</div>
+            <div class="hp-spec">3,400 K twin-jaw arc torch · bulkhead sectioning</div>
+            <div class="hp-metrics">
+              <span class="hp-chip">20 MW</span>
+              <span class="hp-chip heat-high">+32% HEAT</span>
+              <span class="hp-chip">5.4 t</span>
+            </div>
+          </button>
+
+          <button
+            type="button"
+            class="hardpoint-btn tabular"
+            data-slot="dorsal"
+            aria-pressed="true"
+          >
+            <div class="hp-top">
+              <span class="hp-slot-code">[3] DORSAL // SLOT 03</span>
+              <span class="hp-state-pill" data-state-label>● MOUNTED</span>
+            </div>
+            <div class="hp-name">DORSAL: Lidar Array</div>
+            <div class="hp-spec">18 km synthetic-aperture debris &amp; spin tracker</div>
+            <div class="hp-metrics">
+              <span class="hp-chip">18 MW</span>
+              <span class="hp-chip">+14% HEAT</span>
+              <span class="hp-chip">2.6 t</span>
+            </div>
+          </button>
+
+          <button
+            type="button"
+            class="hardpoint-btn tabular"
+            data-slot="chassis"
+            aria-pressed="true"
+          >
+            <div class="hp-top">
+              <span class="hp-slot-code">[4] CHASSIS // SLOT 04</span>
+              <span class="hp-state-pill" data-state-label>● MOUNTED</span>
+            </div>
+            <div class="hp-name">CHASSIS: Ceramic Plate</div>
+            <div class="hp-spec">Sintered SiC micrometeoroid &amp; slag spall glacis</div>
+            <div class="hp-metrics">
+              <span class="hp-chip">14 MW</span>
+              <span class="hp-chip">+10% HEAT</span>
+              <span class="hp-chip">6.8 t</span>
+            </div>
+          </button>
+        </div>
+
+        <div class="focus-telemetry-box tabular" aria-live="polite">
+          <div>FOCUS OWNER: <strong id="focus-owner-readout">HardpointSlot_01 (R-ARM)</strong></div>
+          <div>INPUT DEBOUNCE: <span>0.35 Stick Deadzone · Auto KBM/Pad Glyphs</span></div>
+        </div>
+      </section>
+
+      <!-- Center Panel: Diegetic SVG Bipedal Salvage Rig Schematic + Orbital Azimuth Radar -->
+      <section class="schematic-column" aria-labelledby="schematic-heading">
+        <div class="section-head">
+          <h2 class="section-title" id="schematic-heading">Rig Schematic &amp; Azimuth</h2>
+          <span class="section-meta tabular" id="bay-sector-tag">CORMORANT MK-III · SAFE AREA 95% · 200 NITS</span>
+        </div>
+
+        <div class="schematic-well">
+          <span class="safe-corner tl" aria-hidden="true"></span>
+          <span class="safe-corner tr" aria-hidden="true"></span>
+          <span class="safe-corner bl" aria-hidden="true"></span>
+          <span class="safe-corner br" aria-hidden="true"></span>
+
+          <!-- 4 Interactive Hardpoint Callout Buttons -->
+          <button type="button" class="callout-node pos-tl tabular" data-callout="r-arm" aria-pressed="true">
+            <span class="callout-title">R-ARM: Rail-Lance Mk.IV</span>
+            <span class="callout-telemetry"><span>34 MW · +26% THM</span><strong data-callout-state>● ON</strong></span>
+          </button>
+
+          <button type="button" class="callout-node pos-tr tabular" data-callout="dorsal" aria-pressed="true">
+            <span class="callout-title">DORSAL: Lidar Array</span>
+            <span class="callout-telemetry"><span>18 MW · +14% THM</span><strong data-callout-state>● ON</strong></span>
+          </button>
+
+          <button type="button" class="callout-node pos-bl tabular" data-callout="l-arm" aria-pressed="false">
+            <span class="callout-title">L-ARM: Plasma Cutter</span>
+            <span class="callout-telemetry"><span>20 MW · +32% THM</span><strong data-callout-state>○ STBY</strong></span>
+          </button>
+
+          <button type="button" class="callout-node pos-br tabular" data-callout="chassis" aria-pressed="true">
+            <span class="callout-title">CHASSIS: Ceramic Plate</span>
+            <span class="callout-telemetry"><span>14 MW · +10% THM</span><strong data-callout-state>● ON</strong></span>
+          </button>
+
+          <!-- Vector Bipedal Salvage Rig & Azimuth Ring -->
+          <svg class="rig-svg" viewBox="0 0 620 680" role="img" aria-labelledby="rig-svg-title rig-svg-desc">
+            <title id="rig-svg-title">AEGIS-07 Cormorant Bipedal Salvage Rig Orthographic Schematic and Orbital Azimuth Radar</title>
+            <desc id="rig-svg-desc">Orthographic vector diagram of a bipedal salvage mech inside an orbital azimuth compass ring, showing leader lines to Right Arm Rail-Lance Mk.IV, Left Arm Plasma Cutter, Dorsal Lidar Array, and Chassis Ceramic Plate.</desc>
+
+            <!-- Orthographic Scale Ruler (Left Edge) -->
+            <g stroke="var(--chamfer-strong)" stroke-width="1" fill="none">
+              <line x1="26" y1="196" x2="26" y2="530" />
+              <line x1="22" y1="196" x2="32" y2="196" />
+              <line x1="22" y1="280" x2="29" y2="280" />
+              <line x1="22" y1="363" x2="32" y2="363" />
+              <line x1="22" y1="446" x2="29" y2="446" />
+              <line x1="22" y1="530" x2="32" y2="530" />
+            </g>
+            <g font-family="IBM Plex Mono, monospace" font-size="9" fill="var(--stencil-muted)">
+              <text x="36" y="200">11.4m</text>
+              <text x="36" y="366">5.7m</text>
+              <text x="36" y="533">0.0m</text>
+            </g>
+
+            <!-- Azimuth Radar Concentric Rings & Crosshairs (Centered at 310, 340) -->
+            <g stroke="var(--chamfer-border)" fill="none">
+              <circle cx="310" cy="340" r="256" stroke-width="1.5" />
+              <circle cx="310" cy="340" r="214" stroke-width="1" stroke-dasharray="3 5" />
+              <circle cx="310" cy="340" r="162" stroke-width="1" />
+              <line x1="310" y1="74" x2="310" y2="128" />
+              <line x1="310" y1="552" x2="310" y2="606" />
+              <line x1="48" y1="340" x2="104" y2="340" />
+              <line x1="516" y1="340" x2="572" y2="340" />
+              <line x1="118" y1="530" x2="502" y2="530" stroke="var(--chamfer-strong)" stroke-width="1.6" />
+            </g>
+
+            <!-- Degree Tick Marks around Azimuth Ring -->
+            <g stroke="var(--stencil-muted)" stroke-width="1.2">
+              <line x1="310" y1="84" x2="310" y2="94" />
+              <line x1="438" y1="118" x2="433" y2="127" />
+              <line x1="532" y1="212" x2="523" y2="217" />
+              <line x1="566" y1="340" x2="556" y2="340" />
+              <line x1="532" y1="468" x2="523" y2="463" />
+              <line x1="438" y1="562" x2="433" y2="553" />
+              <line x1="310" y1="596" x2="310" y2="586" />
+              <line x1="182" y1="562" x2="187" y2="553" />
+              <line x1="88" y1="468" x2="97" y2="463" />
+              <line x1="54" y1="340" x2="64" y2="340" />
+              <line x1="88" y1="212" x2="97" y2="217" />
+              <line x1="182" y1="118" x2="187" y2="127" />
+            </g>
+
+            <!-- Azimuth Bearing Readouts & Debris Contacts -->
+            <g font-family="IBM Plex Mono, monospace" font-size="10" fill="var(--stencil-gray)">
+              <text x="310" y="68" text-anchor="middle">000° PROGRADE</text>
+              <text x="592" y="344" text-anchor="end">090° DRIFT</text>
+              <text x="310" y="622" text-anchor="middle">180° NADIR CRADLE</text>
+              <text x="58" y="332" text-anchor="start">270° RETRO</text>
+              <text x="450" y="168" fill="var(--hazard-ochre)" id="wreck-contact-text">◆ HULL K-19 · 042°</text>
+              <text x="310" y="546" text-anchor="middle" fill="var(--stencil-muted)">CRADLE CLAMP DECK // BAY 04</text>
+            </g>
+
+            <!-- Wreckage Vector Contact Marker -->
+            <polygon points="440,164 445,159 450,164 445,169" fill="var(--hazard-ochre)" />
+
+            <!-- Rotating Radar Sweep Line -->
+            <g class="radar-sweep-arm" style="transform-origin: 310px 340px;">
+              <line x1="310" y1="340" x2="486" y2="164" stroke="var(--cyan-line)" stroke-width="1.2" stroke-dasharray="6 4" />
+              <circle cx="442" cy="208" r="3" fill="var(--vector-cyan)" />
+            </g>
+
+            <!-- Base Bipedal Mech Skeleton, Pelvis, Actuators & Legs -->
+            <g stroke="var(--telemetry-bone)" stroke-width="1.6" fill="var(--bay-panel)">
+              <!-- Head / Optical Sensor Turret & Roll Cage -->
+              <polygon points="290,200 330,200 338,222 282,222" fill="var(--bay-raised)" />
+              <rect x="293" y="208" width="34" height="6" fill="var(--vector-cyan)" stroke="none" />
+              <line x1="298" y1="200" x2="298" y2="191" stroke="var(--stencil-gray)" />
+
+              <!-- Core Torso Bulkhead & Ventral Umbilicals -->
+              <polygon points="254,226 366,226 380,278 356,336 264,336 240,278" fill="var(--bay-panel)" />
+              <line x1="256" y1="254" x2="364" y2="254" stroke="var(--chamfer-strong)" />
+              <line x1="276" y1="322" x2="344" y2="322" stroke="var(--chamfer-strong)" />
+
+              <!-- Pelvis & Gyro Block -->
+              <polygon points="274,338 346,338 356,372 326,388 294,388 264,372" fill="var(--bay-raised)" />
+              <circle cx="280" cy="368" r="5" fill="var(--bay-recess)" stroke="var(--stencil-gray)" />
+              <circle cx="340" cy="368" r="5" fill="var(--bay-recess)" stroke="var(--stencil-gray)" />
+
+              <!-- Right Leg (Viewer Left) -->
+              <polygon points="266,376 296,384 288,448 254,442" />
+              <rect x="250" y="442" width="38" height="18" fill="var(--bay-raised)" />
+              <circle cx="269" cy="451" r="4" fill="var(--bay-recess)" stroke="var(--hazard-ochre)" />
+              <polygon points="252,460 288,460 294,514 242,514" />
+              <polygon points="230,514 298,514 304,530 222,530" fill="var(--bay-raised)" />
+
+              <!-- Left Leg (Viewer Right) -->
+              <polygon points="324,384 354,376 366,442 332,448" />
+              <rect x="332" y="442" width="38" height="18" fill="var(--bay-raised)" />
+              <circle cx="351" cy="451" r="4" fill="var(--bay-recess)" stroke="var(--hazard-ochre)" />
+              <polygon points="332,460 368,460 378,514 326,514" />
+              <polygon points="322,514 390,514 398,530 316,530" fill="var(--bay-raised)" />
+            </g>
+
+            <!-- Sub-Assembly 4: CHASSIS Ceramic Plate -->
+            <g id="svg-part-chassis" class="svg-assembly" stroke="var(--vector-cyan)" stroke-width="1.8" fill="var(--cyan-tint)">
+              <polygon points="268,240 303,240 299,286 262,280" />
+              <polygon points="317,240 352,240 358,280 321,286" />
+              <polygon points="256,466 282,466 286,508 250,508" />
+              <polygon points="338,466 364,466 370,508 334,508" />
+            </g>
+
+            <!-- Sub-Assembly 3: DORSAL Lidar Array -->
+            <g id="svg-part-dorsal" class="svg-assembly" stroke="var(--vector-cyan)" stroke-width="1.8" fill="var(--bay-raised)">
+              <polygon points="344,224 378,224 386,192 352,192" />
+              <polygon points="364,154 388,154 398,166 398,182 388,194 364,194 354,182 354,166" fill="var(--cyan-tint)" />
+              <circle cx="376" cy="174" r="7" stroke="var(--hazard-ochre)" fill="none" />
+              <line x1="348" y1="192" x2="348" y2="142" stroke="var(--telemetry-bone)" stroke-width="1.5" />
+            </g>
+
+            <!-- Sub-Assembly 1: R-ARM Rail-Lance Mk.IV (Viewer Left) -->
+            <g id="svg-part-r-arm" class="svg-assembly" stroke="var(--vector-cyan)" stroke-width="1.8" fill="var(--bay-raised)">
+              <polygon points="210,230 252,226 244,272 202,264" />
+              <rect x="194" y="272" width="38" height="36" />
+              <rect x="104" y="280" width="92" height="9" fill="var(--cyan-tint)" />
+              <rect x="104" y="294" width="92" height="9" fill="var(--cyan-tint)" />
+              <line x1="122" y1="277" x2="122" y2="306" stroke="var(--hazard-ochre)" stroke-width="2" />
+              <line x1="142" y1="277" x2="142" y2="306" stroke="var(--hazard-ochre)" stroke-width="2" />
+              <line x1="162" y1="277" x2="162" y2="306" stroke="var(--hazard-ochre)" stroke-width="2" />
+            </g>
+
+            <!-- Sub-Assembly 2: L-ARM Plasma Cutter (Viewer Right, Unmounted by Default) -->
+            <g id="svg-part-l-arm" class="svg-assembly is-unmounted" stroke="var(--hazard-ochre)" stroke-width="1.8" fill="var(--bay-raised)">
+              <polygon points="368,226 410,230 418,264 376,272" />
+              <rect x="388" y="272" width="40" height="38" />
+              <polygon points="428,276 490,268 490,282 440,288" fill="var(--ochre-tint)" />
+              <polygon points="428,304 490,312 490,298 440,292" fill="var(--ochre-tint)" />
+              <line x1="490" y1="275" x2="506" y2="290" stroke="var(--thermal-coral)" stroke-width="2" />
+              <line x1="490" y1="305" x2="506" y2="290" stroke="var(--thermal-coral)" stroke-width="2" />
+            </g>
+
+            <!-- Central Tokamak Reactor Core Ring & CG Marker -->
+            <g id="svg-reactor-core">
+              <circle cx="310" cy="292" r="22" fill="var(--bay-recess)" stroke="var(--chamfer-strong)" stroke-width="2" />
+              <circle id="svg-core-ring" cx="310" cy="292" r="14" fill="var(--cyan-tint)" stroke="var(--vector-cyan)" stroke-width="2.4" />
+              <circle id="svg-core-pip" cx="310" cy="292" r="4.5" fill="var(--vector-cyan)" />
+            </g>
+
+            <!-- Diegetic Callout Leader Lines Docking Directly to the 4 Corner Callout Nodes -->
+            <g>
+              <!-- R-ARM Leader -> Top-Left Callout -->
+              <polyline id="leader-r-arm" class="leader-path" points="142,277 124,132 124,56" />
+              <rect x="138" y="273" width="8" height="8" fill="none" stroke="var(--vector-cyan)" />
+              <circle cx="124" cy="56" r="3" fill="var(--vector-cyan)" />
+
+              <!-- DORSAL Leader -> Top-Right Callout -->
+              <polyline id="leader-dorsal" class="leader-path" points="392,162 468,104 496,56" />
+              <rect x="388" y="158" width="8" height="8" fill="none" stroke="var(--vector-cyan)" />
+              <circle cx="496" cy="56" r="3" fill="var(--vector-cyan)" />
+
+              <!-- L-ARM Leader -> Bottom-Left Callout -->
+              <polyline id="leader-l-arm" class="leader-path is-unmounted" points="458,310 426,574 188,624" />
+              <rect x="454" y="306" width="8" height="8" fill="none" stroke="var(--hazard-ochre)" />
+              <circle cx="188" cy="624" r="3" fill="var(--hazard-ochre)" />
+
+              <!-- CHASSIS Leader -> Bottom-Right Callout -->
+              <polyline id="leader-chassis" class="leader-path" points="362,488 456,574 496,624" />
+              <rect x="358" y="484" width="8" height="8" fill="none" stroke="var(--vector-cyan)" />
+              <circle cx="496" cy="624" r="3" fill="var(--vector-cyan)" />
+            </g>
+          </svg>
+        </div>
+
+        <div class="azimuth-bar tabular">
+          <span>AZIMUTH: <b id="az-bearing">042.8° REL</b></span>
+          <span>ORBITAL VEL: <b id="az-vel">7.64 km/s</b></span>
+          <span>DROP WINDOW: <b id="az-window">T−03:40</b></span>
+          <span>CORRIDOR: <b>● CLEAR</b></span>
+        </div>
+      </section>
+
+      <!-- Right Panel: Reactor Balancer, Thermal Envelope, Mass Ratio & Drop Launch -->
+      <section class="bulkhead-box" aria-labelledby="balancer-heading">
+        <div class="section-head">
+          <h2 class="section-title" id="balancer-heading">Reactor &amp; Thermal</h2>
+          <span class="section-meta tabular">TOKAMAK BUS MK.V</span>
+        </div>
+
+        <!-- Pod 1: Reactor Draw -->
+        <div class="telemetry-pod tabular" id="reactor-pod">
+          <div class="pod-label-row">
+            <span class="pod-kicker">Reactor Draw</span>
+            <span class="status-flag" id="reactor-status">● NOMINAL</span>
+          </div>
+          <div class="big-readout-row">
+            <span class="big-readout" id="reactor-readout">78 / 100 MW</span>
+            <span class="big-unit" id="reactor-margin">22 MW SPARE</span>
+          </div>
+          <div
+            class="segment-meter"
+            id="reactor-segments"
+            role="meter"
+            aria-label="Reactor Draw"
+            aria-valuemin="0"
+            aria-valuemax="100"
+            aria-valuenow="78"
+          ></div>
+          <div class="meter-subline">
+            <span>Core Bus: 12 MW</span>
+            <span id="reactor-modules-sum">Hardpoints: 66 MW</span>
+          </div>
+        </div>
+
+        <!-- Pod 2: Heat Dissipation -->
+        <div class="telemetry-pod tabular" id="thermal-pod">
+          <div class="pod-label-row">
+            <span class="pod-kicker">Heat Dissipation</span>
+            <span class="status-flag" id="thermal-status">64% [NOMINAL]</span>
+          </div>
+          <div class="big-readout-row">
+            <span class="big-readout" id="thermal-readout">64% [NOMINAL]</span>
+            <span class="big-unit">CEILING 85% ▲</span>
+          </div>
+          <div
+            class="thermal-bar-wrap"
+            id="thermal-meter"
+            role="meter"
+            aria-label="Heat Dissipation Load"
+            aria-valuemin="0"
+            aria-valuemax="100"
+            aria-valuenow="64"
+          >
+            <div class="thermal-fill" id="thermal-fill"></div>
+            <div class="thermal-danger-zone" title="Overheat zone above 85%"></div>
+          </div>
+          <div class="meter-subline">
+            <span id="thermal-flux">Radiator Flux: 410 / 640 kW_th</span>
+            <span id="thermal-advice">Loop A+B Stable</span>
+          </div>
+        </div>
+
+        <!-- Pod 3: Mass Ratio -->
+        <div class="telemetry-pod tabular">
+          <div class="pod-label-row">
+            <span class="pod-kicker">Mass Ratio &amp; Retro-Burn</span>
+            <span class="status-flag" id="mass-status">● 0.82 RATIO</span>
+          </div>
+          <div class="big-readout-row">
+            <span class="big-readout" id="mass-readout">41.2 / 50.0 t</span>
+            <span class="big-unit" id="thrust-readout">1.18 G RETRO</span>
+          </div>
+          <div
+            class="segment-meter"
+            id="mass-segments"
+            role="meter"
+            aria-label="Drop Mass Ratio"
+            aria-valuemin="0"
+            aria-valuemax="50"
+            aria-valuenow="41.2"
+          ></div>
+          <div class="meter-subline">
+            <span>Dry Frame: 25.0 t</span>
+            <span id="payload-mass-sum">Payload: 16.2 t</span>
+          </div>
+        </div>
+
+        <!-- Pod 4: Labeled Pilot Callsign & Explicit Launch CTA -->
+        <form class="auth-deck" id="drop-form" novalidate>
+          <label class="field-label" for="pilot-callsign">
+            Pilot Callsign
+            <span>BEACON TRANSPONDER</span>
+          </label>
+          <input
+            type="text"
+            id="pilot-callsign"
+            name="pilotCallsign"
+            class="callsign-input"
+            value="KESTREL-04"
+            maxlength="20"
+            autocomplete="nickname"
+            spellcheck="false"
+            aria-describedby="callsign-hint"
+          />
+          <p class="field-hint" id="callsign-hint">
+            Broadcast on salvage recovery channel · Paste &amp; controller virtual keyboard active.
+          </p>
+
+          <button type="submit" class="arm-drop-btn tabular" id="arm-drop-btn">
+            Arm Drop Sequence · 78 MW / 41.2 t
+          </button>
+
+          <div class="drop-readout tabular" id="drop-feedback" role="status" aria-live="polite">
+            READY // Cradle clamps pressurized for KESTREL-04.
+          </div>
+        </form>
+      </section>
+    </main>
+
+    <!-- Bottom Godot 4.5 SceneTree & Accessibility Bar -->
+    <footer class="scenetree-strip tabular">
+      <span>SCENE: <code>res://ui/hangar/Bay04Balancer.tscn</code> · <code>MOUSE_FILTER_IGNORE</code> on diegetic overlays · <code>PROCESS_MODE_ALWAYS</code></span>
+      <span>GODOT 4.5 ACCESSKIT · ILLUSTRATIVE AEGIS-07 TELEMETRY</span>
+    </footer>
+  </div>
+
+  <script>
+    (function () {
+      const BASE_MW = 12;
+      const BASE_HEAT = 14;
+      const BASE_MASS = 25.0;
+      const MAX_MW = 100;
+      const MAX_MASS = 50.0;
+      const OVERHEAT_THRESHOLD = 85;
+
+      const MODULES = {
+        'r-arm': {
+          code: 'HardpointSlot_01 (R-ARM)',
+          mw: 34,
+          heat: 26,
+          mass: 6.8,
+          mounted: true
+        },
+        'l-arm': {
+          code: 'HardpointSlot_02 (L-ARM)',
+          mw: 20,
+          heat: 32,
+          mass: 5.4,
+          mounted: false
+        },
+        'dorsal': {
+          code: 'HardpointSlot_03 (DORSAL)',
+          mw: 18,
+          heat: 14,
+          mass: 2.6,
+          mounted: true
+        },
+        'chassis': {
+          code: 'HardpointSlot_04 (CHASSIS)',
+          mw: 14,
+          heat: 10,
+          mass: 6.8,
+          mounted: true
+        }
+      };
+
+      const BAYS = [
+        {
+          title: 'AEGIS-07 // ORBITAL BAY 04',
+          sector: 'CORMORANT MK-III · SAFE AREA 95% · 200 NITS',
+          contact: '◆ HULL K-19 · 042°',
+          bearing: '042.8° REL',
+          vel: '7.64 km/s',
+          window: 'T−03:40'
+        },
+        {
+          title: 'AEGIS-07 // ORBITAL BAY 02',
+          sector: 'CORMORANT MK-III · LAGRANGE DRIFT · 200 NITS',
+          contact: '◆ TUG SPINE B-08 · 118°',
+          bearing: '118.2° REL',
+          vel: '7.58 km/s',
+          window: 'T−06:15'
+        },
+        {
+          title: 'AEGIS-07 // ORBITAL BAY 07',
+          sector: 'CORMORANT MK-III · HIGH INCLINATION · 200 NITS',
+          contact: '◆ REACTOR HULK V-3 · 284°',
+          bearing: '284.5° REL',
+          vel: '7.71 km/s',
+          window: 'T−01:55'
+        }
+      ];
+
+      let bayIndex = 0;
+      let dropArmed = false;
+
+      const rootEl = document.documentElement;
+      const reactorSegmentsEl = document.getElementById('reactor-segments');
+      const massSegmentsEl = document.getElementById('mass-segments');
+
+      function buildCells(container, count) {
+        container.innerHTML = '';
+        for (let i = 0; i < count; i += 1) {
+          const span = document.createElement('span');
+          span.className = 'seg-cell';
+          container.appendChild(span);
+        }
+      }
+
+      buildCells(reactorSegmentsEl, 20);
+      buildCells(massSegmentsEl, 20);
+
+      function updateCells(container, ratio, tone) {
+        const litCount = Math.min(20, Math.round(ratio * 20));
+        const cells = container.children;
+        for (let i = 0; i < cells.length; i += 1) {
+          cells[i].className = i < litCount ? 'seg-cell lit-' + tone : 'seg-cell';
+        }
+      }
+
+      function currentCallsign() {
+        const raw = document.getElementById('pilot-callsign').value.trim();
+        return raw || 'UNASSIGNED';
+      }
+
+      function syncPresetHighlight() {
+        const r = MODULES['r-arm'].mounted;
+        const l = MODULES['l-arm'].mounted;
+        const d = MODULES['dorsal'].mounted;
+        const c = MODULES['chassis'].mounted;
+
+        let activePreset = '';
+        if (r && !l && d && c) activePreset = 'breacher';
+        else if (!r && l && d && c) activePreset = 'cutter';
+        else if (r && l && d && c) activePreset = 'overload';
+
+        document.querySelectorAll('[data-preset]').forEach((btn) => {
+          btn.classList.toggle('is-active', btn.dataset.preset === activePreset);
+        });
+      }
+
+      function renderHUD() {
+        let modMw = 0;
+        let modHeat = 0;
+        let modMass = 0;
+        let activeCount = 0;
+
+        Object.keys(MODULES).forEach((key) => {
+          const item = MODULES[key];
+          if (item.mounted) {
+            modMw += item.mw;
+            modHeat += item.heat;
+            modMass += item.mass;
+            activeCount += 1;
+          }
+
+          const rackBtn = document.querySelector('[data-slot="' + key + '"]');
+          if (rackBtn) {
+            rackBtn.setAttribute('aria-pressed', String(item.mounted));
+            const label = rackBtn.querySelector('[data-state-label]');
+            if (label) label.textContent = item.mounted ? '● MOUNTED' : '○ STANDBY';
+          }
+
+          const calloutBtn = document.querySelector('[data-callout="' + key + '"]');
+          if (calloutBtn) {
+            calloutBtn.setAttribute('aria-pressed', String(item.mounted));
+            const cState = calloutBtn.querySelector('[data-callout-state]');
+            if (cState) cState.textContent = item.mounted ? '● ON' : '○ STBY';
+          }
+
+          const svgPart = document.getElementById('svg-part-' + key);
+          if (svgPart) svgPart.classList.toggle('is-unmounted', !item.mounted);
+
+          const leader = document.getElementById('leader-' + key);
+          if (leader) leader.classList.toggle('is-unmounted', !item.mounted);
+        });
+
+        const totalMw = BASE_MW + modMw;
+        const totalHeat = BASE_HEAT + modHeat;
+        const totalMass = +(BASE_MASS + modMass).toFixed(1);
+        const massRatio = totalMass / MAX_MASS;
+        const retroG = +(48.6 / totalMass).toFixed(2);
+
+        document.getElementById('mounted-count').textContent = activeCount + ' / 4 MOUNTED';
+
+        // Reactor Draw
+        document.getElementById('reactor-readout').textContent = totalMw + ' / ' + MAX_MW + ' MW';
+        document.getElementById('reactor-modules-sum').textContent = 'Hardpoints: ' + modMw + ' MW';
+        reactorSegmentsEl.setAttribute('aria-valuenow', String(totalMw));
+
+        const reactorStatus = document.getElementById('reactor-status');
+        const spareMw = MAX_MW - totalMw;
+        document.getElementById('reactor-margin').textContent =
+          spareMw >= 0 ? spareMw + ' MW SPARE' : Math.abs(spareMw) + ' MW OVER';
+
+        let reactorTone = 'cyan';
+        if (totalMw > MAX_MW) {
+          reactorStatus.textContent = '▲ OVERDRAW';
+          reactorStatus.className = 'status-flag critical';
+          reactorTone = 'coral';
+        } else if (totalMw >= 88) {
+          reactorStatus.textContent = '◆ PEAK LOAD';
+          reactorStatus.className = 'status-flag caution';
+          reactorTone = 'ochre';
+        } else {
+          reactorStatus.textContent = '● NOMINAL';
+          reactorStatus.className = 'status-flag';
+        }
+        updateCells(reactorSegmentsEl, totalMw / MAX_MW, reactorTone);
+
+        // Heat Dissipation
+        const isOverheat = totalHeat >= OVERHEAT_THRESHOLD;
+        const isCautionHeat = !isOverheat && totalHeat >= 74;
+        const thermalText = isOverheat
+          ? totalHeat + '% [OVERHEAT ▲]'
+          : isCautionHeat
+            ? totalHeat + '% [CAUTION ◆]'
+            : totalHeat + '% [NOMINAL]';
+
+        document.getElementById('thermal-readout').textContent = thermalText;
+        const thermalStatus = document.getElementById('thermal-status');
+        thermalStatus.textContent = thermalText;
+        thermalStatus.className = isOverheat
+          ? 'status-flag critical'
+          : isCautionHeat
+            ? 'status-flag caution'
+            : 'status-flag';
+
+        document.getElementById('thermal-pod').classList.toggle('is-overheat', isOverheat);
+        document.getElementById('thermal-meter').setAttribute('aria-valuenow', String(totalHeat));
+
+        const thermalFill = document.getElementById('thermal-fill');
+        thermalFill.style.width = Math.min(100, totalHeat) + '%';
+        thermalFill.className = isOverheat
+          ? 'thermal-fill critical'
+          : isCautionHeat
+            ? 'thermal-fill caution'
+            : 'thermal-fill';
+
+        const fluxKw = Math.round(totalHeat * 6.4);
+        document.getElementById('thermal-flux').textContent = 'Radiator Flux: ' + fluxKw + ' / 640 kW_th';
+        document.getElementById('thermal-advice').textContent = isOverheat
+          ? '▲ Exceeds 85% ceiling'
+          : 'Loop A+B Stable';
+
+        // Core SVG color sync
+        const coreRing = document.getElementById('svg-core-ring');
+        const corePip = document.getElementById('svg-core-pip');
+        if (isOverheat) {
+          coreRing.setAttribute('stroke', 'var(--thermal-coral)');
+          coreRing.setAttribute('fill', 'var(--coral-tint)');
+          corePip.setAttribute('fill', 'var(--thermal-coral)');
+        } else {
+          coreRing.setAttribute('stroke', 'var(--vector-cyan)');
+          coreRing.setAttribute('fill', 'var(--cyan-tint)');
+          corePip.setAttribute('fill', 'var(--vector-cyan)');
+        }
+
+        // Mass Ratio
+        document.getElementById('mass-readout').textContent = totalMass.toFixed(1) + ' / ' + MAX_MASS.toFixed(1) + ' t';
+        document.getElementById('payload-mass-sum').textContent = 'Payload: ' + modMass.toFixed(1) + ' t';
+        document.getElementById('thrust-readout').textContent = retroG.toFixed(2) + ' G RETRO';
+        document.getElementById('mass-status').textContent =
+          (massRatio > 0.9 ? '◆ ' : '● ') + massRatio.toFixed(2) + ' RATIO';
+        document.getElementById('mass-status').className =
+          massRatio > 0.9 ? 'status-flag caution' : 'status-flag';
+        massSegmentsEl.setAttribute('aria-valuenow', String(totalMass));
+        updateCells(massSegmentsEl, massRatio, massRatio > 0.9 ? 'ochre' : 'cyan');
+
+        // Launch Button & Interlock
+        const armBtn = document.getElementById('arm-drop-btn');
+        const feedback = document.getElementById('drop-feedback');
+        const callsign = currentCallsign();
+
+        if (isOverheat || totalMw > MAX_MW) {
+          dropArmed = false;
+          armBtn.className = 'arm-drop-btn tabular is-interlocked';
+          armBtn.textContent = 'Thermal Interlock ▲ · ' + totalMw + ' MW / ' + totalHeat + '% Heat';
+          feedback.className = 'drop-readout tabular locked';
+          feedback.textContent =
+            '▲ INTERLOCK // Radiator load at ' + totalHeat + '% [OVERHEAT ▲]. Set R-ARM or L-ARM to STANDBY before drop.';
+        } else if (dropArmed) {
+          armBtn.className = 'arm-drop-btn tabular is-armed';
+          armBtn.textContent = 'Disarm Cradle [Esc] · ' + totalMw + ' MW / ' + totalMass.toFixed(1) + ' t';
+          feedback.className = 'drop-readout tabular armed';
+          feedback.textContent =
+            '● ARMED // Drop sequence locked for ' + callsign + ' (' + totalMw + ' MW · ' + totalHeat + '% [NOMINAL]).';
+        } else {
+          armBtn.className = 'arm-drop-btn tabular';
+          armBtn.textContent = 'Arm Drop Sequence · ' + totalMw + ' MW / ' + totalMass.toFixed(1) + ' t';
+          feedback.className = 'drop-readout tabular';
+          feedback.textContent =
+            'READY // Cradle clamps pressurized for ' + callsign + '.';
+        }
+
+        syncPresetHighlight();
+      }
+
+      function toggleSlot(slot) {
+        if (!MODULES[slot]) return;
+        dropArmed = false;
+        MODULES[slot].mounted = !MODULES[slot].mounted;
+        renderHUD();
+      }
+
+      function highlightSlot(slot, active) {
+        const rackBtn = document.querySelector('[data-slot="' + slot + '"]');
+        const calloutBtn = document.querySelector('[data-callout="' + slot + '"]');
+        const svgPart = document.getElementById('svg-part-' + slot);
+        const leader = document.getElementById('leader-' + slot);
+
+        if (rackBtn) rackBtn.classList.toggle('is-linked-hover', active);
+        if (calloutBtn) calloutBtn.classList.toggle('is-linked-hover', active);
+        if (svgPart) svgPart.classList.toggle('is-highlighted', active);
+        if (leader) leader.classList.toggle('is-active-focus', active);
+        if (active && MODULES[slot]) {
+          document.getElementById('focus-owner-readout').textContent = MODULES[slot].code;
+        }
+      }
+
+      document.querySelectorAll('[data-slot]').forEach((btn) => {
+        const slot = btn.dataset.slot;
+        btn.addEventListener('click', () => toggleSlot(slot));
+        btn.addEventListener('mouseenter', () => highlightSlot(slot, true));
+        btn.addEventListener('mouseleave', () => highlightSlot(slot, false));
+        btn.addEventListener('focus', () => highlightSlot(slot, true));
+        btn.addEventListener('blur', () => highlightSlot(slot, false));
+      });
+
+      document.querySelectorAll('[data-callout]').forEach((btn) => {
+        const slot = btn.dataset.callout;
+        btn.addEventListener('click', () => toggleSlot(slot));
+        btn.addEventListener('mouseenter', () => highlightSlot(slot, true));
+        btn.addEventListener('mouseleave', () => highlightSlot(slot, false));
+        btn.addEventListener('focus', () => highlightSlot(slot, true));
+        btn.addEventListener('blur', () => highlightSlot(slot, false));
+      });
+
+      document.querySelectorAll('[data-preset]').forEach((btn) => {
+        btn.addEventListener('click', () => {
+          dropArmed = false;
+          const p = btn.dataset.preset;
+          if (p === 'breacher') {
+            MODULES['r-arm'].mounted = true;
+            MODULES['l-arm'].mounted = false;
+            MODULES['dorsal'].mounted = true;
+            MODULES['chassis'].mounted = true;
+          } else if (p === 'cutter') {
+            MODULES['r-arm'].mounted = false;
+            MODULES['l-arm'].mounted = true;
+            MODULES['dorsal'].mounted = true;
+            MODULES['chassis'].mounted = true;
+          } else if (p === 'overload') {
+            MODULES['r-arm'].mounted = true;
+            MODULES['l-arm'].mounted = true;
+            MODULES['dorsal'].mounted = true;
+            MODULES['chassis'].mounted = true;
+          }
+          renderHUD();
+        });
+      });
+
+      // Vision & HUD Scale Switcher
+      const btnStandard = document.getElementById('mode-standard');
+      const btnDeuteranopia = document.getElementById('mode-deuteranopia');
+      const btnScale = document.getElementById('mode-scale');
+
+      btnStandard.addEventListener('click', () => {
+        rootEl.setAttribute('data-vision', 'standard');
+        rootEl.setAttribute('data-scale', '100');
+        btnStandard.setAttribute('aria-pressed', 'true');
+        btnDeuteranopia.setAttribute('aria-pressed', 'false');
+        btnScale.setAttribute('aria-pressed', 'false');
+      });
+
+      btnDeuteranopia.addEventListener('click', () => {
+        const next = rootEl.getAttribute('data-vision') === 'deuteranopia' ? 'standard' : 'deuteranopia';
+        rootEl.setAttribute('data-vision', next);
+        btnDeuteranopia.setAttribute('aria-pressed', String(next === 'deuteranopia'));
+        btnStandard.setAttribute(
+          'aria-pressed',
+          String(next === 'standard' && rootEl.getAttribute('data-scale') === '100')
+        );
+      });
+
+      btnScale.addEventListener('click', () => {
+        const nextScale = rootEl.getAttribute('data-scale') === '115' ? '100' : '115';
+        rootEl.setAttribute('data-scale', nextScale);
+        btnScale.setAttribute('aria-pressed', String(nextScale === '115'));
+        btnStandard.setAttribute(
+          'aria-pressed',
+          String(rootEl.getAttribute('data-vision') === 'standard' && nextScale === '100')
+        );
+      });
+
+      // Bay Switcher ([LB/RB] Bay)
+      function cycleBay() {
+        bayIndex = (bayIndex + 1) % BAYS.length;
+        const bay = BAYS[bayIndex];
+        document.getElementById('bay-title').textContent = bay.title;
+        document.getElementById('bay-sector-tag').textContent = bay.sector;
+        document.getElementById('wreck-contact-text').textContent = bay.contact;
+        document.getElementById('az-bearing').textContent = bay.bearing;
+        document.getElementById('az-vel').textContent = bay.vel;
+        document.getElementById('az-window').textContent = bay.window;
+      }
+
+      document.getElementById('cycle-bay-btn').addEventListener('click', cycleBay);
+
+      // Callsign live sync & Drop Form submit
+      document.getElementById('pilot-callsign').addEventListener('input', () => {
+        renderHUD();
+      });
+
+      document.getElementById('drop-form').addEventListener('submit', (event) => {
+        event.preventDefault();
+        const totalHeat =
+          BASE_HEAT +
+          Object.values(MODULES).reduce((sum, m) => sum + (m.mounted ? m.heat : 0), 0);
+        const totalMw =
+          BASE_MW +
+          Object.values(MODULES).reduce((sum, m) => sum + (m.mounted ? m.mw : 0), 0);
+        if (totalHeat >= OVERHEAT_THRESHOLD || totalMw > MAX_MW) {
+          dropArmed = false;
+        } else {
+          dropArmed = !dropArmed;
+        }
+        renderHUD();
+      });
+
+      // Keyboard / Controller FocusNeighbor & Quick-Slot Shortcuts
+      document.addEventListener('keydown', (event) => {
+        if (event.target && event.target.tagName === 'INPUT') {
+          if (event.key === 'Escape') {
+            event.target.blur();
+          }
+          return;
+        }
+        if (event.key === '1') toggleSlot('r-arm');
+        else if (event.key === '2') toggleSlot('l-arm');
+        else if (event.key === '3') toggleSlot('dorsal');
+        else if (event.key === '4') toggleSlot('chassis');
+        else if (event.key === '[' || event.key === ']') cycleBay();
+        else if (event.key === 'Escape' && dropArmed) {
+          dropArmed = false;
+          renderHUD();
+        }
+      });
+
+      renderHUD();
+    })();
+  </script>
+</body>
+</html>

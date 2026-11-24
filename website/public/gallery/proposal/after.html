@@ -1,0 +1,1800 @@
+<!doctype html>
+<html lang="en" data-currency="EUR" data-guides="off" data-active-sheet="1">
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
+  <title>Atelier Nord — Architectural Fee Proposal &amp; Milestone Ledger (Pixelcraft Document)</title>
+  <link rel="stylesheet" href="../../fonts/gallery.css" />
+  <style>
+    :root {
+      /* Required Swiss / Danish Architectural Proofing Palette */
+      --mat-bg: #DDDAD2;
+      --paper-bg: #FDFCF9;
+      --ink-primary: #141413;
+      --ink-muted: #57534E;
+      --accent-slate: #1E3A5F;
+      --rule-crop: #C7C2B8;
+
+      /* Semantic Supporting Surface & Prepress Tokens */
+      --mat-bar: #D3CFC6;
+      --mat-rail: #E5E2DA;
+      --mat-control: #EFECE6;
+      --paper-tint: #F4F2EC;
+      --rule-hairline: #E2DFD7;
+      --rule-strong: #141413;
+      --slate-soft: rgba(30, 58, 95, 0.08);
+      --slate-mid: rgba(30, 58, 95, 0.18);
+      --baseline-line: rgba(30, 58, 95, 0.11);
+      --bleed-line: #9E2A47;
+      --bleed-soft: rgba(158, 42, 71, 0.07);
+      --pass-ink: #1B4D3E;
+      --pass-bg: rgba(27, 77, 62, 0.10);
+      --paper-shadow: rgba(20, 20, 19, 0.09);
+
+      /* Typographic System */
+      --font-display: 'Archivo', 'Helvetica Neue', sans-serif;
+      --font-sans: 'Public Sans', 'Helvetica Neue', sans-serif;
+      --font-mono: 'IBM Plex Mono', ui-monospace, SFMono-Regular, monospace;
+      --font-serif: Georgia, 'Times New Roman', serif;
+
+      --dur-quick: 140ms;
+      --ease-out: cubic-bezier(0.2, 0.8, 0.2, 1);
+    }
+
+    *,
+    *::before,
+    *::after {
+      box-sizing: border-box;
+    }
+
+    html,
+    body {
+      margin: 0;
+      padding: 0;
+      min-height: 100vh;
+      background-color: var(--mat-bg);
+      color: var(--ink-primary);
+      font-family: var(--font-sans);
+      font-size: 13px;
+      line-height: 1.45;
+      -webkit-font-smoothing: antialiased;
+    }
+
+    :focus-visible {
+      outline: 2px solid var(--accent-slate);
+      outline-offset: 2px;
+    }
+
+    .skip-link {
+      position: absolute;
+      inset-inline-start: 14px;
+      inset-block-start: -48px;
+      z-index: 40;
+      padding: 7px 12px;
+      background-color: var(--ink-primary);
+      color: var(--paper-bg);
+      font-family: var(--font-mono);
+      font-size: 11px;
+      text-decoration: none;
+    }
+
+    .skip-link:focus {
+      inset-block-start: 10px;
+    }
+
+    /* Top Prepress Proofing Bar */
+    .proofing-bar {
+      display: flex;
+      flex-wrap: wrap;
+      align-items: center;
+      justify-content: space-between;
+      gap: 6px 10px;
+      min-height: 42px;
+      padding: 4px 14px;
+      background-color: var(--mat-bar);
+      border-bottom: 1px solid var(--rule-crop);
+    }
+
+    .artifact-id {
+      display: flex;
+      align-items: center;
+      gap: 7px;
+      min-width: 0;
+    }
+
+    .engine-tag {
+      display: inline-block;
+      padding: 2px 5px;
+      background-color: var(--accent-slate);
+      color: var(--paper-bg);
+      font-family: var(--font-mono);
+      font-size: 9px;
+      font-weight: 500;
+      letter-spacing: 0.04em;
+      text-transform: uppercase;
+      white-space: nowrap;
+    }
+
+    .file-spec {
+      font-family: var(--font-mono);
+      font-size: 10.5px;
+      font-weight: 500;
+      color: var(--ink-primary);
+      white-space: nowrap;
+      overflow: hidden;
+      text-overflow: ellipsis;
+    }
+
+    .file-spec span {
+      color: var(--ink-muted);
+      font-weight: 400;
+    }
+
+    .proofing-controls {
+      display: flex;
+      flex-wrap: wrap;
+      align-items: center;
+      gap: 6px;
+    }
+
+    /* Page Tabs */
+    .sheet-switcher {
+      display: inline-flex;
+      border: 1px solid var(--rule-crop);
+      background-color: var(--mat-control);
+    }
+
+    .sheet-btn {
+      appearance: none;
+      border: 0;
+      border-inline-end: 1px solid var(--rule-crop);
+      background-color: transparent;
+      color: var(--ink-muted);
+      padding: 4px 7px;
+      font-family: var(--font-sans);
+      font-size: 10.5px;
+      font-weight: 600;
+      white-space: nowrap;
+      cursor: pointer;
+      transition: background-color var(--dur-quick) var(--ease-out), color var(--dur-quick) var(--ease-out);
+    }
+
+    .sheet-btn:last-child {
+      border-inline-end: 0;
+    }
+
+    .sheet-btn:hover {
+      color: var(--ink-primary);
+      background-color: var(--paper-bg);
+    }
+
+    .sheet-btn[aria-pressed="true"] {
+      background-color: var(--ink-primary);
+      color: var(--paper-bg);
+    }
+
+    /* Bleed & Baseline Grid Toggle */
+    .guide-toggle {
+      display: inline-flex;
+      align-items: center;
+      gap: 5px;
+      padding: 4px 7px;
+      border: 1px solid var(--rule-crop);
+      background-color: var(--mat-control);
+      font-family: var(--font-mono);
+      font-size: 10px;
+      color: var(--ink-primary);
+      white-space: nowrap;
+      cursor: pointer;
+      user-select: none;
+      transition: background-color var(--dur-quick) var(--ease-out), border-color var(--dur-quick) var(--ease-out);
+    }
+
+    .guide-toggle:hover {
+      background-color: var(--paper-bg);
+    }
+
+    .guide-toggle input {
+      margin: 0;
+      width: 12px;
+      height: 12px;
+      accent-color: var(--accent-slate);
+      cursor: pointer;
+    }
+
+    html[data-guides="on"] .guide-toggle {
+      border-color: var(--bleed-line);
+      background-color: var(--paper-bg);
+    }
+
+    /* Currency (EUR / DKK) Switcher */
+    .currency-group {
+      display: inline-flex;
+      align-items: center;
+      border: 1px solid var(--rule-crop);
+      background-color: var(--mat-control);
+    }
+
+    .currency-group-title {
+      padding: 0 6px;
+      font-family: var(--font-mono);
+      font-size: 9.5px;
+      color: var(--ink-muted);
+      text-transform: uppercase;
+      letter-spacing: 0.04em;
+    }
+
+    .currency-opt {
+      position: relative;
+      display: inline-flex;
+    }
+
+    .currency-opt input {
+      position: absolute;
+      opacity: 0;
+      width: 1px;
+      height: 1px;
+      margin: 0;
+    }
+
+    .currency-opt label {
+      display: inline-block;
+      padding: 4px 6px;
+      border-inline-start: 1px solid var(--rule-crop);
+      font-family: var(--font-mono);
+      font-size: 10px;
+      font-weight: 500;
+      color: var(--ink-muted);
+      white-space: nowrap;
+      cursor: pointer;
+      transition: background-color var(--dur-quick) var(--ease-out), color var(--dur-quick) var(--ease-out);
+    }
+
+    .currency-opt input:checked + label {
+      background-color: var(--accent-slate);
+      color: var(--paper-bg);
+    }
+
+    .currency-opt input:focus-visible + label {
+      outline: 2px solid var(--accent-slate);
+      outline-offset: 1px;
+    }
+
+    /* Proofing Desk Workspace (1440 x 858 below bar) */
+    .proofing-desk {
+      display: grid;
+      grid-template-columns: minmax(0, 1fr) 348px;
+      min-height: calc(100vh - 42px);
+    }
+
+    /* Center Paginated Drafting Mat */
+    .mat-stage {
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      justify-content: center;
+      padding: 8px 20px 10px;
+      background-color: var(--mat-bg);
+      overflow-x: auto;
+    }
+
+    .ruler-strip {
+      display: flex;
+      justify-content: space-between;
+      width: 824px;
+      padding: 0 2px 3px;
+      font-family: var(--font-mono);
+      font-size: 9px;
+      letter-spacing: 0.04em;
+      color: var(--ink-muted);
+      user-select: none;
+    }
+
+    /* Crop-mark wrapper around the A4 cotton sheet */
+    .sheet-mount {
+      position: relative;
+      padding: 8px;
+    }
+
+    .crop-corner {
+      position: absolute;
+      width: 14px;
+      height: 14px;
+      pointer-events: none;
+    }
+
+    .crop-tl {
+      top: 0;
+      left: 0;
+      border-top: 1px solid var(--rule-crop);
+      border-left: 1px solid var(--rule-crop);
+    }
+
+    .crop-tr {
+      top: 0;
+      right: 0;
+      border-top: 1px solid var(--rule-crop);
+      border-right: 1px solid var(--rule-crop);
+    }
+
+    .crop-bl {
+      bottom: 0;
+      left: 0;
+      border-bottom: 1px solid var(--rule-crop);
+      border-left: 1px solid var(--rule-crop);
+    }
+
+    .crop-br {
+      bottom: 0;
+      right: 0;
+      border-bottom: 1px solid var(--rule-crop);
+      border-right: 1px solid var(--rule-crop);
+    }
+
+    /* Paginated A4 Sheet Specimen */
+    .a4-sheet {
+      position: relative;
+      width: 824px;
+      min-height: 804px;
+      background-color: var(--paper-bg);
+      color: var(--ink-primary);
+      border: 1px solid var(--rule-crop);
+      box-shadow: 0 10px 26px var(--paper-shadow);
+      padding: 15px 28px 13px;
+      display: flex;
+      flex-direction: column;
+      justify-content: space-between;
+    }
+
+    .a4-sheet[hidden] {
+      display: none;
+    }
+
+    /* Prepress Bleed (+3mm) & 12pt Baseline Grid Overlay */
+    .prepress-guides {
+      position: absolute;
+      inset: -5px;
+      border: 1px dashed var(--bleed-line);
+      pointer-events: none;
+      opacity: 0;
+      transition: opacity var(--dur-quick) var(--ease-out);
+      z-index: 10;
+    }
+
+    .prepress-guides::before {
+      content: "BLEED +3 MM (216 × 303 MM) · BASELINE 12 PT";
+      position: absolute;
+      top: -14px;
+      right: 0;
+      padding: 1px 6px;
+      background-color: var(--bleed-line);
+      color: var(--paper-bg);
+      font-family: var(--font-mono);
+      font-size: 8.5px;
+      letter-spacing: 0.05em;
+    }
+
+    .prepress-guides::after {
+      content: "";
+      position: absolute;
+      inset: 20px 33px 18px 33px;
+      border: 1px solid var(--slate-mid);
+      background-image: repeating-linear-gradient(
+        to bottom,
+        transparent 0,
+        transparent 15px,
+        var(--baseline-line) 15px,
+        var(--baseline-line) 16px
+      );
+    }
+
+    html[data-guides="on"] .prepress-guides {
+      opacity: 1;
+    }
+
+    /* Running Header & Running Footer (PDF/UA Artifacts) */
+    .running-header {
+      display: flex;
+      justify-content: space-between;
+      align-items: baseline;
+      padding-bottom: 5px;
+      border-bottom: 1.5px solid var(--rule-strong);
+      font-family: var(--font-mono);
+      font-size: 9px;
+      letter-spacing: 0.06em;
+      text-transform: uppercase;
+      color: var(--ink-muted);
+    }
+
+    .running-header strong {
+      color: var(--ink-primary);
+      font-weight: 500;
+    }
+
+    .running-footer {
+      display: flex;
+      justify-content: space-between;
+      align-items: baseline;
+      padding-top: 6px;
+      border-top: 1px solid var(--rule-crop);
+      font-family: var(--font-mono);
+      font-size: 9px;
+      letter-spacing: 0.04em;
+      color: var(--ink-muted);
+    }
+
+    .running-footer .folio-num {
+      color: var(--ink-primary);
+      font-weight: 500;
+      font-variant-numeric: tabular-nums;
+    }
+
+    /* Swiss Specification Title & Metadata Block */
+    .doc-masthead {
+      display: grid;
+      grid-template-columns: 1.55fr 1fr;
+      gap: 18px;
+      padding: 8px 0 8px;
+      border-bottom: 1px solid var(--rule-hairline);
+    }
+
+    .doc-kicker {
+      margin: 0 0 3px;
+      font-family: var(--font-mono);
+      font-size: 9px;
+      font-weight: 500;
+      letter-spacing: 0.08em;
+      text-transform: uppercase;
+      color: var(--accent-slate);
+    }
+
+    .doc-title {
+      margin: 0 0 4px;
+      font-family: var(--font-display);
+      font-size: 19.5px;
+      font-weight: 700;
+      line-height: 1.12;
+      letter-spacing: -0.015em;
+      color: var(--ink-primary);
+    }
+
+    .doc-summary {
+      margin: 0;
+      font-family: var(--font-serif);
+      font-size: 11.5px;
+      line-height: 1.36;
+      color: var(--ink-muted);
+    }
+
+    .meta-ledger {
+      display: grid;
+      grid-template-columns: auto 1fr;
+      gap: 2px 10px;
+      align-content: start;
+      padding-inline-start: 14px;
+      border-inline-start: 1px solid var(--rule-hairline);
+      font-size: 10.5px;
+      font-variant-numeric: tabular-nums;
+    }
+
+    .meta-ledger dt {
+      font-family: var(--font-mono);
+      font-size: 9px;
+      text-transform: uppercase;
+      letter-spacing: 0.05em;
+      color: var(--ink-muted);
+    }
+
+    .meta-ledger dd {
+      margin: 0;
+      font-weight: 500;
+      color: var(--ink-primary);
+      text-align: end;
+    }
+
+    /* Miniature SVG Timber Pavilion Elevation Figure */
+    .elevation-plate {
+      margin: 8px 0;
+      border: 1px solid var(--rule-crop);
+      background-color: var(--paper-tint);
+    }
+
+    .elevation-svg {
+      display: block;
+      width: 100%;
+      height: 114px;
+    }
+
+    .figure-caption {
+      display: flex;
+      justify-content: space-between;
+      align-items: baseline;
+      gap: 12px;
+      padding: 3.5px 10px;
+      border-top: 1px solid var(--rule-hairline);
+      background-color: var(--paper-bg);
+      font-family: var(--font-mono);
+      font-size: 9px;
+      color: var(--ink-muted);
+    }
+
+    .figure-caption strong {
+      color: var(--ink-primary);
+      font-weight: 500;
+    }
+
+    /* Section Headings */
+    .sec-head {
+      display: flex;
+      justify-content: space-between;
+      align-items: baseline;
+      gap: 10px;
+      margin: 2px 0 4px;
+    }
+
+    .sec-title {
+      margin: 0;
+      font-family: var(--font-display);
+      font-size: 11.5px;
+      font-weight: 700;
+      letter-spacing: 0.04em;
+      text-transform: uppercase;
+      color: var(--ink-primary);
+    }
+
+    .sec-meta {
+      font-family: var(--font-mono);
+      font-size: 9.5px;
+      color: var(--ink-muted);
+      font-variant-numeric: tabular-nums;
+      white-space: nowrap;
+    }
+
+    /* 5-Phase RIBA / FRI Fee Schedule Table */
+    .fee-table {
+      width: 100%;
+      border-collapse: collapse;
+      font-size: 11px;
+      font-variant-numeric: tabular-nums;
+    }
+
+    .fee-table thead th {
+      padding: 4px 6px;
+      border-top: 1.5px solid var(--rule-strong);
+      border-bottom: 1px solid var(--rule-strong);
+      font-family: var(--font-mono);
+      font-size: 9px;
+      font-weight: 500;
+      text-transform: uppercase;
+      letter-spacing: 0.05em;
+      color: var(--ink-muted);
+      text-align: start;
+    }
+
+    .fee-table thead th.num,
+    .fee-table tbody td.num {
+      text-align: end;
+      font-family: var(--font-mono);
+      font-variant-numeric: tabular-nums;
+      white-space: nowrap;
+    }
+
+    .fee-table tbody td {
+      padding: 4.5px 6px;
+      border-bottom: 1px solid var(--rule-hairline);
+      vertical-align: baseline;
+    }
+
+    .phase-code {
+      font-family: var(--font-mono);
+      font-size: 10px;
+      font-weight: 500;
+      color: var(--accent-slate);
+      white-space: nowrap;
+    }
+
+    .phase-name {
+      font-weight: 600;
+      color: var(--ink-primary);
+    }
+
+    .phase-deliverable {
+      display: block;
+      font-size: 10px;
+      line-height: 1.32;
+      color: var(--ink-muted);
+    }
+
+    .stage-ref {
+      font-family: var(--font-mono);
+      font-size: 9.5px;
+      color: var(--ink-muted);
+      white-space: nowrap;
+    }
+
+    /* Keep-Together Remittance & VAT Summary Block */
+    .keep-together {
+      break-inside: avoid;
+      page-break-inside: avoid;
+    }
+
+    .settlement-grid {
+      display: grid;
+      grid-template-columns: 1.18fr 1fr;
+      gap: 18px;
+      margin-top: 8px;
+      padding-top: 4px;
+    }
+
+    .remittance-box {
+      display: flex;
+      flex-direction: column;
+      justify-content: space-between;
+      gap: 6px;
+      padding: 8px 10px;
+      background-color: var(--paper-tint);
+      border-inline-start: 2px solid var(--accent-slate);
+      font-size: 10px;
+      color: var(--ink-muted);
+    }
+
+    .remittance-box p {
+      margin: 0;
+      line-height: 1.38;
+    }
+
+    .remittance-box strong {
+      color: var(--ink-primary);
+      font-weight: 600;
+    }
+
+    .po-field-row {
+      display: flex;
+      align-items: center;
+      gap: 8px;
+      padding-top: 4px;
+      border-top: 1px solid var(--rule-hairline);
+    }
+
+    .po-field-row label {
+      font-family: var(--font-mono);
+      font-size: 9px;
+      font-weight: 500;
+      text-transform: uppercase;
+      letter-spacing: 0.04em;
+      color: var(--ink-primary);
+      white-space: nowrap;
+    }
+
+    .po-field-row input {
+      flex: 1;
+      min-width: 0;
+      padding: 2.5px 6px;
+      border: 1px solid var(--rule-crop);
+      background-color: var(--paper-bg);
+      color: var(--ink-primary);
+      font-family: var(--font-mono);
+      font-size: 10px;
+    }
+
+    .totals-table {
+      width: 100%;
+      border-collapse: collapse;
+      font-size: 10.5px;
+      font-variant-numeric: tabular-nums;
+    }
+
+    .totals-table td {
+      padding: 2.5px 4px;
+      color: var(--ink-muted);
+    }
+
+    .totals-table td.num {
+      text-align: end;
+      font-family: var(--font-mono);
+      color: var(--ink-primary);
+      white-space: nowrap;
+    }
+
+    .totals-table tr.subtotal-row td {
+      border-top: 1px solid var(--rule-crop);
+      padding-top: 4px;
+      color: var(--ink-primary);
+      font-weight: 500;
+    }
+
+    .totals-table tr.grand-total-row td {
+      border-top: 1.5px solid var(--rule-strong);
+      border-bottom: 3px double var(--rule-strong);
+      padding: 5px 4px;
+      font-family: var(--font-display);
+      font-size: 12px;
+      font-weight: 700;
+      color: var(--ink-primary);
+    }
+
+    .totals-table tr.grand-total-row td.num {
+      font-family: var(--font-mono);
+      font-size: 12px;
+      font-weight: 500;
+      color: var(--accent-slate);
+    }
+
+    /* Sheet 2: Milestone Gantt & Terms */
+    .gantt-table {
+      width: 100%;
+      border-collapse: collapse;
+      font-size: 11px;
+      font-variant-numeric: tabular-nums;
+      margin-bottom: 12px;
+    }
+
+    .gantt-table th {
+      padding: 5px 6px;
+      border-top: 1.5px solid var(--rule-strong);
+      border-bottom: 1px solid var(--rule-strong);
+      font-family: var(--font-mono);
+      font-size: 9px;
+      font-weight: 500;
+      text-transform: uppercase;
+      letter-spacing: 0.05em;
+      color: var(--ink-muted);
+      text-align: start;
+    }
+
+    .gantt-table th.num,
+    .gantt-table td.num {
+      text-align: end;
+      font-family: var(--font-mono);
+      white-space: nowrap;
+    }
+
+    .gantt-table td {
+      padding: 7px 6px;
+      border-bottom: 1px solid var(--rule-hairline);
+      vertical-align: middle;
+    }
+
+    .gantt-track {
+      position: relative;
+      height: 14px;
+      background-color: var(--paper-tint);
+      border: 1px solid var(--rule-hairline);
+      background-image: repeating-linear-gradient(
+        to right,
+        transparent 0,
+        transparent calc(12.5% - 1px),
+        var(--rule-hairline) calc(12.5% - 1px),
+        var(--rule-hairline) 12.5%
+      );
+    }
+
+    .gantt-bar {
+      position: absolute;
+      top: 2px;
+      bottom: 2px;
+      background-color: var(--accent-slate);
+    }
+
+    .gantt-gate {
+      position: absolute;
+      top: 2px;
+      width: 8px;
+      height: 8px;
+      background-color: var(--ink-primary);
+      transform: rotate(45deg);
+    }
+
+    .terms-columns {
+      display: grid;
+      grid-template-columns: 1fr 1fr;
+      gap: 14px 22px;
+      padding: 8px 0 12px;
+      border-bottom: 1px solid var(--rule-hairline);
+    }
+
+    .term-clause h3 {
+      margin: 0 0 3px;
+      font-family: var(--font-display);
+      font-size: 11px;
+      font-weight: 700;
+      letter-spacing: 0.02em;
+      color: var(--ink-primary);
+    }
+
+    .term-clause p {
+      margin: 0;
+      font-family: var(--font-serif);
+      font-size: 11px;
+      line-height: 1.44;
+      color: var(--ink-muted);
+      orphans: 3;
+      widows: 3;
+    }
+
+    .signature-grid {
+      display: grid;
+      grid-template-columns: 1fr 1fr;
+      gap: 24px;
+      padding-top: 10px;
+    }
+
+    .sig-box {
+      padding: 10px 12px;
+      border: 1px solid var(--rule-crop);
+      background-color: var(--paper-tint);
+      font-size: 10.5px;
+    }
+
+    .sig-role {
+      font-family: var(--font-mono);
+      font-size: 9.5px;
+      text-transform: uppercase;
+      letter-spacing: 0.05em;
+      color: var(--ink-muted);
+      margin-bottom: 18px;
+    }
+
+    .sig-line {
+      border-top: 1px solid var(--ink-primary);
+      padding-top: 5px;
+      display: flex;
+      justify-content: space-between;
+      font-family: var(--font-mono);
+      font-size: 10px;
+      color: var(--ink-primary);
+    }
+
+    /* Right Document QA & Prepress Rail */
+    .qa-rail {
+      background-color: var(--mat-rail);
+      border-inline-start: 1px solid var(--rule-crop);
+      padding: 11px 14px 12px;
+      display: flex;
+      flex-direction: column;
+      justify-content: space-between;
+      gap: 8px;
+    }
+
+    .qa-header {
+      padding-bottom: 6px;
+      border-bottom: 1.5px solid var(--ink-primary);
+    }
+
+    .qa-kicker {
+      margin: 0 0 1px;
+      font-family: var(--font-mono);
+      font-size: 9px;
+      letter-spacing: 0.07em;
+      text-transform: uppercase;
+      color: var(--accent-slate);
+    }
+
+    .qa-title {
+      margin: 0;
+      font-family: var(--font-display);
+      font-size: 13.5px;
+      font-weight: 700;
+      color: var(--ink-primary);
+    }
+
+    .qa-card {
+      background-color: var(--paper-bg);
+      border: 1px solid var(--rule-crop);
+      padding: 8px 10px;
+    }
+
+    .qa-card-head {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      gap: 8px;
+      margin-bottom: 5px;
+    }
+
+    .qa-card-head h2 {
+      margin: 0;
+      font-family: var(--font-display);
+      font-size: 10.5px;
+      font-weight: 700;
+      letter-spacing: 0.05em;
+      text-transform: uppercase;
+      color: var(--ink-primary);
+    }
+
+    .evidence-badge {
+      display: inline-block;
+      padding: 1px 5px;
+      background-color: var(--pass-bg);
+      color: var(--pass-ink);
+      font-family: var(--font-mono);
+      font-size: 9px;
+      font-weight: 500;
+    }
+
+    .qa-list {
+      list-style: none;
+      margin: 0;
+      padding: 0;
+      display: flex;
+      flex-direction: column;
+      gap: 4px;
+      font-size: 10.5px;
+    }
+
+    .qa-list li {
+      display: flex;
+      justify-content: space-between;
+      align-items: baseline;
+      gap: 8px;
+      padding-bottom: 3px;
+      border-bottom: 1px solid var(--rule-hairline);
+    }
+
+    .qa-list li:last-child {
+      padding-bottom: 0;
+      border-bottom: 0;
+    }
+
+    .qa-list code {
+      font-family: var(--font-mono);
+      font-size: 9.5px;
+      color: var(--accent-slate);
+    }
+
+    .qa-status {
+      font-family: var(--font-mono);
+      font-size: 9px;
+      color: var(--pass-ink);
+      white-space: nowrap;
+    }
+
+    /* Ink Coverage Budget Meter */
+    .ink-readout {
+      display: flex;
+      justify-content: space-between;
+      align-items: baseline;
+      margin-bottom: 5px;
+      font-variant-numeric: tabular-nums;
+    }
+
+    .ink-value {
+      font-family: var(--font-mono);
+      font-size: 12px;
+      font-weight: 500;
+      color: var(--ink-primary);
+    }
+
+    .ink-limit {
+      font-family: var(--font-mono);
+      font-size: 9px;
+      color: var(--ink-muted);
+    }
+
+    .ink-meter {
+      height: 7px;
+      width: 100%;
+      background-color: var(--paper-tint);
+      border: 1px solid var(--rule-crop);
+      display: flex;
+      margin-bottom: 5px;
+    }
+
+    .ink-fill-k {
+      width: 3.6%;
+      background-color: var(--ink-primary);
+    }
+
+    .ink-fill-slate {
+      width: 0.6%;
+      background-color: var(--accent-slate);
+    }
+
+    .ink-caption {
+      margin: 0;
+      font-family: var(--font-mono);
+      font-size: 9px;
+      line-height: 1.38;
+      color: var(--ink-muted);
+    }
+
+    /* PDF/UA Heading & Tag Tree */
+    .tag-tree {
+      margin: 0;
+      padding: 0;
+      list-style: none;
+      font-family: var(--font-mono);
+      font-size: 9.5px;
+      line-height: 1.44;
+      color: var(--ink-muted);
+    }
+
+    .tag-tree li {
+      white-space: nowrap;
+      overflow: hidden;
+      text-overflow: ellipsis;
+    }
+
+    .tag-node {
+      color: var(--accent-slate);
+      font-weight: 500;
+    }
+
+    .tag-active {
+      color: var(--ink-primary);
+      font-weight: 500;
+    }
+
+    /* Typst Source Snippet & Truthful Specimen Disclosure */
+    .typst-snippet {
+      margin: 0;
+      padding: 6px 8px;
+      background-color: var(--paper-tint);
+      border: 1px solid var(--rule-hairline);
+      font-family: var(--font-mono);
+      font-size: 9px;
+      line-height: 1.42;
+      color: var(--ink-primary);
+      white-space: pre-wrap;
+    }
+
+    .disclosure-note {
+      padding: 8px 10px;
+      border-inline-start: 3px solid var(--accent-slate);
+      background-color: var(--paper-bg);
+      border-top: 1px solid var(--rule-crop);
+      border-inline-end: 1px solid var(--rule-crop);
+      border-bottom: 1px solid var(--rule-crop);
+    }
+
+    .disclosure-note strong {
+      display: block;
+      margin-bottom: 2px;
+      font-family: var(--font-mono);
+      font-size: 9.5px;
+      letter-spacing: 0.02em;
+      color: var(--ink-primary);
+    }
+
+    .disclosure-note p {
+      margin: 0;
+      font-size: 10px;
+      line-height: 1.35;
+      color: var(--ink-muted);
+    }
+
+    @media (max-width: 1180px) {
+      .proofing-desk {
+        grid-template-columns: 1fr;
+      }
+
+      .qa-rail {
+        border-inline-start: 0;
+        border-top: 1px solid var(--rule-crop);
+      }
+    }
+
+    @media (prefers-reduced-motion: reduce) {
+      *,
+      *::before,
+      *::after {
+        transition-duration: 0.01ms !important;
+        animation-duration: 0.01ms !important;
+      }
+    }
+
+    /* Real Paged Media & Browser Print Rules */
+    @page {
+      size: A4 portrait;
+      margin: 16mm 18mm 18mm 18mm;
+    }
+
+    @media print {
+      html,
+      body {
+        background-color: var(--paper-bg);
+      }
+
+      .proofing-bar,
+      .qa-rail,
+      .ruler-strip,
+      .crop-corner,
+      .prepress-guides,
+      .skip-link {
+        display: none !important;
+      }
+
+      .proofing-desk,
+      .mat-stage,
+      .sheet-mount {
+        display: block;
+        padding: 0;
+        margin: 0;
+        background: none;
+      }
+
+      .a4-sheet {
+        display: flex !important;
+        width: 100%;
+        min-height: 0;
+        border: 0;
+        box-shadow: none;
+        padding: 0;
+        break-after: page;
+        page-break-after: always;
+      }
+
+      .a4-sheet:last-of-type {
+        break-after: auto;
+        page-break-after: auto;
+      }
+
+      thead {
+        display: table-header-group;
+      }
+
+      tr,
+      figure,
+      .keep-together {
+        break-inside: avoid;
+        page-break-inside: avoid;
+      }
+
+      h1,
+      h2,
+      h3 {
+        break-after: avoid;
+        page-break-after: avoid;
+      }
+
+      p {
+        orphans: 3;
+        widows: 3;
+      }
+    }
+  </style>
+</head>
+<body>
+  <a class="skip-link" href="#document-sheet">Skip to paginated proposal sheet</a>
+
+  <!-- Top Prepress & Typst Proofing Bar -->
+  <header class="proofing-bar" aria-label="Document proofing toolbar">
+    <div class="artifact-id">
+      <span class="engine-tag">Typst 0.13 · @page</span>
+      <span class="file-spec">
+        proposal-harbour-pavilion.typ <span>· A4 (210 × 297 mm) · PDF/UA-1 tagged</span>
+      </span>
+    </div>
+
+    <div class="proofing-controls">
+      <div class="sheet-switcher" role="group" aria-label="Paginated sheet selector">
+        <button type="button" class="sheet-btn" id="btn-sheet-1" aria-pressed="true">
+          Page 1: Scope &amp; Fee Schedule
+        </button>
+        <button type="button" class="sheet-btn" id="btn-sheet-2" aria-pressed="false">
+          Page 2: Milestone Gantt &amp; Terms
+        </button>
+      </div>
+
+      <label class="guide-toggle" for="bleed-grid-toggle">
+        <input type="checkbox" id="bleed-grid-toggle" />
+        <span>Show Bleed &amp; Baseline Grid</span>
+      </label>
+
+      <div class="currency-group" role="radiogroup" aria-label="Currency (EUR / DKK)">
+        <span class="currency-group-title">Currency</span>
+        <span class="currency-opt">
+          <input type="radio" name="currency" id="curr-eur" value="EUR" checked />
+          <label for="curr-eur">EUR (€)</label>
+        </span>
+        <span class="currency-opt">
+          <input type="radio" name="currency" id="curr-dkk" value="DKK" />
+          <label for="curr-dkk">DKK (kr.)</label>
+        </span>
+      </div>
+    </div>
+  </header>
+
+  <div class="proofing-desk">
+    <!-- Center Paginated Paper Stage -->
+    <main class="mat-stage" id="document-sheet">
+      <div class="ruler-strip" aria-hidden="true">
+        <span>0 mm</span>
+        <span>18 mm margin</span>
+        <span>105 mm axis</span>
+        <span>192 mm margin</span>
+        <span>210 mm A4</span>
+      </div>
+
+      <div class="sheet-mount">
+        <span class="crop-corner crop-tl" aria-hidden="true"></span>
+        <span class="crop-corner crop-tr" aria-hidden="true"></span>
+        <span class="crop-corner crop-bl" aria-hidden="true"></span>
+        <span class="crop-corner crop-br" aria-hidden="true"></span>
+
+        <!-- SHEET 1: Scope, Elevation & 5-Phase Fee Schedule -->
+        <article class="a4-sheet" id="sheet-1" aria-label="Page 1: Scope and Fee Schedule">
+          <div class="prepress-guides" aria-hidden="true"></div>
+
+          <div>
+            <div class="running-header" aria-hidden="true">
+              <span><strong>Atelier Nord ApS</strong> · Strandgade 44, DK-1401 København K</span>
+              <span>ABR 18 Fee Proposal · Doc Ref AN-2026-041</span>
+            </div>
+
+            <div class="doc-masthead">
+              <div>
+                <p class="doc-kicker">Architectural Fee Proposal &amp; Milestone Ledger</p>
+                <h1 class="doc-title">Nordre Toldbod Timber Harbour Pavilion</h1>
+                <p class="doc-summary">
+                  Public waterfront shelter, winter bathing deck, and acoustic larch canopy for Copenhagen Inner Harbour. Prepared under Danish ABR 18 / FRI fee guidelines.
+                </p>
+              </div>
+
+              <dl class="meta-ledger">
+                <dt>Client</dt>
+                <dd>By &amp; Havn I/S (Spec.)</dd>
+                <dt>Practice CVR</dt>
+                <dd>DK-31849210</dd>
+                <dt>Issued</dt>
+                <dd>24 Nov 2026</dd>
+                <dt>Valid Until</dt>
+                <dd>22 Dec 2026</dd>
+                <dt>Peg Rate</dt>
+                <dd>1 EUR = 7.46 DKK</dd>
+              </dl>
+            </div>
+
+            <!-- Miniature SVG Timber Pavilion South Harbour Elevation -->
+            <figure class="elevation-plate keep-together">
+              <svg
+                class="elevation-svg"
+                viewBox="0 0 680 132"
+                role="img"
+                aria-labelledby="elev-title elev-desc"
+              >
+                <title id="elev-title">South Harbour Elevation of the Nordre Toldbod Timber Pavilion, scale 1:100</title>
+                <desc id="elev-desc">Orthographic architectural elevation showing a six-bay Douglas fir glulam timber pavilion with cantilevered mono-pitch roof at +6.45 meters above granite harbour quay at +2.40 meters and water datum ±0.00 DVR90.</desc>
+
+                <!-- Dimension chain top -->
+                <g stroke="var(--ink-muted)" stroke-width="0.75" fill="none">
+                  <line x1="112" y1="18" x2="532" y2="18" />
+                  <line x1="112" y1="13" x2="112" y2="34" />
+                  <line x1="182" y1="14" x2="182" y2="23" />
+                  <line x1="252" y1="14" x2="252" y2="23" />
+                  <line x1="322" y1="14" x2="322" y2="23" />
+                  <line x1="392" y1="14" x2="392" y2="23" />
+                  <line x1="462" y1="14" x2="462" y2="23" />
+                  <line x1="532" y1="13" x2="532" y2="44" />
+                  <!-- 45-degree architectural ticks -->
+                  <line x1="109" y1="21" x2="115" y2="15" stroke="var(--ink-primary)" />
+                  <line x1="179" y1="21" x2="185" y2="15" stroke="var(--ink-primary)" />
+                  <line x1="249" y1="21" x2="255" y2="15" stroke="var(--ink-primary)" />
+                  <line x1="319" y1="21" x2="325" y2="15" stroke="var(--ink-primary)" />
+                  <line x1="389" y1="21" x2="395" y2="15" stroke="var(--ink-primary)" />
+                  <line x1="459" y1="21" x2="465" y2="15" stroke="var(--ink-primary)" />
+                  <line x1="529" y1="21" x2="535" y2="15" stroke="var(--ink-primary)" />
+                </g>
+
+                <g font-family="IBM Plex Mono, monospace" font-size="8.5" fill="var(--ink-muted)">
+                  <text x="274" y="13">6 BAYS × 3,600 MM = 21,600 MM</text>
+                  <text x="12" y="34" fill="var(--accent-slate)">▽ +6.45 M</text>
+                  <text x="12" y="96" fill="var(--ink-primary)">▽ +2.40 M</text>
+                  <text x="12" y="116" fill="var(--accent-slate)">▽ ±0.00 DVR90</text>
+                </g>
+
+                <!-- Datum reference lines -->
+                <line x1="90" y1="31" x2="664" y2="31" stroke="var(--accent-slate)" stroke-width="0.6" stroke-dasharray="3 3" />
+                <line x1="90" y1="113" x2="664" y2="113" stroke="var(--accent-slate)" stroke-width="0.9" stroke-dasharray="6 3" />
+
+                <!-- Cantilevered mono-pitch glulam timber roof -->
+                <polygon
+                  points="88,31 566,45 566,53 88,40"
+                  fill="var(--paper-bg)"
+                  stroke="var(--ink-primary)"
+                  stroke-width="1.35"
+                />
+                <!-- Exposed rafter tails -->
+                <g stroke="var(--ink-primary)" stroke-width="1.1">
+                  <line x1="112" y1="41" x2="112" y2="96" />
+                  <line x1="182" y1="43" x2="182" y2="96" />
+                  <line x1="252" y1="45" x2="252" y2="96" />
+                  <line x1="322" y1="47" x2="322" y2="96" />
+                  <line x1="392" y1="49" x2="392" y2="96" />
+                  <line x1="462" y1="51" x2="462" y2="96" />
+                  <line x1="532" y1="52" x2="532" y2="96" />
+                </g>
+
+                <!-- Cedar louver acoustic windbreak screen (Bays 1-2) -->
+                <g stroke="var(--ink-muted)" stroke-width="0.75">
+                  <line x1="122" y1="42" x2="122" y2="96" />
+                  <line x1="132" y1="42" x2="132" y2="96" />
+                  <line x1="142" y1="42" x2="142" y2="96" />
+                  <line x1="152" y1="43" x2="152" y2="96" />
+                  <line x1="162" y1="43" x2="162" y2="96" />
+                  <line x1="172" y1="43" x2="172" y2="96" />
+                  <line x1="192" y1="44" x2="192" y2="96" />
+                  <line x1="202" y1="44" x2="202" y2="96" />
+                  <line x1="212" y1="44" x2="212" y2="96" />
+                  <line x1="222" y1="44" x2="222" y2="96" />
+                  <line x1="232" y1="45" x2="232" y2="96" />
+                  <line x1="242" y1="45" x2="242" y2="96" />
+                </g>
+
+                <!-- Glazed warming hall mullions & timber diagonal bracing (Bays 3-5) -->
+                <rect x="252" y="54" width="210" height="42" fill="var(--slate-soft)" stroke="var(--accent-slate)" stroke-width="0.9" />
+                <line x1="252" y1="96" x2="322" y2="47" stroke="var(--accent-slate)" stroke-width="0.85" />
+                <line x1="392" y1="49" x2="462" y2="96" stroke="var(--accent-slate)" stroke-width="0.85" />
+                <line x1="287" y1="54" x2="287" y2="96" stroke="var(--accent-slate)" stroke-width="0.7" />
+                <line x1="357" y1="54" x2="357" y2="96" stroke="var(--accent-slate)" stroke-width="0.7" />
+                <line x1="427" y1="54" x2="427" y2="96" stroke="var(--accent-slate)" stroke-width="0.7" />
+
+                <!-- Cantilevered timber bathing stair down to harbour water (Bay 6 -> Quay edge) -->
+                <polyline
+                  points="532,96 556,96 556,102 568,102 568,108 580,108 580,114"
+                  fill="none"
+                  stroke="var(--ink-primary)"
+                  stroke-width="1.2"
+                />
+                <line x1="532" y1="82" x2="582" y2="102" stroke="var(--accent-slate)" stroke-width="0.9" />
+
+                <!-- Granite quay plinth -->
+                <rect x="92" y="96" width="460" height="24" fill="var(--paper-bg)" stroke="var(--ink-primary)" stroke-width="1.3" />
+                <line x1="92" y1="103" x2="552" y2="103" stroke="var(--rule-crop)" stroke-width="0.8" />
+
+                <!-- Graphic 1:100 Scale Bar (bottom right) -->
+                <g transform="translate(592, 72)" font-family="IBM Plex Mono, monospace" font-size="8" fill="var(--ink-primary)">
+                  <text x="0" y="0">SCALE 1:100</text>
+                  <rect x="0" y="5" width="16" height="4" fill="var(--ink-primary)" />
+                  <rect x="16" y="5" width="16" height="4" fill="var(--paper-bg)" stroke="var(--ink-primary)" stroke-width="0.8" />
+                  <rect x="32" y="5" width="32" height="4" fill="var(--ink-primary)" />
+                  <text x="0" y="19" fill="var(--ink-muted)">0   1   2     4m</text>
+                </g>
+              </svg>
+              <figcaption class="figure-caption">
+                <span><strong>Fig. 1.1 — South Harbour Elevation (1:100)</strong> · Douglas Fir Glulam GL28c &amp; Heartwood Larch</span>
+                <span>Gross Area 340 m² · Section Cut A–A</span>
+              </figcaption>
+            </figure>
+
+            <!-- Section 01: 5-Phase RIBA / FRI Architectural Fee Schedule -->
+            <div class="sec-head">
+              <h2 class="sec-title">01 · Architectural Scope &amp; Fixed-Phase Fee Schedule</h2>
+              <span class="sec-meta" id="rate-note">960 Studio Hours · Blended Rate € 135.00 / h</span>
+            </div>
+
+            <table class="fee-table" aria-label="Five-phase architectural fee schedule">
+              <thead>
+                <tr>
+                  <th scope="col">Phase &amp; Deliverable</th>
+                  <th scope="col">Stage</th>
+                  <th scope="col" class="num">Hours</th>
+                  <th scope="col" class="num">Share</th>
+                  <th scope="col" class="num" id="col-fee-head">Net Fee (EUR)</th>
+                </tr>
+              </thead>
+              <tbody>
+                <tr>
+                  <td>
+                    <span class="phase-name"><span class="phase-code">01</span> Concept Sketching</span>
+                    <span class="phase-deliverable">Harbour sightline survey, 1:200 massing model &amp; daylight study</span>
+                  </td>
+                  <td class="stage-ref">FRI A1 · RIBA 2</td>
+                  <td class="num">140 h</td>
+                  <td class="num">14.6%</td>
+                  <td class="num" data-eur="18900">€ 18,900.00</td>
+                </tr>
+                <tr>
+                  <td>
+                    <span class="phase-name"><span class="phase-code">02</span> Municipal Permit</span>
+                    <span class="phase-deliverable">Copenhagen coastal authority submission, fire strategy &amp; accessibility drawings</span>
+                  </td>
+                  <td class="stage-ref">FRI A2 · RIBA 3</td>
+                  <td class="num">190 h</td>
+                  <td class="num">19.8%</td>
+                  <td class="num" data-eur="25650">€ 25,650.00</td>
+                </tr>
+                <tr>
+                  <td>
+                    <span class="phase-name"><span class="phase-code">03</span> Timber Structural Detailing</span>
+                    <span class="phase-deliverable">1:20 glulam portal joinery, marine 316L steel shoes &amp; acoustic larch roof assembly</span>
+                  </td>
+                  <td class="stage-ref">FRI B1 · RIBA 4a</td>
+                  <td class="num">260 h</td>
+                  <td class="num">27.1%</td>
+                  <td class="num" data-eur="35100">€ 35,100.00</td>
+                </tr>
+                <tr>
+                  <td>
+                    <span class="phase-name"><span class="phase-code">04</span> Tender Dossier</span>
+                    <span class="phase-deliverable">Bill of quantities, ABR 18 work descriptions, IFC export &amp; bidder clarification log</span>
+                  </td>
+                  <td class="stage-ref">FRI B2 · RIBA 4b</td>
+                  <td class="num">160 h</td>
+                  <td class="num">16.7%</td>
+                  <td class="num" data-eur="21600">€ 21,600.00</td>
+                </tr>
+                <tr>
+                  <td>
+                    <span class="phase-name"><span class="phase-code">05</span> Site Supervision</span>
+                    <span class="phase-deliverable">Weekly quay inspections, timber moisture QA, snagging ledger &amp; as-built dossier</span>
+                  </td>
+                  <td class="stage-ref">FRI C1 · RIBA 5</td>
+                  <td class="num">210 h</td>
+                  <td class="num">21.9%</td>
+                  <td class="num" data-eur="28350">€ 28,350.00</td>
+                </tr>
+              </tbody>
+            </table>
+
+            <!-- Keep-Together VAT Breakdown & Remittance Block -->
+            <div class="settlement-grid keep-together">
+              <div class="remittance-box">
+                <p>
+                  <strong>Billing &amp; E-Invoice Standard:</strong> Invoiced upon signed phase gate completion, 30 days net. Emitted as PDF/A-3 + EN 16931 ZUGFeRD 2.2 XML via NemKonto (IBAN DK50 0040 0440 1128 94).
+                </p>
+                <div class="po-field-row">
+                  <label for="po-ref-input">Client PO Ref</label>
+                  <input id="po-ref-input" type="text" value="BH-2026-084" maxlength="28" />
+                </div>
+              </div>
+
+              <table class="totals-table" aria-label="Proposal subtotal and Danish VAT summary">
+                <tbody>
+                  <tr>
+                    <td>Architectural Phases 01–05 (960 h)</td>
+                    <td class="num" data-eur="129600">€ 129,600.00</td>
+                  </tr>
+                  <tr>
+                    <td>Marine Timber Sub-Consultancy (at cost)</td>
+                    <td class="num" data-eur="14400">€ 14,400.00</td>
+                  </tr>
+                  <tr class="subtotal-row">
+                    <td>Taxable Subtotal (Excl. VAT)</td>
+                    <td class="num" data-eur="144000">€ 144,000.00</td>
+                  </tr>
+                  <tr>
+                    <td>Danish Statutory VAT (25.0% MOMS)</td>
+                    <td class="num" data-eur="36000">€ 36,000.00</td>
+                  </tr>
+                  <tr class="grand-total-row">
+                    <td>Gross Proposal Total</td>
+                    <td class="num" data-eur="180000">€ 180,000.00</td>
+                  </tr>
+                </tbody>
+              </table>
+            </div>
+          </div>
+
+          <div class="running-footer" aria-hidden="true">
+            <span>Atelier Nord ApS · Illustrative Fee Proposal Specimen</span>
+            <span>PDF/UA-1 · ZUGFeRD 2.2</span>
+            <span class="folio-num">Page 1 of 2 · Doc Ref AN-2026-041</span>
+          </div>
+        </article>
+
+        <!-- SHEET 2: Milestone Gantt, ABR 18 Terms & Keep-Together Signatures -->
+        <article class="a4-sheet" id="sheet-2" aria-label="Page 2: Milestone Gantt and Contractual Terms" hidden>
+          <div class="prepress-guides" aria-hidden="true"></div>
+
+          <div>
+            <div class="running-header" aria-hidden="true">
+              <span><strong>Atelier Nord ApS</strong> · Nordre Toldbod Timber Harbour Pavilion</span>
+              <span>Milestone Ledger &amp; Terms · Doc Ref AN-2026-041</span>
+            </div>
+
+            <div class="sec-head" style="margin-top: 12px;">
+              <h2 class="sec-title">02 · 32-Week Milestone Gantt &amp; Drawdown Schedule (2027)</h2>
+              <span class="sec-meta">◆ Municipal Gate · Net Drawdown Amounts</span>
+            </div>
+
+            <table class="gantt-table" aria-label="32-week programme and billing drawdown schedule">
+              <thead>
+                <tr>
+                  <th scope="col">Phase</th>
+                  <th scope="col">Window</th>
+                  <th scope="col" style="width: 44%;">Q1 – Q3 2027 Programme (W01–W32)</th>
+                  <th scope="col">Gate</th>
+                  <th scope="col" class="num" id="col-draw-head">Drawdown (EUR)</th>
+                </tr>
+              </thead>
+              <tbody>
+                <tr>
+                  <td><span class="phase-code">01</span> Concept Sketching</td>
+                  <td class="stage-ref">W01–W05</td>
+                  <td>
+                    <div class="gantt-track">
+                      <span class="gantt-bar" style="left: 0%; width: 16%;"></span>
+                    </div>
+                  </td>
+                  <td class="stage-ref">M1 Sketch Sign-off</td>
+                  <td class="num" data-eur="18900">€ 18,900.00</td>
+                </tr>
+                <tr>
+                  <td><span class="phase-code">02</span> Municipal Permit</td>
+                  <td class="stage-ref">W05–W12</td>
+                  <td>
+                    <div class="gantt-track">
+                      <span class="gantt-bar" style="left: 15%; width: 23%;"></span>
+                      <span class="gantt-gate" style="left: 37%;" title="Permit Filing Gate"></span>
+                    </div>
+                  </td>
+                  <td class="stage-ref">M2 Permit Filing</td>
+                  <td class="num" data-eur="25650">€ 25,650.00</td>
+                </tr>
+                <tr>
+                  <td><span class="phase-code">03</span> Timber Structural Detailing</td>
+                  <td class="stage-ref">W11–W20</td>
+                  <td>
+                    <div class="gantt-track">
+                      <span class="gantt-bar" style="left: 34%; width: 29%;"></span>
+                    </div>
+                  </td>
+                  <td class="stage-ref">M3 CNC Timber Release</td>
+                  <td class="num" data-eur="49500">€ 49,500.00</td>
+                </tr>
+                <tr>
+                  <td><span class="phase-code">04</span> Tender Dossier</td>
+                  <td class="stage-ref">W19–W24</td>
+                  <td>
+                    <div class="gantt-track">
+                      <span class="gantt-bar" style="left: 59%; width: 17%;"></span>
+                      <span class="gantt-gate" style="left: 75%;" title="Contractor Award"></span>
+                    </div>
+                  </td>
+                  <td class="stage-ref">M4 Contract Award</td>
+                  <td class="num" data-eur="21600">€ 21,600.00</td>
+                </tr>
+                <tr>
+                  <td><span class="phase-code">05</span> Site Supervision</td>
+                  <td class="stage-ref">W24–W32</td>
+                  <td>
+                    <div class="gantt-track">
+                      <span class="gantt-bar" style="left: 75%; width: 25%;"></span>
+                    </div>
+                  </td>
+                  <td class="stage-ref">M5 Quay Handover</td>
+                  <td class="num" data-eur="28350">€ 28,350.00</td>
+                </tr>
+              </tbody>
+            </table>
+
+            <div class="sec-head">
+              <h2 class="sec-title">03 · General Consultancy Conditions (ABR 18 Summary)</h2>
+              <span class="sec-meta">Jurisdiction: Maritime &amp; Commercial High Court, Copenhagen</span>
+            </div>
+
+            <div class="terms-columns">
+              <section class="term-clause">
+                <h3>§ 3.1 Basis of Appointment &amp; Fee Structure</h3>
+                <p>
+                  Consultancy services follow General Conditions for Consulting Services in Building and Construction Works (ABR 18). Phase 03 drawdown includes € 14,400.00 (DKK 107,424.00) fixed marine timber engineering sub-consultancy.
+                </p>
+              </section>
+              <section class="term-clause">
+                <h3>§ 3.2 Timber Moisture &amp; Fabrication Drawings</h3>
+                <p>
+                  Atelier Nord delivers native IFC 4.3 coordination models and 1:20 shop-review sheets. CNC glulam cutting files remain contingent upon contractor verification of site quay survey tolerances (±4 mm).
+                </p>
+              </section>
+              <section class="term-clause">
+                <h3>§ 3.3 Indexation &amp; Reimbursable Disbursements</h3>
+                <p>
+                  Fixed fees hold firm through 31 December 2027; work extending beyond Q4 2027 adjusts by Danmarks Statistik BYG42 index. Physical wind-tunnel or hydro-models require written client authorization prior to expenditure.
+                </p>
+              </section>
+              <section class="term-clause">
+                <h3>§ 3.4 Intellectual Property &amp; Insurance</h3>
+                <p>
+                  By &amp; Havn I/S receives a non-exclusive licence to construct and maintain the Nordre Toldbod Pavilion upon settlement. Professional indemnity coverage is held at DKK 25,000,000 per claim.
+                </p>
+              </section>
+            </div>
+
+            <!-- Keep-Together Signature Block (Never Split Across Page Break) -->
+            <div class="keep-together" style="margin-top: 12px;">
+              <div class="sec-head">
+                <h2 class="sec-title">04 · Authorization &amp; Acceptance</h2>
+                <span class="sec-meta" id="sig-po-mirror">Client PO Ref: BH-2026-084</span>
+              </div>
+              <div class="signature-grid">
+                <div class="sig-box">
+                  <div class="sig-role">For Atelier Nord ApS (Architect)</div>
+                  <div class="sig-line">
+                    <span>Maja Lindqvist, MAA · Partner</span>
+                    <span>24 Nov 2026</span>
+                  </div>
+                </div>
+                <div class="sig-box">
+                  <div class="sig-role">For By &amp; Havn I/S (Client Acceptance)</div>
+                  <div class="sig-line">
+                    <span>Authorized Signatory</span>
+                    <span>Date / Stamp</span>
+                  </div>
+                </div>
+              </div>
+            </div>
+          </div>
+
+          <div class="running-footer" aria-hidden="true">
+            <span>Atelier Nord ApS · Illustrative Fee Proposal Specimen</span>
+            <span>PDF/UA-1 · ZUGFeRD 2.2</span>
+            <span class="folio-num">Page 2 of 2 · Doc Ref AN-2026-041</span>
+          </div>
+        </article>
+      </div>
+    </main>
+
+    <!-- Right Document QA & Prepress Verification Rail -->
+    <aside class="qa-rail" aria-label="Document quality assurance and prepress checks">
+      <div>
+        <div class="qa-header">
+          <p class="qa-kicker">Prepress &amp; Pagination Inspector</p>
+          <h2 class="qa-title">Document QA Ledger</h2>
+        </div>
+      </div>
+
+      <!-- 1. Widow / Orphan & Fragmentation Check -->
+      <section class="qa-card" aria-labelledby="qa-frag-title">
+        <div class="qa-card-head">
+          <h2 id="qa-frag-title">Fragmentation &amp; Flow</h2>
+          <span class="evidence-badge">rendered</span>
+        </div>
+        <ul class="qa-list">
+          <li>
+            <span>VAT &amp; totals summary <code>break-inside: avoid</code></span>
+            <span class="qa-status">PASS</span>
+          </li>
+          <li>
+            <span>Dual signature block <code>break-inside: avoid</code></span>
+            <span class="qa-status">PASS</span>
+          </li>
+          <li>
+            <span>Clause flow <code>orphans: 3; widows: 3</code></span>
+            <span class="qa-status">static</span>
+          </li>
+          <li>
+            <span>Multi-page table <code>table-header-group</code></span>
+            <span class="qa-status">static</span>
+          </li>
+        </ul>
+      </section>
+
+      <!-- 2. CMYK / Grayscale Ink-Coverage Budget -->
+      <section class="qa-card" aria-labelledby="qa-ink-title">
+        <div class="qa-card-head">
+          <h2 id="qa-ink-title">CMYK / Grayscale Ink Budget</h2>
+          <span class="evidence-badge">rendered</span>
+        </div>
+        <div class="ink-readout">
+          <span class="ink-value" id="toner-readout">4.2% toner — print-safe</span>
+          <span class="ink-limit">Cap &lt; 12.0%</span>
+        </div>
+        <div class="ink-meter" role="img" aria-label="4.2 percent total area ink coverage: 3.6 percent carbon black and 0.6 percent blueprint slate">
+          <span class="ink-fill-k" id="ink-bar-k"></span>
+          <span class="ink-fill-slate" id="ink-bar-c"></span>
+        </div>
+        <p class="ink-caption">
+          K (Carbon) 3.6% · C/M (Slate) 0.6% · Cotton substrate 95.8% unprinted. Body contrast 15.8:1; legible on monochrome laser duplex.
+        </p>
+      </section>
+
+      <!-- 3. PDF/UA-1 Heading & Logical Tag Tree -->
+      <section class="qa-card" aria-labelledby="qa-ua-title">
+        <div class="qa-card-head">
+          <h2 id="qa-ua-title">PDF/UA-1 Logical Tag Tree</h2>
+          <span class="evidence-badge">static</span>
+        </div>
+        <ul class="tag-tree">
+          <li><span class="tag-node">&lt;Document</span> lang="en-DK" title="AN-2026-041"<span class="tag-node">&gt;</span></li>
+          <li id="tree-p1">├─ <span class="tag-node">&lt;H1&gt;</span> <span class="tag-active">Nordre Toldbod Timber Pavilion</span></li>
+          <li>├─ <span class="tag-node">&lt;Figure</span> alt="South Harbour Elevation 1:100"<span class="tag-node">&gt;</span></li>
+          <li id="tree-h2-1">├─ <span class="tag-node">&lt;H2&gt;</span> <span class="tag-active">01 · Scope &amp; Fee Schedule</span></li>
+          <li>│  └─ <span class="tag-node">&lt;Table&gt;</span> 5 × &lt;TR&gt; · &lt;TH scope="col"&gt;</li>
+          <li id="tree-h2-2">├─ <span class="tag-node">&lt;H2&gt;</span> <span>02 · Milestone Gantt &amp; Terms (p.2)</span></li>
+          <li>└─ <span class="tag-node">&lt;Artifact&gt;</span> Running folio &amp; crop marks</li>
+        </ul>
+      </section>
+
+      <!-- 4. Typst Paged Setup & Truthful Specimen Disclosure -->
+      <section class="qa-card" aria-labelledby="qa-typst-title">
+        <div class="qa-card-head">
+          <h2 id="qa-typst-title">Typst Page Rule</h2>
+          <span class="evidence-badge">static</span>
+        </div>
+        <pre class="typst-snippet">#set page(paper: "a4", margin: (x: 18mm, y: 16mm))
+#set text(font: "Public Sans", size: 9.5pt, number-type: "lining", number-width: "tabular")</pre>
+      </section>
+
+      <div class="disclosure-note">
+        <strong>Fictional architectural practice · Illustrative fee schedule</strong>
+        <p>
+          Atelier Nord ApS, CVR/IBAN identifiers, project milestones, and EUR/DKK figures are illustrative specimens demonstrating paginated document craft.
+        </p>
+      </div>
+    </aside>
+  </div>
+
+  <script>
+    (() => {
+      const root = document.documentElement;
+      const DKK_RATE = 7.46;
+
+      const btnSheet1 = document.getElementById('btn-sheet-1');
+      const btnSheet2 = document.getElementById('btn-sheet-2');
+      const sheet1 = document.getElementById('sheet-1');
+      const sheet2 = document.getElementById('sheet-2');
+      const tonerReadout = document.getElementById('toner-readout');
+      const treeH2_1 = document.querySelector('#tree-h2-1 span:last-child');
+      const treeH2_2 = document.querySelector('#tree-h2-2 span:last-child');
+
+      function setSheet(pageNum) {
+        const isOne = pageNum === 1;
+        root.setAttribute('data-active-sheet', String(pageNum));
+        sheet1.hidden = !isOne;
+        sheet2.hidden = isOne;
+        btnSheet1.setAttribute('aria-pressed', String(isOne));
+        btnSheet2.setAttribute('aria-pressed', String(!isOne));
+        tonerReadout.textContent = isOne
+          ? '4.2% toner — print-safe'
+          : '3.8% toner — print-safe';
+        treeH2_1.className = isOne ? 'tag-active' : '';
+        treeH2_2.className = isOne ? '' : 'tag-active';
+      }
+
+      btnSheet1.addEventListener('click', () => setSheet(1));
+      btnSheet2.addEventListener('click', () => setSheet(2));
+
+      const guideToggle = document.getElementById('bleed-grid-toggle');
+      guideToggle.addEventListener('change', () => {
+        root.setAttribute('data-guides', guideToggle.checked ? 'on' : 'off');
+      });
+
+      const moneyCells = document.querySelectorAll('[data-eur]');
+      const colFeeHead = document.getElementById('col-fee-head');
+      const colDrawHead = document.getElementById('col-draw-head');
+      const rateNote = document.getElementById('rate-note');
+
+      function formatAmount(eurAmount, currency) {
+        if (currency === 'DKK') {
+          const dkk = eurAmount * DKK_RATE;
+          return 'DKK ' + dkk.toLocaleString('en-US', {
+            minimumFractionDigits: 2,
+            maximumFractionDigits: 2
+          });
+        }
+        return '€ ' + eurAmount.toLocaleString('en-US', {
+          minimumFractionDigits: 2,
+          maximumFractionDigits: 2
+        });
+      }
+
+      function setCurrency(currency) {
+        root.setAttribute('data-currency', currency);
+        moneyCells.forEach((cell) => {
+          const eur = Number(cell.getAttribute('data-eur'));
+          cell.textContent = formatAmount(eur, currency);
+        });
+        colFeeHead.textContent = currency === 'DKK' ? 'Net Fee (DKK)' : 'Net Fee (EUR)';
+        colDrawHead.textContent = currency === 'DKK' ? 'Drawdown (DKK)' : 'Drawdown (EUR)';
+        rateNote.textContent = currency === 'DKK'
+          ? '960 Studio Hours · Blended Rate DKK 1,007.10 / h'
+          : '960 Studio Hours · Blended Rate € 135.00 / h';
+      }
+
+      document.querySelectorAll('input[name="currency"]').forEach((radio) => {
+        radio.addEventListener('change', (e) => {
+          if (e.target.checked) setCurrency(e.target.value);
+        });
+      });
+
+      const poInput = document.getElementById('po-ref-input');
+      const sigPoMirror = document.getElementById('sig-po-mirror');
+      poInput.addEventListener('input', () => {
+        const val = poInput.value.trim() || 'Pending PO';
+        sigPoMirror.textContent = 'Client PO Ref: ' + val;
+      });
+    })();
+  </script>
+</body>
+</html>

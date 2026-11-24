@@ -1,0 +1,364 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>SOLARIS Blog — Digital Culture Magazine (default agent output)</title>
+<style>
+  * {
+    box-sizing: border-box;
+  }
+
+  body {
+    margin: 0;
+    font-family: Inter, system-ui, sans-serif;
+    background: #f8fafc;
+    color: #1e293b;
+  }
+
+  .navbar {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    padding: 14px 48px;
+    background: #ffffff;
+    border-bottom: 1px solid #e2e8f0;
+  }
+
+  .brand {
+    display: flex;
+    align-items: center;
+    gap: 10px;
+    font-size: 20px;
+    font-weight: 800;
+    color: #4f46e5;
+    letter-spacing: 0.03em;
+  }
+
+  .brand-dot {
+    width: 28px;
+    height: 28px;
+    border-radius: 999px;
+    background: linear-gradient(135deg, #a78bfa, #3b82f6);
+    display: inline-block;
+  }
+
+  .nav-links {
+    display: flex;
+    align-items: center;
+    gap: 24px;
+    font-size: 14px;
+  }
+
+  .nav-links a {
+    color: #64748b;
+    text-decoration: none;
+    font-weight: 500;
+  }
+
+  /* Pastel lavender purple to blue gradient banner */
+  .hero {
+    padding: 34px 24px 36px;
+    text-align: center;
+    background: linear-gradient(135deg, #ede9fe 0%, #c4b5fd 35%, #93c5fd 75%, #bfdbfe 100%);
+    border-bottom: 1px solid #ddd6fe;
+  }
+
+  .hero-inner {
+    max-width: 760px;
+    margin: 0 auto;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+  }
+
+  .hero-pill {
+    display: inline-flex;
+    align-items: center;
+    gap: 6px;
+    background: #ffffff;
+    color: #5b21b6;
+    font-size: 13px;
+    font-weight: 600;
+    padding: 6px 16px;
+    border-radius: 999px;
+    box-shadow: 0 4px 12px rgba(79, 70, 229, 0.14);
+    margin-bottom: 14px;
+  }
+
+  .hero h1 {
+    margin: 0 0 10px;
+    font-size: 42px;
+    line-height: 1.12;
+    font-weight: 800;
+    color: #1e1b4b;
+    letter-spacing: -0.02em;
+  }
+
+  .hero p {
+    margin: 0 0 18px;
+    max-width: 56ch;
+    font-size: 16px;
+    line-height: 1.5;
+    color: #334155;
+  }
+
+  .cta-group {
+    display: flex;
+    gap: 12px;
+    justify-content: center;
+    margin-bottom: 16px;
+  }
+
+  .btn {
+    padding: 10px 22px;
+    border-radius: 999px;
+    font-size: 14px;
+    font-weight: 600;
+    border: 0;
+    cursor: pointer;
+    transition: all .3s;
+  }
+
+  .btn:focus {
+    outline: none;
+  }
+
+  .btn-primary {
+    background: #4f46e5;
+    color: #ffffff;
+    box-shadow: 0 10px 22px rgba(79, 70, 229, 0.28);
+  }
+
+  .btn-secondary {
+    background: #ffffff;
+    color: #4f46e5;
+    border: 1px solid #c7d2fe;
+  }
+
+  .newsletter-pill {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    background: #ffffff;
+    padding: 5px 5px 5px 18px;
+    border-radius: 999px;
+    box-shadow: 0 10px 24px rgba(30, 27, 75, 0.1);
+    border: 1px solid #e0e7ff;
+  }
+
+  .newsletter-input {
+    border: 0;
+    background: transparent;
+    color: #0f172a;
+    font-size: 14px;
+    width: 260px;
+    padding: 6px 0;
+  }
+
+  .newsletter-input:focus {
+    outline: none;
+  }
+
+  .blog-section {
+    max-width: 1160px;
+    margin: 0 auto;
+    padding: 28px 32px 32px;
+  }
+
+  .text-center {
+    text-align: center;
+  }
+
+  .section-header {
+    margin-bottom: 20px;
+  }
+
+  .section-header h2 {
+    margin: 0 0 6px;
+    font-size: 26px;
+    font-weight: 700;
+    color: #0f172a;
+  }
+
+  .section-header p {
+    margin: 0;
+    font-size: 14px;
+    color: #64748b;
+  }
+
+  .blog-grid {
+    display: grid;
+    grid-template-columns: repeat(3, 1fr);
+    gap: 24px;
+  }
+
+  .rounded-2xl {
+    border-radius: 16px;
+  }
+
+  .shadow-xl {
+    box-shadow: 0 18px 34px rgba(15, 23, 42, 0.1);
+  }
+
+  .blog-card {
+    background: #ffffff;
+    border: 1px solid #e2e8f0;
+    overflow: hidden;
+    display: flex;
+    flex-direction: column;
+    transition: all .3s;
+  }
+
+  .blog-card:hover {
+    transform: translateY(-4px);
+  }
+
+  .card-thumb {
+    height: 112px;
+    background: linear-gradient(135deg, #ddd6fe 0%, #bfdbfe 100%);
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    color: #4338ca;
+    font-size: 13px;
+    font-weight: 600;
+    letter-spacing: 0.04em;
+    text-transform: uppercase;
+  }
+
+  .card-body {
+    padding: 20px 22px 22px;
+    display: flex;
+    flex-direction: column;
+    flex: 1;
+  }
+
+  .pill {
+    align-self: flex-start;
+    display: inline-flex;
+    align-items: center;
+    gap: 5px;
+    font-size: 12px;
+    font-weight: 600;
+    color: #4f46e5;
+    background: #eef2ff;
+    padding: 4px 12px;
+    border-radius: 999px;
+    margin-bottom: 12px;
+  }
+
+  .blog-card h3 {
+    margin: 0 0 8px;
+    font-size: 18px;
+    line-height: 1.35;
+    color: #0f172a;
+  }
+
+  .blog-card p {
+    margin: 0 0 14px;
+    font-size: 13.5px;
+    line-height: 1.55;
+    color: #64748b;
+    flex: 1;
+  }
+
+  .card-footer {
+    display: flex;
+    justify-content: space-between;
+    font-size: 12px;
+    color: #94a3b8;
+    padding-top: 10px;
+    border-top: 1px solid #f1f5f9;
+  }
+
+  @media (max-width: 900px) {
+    .blog-grid {
+      grid-template-columns: 1fr;
+    }
+
+    .hero h1 {
+      font-size: 34px;
+    }
+  }
+</style>
+</head>
+<body>
+  <header class="navbar">
+    <div class="brand">
+      <span class="brand-dot" aria-hidden="true"></span>
+      <span>SOLARIS</span>
+    </div>
+    <nav class="nav-links">
+      <a href="#stories">Stories</a>
+      <a href="#stories">Cinema</a>
+      <a href="#stories">Sound</a>
+      <a href="#stories">About</a>
+    </nav>
+  </header>
+
+  <section class="hero" data-slop="purple-blue-gradient">
+    <div class="hero-inner">
+      <span class="hero-pill" data-slop="emoji-as-icon">✨ Solaris Digital Journal · Issue 09</span>
+      <h1 data-slop="generic-copy">Elevate your reading experience seamlessly</h1>
+      <p data-slop="generic-copy">Unlock revolutionary culture stories on cinema, sound design, and modern visual art curated to revolutionize your daily feed.</p>
+      <div class="cta-group" data-slop="centered-hero-two-ctas">
+        <button class="btn btn-primary" data-slop="outline-removed">Get started</button>
+        <button class="btn btn-secondary">Browse archive</button>
+      </div>
+      <form class="newsletter-pill" onsubmit="return false">
+        <input class="newsletter-input" type="email" placeholder="Enter your email address" data-slop="placeholder-as-label">
+        <button class="btn btn-primary" type="submit">Subscribe</button>
+      </form>
+    </div>
+  </section>
+
+  <main class="blog-section" id="stories">
+    <div class="section-header text-center">
+      <h2>Featured Stories</h2>
+      <p>Fresh film and culture perspectives delivered seamlessly to your browser.</p>
+    </div>
+
+    <div class="blog-grid">
+      <article class="blog-card rounded-2xl shadow-xl" data-slop="rounded-2xl-repetition">
+        <div class="card-thumb">Featured Image</div>
+        <div class="card-body">
+          <span class="pill" data-slop="emoji-as-icon">📰 Cover</span>
+          <h3>Scoring the Empty Hallway</h3>
+          <p>Discover how modern sound designers unlock emotional tension and elevate cinema scenes using concrete rooms.</p>
+          <div class="card-footer">
+            <span>Mina Kurosawa</span>
+            <span>11 min read</span>
+          </div>
+        </div>
+      </article>
+
+      <article class="blog-card rounded-2xl shadow-xl" data-slop="uniform-shadow">
+        <div class="card-thumb">Featured Image</div>
+        <div class="card-body">
+          <span class="pill" data-slop="emoji-as-icon">✨ Trending</span>
+          <h3>Magnetic Tape Loops in Taipei</h3>
+          <p>Explore how independent film composers create seamless ambient textures with vintage quarter-inch tape.</p>
+          <div class="card-footer">
+            <span>L. Chen-Hao</span>
+            <span>7 min read</span>
+          </div>
+        </div>
+      </article>
+
+      <article class="blog-card rounded-2xl shadow-xl" data-slop="rounded-2xl-repetition">
+        <div class="card-thumb">Featured Image</div>
+        <div class="card-body">
+          <span class="pill" data-slop="emoji-as-icon">🔥 Popular</span>
+          <h3>The Red Gel of 1970s Giallo</h3>
+          <p>See how cinematographers revolutionized color lighting by pairing theatrical tungsten lamps with deep gels.</p>
+          <div class="card-footer">
+            <span>Marco Bellini</span>
+            <span>9 min read</span>
+          </div>
+        </div>
+      </article>
+    </div>
+  </main>
+</body>
+</html>
