@@ -1,4 +1,4 @@
-# Rust GUI: egui, Slint, Dioxus, iced
+# Rust GUI: egui, Slint, Dioxus, iced, GPUI
 
 These frameworks have different rendering/state models. Do not treat “Rust GUI” as one platform.
 
@@ -8,6 +8,7 @@ These frameworks have different rendering/state models. Do not treat “Rust GUI
 - Slint: use `.slint` global singletons/exported structs/palette-like properties for semantic values.
 - Dioxus desktop: use generated CSS variables/web idioms plus desktop shell integration.
 - iced: use theme/palette structs and semantic application constants.
+- GPUI (Zed's GPU-accelerated hybrid immediate/retained Rust UI): define a global `Theme` struct read from `App` context (`cx.theme()`) and style elements via fluent Tailwind-like builders (`.bg(...)`, `.text_color(...)`) without hardcoding raw hex literals across views.
 
 Never smuggle raw repeated hex values into widgets because no dominant CSS layer exists.
 
@@ -17,6 +18,7 @@ Never smuggle raw repeated hex values into widgets because no dominant CSS layer
 - Slint: declarative layouts/constraint-like behavior and component reuse; verify resizing/high-DPI.
 - Dioxus: web layout plus desktop window behavior.
 - iced: Elm-like layout/widgets; pane/scroll/fill/shrink semantics must be explicit.
+- GPUI: Flexbox-based layout (Taffy) rendered directly via Metal/Vulkan/DirectX at up to 120 FPS; use `Entity<T>` + `Render` views, virtualized `uniform_list` / `list` for large logs/files, and explicit focus handles (`FocusHandle`) + action keymaps (`actions!`) for keyboard-first desktop tools.
 
 Handle resize/minimum size/high-DPI/window state/platform chrome separately from widget styling.
 

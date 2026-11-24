@@ -34,6 +34,19 @@ SvelteKit `load` return shape, `error`, `status`, stores, and form action result
 
 Svelte `bind:value` does not replace labels or validation timing. Native form actions plus `use:enhance` provide resilient baseline where suitable. Use correct `autocomplete`/`inputmode` attributes and preserve invalid input returned by server actions.
 
+## Svelte 5 Runes & Snippets idioms
+
+- Use **Svelte 5 runes** (`$state`, `$derived` / `$derived.by`, `$effect`, `$props`, `$bindable`) and `{#snippet}` / `{@render children?.()}` instead of legacy `export let`, `$:`, and `<slot>` in Svelte 5 codebases.
+- **Critical rule**: compute derived values with `$derived(...)` (not `$effect(() => { derived = ... })`, which introduces extra render passes and feedback loops). Use `$effect` only for external DOM/observer/network synchronization with a cleanup return function.
+
+```svelte
+<script lang="ts">
+  let { value = $bindable(''), children }: { value?: string; children?: import('svelte').Snippet } = $props();
+  let trimmedLength = $derived(value.trim().length);
+</script>
+{@render children?.()}
+```
+
 ## Do/don't pairs
 
 | Do | Don't |

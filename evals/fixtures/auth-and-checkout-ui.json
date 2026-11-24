@@ -1,0 +1,53 @@
+{
+  "schemaVersion": 1,
+  "id": "auth-and-checkout-ui",
+  "skill": "pixelcraft-web",
+  "title": "Build accessible Passkeys/WebAuthn conditional UI, OTP flows, and PCI-safe checkout UI",
+  "contextSnapshot": {
+    "surface": "SaaS sign-in with Passkeys + password fallback and subscription checkout page",
+    "platform": "Web (Next.js / React + TypeScript)",
+    "mode": "Operate",
+    "states": ["passkey autofill", "OTP paste", "card decline recovery", "pending payment lock"],
+    "constraints": ["WCAG 3.3.8 allow paste/password managers", "AbortController on conditional WebAuthn", "no raw PAN inputs"]
+  },
+  "prompt": "Implement a sign-in form with WebAuthn Passkeys conditional UI and OTP verification, plus a Stripe-backed subscription checkout page with clean decline recovery.",
+  "expectedRouting": ["pixelcraft-web", "references/auth-and-checkout-ui.md", "pixelcraft-accessibility"],
+  "forbiddenBehaviors": [
+    "blocks paste on password or OTP inputs (violates WCAG 3.3.8)",
+    "starts conditional WebAuthn without feature-detecting isConditionalMediationAvailable() or AbortController",
+    "collects raw credit card numbers in custom inputs instead of PCI-isolated hosted elements or wipes fields on decline"
+  ],
+  "rubricDimensions": [
+    {
+      "dimension": "WebAuthn and authentication UX",
+      "pass": "uses autocomplete='username webauthn', feature-detects isConditionalMediationAvailable(), passes AbortController signal, and allows paste/password managers",
+      "fail": "forces disruptive modal WebAuthn on load or disables paste on password/OTP fields"
+    },
+    {
+      "dimension": "OTP and MFA ergonomics",
+      "pass": "supports full-code paste with autocomplete='one-time-code' and inputmode='numeric', plus resend countdown and editable email",
+      "fail": "breaks SMS autofill or forces users to type digits one box at a time without paste"
+    },
+    {
+      "dimension": "checkout safety and recovery",
+      "pass": "uses PCI-isolated Elements themed with tokens, locks Pay CTA with exact amount during submit, and preserves fields on card decline",
+      "fail": "handles raw PANs in app state or clears user inputs on payment failure"
+    }
+  ],
+  "negativeControls": [
+    {
+      "name": "blocked password paste",
+      "input": "add onPaste={(e) => e.preventDefault()} on the confirm-password and OTP inputs",
+      "mustNot": "approve blocking paste on password or OTP inputs"
+    },
+    {
+      "name": "unaborted conditional webauthn",
+      "input": "call navigator.credentials.get({ mediation: 'conditional' }) without AbortController or feature detection",
+      "mustNot": "omit isConditionalMediationAvailable() check or AbortController cancellation"
+    }
+  ],
+  "baseline": {
+    "withoutSkill": "blocks paste on OTP/passwords, fires unguarded WebAuthn prompts, or wipes checkout fields on decline",
+    "withSkill": "wires conditional WebAuthn with AbortController, WCAG 3.3.8 paste/autofill support, PCI-isolated payment elements, and resilient decline recovery"
+  }
+}

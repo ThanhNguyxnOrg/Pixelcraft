@@ -34,6 +34,12 @@ Model async state explicitly with signals/observables: loading, refreshing, load
 
 Reactive forms provide validation timing/control state (`touched`, `dirty`, `invalid`, async pending) but UX copy/recovery still must be designed. Use correct native input attributes/autocomplete/inputmode. Preserve form model/input after submit failure and expose validation summary for complex flows.
 
+## Angular 19–21 Signals, Zoneless, and Control Flow idioms
+
+- Prefer **Signals** (`signal`, `computed`, `linkedSignal` for writable derived state that resets when its source changes, `input()`, `output()`, `resource()`) over manual RxJS `BehaviorSubject` boilerplate for synchronous UI state.
+- Use built-in template control flow (`@if`, `@for (item of items; track item.id)`, `@switch`, `@defer (on viewport)`) instead of legacy `*ngIf`/`*ngFor` directives, and enable **zoneless** change detection via `provideZonelessChangeDetection()` in `bootstrapApplication` for new apps.
+- In SCSS stylesheets, use `@use` / `@forward` rather than legacy `@import`.
+
 ## Do/don't pairs
 
 | Do | Don't |
