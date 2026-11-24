@@ -127,6 +127,19 @@ test("production server serves routes and seekable media without exposing other 
   assert.equal(head.status, 200);
   assert.ok(Number(head.headers.get("content-length")) > 0);
   assert.equal((await head.text()).length, 0);
+  for (const range of ["bytes=0-31", "bytes=999999999-", "invalid"]) {
+    const probe = await fetch(base + "/video/pixelcraft-promo.mp4", {
+      method: "HEAD",
+      headers: { range },
+    });
+    assert.equal(probe.status, 200, range);
+    assert.equal(
+      probe.headers.get("content-length"),
+      head.headers.get("content-length"),
+    );
+    assert.equal(probe.headers.get("content-range"), null);
+    assert.equal((await probe.text()).length, 0);
+  }
   assert.equal((await fetch(base + "/package.json")).status, 404);
   assert.equal((await fetch(base + "/%00")).status, 400);
   assert.equal((await fetch(base + "/%ZZ")).status, 400);

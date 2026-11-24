@@ -85,7 +85,7 @@ const server = http.createServer(async (req, res) => {
   );
   let start = 0;
   let end = info.size - 1;
-  if (req.headers.range && status === 200) {
+  if (req.method === "GET" && req.headers.range && status === 200) {
     const match = /^bytes=(\d*)-(\d*)$/.exec(req.headers.range);
     if (!match || (!match[1] && !match[2])) {
       res.setHeader("Content-Range", `bytes */${info.size}`);
