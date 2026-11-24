@@ -12,9 +12,17 @@
     "access": "public"
   },
   "type": "module",
-  "keywords": ["agent-skills", "pi-package", "frontend", "ui", "ux"],
+  "keywords": [
+    "agent-skills",
+    "pi-package",
+    "frontend",
+    "ui",
+    "ux"
+  ],
   "pi": {
-    "skills": ["./skills"]
+    "skills": [
+      "./skills"
+    ]
   },
   "bin": {
     "pixelcraft": "bin/pixelcraft.mjs"
