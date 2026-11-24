@@ -54,6 +54,7 @@ Rendered verification is possible only through simulator/emulator/device tooling
 ## Framework routing
 
 - Read [references/task-state-composition.md](references/task-state-composition.md) for a branded timer, recording flow, or other activity with a distinct before/during/after state.
+- Read [references/tactile-interactions.md](references/tactile-interactions.md) for cross-platform bottom sheet detents, scroll handover, thumb-zone ergonomics, semantic haptics, swipe-to-act with undo, offline queues, and Dynamic Type/`sp` reflow.
 
 - Read [references/swiftui.md](references/swiftui.md) for SwiftUI/iOS/watchOS/visionOS-style declarative Apple UI.
 - Read [references/uikit.md](references/uikit.md) for UIKit/AppKit-adjacent imperative iOS UI.
