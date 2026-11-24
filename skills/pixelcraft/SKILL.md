@@ -76,30 +76,29 @@ Before advancing, record the applicable phase result and its evidence using the 
 
 After detecting the stack, use the matching platform skill by name and read only the relevant framework reference inside it:
 
-| Platform skill | Framework references |
+| Platform skill | Framework and surface references |
 |---|---|
-| `pixelcraft-web` | `html-css`, `react-next`, `vue-nuxt`, `svelte`, `solid`, `angular`, `astro`, `qwik`, `htmx-alpine`, `lit-web-components`, `tailwind`, `server-rendered`, `leptos-yew`, `kotlin-web`, `elm`, `clojurescript`, `fsharp-fable`, `scala-laminar`, `java-web`, `pwa`, `adaptive-layout` |
-| `pixelcraft-mobile` | `swiftui`, `uikit`, `jetpack-compose`, `flutter`, `react-native-expo`, `kotlin-multiplatform`, `ionic-capacitor`, `dotnet-maui`, `flet`, `kivy` |
-| `pixelcraft-data-apps` | `streamlit`, `gradio`, `reflex`, `nicegui`, `dash`, `panel`, `shiny`, `jupyter-widgets`, `r-shiny`, `julia-genie`, `observable-framework`, `evidence` |
-| `pixelcraft-desktop` | `tauri`, `electron`, `qt-pyside-qml`, `winui-wpf`, `appkit`, `gtk`, `avalonia`, `rust-gui`, `javafx-swing`, `cpp-gui`, `go-gui`, `uno-platform` |
-| `pixelcraft-tui` | `textual`, `rich`, `ink`, `bubbletea-lipgloss`, `ratatui` |
-| `pixelcraft-email` | `html-tables`, `mjml`, `react-email`, `client-quirks` |
-| `pixelcraft-document` | `print-css`, `pdf-tools`, `archetypes`, `slides` |
+| `pixelcraft-web` | Frameworks: `html-css`, `react-next`, `vue-nuxt`, `svelte`, `solid`, `angular`, `astro`, `qwik`, `preact-fresh-hono`, `htmx-alpine`, `lit-web-components`, `server-rendered`, `leptos-yew`, `kotlin-web`, `elm`, `clojurescript`, `fsharp-fable`, `scala-laminar`, `java-web`; Engineering: `tailwind`, `styling-ecosystem`, `component-systems`, `state-architecture`, `forms-validation`, `enterprise-data-ui`, `rich-text-and-code-editors`, `canvas-and-node-editors`, `local-first-sync`, `auth-and-checkout-ui`, `file-upload-media-ui`, `i18n-engineering`, `build-and-architecture`, `component-testing`, `adaptive-layout`, `pwa`; Motion/3D/Media: `gsap`, `motion-react`, `smooth-scroll`, `motion-recipes`, `rive-lottie`, `scene-architecture`, `r3f-integration`, `web-3d-engines`, `assets-pipeline`, `rendering-choice`, `rendering-performance`, `shader-workflow`, `creative-effects`, `creative-runtime`, `media-players`, `video-media`, `audio-reactive`, `accessibility-performance` |
+| `pixelcraft-mobile` | `swiftui`, `uikit`, `jetpack-compose`, `flutter`, `react-native-expo`, `lynxjs`, `kotlin-multiplatform`, `nativescript-and-skip`, `ionic-capacitor`, `dotnet-maui`, `flet`, `kivy`, `tactile-interactions`, `task-state-composition` |
+| `pixelcraft-data-apps` | `streamlit`, `gradio`, `reactive-data-apps`, `ai-and-internal-data-apps`, `reflex`, `nicegui`, `dash`, `panel`, `shiny`, `jupyter-widgets`, `r-shiny`, `julia-genie`, `observable-framework`, `evidence` |
+| `pixelcraft-desktop` | `tauri`, `electron`, `qt-pyside-qml`, `winui-wpf`, `appkit`, `gtk`, `avalonia`, `rust-gui`, `javafx-swing`, `cpp-gui`, `go-gui`, `uno-platform`, `working-context` |
+| `pixelcraft-tui` | `textual`, `rich`, `ink`, `bubbletea-lipgloss`, `ratatui`, `extended-tui-toolkits`, `terminal-protocols` |
+| `pixelcraft-email` | `html-tables`, `mjml`, `react-email`, `maizzle`, `client-quirks` |
+| `pixelcraft-document` | `print-css`, `pdf-tools`, `pdfjs-and-pptx`, `archetypes`, `slides` |
 | `pixelcraft-media` | `social-cards`, `og-generation`, `banners-video` |
-| `pixelcraft-chat-ui` | `slack-discord`, `mobile-business-platforms`, `conversation-design` |
+| `pixelcraft-chat-ui` | `slack-discord`, `mobile-business-platforms`, `conversation-design`, `agentic-workspace`, `ai-ui-libraries` |
 | `pixelcraft-constrained` | `tv-wearables`, `specialized-hardware`, `voice-ui` |
-| `pixelcraft-handoff` | `design-translation`, `fidelity-tolerance` |
+| `pixelcraft-handoff` | `design-translation`, `fidelity-tolerance`, `motion-handoff` |
 | `pixelcraft-spatial` | `platforms`, `comfort-accessibility` |
-| `pixelcraft-game-ui` | `unity-ui-toolkit`, `godot`, `unreal-umg`, `hud-principles`, `love2d`, `bevy`, `monogame` |
-| `pixelcraft-extensions` | `browser-extensions`, `vscode-webviews`, `raycast`, `figma-office` |
+| `pixelcraft-game-ui` | `unity-ui-toolkit`, `unity-ugui`, `godot`, `unreal-umg`, `hud-principles`, `love2d`, `bevy`, `monogame`, `web-and-middleware-game-ui` |
+| `pixelcraft-extensions` | `browser-extensions`, `vscode-webviews`, `raycast`, `figma-office`, `ide-and-saas-plugins` |
 
 References are named here for routing only. Do not construct relative paths across skill folders; read the file inside the installed platform skill.
 
-Use pixelcraft-craft for motion design intent; pixelcraft-web for browser implementation including GSAP/Motion, scroll controllers, Canvas/PixiJS, shaders, Three.js/R3F, WebGPU fallbacks, and interactive audio/video. Use pixelcraft-patterns for narrative/scrollytelling structure, pixelcraft-direction for evidence-based reference analysis, pixelcraft-accessibility for motion/canvas/media alternatives, and pixelcraft-visual-qa for timeline and real-time graphics verification.
+Use `pixelcraft-craft` for motion design intent; `pixelcraft-web` for browser implementation including GSAP/Motion, scroll controllers, Canvas/PixiJS, shaders, Three.js/R3F/Babylon/PlayCanvas/Threlte/TresJS/`<model-viewer>`, WebGPU/TSL fallbacks, and browser audio/video players (`hls.js`, Shaka, Vidstack, Media Chrome, Tone.js). Use `pixelcraft-patterns` for narrative/scrollytelling structure, `pixelcraft-direction` for evidence-based reference analysis, `pixelcraft-accessibility` for motion/canvas/media alternatives, and `pixelcraft-visual-qa` for timeline and real-time graphics verification.
 
-pixelcraft-spatial remains responsible for embodied XR/VR/AR interaction (headset, gaze, hand/controller input, room-scale comfort and privacy). Ordinary browser 3D product/portfolio scenes route through pixelcraft-web.
+`pixelcraft-spatial` remains responsible for embodied XR/VR/AR interaction (visionOS, Android XR, Horizon OS, WebXR, Unity XRI, Unreal OpenXR — headset, gaze, hand/controller input, room-scale comfort and privacy). Ordinary browser 3D product/portfolio scenes route through `pixelcraft-web`.
 
-## Domain routing
 ## Domain routing
 
 Use `pixelcraft-dataviz` alongside the platform skill whenever the deliverable depends on charts, analytical tables, metrics dashboards, streaming visualization, node graphs, maps, or canvas/WebGL rendering. It governs analytical truth, encoding, color/accessibility, and library selection; the platform skill still governs implementation idioms.
