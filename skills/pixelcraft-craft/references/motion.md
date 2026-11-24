@@ -19,7 +19,21 @@ Motion earns its cost only when it acknowledges input, shows causality, preserve
 | rendering | target compositor work; animate transform/opacity, avoid layout/paint-triggering properties and `transition: all` |
 | assets | motion cannot justify layout shift, delayed LCP media, blocked input, or main-thread long tasks |
 
-Tokenize semantic durations/easings (`feedback.instant`, `state.standard`, `scene.enter`) rather than scattering raw milliseconds.
+Tokenize semantic durations/easings (`feedback.instant`, `state.standard`, `scene.enter`) rather than scattering raw milliseconds. For physics-driven systems (Material 3 Expressive, SwiftUI, Motion), prefer **spring composite tokens** (`stiffness` + `damping` / `response` + `bounce`) over fixed-duration curves so interrupted gestures settle naturally; degrade springs to brief opacity crossfades under Reduced Motion.
+
+## Concentric geometry and translucent materials
+
+- **Concentric corner radii**: when nesting rounded containers, compute `innerRadius = max(0, outerRadius - padding)` (or use platform concentric radius APIs) so nested borders stay optically parallel instead of pinching at corners.
+- **Refractive / glass surfaces**: translucent blur/refraction layers must maintain readable contrast over shifting backgrounds and provide a solid high-contrast fallback under `@media (prefers-reduced-transparency: reduce)` (and platform Reduce Transparency settings):
+
+```css
+@media (prefers-reduced-transparency: reduce) {
+  .glass-surface {
+    backdrop-filter: none;
+    background-color: var(--semantic-color-surface-raised);
+  }
+}
+```
 
 ## Technique library
 

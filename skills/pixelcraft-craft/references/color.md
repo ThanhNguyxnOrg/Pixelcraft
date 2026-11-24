@@ -52,6 +52,17 @@ dark surface L .20 C .02 / dark raised L .26 C .025 / dark accent L .72 C .11
 - Test focus, selection, caret, placeholder, disabled, pressed, visited, chart grid, and error text independently in each mode.
 - Honor `prefers-contrast`, forced-colors, and platform high-contrast modes; do not remove system-controlled boundaries.
 
+### Perceptual contrast (APCA) and dark-mode halation
+
+WCAG 2.2 luminance ratios (`4.5:1` / `3:1`) remain the mandatory legal/accessibility floor, but they ignore polarity and font weight—creating **dark-mode false passes** where gray text on dark surfaces passes `4.5:1` mathematically yet dissolves visually from halation. Pair WCAG 2.2 AA with **APCA Lightness Contrast (`|Lc|`)** checks tied to font size and weight:
+
+| Role | Typical size & weight | Supplemental APCA target | Notes |
+|---|---|---|---|
+| Regular body copy | `16px`, weight `400` | `|Lc| ≥ 75` | Push dark-mode body tokens lighter than light-mode inversions |
+| Bold body / lead | `16px`, weight `700` | `|Lc| ≥ 60` | Lower threshold only when weight/size increases together |
+| Subheadings / UI labels | `18–24px`, weight `600–700` | `|Lc| ≥ 45` | Never drop muted labels below WCAG AA + readable `Lc` |
+| Large display / non-text icons | `36px+` bold or icons/borders | `|Lc| ≥ 30`–`45` | Verify final composited pixels including ancestor opacity |
+
 ## Cultural and content checks
 
 Color meanings are locale/domain dependent. Validate finance gain/loss, mourning/celebration, politics/religion, safety, and brand-category conventions for target markets. Never encode meaning by hue alone; pair color with icon/text/pattern/position. For data: categorical palettes need direct labels and limited categories, sequential scales need monotonic lightness, and diverging scales need a meaningful neutral midpoint.

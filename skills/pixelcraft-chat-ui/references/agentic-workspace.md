@@ -29,10 +29,12 @@ Use this reference when designing web, desktop, or mobile AI assistant workspace
 - Preserve independent scroll positions for the conversation thread and the artifact pane.
 - Provide `Copy`, `Download`, version selector (`v1`, `v2`), and `Preview` / `Code` / `Diff` toggles where applicable, with explicit visual indication of which turn produced the active version.
 
-## Grounded citations and uncertainty
+## Grounded citations, trust calibration, and scaffolded agency
 
 - Render source citations as interactive inline references that open or highlight the exact supporting excerpt and source URL/file path.
 - Never invent citations, confidence percentages, or tool results. When a tool fails or evidence is missing, state the gap plainly and offer the next concrete recovery action.
+- **Prevent automation bias ("toxic trust")**: polished AI-generated layouts, forms, or summaries can lull users into rubber-stamping wrong values. Before consequential commitments, surface concise inline rationale/provenance (*why* the agent chose a field value, plan, or layout) and make defaults visibly editable.
+- **Scaffolded agency (preserve spatial memory)**: when an agentic or generative UI synthesizes dynamic widgets or panels, keep primary navigation, global status, and exit/undo controls anchored in invariant positions so users do not lose orientation between turns.
 
 ## Verification checklist
 
