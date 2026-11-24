@@ -1,7 +1,7 @@
 {
   "schemaVersion": 1,
   "id": "motion-engineering",
-  "skill": "pixelcraft-motion",
+  "skill": "pixelcraft-craft",
   "title": "Motion lifecycle and input parity",
   "contextSnapshot": {
     "surface": "agency landing page",
@@ -22,7 +22,7 @@
   },
   "prompt": "Implement a kinetic agency landing page with an animated loader, SVG line reveal, magnetic CTA, and scroll-linked chapters.",
   "expectedRouting": [
-    "pixelcraft-motion",
+    "pixelcraft-craft",
     "pixelcraft-web",
     "pixelcraft-accessibility",
     "pixelcraft-visual-qa"

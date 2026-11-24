@@ -78,3 +78,9 @@ Pass: compare like-for-like artifacts and inspect real reduced-motion behavior; 
 | Trigger/routing | Implements directly with generic assumptions | Recognizes the domain and applies the matching skill/reference |
 | Constraint fidelity | Relies on common defaults or stale APIs | Uses the exact surface constraints, state model, and platform idioms in the expected behaviors |
 | Verification | Reports code/text output only | Provides appropriate rendered/static/model evidence and labels unavailable checks |
+
+## Case — timeline and real-time graphics need more than a screenshot
+
+Verify a motion-led landing page with a pinned chapter and a 3D product view. Initial and final screenshots look correct, but the timeline can leak after route changes, the canvas can lose context, and mobile frame time has not been measured.
+
+Pass: capture named timeline milestones and interrupted/reduced-motion states; execute reverse/fast scroll, keyboard/touch, route unmount, resize, and context recovery where supported. Record actual device/browser/GPU conditions, asset/transfer cost, frame-time evidence, and remaining not-checked items. Do not treat a static capture or desktop emulation as proof of motion lifecycle or mobile GPU performance.

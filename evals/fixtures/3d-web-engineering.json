@@ -1,7 +1,7 @@
 {
   "schemaVersion": 1,
   "id": "3d-web-engineering",
-  "skill": "pixelcraft-3d-web",
+  "skill": "pixelcraft-web",
   "title": "3D product preview with semantic fallback",
   "contextSnapshot": {
     "surface": "product detail page",
@@ -23,7 +23,6 @@
   },
   "prompt": "Add a rotatable product scene to a working product page and verify it on representative devices.",
   "expectedRouting": [
-    "pixelcraft-3d-web",
     "pixelcraft-web",
     "pixelcraft-plan",
     "pixelcraft-visual-qa"

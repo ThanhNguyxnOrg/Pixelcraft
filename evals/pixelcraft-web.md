@@ -69,3 +69,21 @@
 | Trigger/routing | Implements directly with generic assumptions | Recognizes the domain and applies the matching skill/reference |
 | Constraint fidelity | Relies on common defaults or stale APIs | Uses the exact surface constraints, state model, and platform idioms in the expected behaviors |
 | Verification | Reports code/text output only | Provides appropriate rendered/static/model evidence and labels unavailable checks |
+
+## Case 3 — combine a timeline, product scene, and GPU effect in a brownfield app
+
+**Prompt**
+
+> Add a choreographed scroll chapter, a 3D product preview, and a subtle particle layer to an existing Next.js app.
+
+**Expected behaviors**
+
+- Inspects the installed stack/runtime and routes motion, 3D, and graphics to the existing web references.
+- Uses a narrow client boundary and keeps content, product data, navigation, and purchase actions in semantic DOM.
+- Chooses GSAP only for the complex timeline, R3F/Three.js only for the product scene, and Canvas/Pixi/WebGL only if the particle workload warrants it.
+- Defines poster/loading/error/context-loss, reduced-motion, touch, and static fallbacks.
+- Checks package versions, plugin access, asset compression, lazy loading, and measured device budgets before changing dependencies.
+
+**Failure signals**
+
+- Hydrates the whole route, installs every library, hides product semantics in canvas, assumes WebGPU, or uses smooth scrolling to hijack input.

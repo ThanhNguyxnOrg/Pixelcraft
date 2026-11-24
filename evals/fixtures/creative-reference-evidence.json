@@ -1,7 +1,7 @@
 {
   "schemaVersion": 1,
   "id": "creative-reference-evidence",
-  "skill": "pixelcraft-reference-intelligence",
+  "skill": "pixelcraft-direction",
   "title": "Distinguish gallery tags from observed implementation",
   "contextSnapshot": {
     "surface": "reference research",
@@ -22,7 +22,6 @@
   },
   "prompt": "Research three award-worthy references and extract implementation patterns for a new interactive portfolio.",
   "expectedRouting": [
-    "pixelcraft-reference-intelligence",
     "pixelcraft-direction",
     "pixelcraft-plan"
   ],

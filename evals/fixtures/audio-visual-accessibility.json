@@ -1,7 +1,7 @@
 {
   "schemaVersion": 1,
   "id": "audio-visual-accessibility",
-  "skill": "pixelcraft-audio-visual",
+  "skill": "pixelcraft-web",
   "title": "Audio-reactive media remains optional and accessible",
   "contextSnapshot": {
     "surface": "music launch page",
@@ -23,8 +23,7 @@
   },
   "prompt": "Create an optional audio-reactive background and a video-texture fallback for a product launch.",
   "expectedRouting": [
-    "pixelcraft-audio-visual",
-    "pixelcraft-creative-code",
+    "pixelcraft-web",
     "pixelcraft-accessibility",
     "pixelcraft-visual-qa"
   ],

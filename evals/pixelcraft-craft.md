@@ -58,3 +58,19 @@
 | Trigger/routing | Implements directly with generic assumptions | Recognizes the domain and applies the matching skill/reference |
 | Constraint fidelity | Relies on common defaults or stale APIs | Uses the exact surface constraints, state model, and platform idioms in the expected behaviors |
 | Verification | Reports code/text output only | Provides appropriate rendered/static/model evidence and labels unavailable checks |
+
+## Case 3 — define a motion identity and implementation handoff
+
+**Prompt**
+
+> Give a premium product site a distinctive motion language and specify how the team should implement it.
+
+**Expected behaviors**
+
+- Defines tempo, easing character, spatial behavior, stagger grammar, feedback style, and one signature movement.
+- Uses semantic motion tokens and selects CSS, Motion, GSAP, Rive, or Lottie by behavior rather than popularity.
+- Names the reduced-motion equivalent before implementation and keeps operational feedback fast.
+
+**Failure signals**
+
+- Uses one animation style on every component; chooses a runtime because it appears in a visual reference; treats motion spectacle as visual quality.

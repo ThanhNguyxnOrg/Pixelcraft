@@ -1,7 +1,7 @@
 {
   "schemaVersion": 1,
   "id": "creative-code-rendering",
-  "skill": "pixelcraft-creative-code",
+  "skill": "pixelcraft-web",
   "title": "Choose bounded renderer for effects",
   "contextSnapshot": {
     "surface": "marketing hero",
@@ -23,7 +23,6 @@
   },
   "prompt": "Create an interactive particle field with a custom image displacement effect behind semantic hero content.",
   "expectedRouting": [
-    "pixelcraft-creative-code",
     "pixelcraft-web",
     "pixelcraft-accessibility",
     "pixelcraft-visual-qa"
