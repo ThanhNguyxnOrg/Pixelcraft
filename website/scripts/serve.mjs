@@ -5,6 +5,7 @@ import { stat } from "node:fs/promises";
 import { resolve, extname, sep } from "node:path";
 import { fileURLToPath } from "node:url";
 import { createGzip } from "node:zlib";
+import { pipeline } from "node:stream";
 
 if (process.argv.includes("--help")) {
   console.log(
@@ -119,15 +120,9 @@ const server = http.createServer(async (req, res) => {
   else res.setHeader("Content-Length", end - start + 1);
   res.writeHead(status);
   if (req.method === "HEAD" || info.size === 0) return res.end();
-  const stream = createReadStream(path, { start, end }).on("error", () =>
-    res.destroy(),
-  );
-  if (gzip)
-    stream
-      .pipe(createGzip())
-      .on("error", () => res.destroy())
-      .pipe(res);
-  else stream.pipe(res);
+  const stream = createReadStream(path, { start, end });
+  // pipeline closes the file and compressor when the client cancels the response.
+  pipeline(stream, ...(gzip ? [createGzip()] : []), res, () => {});
 });
 server.listen(Number(process.env.PORT ?? 4321), "0.0.0.0", () =>
   console.log(

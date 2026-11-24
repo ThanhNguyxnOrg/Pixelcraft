@@ -1,7 +1,9 @@
 import test from "node:test";
 import assert from "node:assert/strict";
 import { spawn } from "node:child_process";
-import { readFile, readdir, stat } from "node:fs/promises";
+import { readFile, readdir, readlink, stat } from "node:fs/promises";
+import { get } from "node:http";
+import { setTimeout as delay } from "node:timers/promises";
 import { resolve, dirname } from "node:path";
 import { fileURLToPath } from "node:url";
 const website = fileURLToPath(new URL("../", import.meta.url));
@@ -112,4 +114,45 @@ test("production server serves routes and seekable media without exposing other 
   assert.equal((await fetch(base + "/%ZZ")).status, 400);
   assert.equal((await fetch(base + "/%2e%2e%2fpackage.json")).status, 403);
   assert.equal((await fetch(base + "/", { method: "POST" })).status, 405);
+  // Cancel after the first chunk while the remaining video is backpressured.
+  await Promise.all(
+    Array.from(
+      { length: 8 },
+      () =>
+        new Promise((res, rej) => {
+          const request = get(
+            base + "/video/pixelcraft-promo.mp4",
+            (response) => {
+              response.once("data", () => {
+                request.destroy();
+                res();
+              });
+            },
+          );
+          request.once("error", rej);
+        }),
+    ),
+  );
+  if (process.platform === "linux") {
+    let openMedia = [];
+    for (let attempt = 0; attempt < 10; attempt++) {
+      await delay(50);
+      const descriptors = await readdir(`/proc/${child.pid}/fd`);
+      openMedia = (
+        await Promise.all(
+          descriptors.map((fd) =>
+            readlink(`/proc/${child.pid}/fd/${fd}`).catch(() => ""),
+          ),
+        )
+      ).filter(
+        (target) => target === resolve(output, "video/pixelcraft-promo.mp4"),
+      );
+      if (!openMedia.length) break;
+    }
+    assert.equal(
+      openMedia.length,
+      0,
+      "cancelled video streams must release their file descriptors",
+    );
+  }
 });
