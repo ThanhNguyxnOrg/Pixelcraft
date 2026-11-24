@@ -20,6 +20,7 @@ jobs:
       - run: node scripts/validate-skills.mjs
       - run: node bin/pixelcraft.mjs add all --agent all --dry-run
       - run: npm run test:distribution
+      - run: node scripts/test-release-archives.mjs
       - name: Verify installer entry points
         run: npm run test:installers -- --shell --powershell
       - name: Verify adapters, tokens, and validator contracts
