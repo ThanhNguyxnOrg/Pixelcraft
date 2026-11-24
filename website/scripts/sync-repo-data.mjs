@@ -295,6 +295,67 @@ async function main() {
   const totalReferences = skills.reduce((n, s) => n + s.references.length, 0);
   const totalScripts = skills.reduce((n, s) => n + (s.scripts?.length ?? 0), 0);
 
+  // Parse live token formats from skills/pixelcraft-tokens/scripts/export-tokens.mjs
+  const exporterSource = await readFile(
+    resolve(repoRoot, "skills/pixelcraft-tokens/scripts/export-tokens.mjs"),
+    "utf8",
+  );
+  const formatsMatch = exporterSource.match(
+    /const\s+formats\s*=\s*\[([\s\S]*?)\];/,
+  );
+  const tokenFormats = formatsMatch
+    ? [...formatsMatch[1].matchAll(/['"]([a-z0-9-]+)['"]/g)].map((m) => m[1])
+    : [];
+
+  // Parse live slop-scan rules and extensions from skills/pixelcraft-review/scripts/slop-scan.mjs
+  const slopSource = await readFile(
+    resolve(repoRoot, "skills/pixelcraft-review/scripts/slop-scan.mjs"),
+    "utf8",
+  );
+  const scanRules = [
+    ...new Set(
+      [...slopSource.matchAll(/\badd\(\s*['"]([a-z0-9-]+)['"]/g)].map(
+        (m) => m[1],
+      ),
+    ),
+  ].sort((a, b) => a.localeCompare(b));
+  const extsMatch = slopSource.match(
+    /const\s+exts\s*=\s*new\s+Set\(\[([\s\S]*?)\]\);/,
+  );
+  const scanExtensionCount = extsMatch
+    ? [...extsMatch[1].matchAll(/['"]\.[a-z0-9]+['"]/gi)].length
+    : 0;
+
+  // Count live eval guides, cases, and JSON fixtures from evals/
+  const evalDir = resolve(repoRoot, "evals");
+  const evalGuideFiles = (await listSorted(evalDir, ".md")).filter((f) =>
+    f.startsWith("pixelcraft"),
+  );
+  let totalEvalCases = 0;
+  for (const f of evalGuideFiles) {
+    const content = await readFile(resolve(evalDir, f), "utf8");
+    totalEvalCases += (content.match(/^## Case\b/gm) || []).length;
+  }
+  const totalEvalFixtures = (
+    await listSorted(resolve(evalDir, "fixtures"), ".json")
+  ).length;
+
+  // Count live gallery exhibit pairs under website/public/gallery/*
+  const galleryDir = resolve(websiteRoot, "public/gallery");
+  let totalGalleryExhibits = 0;
+  try {
+    const entries = await readdir(galleryDir, { withFileTypes: true });
+    for (const entry of entries) {
+      if (!entry.isDirectory()) continue;
+      const files = await listSorted(resolve(galleryDir, entry.name), ".html");
+      if (files.includes("before.html") && files.includes("after.html")) {
+        totalGalleryExhibits += 1;
+      }
+    }
+  } catch {
+    totalGalleryExhibits = 0;
+  }
+
   const meta = {
     version: pkg.version,
     npmPkg: pkg.name,
@@ -305,6 +366,15 @@ async function main() {
     totalScripts,
     canonicalAgents,
     agentTargetCount: canonicalAgents.length,
+    tokenFormats,
+    totalTokenFormats: tokenFormats.length,
+    scanRules,
+    totalScanRules: scanRules.length,
+    scanExtensionCount,
+    totalEvalGuides: evalGuideFiles.length,
+    totalEvalCases,
+    totalEvalFixtures,
+    totalGalleryExhibits,
     stacks,
     skills,
   };
@@ -314,7 +384,7 @@ async function main() {
   await writeFile(outPath, `${JSON.stringify(meta, null, 2)}\n`, "utf8");
 
   console.log(
-    `Synced repo-meta.json: ${meta.totalSkills} skills, ${meta.totalReferences} references, ${meta.totalScripts} scripts, ${meta.agentTargetCount} agent targets, ${meta.stacks.length} stack ticker items.`,
+    `Synced repo-meta.json: ${meta.totalSkills} skills, ${meta.totalReferences} references, ${meta.totalScripts} scripts, ${meta.totalTokenFormats} token targets, ${meta.totalScanRules} slop rules, ${meta.totalEvalFixtures} eval fixtures, ${meta.agentTargetCount} agent targets, ${meta.stacks.length} stack ticker items.`,
   );
 }
 

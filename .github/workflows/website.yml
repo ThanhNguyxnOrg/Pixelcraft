@@ -3,9 +3,9 @@ name: website
 on:
   push:
     branches: [main]
-    paths: ["website/**", "skills/**", "package.json", "bin/pixelcraft.mjs", ".github/workflows/website.yml"]
+    paths: ["website/**", "skills/**", "evals/**", "package.json", "bin/pixelcraft.mjs", ".github/workflows/website.yml"]
   pull_request:
-    paths: ["website/**", "skills/**", "package.json", "bin/pixelcraft.mjs", ".github/workflows/website.yml"]
+    paths: ["website/**", "skills/**", "evals/**", "package.json", "bin/pixelcraft.mjs", ".github/workflows/website.yml"]
   workflow_dispatch:
 
 permissions:
