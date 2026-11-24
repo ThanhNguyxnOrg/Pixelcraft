@@ -9,6 +9,7 @@ import {
   PixelLabel,
   useMotionPause,
 } from "./pixel";
+import { publicUrl } from "../lib/publicUrl";
 import { useMediaPlayback } from "../lib/useMediaPlayback";
 
 const NAV = [
@@ -171,7 +172,7 @@ function LoopBackdrop() {
     <video
       ref={ref}
       className="absolute inset-0 -z-10 h-full w-full object-cover opacity-35"
-      poster="/media/pixelcraft-loop.jpg"
+      poster={publicUrl("media/pixelcraft-loop.jpg")}
       muted
       loop
       playsInline
@@ -179,8 +180,8 @@ function LoopBackdrop() {
       aria-hidden="true"
       tabIndex={-1}
     >
-      <source src="/media/pixelcraft-loop.mp4" type="video/mp4" />
-      <source src="/media/pixelcraft-loop.webm" type="video/webm" />
+      <source src={publicUrl("media/pixelcraft-loop.mp4")} type="video/mp4" />
+      <source src={publicUrl("media/pixelcraft-loop.webm")} type="video/webm" />
     </video>
   );
 }

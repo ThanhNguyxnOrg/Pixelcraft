@@ -13,13 +13,21 @@ permissions:
 
 concurrency:
   group: website-${{ github.ref }}
-  cancel-in-progress: true
+  cancel-in-progress: ${{ github.event_name == 'pull_request' }}
+
+env:
+  # GitHub Pages serves this project site under /<repository>/.
+  SITE_BASE: /${{ github.event.repository.name }}/
+  DEPLOY: ${{ github.event_name != 'pull_request' && github.ref == 'refs/heads/main' }}
 
 jobs:
   website:
     name: Website static export and contracts
     runs-on: ubuntu-latest
     timeout-minutes: 10
+    outputs:
+      artifact-id: ${{ steps.upload.outputs.artifact_id }}
+      artifact-name: ${{ steps.artifact.outputs.name }}
     defaults:
       run:
         working-directory: website
@@ -37,3 +45,77 @@ jobs:
       - run: npm run check
       - run: npm run build
       - run: npm test
+      - name: Name the Pages artifact for this run attempt
+        id: artifact
+        if: env.DEPLOY == 'true'
+        run: echo "name=github-pages-$GITHUB_RUN_ATTEMPT" >> "$GITHUB_OUTPUT"
+      - name: Upload the Pages artifact
+        id: upload
+        if: env.DEPLOY == 'true'
+        uses: actions/upload-pages-artifact@v5
+        with:
+          name: ${{ steps.artifact.outputs.name }}
+          path: website/dist
+
+  deploy:
+    name: Deploy to GitHub Pages
+    needs: website
+    if: github.event_name != 'pull_request' && github.ref == 'refs/heads/main'
+    runs-on: ubuntu-latest
+    timeout-minutes: 10
+    permissions:
+      actions: read
+      pages: write
+      id-token: write
+    environment:
+      name: github-pages
+      url: ${{ steps.deployment.outputs.page_url }}
+    steps:
+      - name: Wait for the uploaded Pages artifact
+        env:
+          GH_TOKEN: ${{ github.token }}
+          ARTIFACT_ID: ${{ needs.website.outputs.artifact-id }}
+          ARTIFACT_NAME: ${{ needs.website.outputs.artifact-name }}
+        run: |
+          if [[ ! "$ARTIFACT_ID" =~ ^[0-9]+$ ]]; then
+            echo "::error::The Pages upload did not return an artifact ID."
+            exit 1
+          fi
+          for delay in 0 1 2 4 8 16 32; do
+            sleep "$delay"
+            if visible=$(gh api --method GET "repos/$GITHUB_REPOSITORY/actions/runs/$GITHUB_RUN_ID/artifacts" \
+              -f name="$ARTIFACT_NAME" --jq '.artifacts[] | select(.expired == false) | .id') &&
+              [[ "$visible" == "$ARTIFACT_ID" ]]; then
+              exit 0
+            fi
+          done
+          echo "::error::Pages artifact $ARTIFACT_ID did not become available."
+          exit 1
+
+      - name: Deploy to GitHub Pages
+        id: deployment
+        uses: actions/deploy-pages@v5
+        with:
+          artifact_name: ${{ needs.website.outputs.artifact-name }}
+
+      - name: Check the live page and its bundles
+        env:
+          PAGE_URL: ${{ steps.deployment.outputs.page_url }}
+        run: |
+          origin=$(printf '%s' "$PAGE_URL" | sed -E 's#^(https?://[^/]+).*#\1#')
+          for delay in 0 5 10 20 40; do
+            sleep "$delay"
+            html=$(curl -fsSL "$PAGE_URL?run=$GITHUB_RUN_ID-$GITHUB_RUN_ATTEMPT") || continue
+            bundles=$(printf '%s' "$html" | grep -oE '(src|href)="/[^"]*/assets/[^"]+"' | cut -d'"' -f2)
+            [[ -n "$bundles" ]] || continue
+            ok=true
+            for path in $bundles; do
+              curl -fsSI -o /dev/null "$origin$path" || ok=false
+            done
+            if [[ "$ok" == true ]]; then
+              echo "Live at $PAGE_URL"
+              exit 0
+            fi
+          done
+          echo "::error::$PAGE_URL did not serve the page and its bundles."
+          exit 1
