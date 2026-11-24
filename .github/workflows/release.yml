@@ -18,6 +18,9 @@ jobs:
           node-version: 24
           package-manager-cache: false
       - run: node scripts/validate-skills.mjs
+      - name: Verify release tag and npm package
+        if: github.repository == 'ThanhNguyxnOrg/Pixelcraft'
+        run: npm run test:distribution -- --release
       - run: node scripts/build-adapters.mjs
       - name: Package skills and adapters
         run: |
@@ -36,7 +39,7 @@ jobs:
 
   npm:
     needs: package
-    if: github.repository == 'ThanhNguyxnOrg/Pixelcraft' && vars.PIXELCRAFT_NPM_APPROVED_TAG == github.ref_name
+    if: github.repository == 'ThanhNguyxnOrg/Pixelcraft'
     permissions:
       contents: read
       id-token: write

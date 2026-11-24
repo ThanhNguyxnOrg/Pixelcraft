@@ -199,7 +199,7 @@ The same canonical `skills/` tree is used by the manifests; no copy of the skill
 
 | Host | Installation | Status |
 |---|---|---|
-| [Claude Code / Desktop](https://code.claude.com/docs/en/plugins/marketplace-reference) | Marketplace commands above; the repository has a dedicated `.claude-plugin/plugin.json`. | CLI install checked; Desktop/Cowork not checked. |
+| [Claude Code / Desktop](https://code.claude.com/docs/en/plugins/marketplace-reference) | Marketplace commands above; `.claude-plugin/marketplace.json` lists the bundled skills explicitly. | CLI install checked; Desktop/Cowork not checked. |
 | [Cursor](https://cursor.com/docs/reference/plugins) | Use the bundled Cursor installer, or for local plugin testing place `plugin.json` and `skills/` under `~/.cursor/plugins/local/pixelcraft/`. The root manifest is also suitable for Cursor marketplaces. | Plugin loading in Cursor not checked. |
 | [OpenCode](https://opencode.ai/docs/skills/) | Use the bundled installer with `--agent opencode` or add the checkout's `skills/` path to OpenCode's `skills` config. This is a skills pack, not an executable OpenCode plugin. | Installer placement checked; client discovery not checked. |
 | [Pi](https://docs.pi.dev/latest/packages) | `pi install git:github.com/ThanhNguyxnOrg/Pixelcraft` (or `pi install ./Pixelcraft` from a local clone's parent). | Local package install checked. |
@@ -268,7 +268,7 @@ pixelcraft add all --agent cursor
 
 Pi can then also install it with `pi install npm:@thanhnguyxnorg/pixelcraft`. Until release, use the Git-based or local installers above.
 
-Maintainers: use `npm run test:distribution` to inspect the package without publishing. The tag workflow calls the org's reusable npm publisher with provenance only if `PIXELCRAFT_NPM_APPROVED_TAG` matches the exact tag and the GitHub Release job succeeds. After explicit release approval, confirm npm scope ownership and grant the org's `NPM_TOKEN` publish access to this package and GitHub repository, set the repository variable to the approved `v<package.json version>`, and push that tag from the approved revision. Clear the variable after release.
+Maintainers: use `npm run test:distribution` to inspect the package without publishing. After explicit release approval, push the matching `v<package.json version>` tag from the approved revision in `ThanhNguyxnOrg/Pixelcraft`; the workflow rejects mismatched tags before creating a GitHub Release. After the GitHub Release job succeeds, the org's reusable workflow publishes to npm with provenance. The npm scope must exist and the repository must have access to an `NPM_TOKEN` authorized to publish this package. No per-release variable is needed.
 
 ### Manual git clone/copy
 
