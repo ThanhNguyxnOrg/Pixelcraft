@@ -643,9 +643,9 @@ export type InstallMethod = {
 export const INSTALL: InstallMethod[] = [
   {
     id: "wizard",
-    label: "npx wizard",
+    label: "Interactive wizard",
     note: "Interactive: pick agents, skills, and project or user scope. Node.js 18 or newer.",
-    lines: [`npx ${NPM_PKG}`],
+    lines: [`npm i -g ${NPM_PKG}`, "pixelcraft"],
   },
   {
     id: "global",

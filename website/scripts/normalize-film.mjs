@@ -27,12 +27,21 @@ const { name } = JSON.parse(
 );
 if (!/^(?:@[a-z0-9-]+\/)?[a-z0-9-]+$/.test(name))
   throw new Error("Expected a plain or scoped npm package name");
+const install = `$ npm i -g ${name} && pixelcraft add all --agent claude`;
+// Frames 188-193 (30 fps) are the scene's fade-out, after the opaque label ends.
+const fadeSteps = [0, 1, 2, 3, 4, 5];
 const filter = [
   "format=rgb24",
   "drawbox=x=148:y=341:w=1065:h=43:color=0x010635:t=fill:enable='between(t,3.35,6.25)'",
-  `drawtext=fontfile='${font}':text='$ npx ${name} add all --agent claude':x=154:y=351:fontsize=24:fontcolor=0xeef1ff:enable='between(t,3.35,6.25)'`,
+  `drawtext=fontfile='${font}':text='${install}':x=154:y=351:fontsize=24:fontcolor=0xeef1ff:enable='between(t,3.35,6.25)'`,
+  // The supplied film's own command line shows through while this scene fades out.
+  ...fadeSteps.map(
+    (i) =>
+      `drawbox=x=148:y=341:w=1065:h=43:color=0x000729@${(1 - i / 6).toFixed(2)}:t=fill:enable='eq(n,${188 + i})'`,
+  ),
+  `drawtext=fontfile='${font}':text='${install}':x=154:y=351:fontsize=24:fontcolor=0xeef1ff:alpha='max(0,1-(n-188)/6)':enable='between(n,188,193)'`,
   "drawbox=x=600:y=617:w=542:h=48:color=0x01072a:t=fill:enable='gte(t,14.3)'",
-  `drawtext=fontfile='${font}':text='$ npx ${name}':x=870-text_w/2:y=628:fontsize=30:fontcolor=0x03f0ed:enable='gte(t,14.3)'`,
+  `drawtext=fontfile='${font}':text='$ npm i -g ${name}':x=870-text_w/2:y=630:fontsize=26:fontcolor=0x03f0ed:enable='gte(t,14.3)'`,
   "fade=t=out:st=15.5:d=0.5",
   "scale=out_color_matrix=bt709:out_range=tv",
   "format=yuv420p",

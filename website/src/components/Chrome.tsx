@@ -206,7 +206,10 @@ export function Footer() {
             </h2>
           </div>
           <div className="min-w-0 lg:col-span-5">
-            <CopyCommand variant="hero" lines={[`npx ${NPM_PKG}`]} />
+            <CopyCommand
+              variant="hero"
+              lines={[`npm i -g ${NPM_PKG}`, "pixelcraft"]}
+            />
           </div>
         </div>
 
