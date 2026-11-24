@@ -30,9 +30,9 @@ for (const manifest of [portable, claude, gemini]) {
   assert.equal(manifest.name, 'pixelcraft');
   assert.equal(manifest.version, pkg.version);
 }
-assert.deepEqual(claude.source, { source: 'github', repo: 'ThanhNguyxnOrg/Pixelcraft' });
+assert.equal(claude.source, './');
 assert.equal(claudePlugin.name, claude.name);
-assert.equal(claudePlugin.version, undefined, 'Claude must use the release-managed marketplace version');
+assert.equal(claudePlugin.version, pkg.version);
 assert.equal(claude.strict, undefined);
 assert.equal(claude.skills, undefined, 'Claude discovers the canonical skills/ directory from the plugin root');
 assert.equal(codexCatalog.plugins[0].name, portable.name);
