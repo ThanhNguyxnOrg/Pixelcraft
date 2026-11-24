@@ -14,10 +14,10 @@ Choose a component system by **code ownership, visual distinctiveness, accessibi
 
 | Library | Maintainer / Core | DOM composition idiom | Frameworks | Standout strength |
 |---|---|---|---|---|
-| **Base UI** | MUI team (incl. original Radix authors) | Explicit `render` prop / state render functions | React | Predictable `render` API without fragile `asChild` ref-merging; strong RTL & active v1+ maintenance |
+| **Base UI** | MUI team (incl. Radix & Floating UI authors) | Explicit `render` prop (nestable) + `Positioner` CSS vars (`--anchor-width`, `--available-height`) | React | Predictable `render` API without fragile `asChild` ref-merging; strong RTL & active v1+ maintenance |
 | **Radix UI** | WorkOS | `asChild` (`Slot`) prop merging | React | Mature, widely deployed; powers classic `shadcn/ui` codebases |
-| **React Aria Components** | Adobe | Render props + `className`/`style` state functions | React | Gold-standard WAI-ARIA, i18n, date/number/RTL, and screen-reader testing |
-| **Ark UI** | Chakra team (Zag.js state machines) | Parts + context/render props | React, Vue, Solid | Single state-machine mental model across multiple frameworks |
+| **React Aria Components** | Adobe | Render props + `data-*` states (`data-entering`/`data-exiting`) + `--trigger-width` | React | Gold-standard WAI-ARIA, i18n, date/number/RTL, and screen-reader testing |
+| **Ark UI** | Chakra team (Zag.js state machines) | `asChild` + `RootProvider` (`lazyMount`/`unmountOnExit`) | React, Vue, Solid, Svelte | Single state-machine mental model across 4 major frameworks |
 | **Headless UI** | Tailwind Labs | Render props + `data-*` state attributes | React, Vue | Minimal API surface for common disclosure/dialog/menu/combobox patterns |
 | **Ariakit** | OSS | Polymorphic `render` prop | React | Low-level composability for complex composite widgets (menubars, grids, nested menus) |
 
@@ -36,7 +36,8 @@ Choose a component system by **code ownership, visual distinctiveness, accessibi
 ## Positioning: Floating UI vs native browser primitives
 
 - Prefer **native HTML `[popover]` + CSS Anchor Positioning** (`anchor-name`, `position-anchor`, `position-try-fallbacks`) for standard tooltips, dropdowns, and menus when target browser support allows—zero JS layout loops and native top-layer stacking.
-- Use **Floating UI** (`@floating-ui/react`, `@floating-ui/dom`) when you need virtual reference elements (cursor-following tooltips, text-selection popovers), complex custom collision boundaries, or legacy browser parity. Remember Floating UI handles geometry only—you still own ARIA roles, focus, and keyboard navigation.
+- Use **Floating UI** (`@floating-ui/dom` for positioning only, or `@floating-ui/react` which adds `useClick`, `useDismiss`, `useRole`, `useInteractions`, and `FloatingFocusManager`) when you need virtual reference elements (cursor-following tooltips, text-selection popovers), custom collision boundaries, or legacy browser parity.
+- **Critical `autoUpdate` lifecycle rule**: pass `whileElementsMounted: autoUpdate` to `useFloating()` **only** when the floating element is conditionally mounted/unmounted; if hidden via CSS (`display: none`), call `autoUpdate` inside an effect keyed on `isOpen` and return its cleanup function to avoid leaking scroll/resize listeners.
 
 ## Ecosystem map by framework
 
