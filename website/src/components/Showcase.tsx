@@ -1,6 +1,6 @@
 "use client";
 import { useRef, useState } from "react";
-import { motion, useReducedMotion } from "motion/react";
+import { AnimatePresence, motion, useReducedMotion } from "motion/react";
 const descriptions: Record<string, string> = {
   web: "A distinct visual direction. Not just a different coat of paint.",
   mobile: "Native-minded hierarchy, spacing, and actions. HTML emulation.",
@@ -136,431 +136,436 @@ export default function Showcase() {
             </button>
           </div>
         </div>
-        <motion.div
-          key={`${surface}-${design}`}
-          className="preview-stage"
-          data-current-surface={surface}
-          data-current-design={design}
-          initial={reduce ? false : { opacity: 0.65, y: 6 }}
-          animate={{ opacity: 1, y: 0 }}
-          transition={{ duration: 0.22 }}
-        >
-          <div
-            className="demo-before"
-            data-preview={`before-${surface}`}
-            hidden={design !== "before"}
+        <AnimatePresence mode="wait" initial={false}>
+          <motion.div
+            key={`${surface}-${design}`}
+            className="preview-stage"
+            data-current-surface={surface}
+            data-current-design={design}
+            initial={
+              reduce
+                ? false
+                : { opacity: 0.55, y: 20, scale: 0.98, filter: "blur(3px)" }
+            }
+            animate={{ opacity: 1, y: 0, scale: 1, filter: "blur(0px)" }}
+            exit={reduce ? {} : { opacity: 0, y: -10, scale: 0.99 }}
+            transition={{
+              duration: reduce ? 0 : 0.32,
+              ease: [0.22, 1, 0.36, 1],
+            }}
           >
-            {surface === "web" && (
-              <>
-                <div className="default-nav">
-                  TravelApp <span>Home　About　Contact</span>
-                </div>
-                <div className="default-content">
-                  <span className="default-pill">
-                    Your next adventure awaits
-                  </span>
-                  <h3>
-                    Discover Your Perfect
-                    <br />
-                    Travel Experience
-                  </h3>
-                  <p>
-                    Explore amazing destinations and create unforgettable
-                    memories
-                    <br />
-                    with our all-in-one travel platform.
-                  </p>
-                  <button
-                    data-open-stays=""
-                    onClick={() => dialog.current?.showModal()}
-                  >
-                    Get Started →
-                  </button>
-                  <div className="default-features">
-                    <div>
-                      01
-                      <br />
-                      <strong>Amazing Places</strong>
-                    </div>
-                    <div>
-                      02
-                      <br />
-                      <strong>Easy Booking</strong>
-                    </div>
-                    <div>
-                      03
-                      <br />
-                      <strong>Great Experiences</strong>
-                    </div>
-                  </div>
-                </div>
-              </>
-            )}
-            {surface === "mobile" && (
-              <div className="baseline-phone">
-                <div className="baseline-phone-screen">
+            <div
+              className="demo-before"
+              data-preview={`before-${surface}`}
+              hidden={design !== "before"}
+            >
+              {surface === "web" && (
+                <>
                   <div className="default-nav">
-                    TravelApp <span>PLACES</span>
+                    TravelApp <span>Home　About　Contact</span>
                   </div>
-                  <div className="baseline-phone-content">
-                    <span className="baseline-kicker">
-                      MOBILE · GENERIC BASELINE
+                  <div className="default-content">
+                    <span className="default-pill">
+                      Your next adventure awaits
                     </span>
-                    <h3>Find your next stay</h3>
-                    <p>Great places. Great adventures.</p>
-                    <div className="baseline-card">
-                      <strong>Lake cabin</strong>
-                      <p>A place to relax.</p>
+                    <h3>
+                      Discover Your Perfect
+                      <br />
+                      Travel Experience
+                    </h3>
+                    <p>
+                      Explore amazing destinations and create unforgettable
+                      memories
+                      <br />
+                      with our all-in-one travel platform.
+                    </p>
+                    <button
+                      data-open-stays=""
+                      onClick={() => dialog.current?.showModal()}
+                    >
+                      Get Started →
+                    </button>
+                    <div className="default-features">
+                      <div>
+                        01
+                        <br />
+                        <strong>Amazing Places</strong>
+                      </div>
+                      <div>
+                        02
+                        <br />
+                        <strong>Easy Booking</strong>
+                      </div>
+                      <div>
+                        03
+                        <br />
+                        <strong>Great Experiences</strong>
+                      </div>
+                    </div>
+                  </div>
+                </>
+              )}
+              {surface === "mobile" && (
+                <div className="baseline-phone">
+                  <div className="baseline-phone-screen">
+                    <div className="default-nav">
+                      TravelApp <span>PLACES</span>
+                    </div>
+                    <div className="baseline-phone-content">
+                      <span className="baseline-kicker">
+                        MOBILE · GENERIC BASELINE
+                      </span>
+                      <h3>Find your next stay</h3>
+                      <p>Great places. Great adventures.</p>
+                      <div className="baseline-card">
+                        <strong>Lake cabin</strong>
+                        <p>A place to relax.</p>
+                        <button
+                          className="baseline-action"
+                          onClick={() => dialog.current?.showModal()}
+                        >
+                          View demo stay →
+                        </button>
+                      </div>
+                      <div className="baseline-card">
+                        <strong>Collections</strong>
+                        <p>Browse all places.</p>
+                      </div>
+                    </div>
+                  </div>
+                </div>
+              )}
+              {surface === "desktop" && (
+                <div className="baseline-desktop">
+                  <div className="default-nav">
+                    TravelApp Admin <span>WORKSPACE</span>
+                  </div>
+                  <div className="baseline-workspace">
+                    <aside>
+                      <strong>Menu</strong>
+                      <p>Home</p>
+                      <p>Projects</p>
+                      <p>Settings</p>
+                    </aside>
+                    <section>
+                      <span className="baseline-kicker">
+                        DESKTOP · GENERIC BASELINE
+                      </span>
+                      <h3>Dashboard</h3>
+                      <p>Your projects in one place.</p>
+                      <div className="baseline-card">
+                        <strong>The lakeside collection</strong>
+                        <p>Cover story: Ready for review</p>
+                        <p>Photography: Selected</p>
+                        <p>Reading order: Defined</p>
+                      </div>
                       <button
                         className="baseline-action"
-                        onClick={() => dialog.current?.showModal()}
+                        aria-pressed={draftSaved}
+                        onClick={() => setDraftSaved(!draftSaved)}
                       >
-                        View demo stay →
+                        {draftSaved ? "Saved ✓" : "Save draft"}
                       </button>
-                    </div>
-                    <div className="baseline-card">
-                      <strong>Collections</strong>
-                      <p>Browse all places.</p>
-                    </div>
+                    </section>
                   </div>
                 </div>
-              </div>
-            )}
-            {surface === "desktop" && (
-              <div className="baseline-desktop">
-                <div className="default-nav">
-                  TravelApp Admin <span>WORKSPACE</span>
+              )}
+              {surface === "terminal" && (
+                <div className="baseline-terminal">
+                  <span className="baseline-kicker">
+                    TERMINAL · GENERIC BASELINE
+                  </span>
+                  <pre>{`$ review elsewhere/terminal-ui\n\nInterface review\n----------------\nFocus order: checked [rendered]\nEmpty state: checked [rendered]\nToken mapping: checked [static]\nNative runtime: not checked\n\nReview complete. See details above.\n$ _`}</pre>
                 </div>
-                <div className="baseline-workspace">
-                  <aside>
-                    <strong>Menu</strong>
-                    <p>Home</p>
-                    <p>Projects</p>
-                    <p>Settings</p>
-                  </aside>
-                  <section>
-                    <span className="baseline-kicker">
-                      DESKTOP · GENERIC BASELINE
-                    </span>
-                    <h3>Dashboard</h3>
-                    <p>Your projects in one place.</p>
-                    <div className="baseline-card">
-                      <strong>The lakeside collection</strong>
-                      <p>Cover story: Ready for review</p>
-                      <p>Photography: Selected</p>
-                      <p>Reading order: Defined</p>
-                    </div>
-                    <button
-                      className="baseline-action"
-                      aria-pressed={draftSaved}
-                      onClick={() => setDraftSaved(!draftSaved)}
-                    >
-                      {draftSaved ? "Saved ✓" : "Save draft"}
-                    </button>
-                  </section>
-                </div>
-              </div>
-            )}
-            {surface === "terminal" && (
-              <div className="baseline-terminal">
-                <span className="baseline-kicker">
-                  TERMINAL · GENERIC BASELINE
-                </span>
-                <pre>{`$ review elsewhere/terminal-ui\n\nInterface review\n----------------\nFocus order: checked [rendered]\nEmpty state: checked [rendered]\nToken mapping: checked [static]\nNative runtime: not checked\n\nReview complete. See details above.\n$ _`}</pre>
-              </div>
-            )}
-          </div>
-          <div
-            className="surface-preview preview-web"
-            data-preview="web"
-            hidden={design === "before" || surface !== "web"}
-          >
-            <div className="browser-bar">
-              <div className="window-dots">
-                <i></i>
-                <i></i>
-                <i></i>
-              </div>
-              <span>elsewhere.stays</span>
-              <span aria-hidden="true">↗</span>
+              )}
             </div>
-            <div className="stays-page">
-              <div className="stays-nav">
-                <span className="stays-logo">
-                  elsewhere<span>®</span>
-                </span>
-                <div>
-                  <span>Our places</span>
-                  <span>The journal</span>
-                  <button
-                    data-open-stays=""
-                    onClick={() => dialog.current?.showModal()}
-                  >
-                    Find a stay ↗
-                  </button>
+            <div
+              className="surface-preview preview-web"
+              data-preview="web"
+              hidden={design === "before" || surface !== "web"}
+            >
+              <div className="browser-bar">
+                <div className="window-dots">
+                  <i></i>
+                  <i></i>
+                  <i></i>
+                </div>
+                <span>elsewhere.stays</span>
+                <span aria-hidden="true">↗</span>
+              </div>
+              <div className="stays-page">
+                <div className="stays-nav">
+                  <span className="stays-logo">elsewhere</span>
+                  <div>
+                    <span>Our places</span>
+                    <span>The journal</span>
+                    <button
+                      data-open-stays=""
+                      onClick={() => dialog.current?.showModal()}
+                    >
+                      Find a stay ↗
+                    </button>
+                  </div>
+                </div>
+                <div className="stays-hero">
+                  <div className="stays-copy">
+                    <div className="stays-eyebrow">
+                      <span></span> A LITTLE FURTHER FROM ORDINARY
+                    </div>
+                    <h3>
+                      Somewhere
+                      <br />
+                      worth
+                      <br />
+                      <em>staying.</em>
+                    </h3>
+                    <p>
+                      Considered spaces. Unhurried days.
+                      <br />A collection of places to feel a world away.
+                    </p>
+                    <button
+                      data-open-stays=""
+                      onClick={() => dialog.current?.showModal()}
+                      className="stays-cta"
+                    >
+                      Find your quiet <span>↗</span>
+                    </button>
+                    <div className="stays-footnote">
+                      <span>01 — 03</span>
+                      <span>LESS SCROLLING. MORE SKY.</span>
+                    </div>
+                  </div>
+                  <div className="stays-photo">
+                    <img
+                      src="/images/alpine-lake.jpg"
+                      width="1600"
+                      height="1067"
+                      alt="A small cabin beside a still alpine lake, surrounded by mountains"
+                      fetchPriority="high"
+                    />
+                    <span className="photo-note">The art of getting away.</span>
+                    <div className="location-note">
+                      <span>THE LAKESIDE COLLECTION</span>
+                      <span>Explore the slower side ↗</span>
+                    </div>
+                  </div>
                 </div>
               </div>
-              <div className="stays-hero">
-                <div className="stays-copy">
-                  <div className="stays-eyebrow">
-                    <span></span> A LITTLE FURTHER FROM ORDINARY
-                  </div>
-                  <h3>
-                    Somewhere
-                    <br />
-                    worth
-                    <br />
-                    <em>staying.</em>
-                  </h3>
-                  <p>
-                    Considered spaces. Unhurried days.
-                    <br />A collection of places to feel a world away.
-                  </p>
+            </div>
+            <div
+              className="surface-preview preview-mobile"
+              data-preview="mobile"
+              hidden={design === "before" || surface !== "mobile"}
+            >
+              <div className="mobile-intro">
+                <span className="demo-label">MOBILE / HTML EMULATION</span>
+                <h3>
+                  Room to breathe.
+                  <br />
+                  Even on a<br />
+                  small screen.
+                </h3>
+                <p>
+                  Platform-aware spacing.
+                  <br />
+                  Clear priorities. Reachable actions.
+                </p>
+              </div>
+              <div className="phone">
+                <div className="phone-status">
+                  <span>9:41</span>
+                  <span>••• ▰</span>
+                </div>
+                <div className="phone-header">
+                  <span>elsewhere</span>
                   <button
                     data-open-stays=""
                     onClick={() => dialog.current?.showModal()}
-                    className="stays-cta"
+                    aria-label="Browse demo stays"
                   >
-                    Find your quiet <span>↗</span>
+                    ↗
                   </button>
-                  <div className="stays-footnote">
-                    <span>01 — 03</span>
-                    <span>LESS SCROLLING. MORE SKY.</span>
-                  </div>
                 </div>
-                <div className="stays-photo">
+                <p className="phone-greeting">A change of scenery.</p>
+                <h4>
+                  Find your
+                  <br />
+                  <em>somewhere.</em>
+                </h4>
+                <div className="phone-photo">
                   <img
                     src="/images/alpine-lake.jpg"
                     width="1600"
                     height="1067"
-                    alt="A small cabin beside a still alpine lake, surrounded by mountains"
-                    fetchPriority="high"
+                    alt="Alpine lakeside cabin"
+                    loading="lazy"
                   />
-                  <span className="photo-note">The art of getting away.</span>
-                  <div className="location-note">
-                    <span>THE LAKESIDE COLLECTION</span>
-                    <span>Explore the slower side ↗</span>
-                  </div>
+                  <span>THE LAKESIDE COLLECTION</span>
                 </div>
-              </div>
-            </div>
-          </div>
-          <div
-            className="surface-preview preview-mobile"
-            data-preview="mobile"
-            hidden={design === "before" || surface !== "mobile"}
-          >
-            <div className="mobile-intro">
-              <span className="demo-label">MOBILE / HTML EMULATION</span>
-              <h3>
-                Room to breathe.
-                <br />
-                Even on a<br />
-                small screen.
-              </h3>
-              <p>
-                Platform-aware spacing.
-                <br />
-                Clear priorities. Reachable actions.
-              </p>
-            </div>
-            <div className="phone">
-              <div className="phone-status">
-                <span>9:41</span>
-                <span>••• ▰</span>
-              </div>
-              <div className="phone-header">
-                <span>elsewhere®</span>
+                <div className="phone-place">
+                  <div>
+                    <strong>A little closer to nature.</strong>
+                    <span>Quiet places, thoughtfully chosen.</span>
+                  </div>
+                  <button
+                    className="save-stay"
+                    aria-label={saved ? "Unsave demo stay" : "Save demo stay"}
+                    aria-pressed={saved}
+                    onClick={() => setSaved(!saved)}
+                  >
+                    {saved ? "♥" : "♡"}
+                  </button>
+                </div>
                 <button
+                  className="phone-explore"
                   data-open-stays=""
                   onClick={() => dialog.current?.showModal()}
-                  aria-label="Browse demo stays"
                 >
-                  ↗
+                  Explore places <span>↗</span>
                 </button>
+                <div className="phone-home"></div>
               </div>
-              <p className="phone-greeting">A change of scenery.</p>
-              <h4>
-                Find your
-                <br />
-                <em>somewhere.</em>
-              </h4>
-              <div className="phone-photo">
-                <img
-                  src="/images/alpine-lake.jpg"
-                  width="1600"
-                  height="1067"
-                  alt="Alpine lakeside cabin"
-                  loading="lazy"
-                />
-                <span>THE LAKESIDE COLLECTION</span>
-              </div>
-              <div className="phone-place">
-                <div>
-                  <strong>A little closer to nature.</strong>
-                  <span>Quiet places, thoughtfully chosen.</span>
-                </div>
-                <button
-                  className="save-stay"
-                  aria-label={saved ? "Unsave demo stay" : "Save demo stay"}
-                  aria-pressed={saved}
-                  onClick={() => setSaved(!saved)}
-                >
-                  {saved ? "♥" : "♡"}
-                </button>
-              </div>
-              <button
-                className="phone-explore"
-                data-open-stays=""
-                onClick={() => dialog.current?.showModal()}
-              >
-                Explore places <span>↗</span>
-              </button>
-              <div className="phone-home"></div>
             </div>
-          </div>
-          <div
-            className="surface-preview preview-desktop"
-            data-preview="desktop"
-            hidden={design === "before" || surface !== "desktop"}
-          >
-            <div className="desktop-window">
-              <div className="desktop-title">
-                <div className="window-dots">
-                  <i></i>
-                  <i></i>
-                  <i></i>
+            <div
+              className="surface-preview preview-desktop"
+              data-preview="desktop"
+              hidden={design === "before" || surface !== "desktop"}
+            >
+              <div className="desktop-window">
+                <div className="desktop-title">
+                  <div className="window-dots">
+                    <i></i>
+                    <i></i>
+                    <i></i>
+                  </div>
+                  <span>Elsewhere — Editorial workspace</span>
+                  <span>⌘ K</span>
                 </div>
-                <span>Elsewhere — Editorial workspace</span>
-                <span>⌘ K</span>
+                <div className="desktop-app">
+                  <aside>
+                    <strong>elsewhere®</strong>
+                    <span className="desktop-nav-active">▦　Overview</span>
+                    <span>▤　Collections</span>
+                    <span>◷　Schedule</span>
+                    <span>◇　Assets</span>
+                    <small>ILLUSTRATIVE WORKSPACE</small>
+                  </aside>
+                  <div className="desktop-content">
+                    <div className="desktop-heading">
+                      <div>
+                        <span>YOUR CREATIVE SPACE</span>
+                        <h3>A quieter kind of workflow.</h3>
+                      </div>
+                      <button
+                        className="save-stay"
+                        aria-pressed={draftSaved}
+                        onClick={() => setDraftSaved(!draftSaved)}
+                      >
+                        {draftSaved ? "Saved ✓" : "Save draft"}
+                      </button>
+                    </div>
+                    <div className="editor-grid">
+                      <div className="editor-cover">
+                        <img
+                          src="/images/alpine-lake.jpg"
+                          width="1600"
+                          height="1067"
+                          alt="Alpine landscape in the editorial preview"
+                          loading="lazy"
+                        />
+                        <div>
+                          Notes from
+                          <br />
+                          <em>the slower side.</em>
+                        </div>
+                        <span>JOURNAL / ISSUE 01</span>
+                      </div>
+                      <div className="editor-list">
+                        <h4>The lakeside collection</h4>
+                        <p>A field guide to switching off.</p>
+                        <div>
+                          <span>Cover story</span>
+                          <strong>Ready for review</strong>
+                        </div>
+                        <div>
+                          <span>Photography</span>
+                          <strong>Selected</strong>
+                        </div>
+                        <div>
+                          <span>Reading order</span>
+                          <strong>Defined</strong>
+                        </div>
+                        <div className="editor-note">
+                          Good tools leave more room for the work.
+                        </div>
+                      </div>
+                    </div>
+                  </div>
+                </div>
               </div>
-              <div className="desktop-app">
-                <aside>
-                  <strong>elsewhere®</strong>
-                  <span className="desktop-nav-active">▦　Overview</span>
-                  <span>▤　Collections</span>
-                  <span>◷　Schedule</span>
-                  <span>◇　Assets</span>
-                  <small>ILLUSTRATIVE WORKSPACE</small>
-                </aside>
-                <div className="desktop-content">
-                  <div className="desktop-heading">
+            </div>
+            <div
+              className="surface-preview preview-terminal"
+              data-preview="terminal"
+              hidden={design === "before" || surface !== "terminal"}
+            >
+              <div className="terminal-window">
+                <div className="terminal-bar">
+                  <div className="window-dots">
+                    <i></i>
+                    <i></i>
+                    <i></i>
+                  </div>
+                  <span>elsewhere / interface review</span>
+                  <span>TUI EMULATION</span>
+                </div>
+                <div className="terminal-body">
+                  <div className="terminal-brand">
+                    <span className="terminal-brand-label">pixelcraft</span>
+                    <strong>Deliberate design. Every surface.</strong>
+                  </div>
+                  <p>
+                    <span className="terminal-muted">project</span>　elsewhere /
+                    terminal-ui
+                  </p>
+                  <p>
+                    <span className="terminal-muted">direction</span>{" "}
+                    quiet-editorial
+                  </p>
+                  <div className="terminal-table">
                     <div>
-                      <span>YOUR CREATIVE SPACE</span>
-                      <h3>A quieter kind of workflow.</h3>
+                      <span>CHECK</span>
+                      <span>EVIDENCE</span>
                     </div>
-                    <button
-                      className="save-stay"
-                      aria-pressed={draftSaved}
-                      onClick={() => setDraftSaved(!draftSaved)}
-                    >
-                      {draftSaved ? "Saved ✓" : "Save draft"}
-                    </button>
+                    <div>
+                      <span>✓ Focus order</span>
+                      <span>rendered</span>
+                    </div>
+                    <div>
+                      <span>✓ Empty state</span>
+                      <span>rendered</span>
+                    </div>
+                    <div>
+                      <span>✓ Token mapping</span>
+                      <span>static</span>
+                    </div>
+                    <div>
+                      <span>○ Screen reader</span>
+                      <span>not-checked</span>
+                    </div>
                   </div>
-                  <div className="editor-grid">
-                    <div className="editor-cover">
-                      <img
-                        src="/images/alpine-lake.jpg"
-                        width="1600"
-                        height="1067"
-                        alt="Alpine landscape in the editorial preview"
-                        loading="lazy"
-                      />
-                      <div>
-                        Notes from
-                        <br />
-                        <em>the slower side.</em>
-                      </div>
-                      <span>JOURNAL / ISSUE 01</span>
-                    </div>
-                    <div className="editor-list">
-                      <h4>The lakeside collection</h4>
-                      <p>A field guide to switching off.</p>
-                      <div>
-                        <span>Cover story</span>
-                        <strong>Ready for review</strong>
-                      </div>
-                      <div>
-                        <span>Photography</span>
-                        <strong>Selected</strong>
-                      </div>
-                      <div>
-                        <span>Reading order</span>
-                        <strong>Defined</strong>
-                      </div>
-                      <div className="editor-note">
-                        Good tools leave more room for the work.
-                      </div>
-                    </div>
+                  <p className="terminal-muted">
+                    Illustrative output, not an executed review.
+                  </p>
+                  <div className="terminal-prompt">
+                    <span>›</span> What should we make more deliberate?
+                    <span className="terminal-caret"></span>
                   </div>
                 </div>
               </div>
             </div>
-          </div>
-          <div
-            className="surface-preview preview-terminal"
-            data-preview="terminal"
-            hidden={design === "before" || surface !== "terminal"}
-          >
-            <div className="terminal-window">
-              <div className="terminal-bar">
-                <div className="window-dots">
-                  <i></i>
-                  <i></i>
-                  <i></i>
-                </div>
-                <span>elsewhere / interface review</span>
-                <span>TUI EMULATION</span>
-              </div>
-              <div className="terminal-body">
-                <div className="terminal-brand">
-                  ┌─ pixelcraft ──────────────────────────────┐
-                  <br />
-                  │　Deliberate design. Every surface.　　　　│
-                  <br />
-                  └──────────────────────────────────────────┘
-                </div>
-                <p>
-                  <span className="terminal-muted">project</span>　elsewhere /
-                  terminal-ui
-                </p>
-                <p>
-                  <span className="terminal-muted">direction</span>{" "}
-                  quiet-editorial
-                </p>
-                <div className="terminal-table">
-                  <div>
-                    <span>CHECK</span>
-                    <span>EVIDENCE</span>
-                  </div>
-                  <div>
-                    <span>✓ Focus order</span>
-                    <span>rendered</span>
-                  </div>
-                  <div>
-                    <span>✓ Empty state</span>
-                    <span>rendered</span>
-                  </div>
-                  <div>
-                    <span>✓ Token mapping</span>
-                    <span>static</span>
-                  </div>
-                  <div>
-                    <span>○ Screen reader</span>
-                    <span>not-checked</span>
-                  </div>
-                </div>
-                <p className="terminal-muted">
-                  Illustrative output, not an executed review.
-                </p>
-                <div className="terminal-prompt">
-                  <span>›</span> What should we make more deliberate?
-                  <span className="terminal-caret"></span>
-                </div>
-              </div>
-            </div>
-          </div>
-        </motion.div>
+          </motion.div>
+        </AnimatePresence>
         <div className="workbench-caption">
           <span>
             <span className="status-dot"></span>

@@ -1,6 +1,9 @@
 import type { Metadata } from "next";
 import "../styles/global.css";
+import "../styles/studio.css";
 import "@fontsource-variable/manrope";
+import "@fontsource/instrument-serif/latin-400.css";
+import "@fontsource/instrument-serif/latin-400-italic.css";
 import "@fontsource/ibm-plex-mono/latin-400.css";
 import "@fontsource/ibm-plex-mono/latin-500.css";
 import Header from "../components/Header";
@@ -21,7 +24,7 @@ export const metadata: Metadata = {
   },
   twitter: { card: "summary_large_image" },
 };
-export const viewport = { themeColor: "#090d14" };
+export const viewport = { themeColor: "#f5f2ea" };
 export default function RootLayout({
   children,
 }: {

@@ -2,18 +2,23 @@ export const metadata = { title: "Pixelcraft in motion — The film" };
 const transcript = [
   [
     "00:00",
-    "The first answer is not the only answer.",
-    "A familiar, generic travel interface. Same brief. No clear point of view.",
+    "Good code is a start.",
+    "Pixelcraft gives your coding agent a design process, not another UI template.",
   ],
   [
-    "00:05",
-    "Start with Pixelcraft.",
-    "Install the skill pack in your coding agent. Frame the project with a concrete brief.",
+    "00:03.5",
+    "Your agent. With a point of view.",
+    "Install the skills in your existing coding agent. Keep your stack and bring a more considered process.",
   ],
   [
-    "00:12",
-    "Explore. Choose. Build.",
-    "Three visual directions, one considered choice. The illustrative Elsewhere project becomes an editorial interface.",
+    "00:07.5",
+    "One brief. More possibility.",
+    "An illustrative travel brief becomes Editorial, Electric, and Sunlit: three different compositions, not three color swaps. This is an authored demonstration, not a live model response.",
+  ],
+  [
+    "00:12.5",
+    "A different kind of somewhere.",
+    "The actual before-and-after web specimens show different hierarchy, rhythm, imagery, and character. Build the whole experience, not just its first screen.",
   ],
   [
     "00:20",
@@ -22,13 +27,13 @@ const transcript = [
   ],
   [
     "00:28",
-    "Look at what you made.",
+    "Freedom in the look. Rigor in the work.",
     "Plan, Frame, Diverge, Specify, Build, Verify, Report. Evidence labels distinguish rendered checks, source inspection, judgment, and unknowns.",
   ],
   [
-    "00:35",
-    "Less default. More deliberate.",
-    "Pixelcraft. Open source. MIT licensed. Bring a better process to your next interface.",
+    "00:34",
+    "Make something unmistakably yours.",
+    "Pixelcraft. 26 focused skills. No fixed aesthetic. Open source. MIT licensed. Your next interface starts here.",
   ],
 ];
 export default function Film() {
@@ -47,8 +52,9 @@ export default function Film() {
           To point of view.
         </h1>
         <p>
-          A short look at a more deliberate workflow. Real interface specimens.
-          An illustrative agent session. No magic claims.
+          A design process with a pulse. Kinetic type, three creative
+          directions, and the real interface specimens you can explore on this
+          site.
         </p>
       </header>
       <section
@@ -100,9 +106,9 @@ export default function Film() {
               Not a magic trick.
             </h2>
             <p style={{ fontSize: 12, marginTop: 20 }}>
-              The agent sequence is an authored demonstration, not a recording
-              of a live model response. The interface specimens are the same
-              examples you can explore on this site.
+              The brief and directions are an authored demonstration, not a
+              recording of a live model response. The interface specimens are
+              the same examples you can explore on this site.
             </p>
             <a
               href="/video/captions-vi.vtt"

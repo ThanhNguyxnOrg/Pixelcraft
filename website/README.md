@@ -25,8 +25,8 @@ Publish `website/out/` to a static host. The included zero-dependency production
 ## Content and design
 
 - All skill instruction pages are generated at build time from the actual `../skills/*/SKILL.md` files; `src/data/skills.ts` adds categories and short editorial summaries. New skills fail the build until categorized. Relative reference links point to their upstream source.
-- `src/styles/global.css` defines semantic tokens derived from the existing artwork in `../assets/`. Local Manrope and IBM Plex Mono fonts are bundled with their OFL licenses in the installed font packages and load with `swap`. Server Components generate static reading pages; bounded client components hydrate the specimen, search, installation selector, copy feedback, and mobile navigation.
-- Motion preserves object identity in the surface selector, acknowledges specimen changes, and animates library layout changes. Reduced motion replaces spatial transitions with immediate state updates; content is never gated behind a scroll reveal. There is no scroll hijacking, ambient loop, or custom cursor.
+- `src/styles/global.css` supplies structural styles; `src/styles/studio.css` art-directs an ivory/ink/ultramarine creative studio with open editorial rows, generous curves, and a three-world proof sheet. Local Manrope, Instrument Serif, and IBM Plex Mono fonts are bundled with their OFL licenses and load with `swap`. Server Components generate static reading pages; bounded client components hydrate the hero, specimen, search, installation selector, copy feedback, and mobile navigation.
+- Motion preserves object identity in the surface selector, choreographs specimen and art-direction changes, and animates library layout changes. The hero's slow ambient print rotation has a pause control, pauses offscreen, and is static for reduced motion. Reduced motion also removes pointer tilt, parallax, and spatial transitions; content is never gated behind a scroll reveal. There is no scroll hijacking or custom cursor.
 - The Elsewhere examples are explicitly fictional, interactive HTML emulations. They are not customer work, real bookings, native mobile apps, or claimed results from a live AI session. Save buttons only change in-memory demo state.
 - Search/category state is represented in URL query parameters. Installation commands are displayed/copied, never executed in the browser.
 - English copy serves the international repository audience. Film captions are included in English and Vietnamese. Replying to the owner remains Vietnamese.
@@ -47,14 +47,14 @@ npm run film:render --prefix website
 npm run build --prefix website
 ```
 
-`capture-film.mjs` uses the pinned Playwright dependency and its installed Chromium (run `npx playwright install chromium` from `website/` if missing, or set `CHROME_PATH`). Remotion downloads a headless rendering browser on first render. Rendering/finalization and the original Node-generated soundtrack require FFmpeg on PATH. Output: 1920×1080, 30 fps, 40 seconds, limited-range H.264/yuv420p, AAC audio, fast-start MP4, and a JPEG poster. Timing derives only from frame numbers; no live network, random source, sampled music, or model is involved. The film's agent conversation is visibly labeled illustrative. `public/video/assets` contains input captures of this site's actual specimens. Remotion's own license terms apply to using its renderer.
+`capture-film.mjs` uses the pinned Playwright dependency and its installed Chromium (run `npx playwright install chromium` from `website/` if missing, or set `CHROME_PATH`). Remotion downloads a headless rendering browser on first render. Rendering/finalization and the original Node-generated soundtrack require FFmpeg on PATH. Output: 1920×1080, 30 fps, 40 seconds, limited-range H.264/yuv420p, AAC audio, fast-start MP4, and a JPEG poster. Kinetic type, motivated camera moves, overlapping scene wipes, and a deterministic 120 BPM electronic score carry the story. Timing derives only from frame numbers; the audio uses a fixed-seed synthesizer, not sampled music. No live network or model is involved. The brief/direction demonstration is visibly labeled illustrative. `public/video/assets` contains captures of this site's actual proof sheets and UI specimens. Remotion's own license terms apply to using its renderer.
 
 ## Asset provenance
 
 - Pixelcraft logo/icon/social image: original assets already supplied in this repository. No replacement brand mark.
 - Alpine image: downloaded from [Unsplash image CDN](https://images.unsplash.com/photo-1470770841072-f978cf4d019e) under the [Unsplash License](https://unsplash.com/license). It illustrates an alpine landscape, not an actual accommodation listing; no property, location, customer, or photographer attribution is invented.
 - Interface fixtures and composition: authored for this showcase.
-- Fonts: Manrope / IBM Plex Mono, SIL Open Font License via Fontsource; redistributed license notices are in `public/video/assets/*-OFL.txt`.
+- Fonts: Manrope / Instrument Serif / IBM Plex Mono, SIL Open Font License via Fontsource; redistributed license notices are in `public/video/assets/*-OFL.txt`.
 
 ## Verification boundaries
 

@@ -1,78 +1,43 @@
 import Showcase from "../components/Showcase";
 import Library from "../components/Library";
 import Install from "../components/Install";
+import CreativeHero from "../components/CreativeHero";
 import { skills, steps } from "../data/skills";
 export default function Home() {
   return (
     <>
-      <section className="hero shell">
-        <div className="hero-meta">
-          <span>
-            <span className="status-dot"></span> DESIGN INTELLIGENCE FOR CODING
-            AGENTS
-          </span>
-          <a href="/guide/">
-            OPEN SOURCE <span>↗</span> v0.1.0
-          </a>
-        </div>
-        <div className="hero-main">
-          <h1>
-            Less default.
-            <br />
-            <span>More deliberate.</span>
-          </h1>
-          <div className="hero-aside">
-            <div className="pixel-bracket" aria-hidden="true">
-              <i></i>
-              <i></i>
-              <i></i>
-              <i></i>
-              <i></i>
-              <i></i>
-              <i></i>
-              <i></i>
-              <i></i>
+      <CreativeHero />
+      <section className="play-section" aria-labelledby="playground-heading">
+        <div className="shell">
+          <div className="section-heading">
+            <div>
+              <span className="section-kicker">
+                Less theory. More possibility.
+              </span>
+              <h2 id="playground-heading">
+                One brief.
+                <br />
+                <em>No default answers.</em>
+              </h2>
             </div>
             <p>
-              Your agent can write the code.
-              <br />
-              Give it an eye for the interface.
+              Same travel brief. Four interface surfaces. Switch the view,
+              compare the details, and try the interactions. These are authored
+              examples, not a live AI run.
             </p>
-            <p className="hero-description">
-              Distinctive design. Rigorous UX.
-              <br />
-              Every frontend surface. Not just the web.
-            </p>
-            <a className="hero-film-link" href="/film/">
-              <span className="play-icon" aria-hidden="true">
-                ▶
-              </span>{" "}
-              See Pixelcraft in motion <span>↗</span>
-            </a>
           </div>
-        </div>
-        <div className="hero-actions">
-          <a href="#install" className="button button-primary">
-            Get Pixelcraft <span aria-hidden="true">↗</span>
-          </a>
-          <span>
-            {skills.length} skills <i>/</i> Any stack <i>/</i> MIT licensed
-          </span>
-          <a href="#playground" className="explore-link">
-            Try the difference below <span aria-hidden="true">↓</span>
-          </a>
-        </div>
-        <Showcase />
-        <div className="agent-strip">
-          <span>FITS THE WAY YOU ALREADY BUILD</span>
-          <div>
-            <span>Claude Code</span>
-            <span>Codex</span>
-            <span>Cursor</span>
-            <span>Gemini CLI</span>
-            <span>GitHub Copilot</span>
-            <span>OpenCode</span>
-            <a href="/guide/#agents">and more ↗</a>
+          <Showcase />
+          <div className="agent-strip">
+            <span>FITS THE WAY YOU ALREADY BUILD</span>
+            <div>
+              <span>Claude Code</span>
+              <span>Codex</span>
+              <span>Cursor</span>
+              <span>Gemini CLI</span>
+              <span>GitHub Copilot</span>
+              <span>OpenCode</span>
+              <a href="/guide/#agents">and more ↗</a>
+            </div>
           </div>
         </div>
       </section>
