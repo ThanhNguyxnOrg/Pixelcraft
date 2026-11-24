@@ -30,16 +30,61 @@ function stripCssComments(css) {
   return css.replace(/\/\*[\s\S]*?\*\//g, (m) => m.replace(/[^\r\n]/g, ' '));
 }
 
+const ENTITY_MAP = {
+  nbsp: ' ',
+  amp: '&',
+  lt: '<',
+  gt: '>',
+  quot: '"',
+  '#39': "'",
+};
+
 function visibleText(html) {
-  return html
-    .replace(/<style\b[^>]*>[\s\S]*?<\/style>/gi, ' ')
-    .replace(/<script\b[^>]*>[\s\S]*?<\/script>/gi, ' ')
-    .replace(/<!--[\s\S]*?-->/g, ' ')
-    .replace(/<[^>]+>/g, ' ')
-    .replace(/&nbsp;/gi, ' ')
-    .replace(/&amp;/gi, '&')
-    .replace(/&lt;/gi, '<')
-    .replace(/&gt;/gi, '>')
+  const lower = html.toLowerCase();
+  let out = '';
+  let i = 0;
+  let skipRawTag = '';
+
+  while (i < html.length) {
+    if (skipRawTag) {
+      const closeNeedle = `</${skipRawTag}`;
+      const closeIdx = lower.indexOf(closeNeedle, i);
+      if (closeIdx === -1) break;
+      const closeEnd = html.indexOf('>', closeIdx + closeNeedle.length);
+      if (closeEnd === -1) break;
+      i = closeEnd + 1;
+      skipRawTag = '';
+      out += ' ';
+      continue;
+    }
+
+    if (html.startsWith('<!--', i)) {
+      const endComment = html.indexOf('-->', i + 4);
+      i = endComment === -1 ? html.length : endComment + 3;
+      out += ' ';
+      continue;
+    }
+
+    if (html[i] === '<') {
+      const tagEnd = html.indexOf('>', i + 1);
+      if (tagEnd === -1) break;
+      const tagBody = lower.slice(i + 1, tagEnd).trim();
+      if (/^style(?:\s|\/|$)/.test(tagBody) && !tagBody.endsWith('/')) {
+        skipRawTag = 'style';
+      } else if (/^script(?:\s|\/|$)/.test(tagBody) && !tagBody.endsWith('/')) {
+        skipRawTag = 'script';
+      }
+      i = tagEnd + 1;
+      out += ' ';
+      continue;
+    }
+
+    out += html[i];
+    i += 1;
+  }
+
+  return out
+    .replace(/&(nbsp|amp|lt|gt|quot|#39);/gi, (_, key) => ENTITY_MAP[key.toLowerCase()] ?? ' ')
     .replace(/\s+/g, ' ')
     .trim();
 }
@@ -80,7 +125,7 @@ function inspectEmail(html, plaintextContent, plaintextProvided) {
     add('missing-lang', 'P1', 1, 'Missing lang attribute on <html> element.',
       'Add lang="en" (or the message language code) to the root <html> element for screen readers.');
   }
-  if (!/<title\b[^>]*>[\s\S]*?\S[\s\S]*?<\/title>/i.test(cleaned)) {
+  if (!/<title\b[^>]*>[\s\S]*?\S[\s\S]*?<\/title\s*>/i.test(cleaned)) {
     add('missing-title', 'P2', 1, 'Missing non-empty <title> element.',
       'Include a concise <title> matching the email subject for accessibility and browser-view tabs.');
   }
@@ -94,7 +139,7 @@ function inspectEmail(html, plaintextContent, plaintextProvided) {
   ];
 
   const cssChunks = [];
-  const styleTagRe = /<style\b[^>]*>([\s\S]*?)<\/style>/gi;
+  const styleTagRe = /<style\b[^>]*>([\s\S]*?)<\/style\s*>/gi;
   let m;
   while ((m = styleTagRe.exec(cleaned))) {
     const bodyStart = m.index + m[0].indexOf('>') + 1;
