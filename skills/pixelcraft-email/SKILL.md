@@ -55,4 +55,5 @@ Email can be inspected only by rendering across real clients or preview services
 - Read [references/html-tables.md](references/html-tables.md) for hand-authored table-based HTML email.
 - Read [references/mjml.md](references/mjml.md) for MJML.
 - Read [references/react-email.md](references/react-email.md) for React Email.
+- Read [references/maizzle.md](references/maizzle.md) for Maizzle (Tailwind CSS email build pipeline, inlining, purging, and Outlook parity).
 - Read [references/client-quirks.md](references/client-quirks.md) whenever targeting Outlook, Gmail, Apple Mail, dark mode, image blocking, clipping, or plaintext behavior.

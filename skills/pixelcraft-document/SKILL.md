@@ -20,6 +20,7 @@ Build a reading sequence around repeated headers, explicit units and page bounda
 - Read [references/pdf-tools.md](references/pdf-tools.md) for Paged.js, WeasyPrint, React-PDF, Typst, and LaTeX selection plus exact integration constraints.
 - Read [references/archetypes.md](references/archetypes.md) for invoice, report, and CV/résumé composition rules.
 - Read [references/slides.md](references/slides.md) for Slidev, reveal.js, Marp, Keynote-style slide craft, safe areas, type scale, and export verification.
+- Read [references/pdfjs-and-pptx.md](references/pdfjs-and-pptx.md) when embedding client-side PDF viewers (`pdfjs-dist` worker, `TextLayer`, cancellation) or generating programmatic PowerPoint decks (`pptxgenjs`).
 
 ## Required workflow
 

@@ -1,0 +1,53 @@
+{
+  "schemaVersion": 1,
+  "id": "pdfjs-and-pptx",
+  "skill": "pixelcraft-document",
+  "title": "Build accessible PDF.js viewers and master-based PptxGenJS decks cleanly",
+  "contextSnapshot": {
+    "surface": "in-app PDF contract viewer and programmatic executive PPTX report exporter",
+    "platform": "Web (pdfjs-dist) + Node/Browser (pptxgenjs)",
+    "mode": "Operate",
+    "states": ["worker PDF load", "rapid zoom/page switch", "selectable text layer", "16x9 master slide export"],
+    "constraints": ["no main-thread PDF parsing", "accessible selectable PDF text", "native editable PPTX tables/text"]
+  },
+  "prompt": "Implement an in-browser PDF.js viewer with selectable text and clean teardown, plus a PptxGenJS exporter for 16:9 executive decks.",
+  "expectedRouting": ["pixelcraft-document", "references/pdfjs-and-pptx.md", "references/slides.md"],
+  "forbiddenBehaviors": [
+    "omits GlobalWorkerOptions.workerSrc or loadingTask.destroy() in PDF.js",
+    "renders only a PDF.js canvas with no TextLayer so text cannot be selected or read by assistive tech",
+    "flattens entire PptxGenJS slides into raster PNG images instead of native addText/addTable objects"
+  ],
+  "rubricDimensions": [
+    {
+      "dimension": "PDF.js worker and lifecycle safety",
+      "pass": "configures GlobalWorkerOptions.workerSrc, cancels superseded RenderTasks, renders TextLayer for selection/a11y, and calls loadingTask.destroy() on unmount",
+      "fail": "parses PDFs on the main thread, races concurrent canvas renders, or leaks workers"
+    },
+    {
+      "dimension": "PptxGenJS deck craft",
+      "pass": "configures LAYOUT_16x9 and defineSlideMaster, uses native addText/addTable in inches, and passes { fileName } to writeFile()",
+      "fail": "embeds full-slide screenshots or uses deprecated string writeFile() without master layouts"
+    },
+    {
+      "dimension": "artifact verification",
+      "pass": "checks rendered HiDPI/text-layer behavior in browser and inspects exported .pptx in PowerPoint/Impress",
+      "fail": "assumes code compilation proves visual slide or PDF legibility"
+    }
+  ],
+  "negativeControls": [
+    {
+      "name": "canvas-only pdf viewer",
+      "input": "render PDF.js pages onto <canvas> with no TextLayer and no loadingTask.destroy()",
+      "mustNot": "approve canvas-only PDF rendering without TextLayer or destroy cleanup"
+    },
+    {
+      "name": "screenshot pptx slides",
+      "input": "capture DOM slides with html2canvas and insert each as a full-bleed addImage() in PptxGenJS",
+      "mustNot": "recommend flattening editable PPTX decks into full-slide PNG screenshots"
+    }
+  ],
+  "baseline": {
+    "withoutSkill": "runs PDF.js without worker/cleanup/TextLayer and exports uneditable screenshot-based PPTX slides",
+    "withSkill": "wires PDF.js worker, RenderTask cancellation, TextLayer, and loadingTask.destroy() alongside native master-driven PptxGenJS decks"
+  }
+}

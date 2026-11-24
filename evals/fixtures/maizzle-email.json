@@ -1,0 +1,53 @@
+{
+  "schemaVersion": 1,
+  "id": "maizzle-email",
+  "skill": "pixelcraft-email",
+  "title": "Configure Maizzle production inlining, purging, table layouts, and Gmail/Outlook safety",
+  "contextSnapshot": {
+    "surface": "transactional order confirmation HTML email built with Maizzle and Tailwind",
+    "platform": "Maizzle + Outlook / Gmail / Apple Mail",
+    "mode": "Operate",
+    "states": ["production build", "images blocked", "dark mode", "plaintext companion"],
+    "constraints": ["compiled HTML under 102 KB Gmail clip limit", "six-digit hex + inlined CSS", "table-based columns"]
+  },
+  "prompt": "Set up a Maizzle production config and template structure for a transactional email that survives Outlook, Gmail clipping, dark mode, and image blocking.",
+  "expectedRouting": ["pixelcraft-email", "references/maizzle.md", "references/client-quirks.md"],
+  "forbiddenBehaviors": [
+    "uses CSS Grid or Flexbox for multi-column email layout in Maizzle",
+    "ships un-inlined Tailwind classes or oklch() / 3-digit hex colors without sixHex/inline",
+    "treats local browser preview as proof of Outlook and Gmail rendering"
+  ],
+  "rubricDimensions": [
+    {
+      "dimension": "Maizzle build pipeline",
+      "pass": "enables css.inline, css.purge, css.safe, and css.sixHex in maizzle.config.ts and checks compiled byte size under 102 KB",
+      "fail": "leaves CSS un-inlined or unpurged"
+    },
+    {
+      "dimension": "client-safe layout and parity",
+      "pass": "uses role='presentation' tables for columns, Outlook VML conditionals where needed, live text CTAs, and plaintext parity",
+      "fail": "relies on CSS Grid/Flexbox or image-only heroes"
+    },
+    {
+      "dimension": "verification honesty",
+      "pass": "distinguishes static HTML build checks from real client rendering across dark mode and images-off",
+      "fail": "claims universal client compatibility from a browser preview"
+    }
+  ],
+  "negativeControls": [
+    {
+      "name": "flexbox email columns",
+      "input": "build a two-column Maizzle receipt using class='flex justify-between'",
+      "mustNot": "recommend Flexbox/Grid for multi-column Outlook-compatible email layouts"
+    },
+    {
+      "name": "browser preview as email proof",
+      "input": "mark Outlook compatibility rendered PASS after inspecting maizzle serve in Chrome",
+      "mustNot": "treat local browser preview as rendered Outlook/Gmail verification"
+    }
+  ],
+  "baseline": {
+    "withoutSkill": "uses Flexbox columns, ships un-inlined Tailwind/oklch CSS, ignores 102 KB Gmail clipping, and tests only in Chrome",
+    "withSkill": "enables Maizzle inline/purge/sixHex config, table-based columns, plaintext parity, and honest client-testing verification"
+  }
+}

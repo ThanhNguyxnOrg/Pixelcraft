@@ -58,3 +58,4 @@ TUI rendering can be inspected with actual terminal runs, framework test backend
 - Read [references/ink.md](references/ink.md) for Ink/React terminal UI.
 - Read [references/bubbletea-lipgloss.md](references/bubbletea-lipgloss.md) for Bubble Tea/Lip Gloss Go TUI.
 - Read [references/ratatui.md](references/ratatui.md) for Rust Ratatui.
+- Read [references/extended-tui-toolkits.md](references/extended-tui-toolkits.md) for .NET Terminal.Gui, Spectre.Console, and Python prompt_toolkit REPL/CLI interfaces.

@@ -65,3 +65,4 @@ DOM-backed frameworks can often be inspected in browser when the app runs, but v
 - Read [references/julia-genie.md](references/julia-genie.md) for Julia Genie/Stipple data apps.
 - Read [references/observable-framework.md](references/observable-framework.md) for Observable Framework dashboards/data documents.
 - Read [references/evidence.md](references/evidence.md) for Evidence SQL/Markdown BI reports and data products.
+- Read [references/reactive-data-apps.md](references/reactive-data-apps.md) for reactive Python data apps and notebooks (marimo, Solara, Mesop, Taipy).

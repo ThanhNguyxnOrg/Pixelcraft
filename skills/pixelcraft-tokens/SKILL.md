@@ -17,6 +17,7 @@ Tokens are design decisions in portable form. They encode hierarchy and semantic
 - Read [references/state-tokens.md](references/state-tokens.md) whenever defining interactive control states or validating state coverage across modes.
 - Read [references/governance.md](references/governance.md) before renaming, removing, versioning, deprecating, or meaningfully redefining tokens.
 - Read [references/adoption.md](references/adoption.md) when migrating consumers, inventorying hardcoded values, or improving documentation/usage of an existing system.
+- Read [references/token-tooling.md](references/token-tooling.md) when setting up Style Dictionary v4, Tokens Studio transforms, Figma Variables pipelines, or Figma Code Connect (`*.figma.tsx`) mappings.
 - Use [assets/tokens.example.json](assets/tokens.example.json) as the canonical small example and [assets/tokens.modes.example.json](assets/tokens.modes.example.json) for mode overrides.
 - Run `node scripts/export-tokens.mjs --help` for exporter usage. The exporter supports `css`, `tailwind`, `swift`, `kotlin`, `dart`, `python`, `qt`, and `textual`.
 
