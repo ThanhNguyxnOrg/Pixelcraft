@@ -33,3 +33,19 @@ jobs:
         env:
           GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
         run: gh release create "${GITHUB_REF_NAME}" dist/pixelcraft-skills.zip dist/pixelcraft-skills.tar.gz --generate-notes
+
+  npm:
+    needs: package
+    if: github.repository == 'ThanhNguyxnOrg/Pixelcraft' && vars.PIXELCRAFT_NPM_APPROVED_TAG == github.ref_name
+    permissions:
+      contents: read
+      id-token: write
+    uses: ThanhNguyxnOrg/.github/.github/workflows/publish-npm.yml@release-v1
+    with:
+      node_version: '24'
+      node_version_file: ''
+      cache: ''
+      install_command: ''
+      verify_command: npm run validate && npm run test:distribution -- --release
+    secrets:
+      NPM_TOKEN: ${{ secrets.NPM_TOKEN }}

@@ -68,6 +68,13 @@
 - Accessibility/legal floor specifics:
 - Localization scope:
 
+## Adaptive UI by device or window class
+| Class, sample size/aspect, input | Navigation, density, controls and reach | Task/data/state to preserve | Runtime, acceptance check, evidence/status |
+|---|---|---|---|
+|  |  |  |  |
+
+For responsive web, consider small and large phone portrait, phone landscape, tablet portrait and landscape, foldable or split pane, laptop, desktop, ultrawide and short-height. Record applicable cases or a product-specific reason for exclusion; tool unavailability is `not-checked`. Choose sizes at content/layout transitions, not from user-agent names. For other resizable surfaces use the corresponding platform geometry and inputs.
+
 ## Design-system authority
 - Existing authoritative decisions:
 - Partial/inconsistent/missing areas:

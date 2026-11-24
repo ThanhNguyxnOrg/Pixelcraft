@@ -1,5 +1,11 @@
 # pixelcraft-visual-qa evaluation cases
 
+## Case — a dashboard fits three widths but fails by height and input
+
+Verify a sortable orders workspace. The desktop table and sidebar work with a pointer, but a touch user cannot open row actions; a sticky footer covers the active field in landscape with the keyboard open; resizing clears the draft. The portrait and desktop screenshots look polished.
+
+Pass: record distinct touch and pointer/keyboard compositions and preserved semantics in the plan; execute the same order task at the applicable sizes including landscape and short height and during resize. Keep sorting, labels and draft state reachable. Fail if the agent just shrinks the table, hides useful fields or actions, or reports PASS from three static width captures.
+
 ## Case — attractive capture hides motion, latency, or input failures
 
 Compare two versions of a responsive product demo, where the more expressive version increases initial payload and relies on an animation to reveal essential text. Repeat for a controller HUD with muted color and a native window with keyboard-only input.

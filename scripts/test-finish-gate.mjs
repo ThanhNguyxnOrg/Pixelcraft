@@ -16,10 +16,16 @@ const excluded = { applies: false, reason: 'Interface has no animation or altern
 const manifest = {
   schemaVersion: 1, surface: 'responsive-web', target: '/search', revision: 'abc', task: 'Search products', fixture: 'local sandbox',
   applicability: { error: true, empty: true, loading: true, theme: excluded, 'reduced-motion': excluded, 'reflow-320': true },
+  layoutMatrix: {
+    'layout-landscape': { width: 844, height: 390 },
+    'layout-short-height': { width: 1280, height: 480 },
+  },
   checks: {
     outcome: { ...evidence, assertion: 'Results refresh to one matching item' },
     input: { ...evidence, modality: 'keyboard', focus: 'Tab visibly focuses search, then submit' },
     ...Object.fromEntries([390, 768, 1440].map((width) => [`width-${width}`, { ...evidence, width }])),
+    'layout-landscape': { ...evidence, width: 844, height: 390 },
+    'layout-short-height': { ...evidence, width: 1280, height: 480, artifact: 'before.txt' },
     'reflow-320': { ...evidence, width: 320 }, error: evidence, empty: evidence, loading: evidence,
   },
   rounds: [],
@@ -33,7 +39,7 @@ assert.deepEqual(Object.keys(unchecked.notChecked), ['outcome', 'input', 'loadin
 assert.equal(unchecked.notChecked.loading, 'Sandbox offline');
 assert.equal(evaluateEvidence({ ...manifest, applicability: {} }, hasArtifact).status, 'NOT CHECKED');
 assert.equal(evaluateEvidence({ ...manifest, checks: { ...manifest.checks, error: { ...evidence, artifact: 'missing' } } }, hasArtifact).status, 'NOT CHECKED');
-assert.equal(evaluateEvidence({ ...manifest, surface: 'other', checks: { outcome: manifest.checks.outcome, layout: evidence, input: { ...evidence, focus: 'controller focus ring' }, error: evidence, empty: evidence, loading: evidence } }, hasArtifact).status, 'PASS');
+assert.equal(evaluateEvidence({ ...manifest, surface: 'other', layoutMatrix: undefined, checks: { outcome: manifest.checks.outcome, layout: evidence, input: { ...evidence, focus: 'controller focus ring' }, error: evidence, empty: evidence, loading: evidence } }, hasArtifact).status, 'PASS');
 console.log('ok 1 - finish gate requires task, focus, responsive and applicable state evidence');
 
 const failed = { ...manifest, checks: { ...manifest.checks, 'critical-overflow': { ...evidence, result: 'fail' } } };
@@ -97,3 +103,46 @@ const malformedWidth = evaluateEvidence({ ...manifest, checks: { ...manifest.che
 assert.equal(malformedWidth.status, 'NOT CHECKED');
 assert.ok(malformedWidth.notChecked['width-390px-submit']);
 console.log('ok 5 - malformed width IDs cannot bypass viewport validation');
+
+const adaptive = { ...manifest, layoutMatrix: { ...manifest.layoutMatrix, 'layout-ultrawide': { width: 2560, height: 1080 } } };
+const omittedMatrix = evaluateEvidence({ ...manifest, layoutMatrix: undefined }, hasArtifact);
+assert.equal(omittedMatrix.status, 'NOT CHECKED');
+assert.deepEqual(Object.keys(omittedMatrix.notChecked), ['layout-landscape', 'layout-short-height']);
+const uncheckedClass = evaluateEvidence(adaptive, hasArtifact);
+assert.equal(uncheckedClass.status, 'NOT CHECKED');
+assert.ok(uncheckedClass.notChecked['layout-ultrawide']);
+const wrongHeight = evaluateEvidence({ ...manifest, checks: {
+  ...manifest.checks, 'layout-short-height': { ...manifest.checks['layout-short-height'], height: 900 },
+} }, hasArtifact);
+assert.equal(wrongHeight.status, 'NOT CHECKED');
+assert.ok(wrongHeight.notChecked['layout-short-height']);
+const excludedClass = evaluateEvidence({ ...adaptive, layoutMatrix: {
+  ...adaptive.layoutMatrix, 'layout-ultrawide': { applies: false, reason: 'This product is limited to the embedded host window' },
+} }, hasArtifact);
+assert.equal(excludedClass.status, 'PASS');
+assert.ok(excludedClass.notApplicable['layout-ultrawide']);
+console.log('ok 6 - responsive evidence requires landscape, short height, and every declared layout at matching dimensions');
+
+const desktop = { ...manifest.checks['width-1440'], height: 900 };
+const desktopAsShort = evaluateEvidence({
+  ...manifest,
+  layoutMatrix: { ...manifest.layoutMatrix, 'layout-short-height': { width: 1440, height: 900 } },
+  checks: { ...manifest.checks, 'width-1440': desktop, 'layout-short-height': desktop },
+}, hasArtifact);
+assert.equal(desktopAsShort.status, 'NOT CHECKED');
+assert.match(desktopAsShort.notChecked['layout-short-height'], /below 600 CSS px/);
+for (const [height, status] of [[600, 'NOT CHECKED'], [599, 'PASS']]) {
+  const atBoundary = evaluateEvidence({
+    ...manifest,
+    layoutMatrix: { ...manifest.layoutMatrix, 'layout-short-height': { width: 1440, height } },
+    checks: { ...manifest.checks, 'layout-short-height': { ...manifest.checks['layout-short-height'], width: 1440, height } },
+  }, hasArtifact);
+  assert.equal(atBoundary.status, status);
+}
+const reusesDesktopArtifact = evaluateEvidence({
+  ...manifest,
+  checks: { ...manifest.checks, 'layout-short-height': { ...manifest.checks['layout-short-height'], artifact: './evidence.txt' } },
+}, (artifact) => hasArtifact(artifact.replace(/^\.\//, '')));
+assert.equal(reusesDesktopArtifact.status, 'NOT CHECKED');
+assert.match(reusesDesktopArtifact.notChecked['layout-short-height'], /separate artifact/);
+console.log('ok 7 - regular desktop evidence cannot satisfy the short-height check');

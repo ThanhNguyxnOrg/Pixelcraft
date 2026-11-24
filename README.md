@@ -157,8 +157,8 @@ Installer agent names are `claude`, `codex`, `agents`, `devin`, `cursor`, `gemin
 | Gemini CLI | `.gemini/skills` | `~/.gemini/skills` | Native skills only |
 | GitHub Copilot | `.github/skills` | `~/.copilot/skills` | Native skills plus instruction/prompt adapter files |
 | OpenCode | `.opencode/skills` | `~/.config/opencode/skills` | Native skills only |
-| Windsurf | `.windsurf` | `~/.codeium/windsurf` | Adapter-only skill payload under `skills/` plus rules/memory and workflow routers |
-| Kiro | `.kiro` | `~/.kiro` | Adapter-only skill payload under `pixelcraft/skills` plus steering router |
+| Windsurf | `.windsurf` | `~/.codeium/windsurf` | Native skills under `skills/` plus rules/memory and workflow routers |
+| Kiro | `.kiro` | `~/.kiro` | Bundled steering adapter; see the native Power option below |
 
 `--agent all` installs every target and deduplicates shared `.agents/skills` destinations.
 
@@ -175,10 +175,12 @@ npx skills add ThanhNguyxnOrg/Pixelcraft
 A non-interactive selection uses its documented flags, for example:
 
 ```bash
-npx skills add ThanhNguyxnOrg/Pixelcraft --skill pixelcraft-web -a claude-code
+npx skills add ThanhNguyxnOrg/Pixelcraft --skill pixelcraft --skill pixelcraft-plan --skill pixelcraft-web -a claude-code
 ```
 
 Add `-g` for user-level installation. That CLI owns its own detection behavior and supports more agents than Pixelcraft's bundled installer.
+
+Discover the pack with `npx skills add ThanhNguyxnOrg/Pixelcraft --list`. The [skills.sh leaderboard](https://www.skills.sh/docs/faq) is driven by install telemetry from its CLI, not a separate npm publish step. Use `DISABLE_TELEMETRY=1` for a telemetry-free smoke check. A working Git install does not by itself prove a public listing.
 
 ### Claude Code plugin marketplace
 
@@ -189,7 +191,25 @@ Inside Claude Code, add the repository as a marketplace and install the plugin. 
 /plugin install pixelcraft@pixelcraft
 ```
 
-The equivalent shell commands are `claude plugin marketplace add ThanhNguyxnOrg/Pixelcraft` and `claude plugin install pixelcraft@pixelcraft`.
+The equivalent shell commands are `claude plugin marketplace add ThanhNguyxnOrg/Pixelcraft` and `claude plugin install pixelcraft@pixelcraft`. In Claude Desktop/Cowork, enter `ThanhNguyxnOrg/Pixelcraft` in **Plugins → Add marketplace**. Claude Code CLI marketplace validation and install were verified locally; Desktop/Cowork sync is `not-checked`.
+
+### Native host installation without npx
+
+The same canonical `skills/` tree is used by the manifests; no copy of the skill bodies is maintained. “Not checked” means the host path is documented but was not exercised in its client. None of the marketplace or gallery options below imply that Pixelcraft has been submitted to a public host catalog.
+
+| Host | Installation | Status |
+|---|---|---|
+| [Claude Code / Desktop](https://code.claude.com/docs/en/plugins/marketplace-reference) | Marketplace commands above; the repository has a dedicated `.claude-plugin/plugin.json`. | CLI install checked; Desktop/Cowork not checked. |
+| [Cursor](https://cursor.com/docs/reference/plugins) | Use the bundled Cursor installer, or for local plugin testing place `plugin.json` and `skills/` under `~/.cursor/plugins/local/pixelcraft/`. The root manifest is also suitable for Cursor marketplaces. | Plugin loading in Cursor not checked. |
+| [OpenCode](https://opencode.ai/docs/skills/) | Use the bundled installer with `--agent opencode` or add the checkout's `skills/` path to OpenCode's `skills` config. This is a skills pack, not an executable OpenCode plugin. | Installer placement checked; client discovery not checked. |
+| [Pi](https://docs.pi.dev/latest/packages) | `pi install git:github.com/ThanhNguyxnOrg/Pixelcraft` (or `pi install ./Pixelcraft` from a local clone's parent). | Local package install checked. |
+| [Codex](https://developers.openai.com/plugins/build/plugins#package-and-distribute-plugins) | `codex plugin marketplace add ThanhNguyxnOrg/Pixelcraft`, then select Pixelcraft in the plugin UI. The bundled `--agent codex` skill install still works without a marketplace. | Local catalog registration checked; UI install not checked. |
+| [Gemini CLI](https://geminicli.com/docs/extensions/reference/) | `gemini extensions install https://github.com/ThanhNguyxnOrg/Pixelcraft` and restart the session. | Local extension install checked. |
+| [GitHub Copilot CLI](https://docs.github.com/en/copilot/how-tos/copilot-cli/customize-copilot/plugins-finding-installing) | `copilot plugin marketplace add ThanhNguyxnOrg/Pixelcraft`, then `copilot plugin install pixelcraft@pixelcraft`. | Local catalog and plugin install checked. |
+| [Windsurf Cascade](https://docs.windsurf.com/fr/windsurf/cascade/skills) | Use the bundled installer with `--agent windsurf` or copy into the client's supported skills directory. | Installer placement checked; client discovery not checked. |
+| [Kiro](https://kiro.dev/docs/powers/installation/) | **Powers → Add Custom Power → Import from a repository URL** and enter `https://github.com/ThanhNguyxnOrg/Pixelcraft`. For a local test, import the checkout as a folder. | Power import and activation not checked. |
+| [Amp](https://ampcode.com/docs/customize/skills) | `amp skill add https://github.com/ThanhNguyxnOrg/Pixelcraft` or use the bundled project's `.agents/skills` install. No executable Amp plugin required. | Client discovery not checked. |
+| [skills.sh](https://www.skills.sh/docs/cli) | The cross-agent Git discovery command above; no Pixelcraft npm package required. | Local discovery of the full skill pack checked; public listing not checked. |
 
 ### curl/bash installer without Node.js
 
@@ -236,6 +256,19 @@ gh release download <tag> --repo ThanhNguyxnOrg/Pixelcraft --pattern pixelcraft-
 ```
 
 Each archive contains canonical `skills/` plus generated `adapters/`. Either copy a canonical `skills/<name>` directory into a verified target or copy the matching generated project-root fragment from `adapters/<agent>/`.
+
+### npm package (pending the first approved release)
+
+After `@thanhnguyxnorg/pixelcraft` is publicly available, install the CLI without `npx`:
+
+```bash
+npm install -g @thanhnguyxnorg/pixelcraft
+pixelcraft add all --agent cursor
+```
+
+Pi can then also install it with `pi install npm:@thanhnguyxnorg/pixelcraft`. Until release, use the Git-based or local installers above.
+
+Maintainers: use `npm run test:distribution` to inspect the package without publishing. The tag workflow calls the org's reusable npm publisher with provenance only if `PIXELCRAFT_NPM_APPROVED_TAG` matches the exact tag and the GitHub Release job succeeds. After explicit release approval, confirm npm scope ownership and grant the org's `NPM_TOKEN` publish access to this package and GitHub repository, set the repository variable to the approved `v<package.json version>`, and push that tag from the approved revision. Clear the variable after release.
 
 ### Manual git clone/copy
 
