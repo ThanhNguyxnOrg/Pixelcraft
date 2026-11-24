@@ -359,8 +359,8 @@ export function MotionDemos() {
                   Explore before you commit.
                 </h3>
                 <p className="mt-2 max-w-[43ch] text-sm leading-relaxed text-ink-muted">
-                  Different type, rhythm and composition. Three fictional coffee
-                  sketches, not three recolors.
+                  Three fictional sketches: data-led paper, dark editorial, and
+                  bold mint. The study selects bold mint.
                 </p>
               </div>
             </div>
