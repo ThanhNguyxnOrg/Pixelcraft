@@ -1,5 +1,6 @@
 import { useEffect, useRef } from "react";
 import {
+  AGENT_TARGET_COUNT,
   NPM_PKG,
   REPO_URL,
   SKILLS,
@@ -31,7 +32,7 @@ function StackTicker() {
     mm.add(MOTION_OK, () => {
       tween.current = gsap.to(track.current, {
         xPercent: -50,
-        duration: 64,
+        duration: Math.max(64, Math.round(STACKS.length * 1.4)),
         ease: "none",
         repeat: -1,
         paused: true,
@@ -364,7 +365,7 @@ export function Hero() {
             [SKILLS.length, "skills"],
             [TOTAL_REFERENCES, "reference files"],
             [TOTAL_SCRIPTS, "scripts that run"],
-            [14, "agent targets"],
+            [AGENT_TARGET_COUNT, "agent targets"],
           ].map(([n, l]) => (
             <div
               key={l}

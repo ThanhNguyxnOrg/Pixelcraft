@@ -1,0 +1,554 @@
+{
+  "version": "0.1.0",
+  "npmPkg": "@thanhnguyxn/pixelcraft",
+  "license": "MIT",
+  "repoUrl": "https://github.com/ThanhNguyxnOrg/Pixelcraft",
+  "totalSkills": 26,
+  "totalReferences": 229,
+  "totalScripts": 5,
+  "canonicalAgents": [
+    "claude",
+    "codex",
+    "agents",
+    "devin",
+    "cursor",
+    "gemini",
+    "copilot",
+    "windsurf",
+    "opencode",
+    "kiro",
+    "cline",
+    "roo",
+    "droid",
+    "antigravity"
+  ],
+  "agentTargetCount": 14,
+  "stacks": [
+    "React 19",
+    "Next.js",
+    "TanStack Start",
+    "React Router v7",
+    "Vue 3.5",
+    "Nuxt 4",
+    "Svelte 5",
+    "SolidJS",
+    "Angular Signals",
+    "Astro",
+    "Qwik",
+    "htmx",
+    "Alpine.js",
+    "Lit",
+    "Web Components",
+    "Tailwind v4",
+    "Panda CSS",
+    "vanilla-extract",
+    "StyleX",
+    "UnoCSS",
+    "Base UI",
+    "Radix UI",
+    "React Aria",
+    "shadcn/ui",
+    "TanStack Query",
+    "Zustand",
+    "XState",
+    "TanStack Form",
+    "React Hook Form",
+    "Zod",
+    "Vite 8 / Rolldown",
+    "Rsbuild",
+    "Serwist",
+    "Storybook",
+    "Vitest Browser",
+    "Playwright",
+    "Tiptap",
+    "Lexical",
+    "CodeMirror 6",
+    "Monaco",
+    "React Flow",
+    "tldraw",
+    "Konva",
+    "TanStack Table",
+    "AG Grid",
+    "FullCalendar",
+    "Yjs",
+    "Automerge",
+    "Liveblocks",
+    "i18next",
+    "FormatJS",
+    "Lingui",
+    "Paraglide",
+    "Rails / Hotwire",
+    "Laravel Livewire",
+    "Django",
+    "Phoenix LiveView",
+    "Blazor",
+    "SwiftUI",
+    "Jetpack Compose",
+    "Flutter",
+    "React Native / Expo",
+    "LynxJS",
+    "Kotlin Multiplatform",
+    ".NET MAUI",
+    "marimo",
+    "Solara",
+    "Mesop",
+    "Streamlit",
+    "Gradio",
+    "Tauri v2",
+    "Electron",
+    "Qt / QML",
+    "WinUI / WPF",
+    "GTK",
+    "GPUI",
+    "Slint",
+    "egui",
+    "Textual",
+    "Ink",
+    "Ratatui",
+    "Bubble Tea",
+    "Spectre.Console",
+    "Terminal.Gui",
+    "MJML",
+    "React Email",
+    "Maizzle",
+    "MapLibre",
+    "deck.gl",
+    "CesiumJS",
+    "Babylon.js",
+    "Threlte",
+    "TresJS",
+    "Vercel AI SDK",
+    "assistant-ui",
+    "CopilotKit",
+    "Unity UI Toolkit",
+    "Godot",
+    "Unreal UMG",
+    "Bevy",
+    "Style Dictionary",
+    "Figma Code Connect"
+  ],
+  "skills": [
+    {
+      "name": "pixelcraft",
+      "category": "Core",
+      "purpose": "Orchestrates distinctive, evidence-verified UI work across any frontend stack.",
+      "references": [
+        "design-brief",
+        "floor",
+        "report-template",
+        "stack-detection",
+        "surface-acceptance",
+        "workflow-checkpoints"
+      ]
+    },
+    {
+      "name": "pixelcraft-plan",
+      "category": "Core",
+      "purpose": "Plans greenfield and brownfield UI work, selects platforms and technology stacks, and produces the .pixelcraft/plan.md consumed by later Pixelcraft skills.",
+      "references": [
+        "design-input",
+        "discovery-interview",
+        "plan-template",
+        "repo-discovery",
+        "stack-freshness",
+        "stack-selection"
+      ]
+    },
+    {
+      "name": "pixelcraft-direction",
+      "category": "Core",
+      "purpose": "Generates distinctive visual direction without template collapse.",
+      "references": [
+        "composition-library",
+        "direction-card",
+        "direction-scoring",
+        "motion-identity",
+        "movements",
+        "reference-analysis",
+        "repetition-history",
+        "slop-fingerprints",
+        "wildcards"
+      ]
+    },
+    {
+      "name": "pixelcraft-craft",
+      "category": "System",
+      "purpose": "Applies high-craft visual design decisions across platforms.",
+      "references": [
+        "color",
+        "imagery-icons",
+        "layout-quality",
+        "layout",
+        "motion",
+        "typography"
+      ]
+    },
+    {
+      "name": "pixelcraft-tokens",
+      "category": "System",
+      "purpose": "Creates and exports cross-platform design tokens in the W3C Design Tokens Community Group 2025.10 format.",
+      "references": [
+        "adoption",
+        "format",
+        "governance",
+        "state-tokens",
+        "theme-presets",
+        "token-tooling"
+      ],
+      "scripts": [
+        "export-tokens.mjs"
+      ]
+    },
+    {
+      "name": "pixelcraft-ux",
+      "category": "System",
+      "purpose": "Designs rigorous user experience before and during implementation.",
+      "references": [
+        "cognitive-walkthrough",
+        "feedback-performance",
+        "flows-ia",
+        "forms",
+        "i18n",
+        "laws",
+        "locale-test-matrix",
+        "state-matrix",
+        "usability-testing",
+        "ux-writing"
+      ]
+    },
+    {
+      "name": "pixelcraft-patterns",
+      "category": "System",
+      "purpose": "Applies surface-independent product UX patterns without collapsing into generic templates.",
+      "references": [
+        "accessibility-resilience",
+        "auth-onboarding",
+        "command-workspace",
+        "commerce",
+        "communication",
+        "creative-tools",
+        "creative-web-composition",
+        "dashboard-admin",
+        "marketing",
+        "narrative-systems",
+        "pattern-selection",
+        "scroll-implementation",
+        "search-filtering",
+        "settings",
+        "tables-crud"
+      ]
+    },
+    {
+      "name": "pixelcraft-dataviz",
+      "category": "System",
+      "purpose": "Designs and verifies truthful, legible, accessible data visualization across any frontend stack.",
+      "references": [
+        "chart-choice",
+        "color-accessibility",
+        "encoding-tables-dashboards",
+        "libraries",
+        "maps-geospatial",
+        "realtime-graphs-maps-scale"
+      ]
+    },
+    {
+      "name": "pixelcraft-accessibility",
+      "category": "System",
+      "purpose": "Applies and verifies the accessibility floor across platforms.",
+      "references": [
+        "apg-patterns",
+        "motion-canvas",
+        "platforms",
+        "verification",
+        "wcag22-checks"
+      ]
+    },
+    {
+      "name": "pixelcraft-brandkit",
+      "category": "System",
+      "purpose": "Creates premium brand-kit and identity-board image generation briefs for brand kits, logo systems, brand guidelines, moodboards, identity decks, visual-world presentations, launch identities, logo concepts, palette/type systems, and implementation-ready brand direction.",
+      "references": [
+        "asset-pipeline",
+        "brand-governance",
+        "layouts",
+        "logo-concepting",
+        "logo-methods",
+        "pixel-art-logos",
+        "prompt-template",
+        "qa-checklist",
+        "visual-modes"
+      ]
+    },
+    {
+      "name": "pixelcraft-web",
+      "category": "Platforms",
+      "purpose": "Translates Pixelcraft direction, tokens, UX, and floor requirements into idiomatic web UI across HTML/CSS, React/Next, Vue/Nuxt, Svelte, Solid, Angular, Astro, Qwik, htmx/Alpine, Lit, Tailwind, server-rendered stacks, Rust/Leptos/Yew, Kotlin web, Elm, ClojureScript, F#/Fable, Scala/Laminar, and Java web.",
+      "references": [
+        "accessibility-performance",
+        "adaptive-layout",
+        "angular",
+        "assets-pipeline",
+        "astro",
+        "audio-reactive",
+        "auth-and-checkout-ui",
+        "build-and-architecture",
+        "canvas-and-node-editors",
+        "clojurescript",
+        "component-systems",
+        "component-testing",
+        "creative-effects",
+        "creative-runtime",
+        "elm",
+        "enterprise-data-ui",
+        "file-upload-media-ui",
+        "forms-validation",
+        "fsharp-fable",
+        "gsap",
+        "html-css",
+        "htmx-alpine",
+        "i18n-engineering",
+        "java-web",
+        "kotlin-web",
+        "leptos-yew",
+        "lit-web-components",
+        "local-first-sync",
+        "motion-react",
+        "motion-recipes",
+        "pwa",
+        "qwik",
+        "r3f-integration",
+        "react-next",
+        "rendering-choice",
+        "rendering-performance",
+        "rich-text-and-code-editors",
+        "rive-lottie",
+        "scala-laminar",
+        "scene-architecture",
+        "server-rendered",
+        "shader-workflow",
+        "smooth-scroll",
+        "solid",
+        "state-architecture",
+        "styling-ecosystem",
+        "svelte",
+        "tailwind",
+        "video-media",
+        "vue-nuxt"
+      ]
+    },
+    {
+      "name": "pixelcraft-mobile",
+      "category": "Platforms",
+      "purpose": "Translates Pixelcraft direction, tokens, UX, and floor requirements into idiomatic mobile UI across SwiftUI, UIKit, Jetpack Compose, Flutter, React Native/Expo, Kotlin Multiplatform, Ionic/Capacitor, .NET MAUI, Flet, and Kivy.",
+      "references": [
+        "dotnet-maui",
+        "flet",
+        "flutter",
+        "ionic-capacitor",
+        "jetpack-compose",
+        "kivy",
+        "kotlin-multiplatform",
+        "lynxjs",
+        "react-native-expo",
+        "swiftui",
+        "tactile-interactions",
+        "task-state-composition",
+        "uikit"
+      ]
+    },
+    {
+      "name": "pixelcraft-data-apps",
+      "category": "Platforms",
+      "purpose": "Translates Pixelcraft direction, tokens, UX, and floor requirements into data applications, AI/ML demos, dashboards, notebooks, BI reports, and internal tools in any language.",
+      "references": [
+        "dash",
+        "evidence",
+        "gradio",
+        "julia-genie",
+        "jupyter-widgets",
+        "nicegui",
+        "observable-framework",
+        "panel",
+        "r-shiny",
+        "reactive-data-apps",
+        "reflex",
+        "shiny",
+        "streamlit"
+      ]
+    },
+    {
+      "name": "pixelcraft-desktop",
+      "category": "Platforms",
+      "purpose": "Translates Pixelcraft direction, tokens, UX, and floor requirements into desktop applications across Tauri, Electron, Qt/PySide/QML, WinUI/WPF, AppKit, GTK, Avalonia, Rust GUI, Java desktop, C++ GUI, Go GUI, and Uno Platform.",
+      "references": [
+        "appkit",
+        "avalonia",
+        "cpp-gui",
+        "electron",
+        "go-gui",
+        "gtk",
+        "javafx-swing",
+        "qt-pyside-qml",
+        "rust-gui",
+        "tauri",
+        "uno-platform",
+        "winui-wpf",
+        "working-context"
+      ]
+    },
+    {
+      "name": "pixelcraft-tui",
+      "category": "Platforms",
+      "purpose": "Translates Pixelcraft direction, tokens, UX, and floor requirements into terminal user interfaces across Textual, Rich, Ink, Bubble Tea/Lip Gloss, and Ratatui.",
+      "references": [
+        "bubbletea-lipgloss",
+        "extended-tui-toolkits",
+        "ink",
+        "ratatui",
+        "rich",
+        "textual"
+      ]
+    },
+    {
+      "name": "pixelcraft-extensions",
+      "category": "Platforms",
+      "purpose": "Designs and verifies host-constrained extension and plugin interfaces.",
+      "references": [
+        "browser-extensions",
+        "figma-office",
+        "raycast",
+        "vscode-webviews"
+      ]
+    },
+    {
+      "name": "pixelcraft-game-ui",
+      "category": "Platforms",
+      "purpose": "Translates Pixelcraft direction, tokens, UX, and floor requirements into game interfaces across Unity UI Toolkit, Godot Control/UI, Unreal UMG, LÖVE2D, Bevy, and MonoGame.",
+      "references": [
+        "bevy",
+        "godot",
+        "hud-principles",
+        "love2d",
+        "monogame",
+        "unity-ui-toolkit",
+        "unreal-umg"
+      ]
+    },
+    {
+      "name": "pixelcraft-spatial",
+      "category": "Platforms",
+      "purpose": "Designs and verifies embodied spatial, XR, VR, and AR interfaces across visionOS, WebXR, Meta Quest Interaction SDK, and Unity XR Interaction Toolkit.",
+      "references": [
+        "comfort-accessibility",
+        "platforms",
+        "web-3d-engines"
+      ]
+    },
+    {
+      "name": "pixelcraft-constrained",
+      "category": "Platforms",
+      "purpose": "Designs and verifies interfaces for constrained or nonstandard surfaces: TV/console/10-foot UI, D-pad/gamepad spatial navigation, watchOS/Wear OS wearables, e-ink displays, kiosks/self-service hardware, embedded LVGL/low-resolution screens, automotive CarPlay/Android Auto templates, and basic voice UI.",
+      "references": [
+        "specialized-hardware",
+        "tv-wearables",
+        "voice-ui"
+      ]
+    },
+    {
+      "name": "pixelcraft-email",
+      "category": "Channels",
+      "purpose": "Translates Pixelcraft direction, tokens, UX, and floor requirements into email that survives real clients.",
+      "references": [
+        "client-quirks",
+        "html-tables",
+        "maizzle",
+        "mjml",
+        "react-email"
+      ]
+    },
+    {
+      "name": "pixelcraft-document",
+      "category": "Channels",
+      "purpose": "Designs and verifies paginated documents, print output, reports, invoices, CVs, and slide decks across web and document tooling.",
+      "references": [
+        "archetypes",
+        "pdf-tools",
+        "pdfjs-and-pptx",
+        "print-css",
+        "slides"
+      ]
+    },
+    {
+      "name": "pixelcraft-media",
+      "category": "Channels",
+      "purpose": "Designs and verifies social cards, Open Graph/Twitter images, repository banners, SVG posters, video frames, and motion graphics for external platforms.",
+      "references": [
+        "banners-video",
+        "media-players",
+        "og-generation",
+        "social-cards"
+      ]
+    },
+    {
+      "name": "pixelcraft-chat-ui",
+      "category": "Channels",
+      "purpose": "Designs and verifies conversational and messaging-platform interfaces across Slack Block Kit, Discord components/embeds/modals, Telegram bots and Mini Apps, Zalo Mini Apps/ZaUI, WhatsApp interactive messages, and Microsoft Teams Adaptive Cards.",
+      "references": [
+        "agentic-workspace",
+        "ai-ui-libraries",
+        "conversation-design",
+        "mobile-business-platforms",
+        "slack-discord"
+      ]
+    },
+    {
+      "name": "pixelcraft-review",
+      "category": "Verify",
+      "purpose": "Audits, critiques, and polishes UI with evidence-backed findings.",
+      "references": [
+        "audit-report",
+        "critique-protocol",
+        "heuristics",
+        "personas",
+        "polish"
+      ],
+      "scripts": [
+        "slop-scan.mjs"
+      ]
+    },
+    {
+      "name": "pixelcraft-visual-qa",
+      "category": "Verify",
+      "purpose": "Verifies interfaces through rendered evidence using a render → screenshot → self-critique → fix loop.",
+      "references": [
+        "baseline-governance",
+        "capture-desktop-game",
+        "capture-email",
+        "capture-mobile",
+        "capture-terminal",
+        "critique-rubric",
+        "finish-gate",
+        "measured-craft",
+        "motion-capture",
+        "performance-budgets",
+        "realtime-graphics",
+        "task-verification"
+      ],
+      "scripts": [
+        "finish-gate.mjs",
+        "shoot.mjs",
+        "style-inventory.mjs"
+      ]
+    },
+    {
+      "name": "pixelcraft-handoff",
+      "category": "Verify",
+      "purpose": "Translates approved designs, Figma selections, screenshots, mockups, and design-system artifacts into faithful implementation without losing existing architecture.",
+      "references": [
+        "design-translation",
+        "fidelity-tolerance",
+        "motion-handoff"
+      ]
+    }
+  ]
+}
