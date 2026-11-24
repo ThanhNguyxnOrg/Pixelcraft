@@ -20,6 +20,7 @@ Let the message carry the essential meaning as text, then give the next relevant
 - Read [references/mobile-business-platforms.md](references/mobile-business-platforms.md) for Telegram bots/Mini Apps, Zalo Mini Apps/ZaUI, WhatsApp interactive messages, and Teams Adaptive Cards.
 - Read [references/conversation-design.md](references/conversation-design.md) for progressive disclosure, fallback text, ephemeral state, confirmations, accessibility, localization, privacy, and anti-slop conversation patterns.
 - Read [references/agentic-workspace.md](references/agentic-workspace.md) for AI-native streaming workspaces, scroll-yield behavior, collapsible tool/reasoning traces, split artifact panes, grounded citations, and approval gates.
+- Read [references/ai-ui-libraries.md](references/ai-ui-libraries.md) when implementing AI-native frontend UI libraries (Vercel AI SDK UI `useChat`/`message.parts`, `assistant-ui`, `CopilotKit` `useFrontendTool`/`useHumanInTheLoop`, or the `AG-UI` protocol).
 
 ## Required workflow
 

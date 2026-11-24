@@ -20,6 +20,7 @@ Start with the judgment the reader must make and expose its comparison baseline,
 - Read [references/encoding-tables-dashboards.md](references/encoding-tables-dashboards.md) for encoding hierarchy, axes, units, direct labeling, annotations, tables as visualization, and dashboard layout/density.
 - Read [references/color-accessibility.md](references/color-accessibility.md) for colorblind-safe palettes, redundant encodings, contrast, text alternatives, keyboard interaction, sonification boundaries, and reduced motion.
 - Read [references/realtime-graphs-maps-scale.md](references/realtime-graphs-maps-scale.md) for streaming updates, node graphs, maps, SVG/canvas/WebGL/3D scale decisions, and performance verification.
+- Read [references/maps-geospatial.md](references/maps-geospatial.md) when selecting or implementing mapping and geospatial engines (MapLibre GL JS, Mapbox GL JS, Leaflet, OpenLayers, CesiumJS, deck.gl, kepler.gl), interleaved GPU layers, or accessible map alternatives.
 - Read [references/libraries.md](references/libraries.md) when implementing in a specific charting library or language ecosystem.
 
 ## Required workflow

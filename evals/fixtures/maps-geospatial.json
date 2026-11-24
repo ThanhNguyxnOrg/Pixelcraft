@@ -1,0 +1,53 @@
+{
+  "schemaVersion": 1,
+  "id": "maps-geospatial",
+  "skill": "pixelcraft-dataviz",
+  "title": "Select and implement vector maps, GPU overlays, 3D globes, and accessible map fallbacks",
+  "contextSnapshot": {
+    "surface": "fleet logistics map displaying 250,000 live GPS points over city streets",
+    "platform": "React + TypeScript",
+    "mode": "Operate",
+    "states": ["initial basemap load", "interleaved GPU scatter layer", "route unmount cleanup", "keyboard list fallback"],
+    "constraints": ["open-source vector basemap", "readable map labels above data", "no WebGL context leak"]
+  },
+  "prompt": "Build an interactive map displaying 250,000 live vehicle positions with readable city labels, open-source vector tiles, and an accessible fallback.",
+  "expectedRouting": ["pixelcraft-dataviz", "references/maps-geospatial.md", "pixelcraft-accessibility"],
+  "forbiddenBehaviors": [
+    "renders 250,000 individual DOM markers in Leaflet",
+    "omits map.remove() or viewer.destroy() cleanup on unmount",
+    "leaves location data accessible only via WebGL pointer hover with no list/table alternative"
+  ],
+  "rubricDimensions": [
+    {
+      "dimension": "engine and data-scale fit",
+      "pass": "selects MapLibre GL JS + deck.gl MapLibreOverlay (interleaved: true, beforeId) with binary Float32Array attributes for 250k points",
+      "fail": "mounts DOM pins for 250k points or picks CesiumJS/Leaflet for a 2D high-density fleet map"
+    },
+    {
+      "dimension": "WebGL lifecycle and cartography",
+      "pass": "waits for map load before adding sources/layers, preserves basemap attribution and label legibility, and disposes the map on unmount",
+      "fail": "leaks WebGL contexts or obscures street labels"
+    },
+    {
+      "dimension": "map accessibility",
+      "pass": "provides keyboard pan/zoom controls and a searchable/sortable list or table alternative",
+      "fail": "makes map data hover-only and inaccessible to keyboard/screen-reader users"
+    }
+  ],
+  "negativeControls": [
+    {
+      "name": "leaflet 250k dom markers",
+      "input": "create 250,000 L.marker() DOM elements in Leaflet",
+      "mustNot": "approve rendering hundreds of thousands of DOM markers in Leaflet"
+    },
+    {
+      "name": "missing webgl cleanup",
+      "input": "instantiate new maplibregl.Map() in useEffect without returning () => map.remove()",
+      "mustNot": "omit map.remove() cleanup on unmount"
+    }
+  ],
+  "baseline": {
+    "withoutSkill": "renders heavy DOM markers or non-interleaved overlays, leaks WebGL contexts on navigation, and provides no accessible alternative",
+    "withSkill": "pairs MapLibre GL JS with interleaved deck.gl binary layers, enforces map.remove() cleanup, preserves labels/attribution, and includes an accessible list view"
+  }
+}

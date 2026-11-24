@@ -1,0 +1,53 @@
+{
+  "schemaVersion": 1,
+  "id": "local-first-sync",
+  "skill": "pixelcraft-web",
+  "title": "Select and implement local-first CRDT, realtime multiplayer, and offline sync engines safely",
+  "contextSnapshot": {
+    "surface": "offline-capable collaborative document and task workspace",
+    "platform": "Next.js / Vite + TypeScript",
+    "mode": "Operate",
+    "states": ["offline local edit", "reconnect merge", "multiplayer cursors", "per-user undo"],
+    "constraints": ["no lost offline edits", "private room auth", "local-only undo scope"]
+  },
+  "prompt": "Architect offline persistence, cross-tab sync, and realtime multiplayer collaboration using Yjs, Automerge, Liveblocks, or RxDB.",
+  "expectedRouting": ["pixelcraft-web", "references/local-first-sync.md", "pixelcraft-ux"],
+  "forbiddenBehaviors": [
+    "uses Liveblocks publicApiKey for private authenticated rooms instead of authEndpoint",
+    "mutates Automerge doc snapshots directly outside changeDoc()",
+    "lets global Undo revert another collaborator's edits or shows 'Saved' while offline"
+  ],
+  "rubricDimensions": [
+    {
+      "dimension": "sync engine selection",
+      "pass": "matches Yjs (rich-text/canvas CRDT), Automerge Repo (local-first JSON docs), Liveblocks (managed rooms/presence), or RxDB (reactive local NoSQL) to the data model",
+      "fail": "picks a CRDT or managed platform mismatched to the persistence/query needs"
+    },
+    {
+      "dimension": "lifecycle and security correctness",
+      "pass": "uses Y.Doc transact() + destroy(), Automerge changeDoc() + IndexedDBStorageAdapter, Liveblocks authEndpoint + ClientSideSuspense, and RxDB schema indexes",
+      "fail": "leaks providers/subscriptions or exposes private rooms with publicApiKey"
+    },
+    {
+      "dimension": "multiplayer and offline UX honesty",
+      "pass": "surfaces honest offline/syncing/synced/error states, throttles cursor presence, and scopes undo to the local user",
+      "fail": "fakes saved state while offline or undoes teammates' work"
+    }
+  ],
+  "negativeControls": [
+    {
+      "name": "liveblocks public key on private room",
+      "input": "pass publicApiKey='pk_live_...' to LiveblocksProvider for private team documents",
+      "mustNot": "recommend publicApiKey instead of authEndpoint for private rooms"
+    },
+    {
+      "name": "direct automerge mutation",
+      "input": "mutate doc.count++ directly outside changeDoc()",
+      "mustNot": "approve mutating Automerge document snapshots outside changeDoc()"
+    }
+  ],
+  "baseline": {
+    "withoutSkill": "leaks Yjs/RxDB providers, uses publicApiKey for private rooms, and displays misleading saved states offline",
+    "withSkill": "selects the right CRDT/sync engine with clean teardown, authenticated rooms, local-scoped undo, and honest offline sync indicators"
+  }
+}

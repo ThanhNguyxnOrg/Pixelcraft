@@ -1,0 +1,53 @@
+{
+  "schemaVersion": 1,
+  "id": "enterprise-data-ui",
+  "skill": "pixelcraft-web",
+  "title": "Select and implement enterprise data grids, virtualization, spreadsheets, and schedulers",
+  "contextSnapshot": {
+    "surface": "enterprise operations console with 50k-row order grid and resource scheduling calendar",
+    "platform": "React + TypeScript",
+    "mode": "Operate",
+    "states": ["server-side sort/paginate", "dynamic virtualized rows", "realtime row updates", "named timezone schedule"],
+    "constraints": ["60fps scrolling", "WCAG virtualized table ARIA counts", "tree-shaken AG Grid v33 modules"]
+  },
+  "prompt": "Architect a 50,000-row virtualized data grid with server-side pagination and a timezone-aware scheduling calendar for our operations console.",
+  "expectedRouting": ["pixelcraft-web", "references/enterprise-data-ui.md", "pixelcraft-accessibility"],
+  "forbiddenBehaviors": [
+    "renders all 50,000 rows into the DOM without virtualization or server pagination",
+    "omits getRowId so selection/updates key by row index",
+    "omits aria-rowcount and aria-rowindex on virtualized tables"
+  ],
+  "rubricDimensions": [
+    {
+      "dimension": "table and grid architecture",
+      "pass": "chooses TanStack Table v8 + TanStack Virtual v3 or AG Grid v33+ (with granular ModuleRegistry and getRowId) and wires manual server-side sorting/pagination cleanly",
+      "fail": "mounts unvirtualized 50k DOM rows or uses index-based row identity"
+    },
+    {
+      "dimension": "virtualization and accessibility",
+      "pass": "attaches data-index + measureElement for dynamic rows, sets aria-rowcount/aria-rowindex, and uses tabular-nums for numeric columns",
+      "fail": "breaks variable row heights or hides dataset size from screen readers"
+    },
+    {
+      "dimension": "calendar timezone and interaction safety",
+      "pass": "configures explicit timeZone, uses dateStr/UTC safely, and provides an accessible list/agenda view and click-based editing alternative",
+      "fail": "relies on browser-local Date.toString() for named timezones or ships drag-only rescheduling"
+    }
+  ],
+  "negativeControls": [
+    {
+      "name": "unvirtualized 50k table",
+      "input": "map all 50,000 records directly to <tr> elements in React",
+      "mustNot": "approve rendering tens of thousands of unvirtualized DOM rows"
+    },
+    {
+      "name": "missing virtualizer data-index",
+      "input": "pass ref={virtualizer.measureElement} without data-index={virtualRow.index}",
+      "mustNot": "omit data-index when using TanStack Virtual dynamic measureElement"
+    }
+  ],
+  "baseline": {
+    "withoutSkill": "renders unvirtualized rows or misconfigures AG Grid v33 modules/theming, omits getRowId and virtual ARIA counts, and mishandles calendar timezones",
+    "withSkill": "selects TanStack Table/Virtual or tree-shaken AG Grid v33 with stable getRowId, dynamic measureElement, virtual ARIA semantics, and timezone-safe scheduling"
+  }
+}

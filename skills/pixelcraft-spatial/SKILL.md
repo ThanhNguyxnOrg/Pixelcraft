@@ -18,6 +18,7 @@ Attach depth to a meaningful relationship such as an object with nearby annotati
 
 - Read [references/platforms.md](references/platforms.md) for visionOS, WebXR, Three.js/React Three Fiber/A-Frame, Meta Quest Interaction SDK, and Unity XR Interaction Toolkit.
 - Read [references/comfort-accessibility.md](references/comfort-accessibility.md) for locomotion comfort, frame-rate discipline, ergonomic distances/fields of view, angular sizing, depth/layering, gaze/pinch privacy, text legibility, and XR accessibility.
+- Read [references/web-3d-engines.md](references/web-3d-engines.md) when selecting or implementing Web 3D/graphics engines beyond Three.js/R3F: `<model-viewer>`, Babylon.js (WebGPU/WebXR), PlayCanvas, Threlte (Svelte), TresJS (Vue), luma.gl, or regl.
 
 ## Required workflow
 

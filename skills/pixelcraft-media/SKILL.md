@@ -19,6 +19,7 @@ Design the focal subject and minimum readable message for the smallest real crop
 - Read [references/social-cards.md](references/social-cards.md) for OG/platform dimensions, safe areas, crop behavior, thumbnail legibility, metadata, caching, and validation.
 - Read [references/og-generation.md](references/og-generation.md) for Satori, `@vercel/og`, and Next.js `ImageResponse` constraints, font loading, supported CSS, bundle limits, and implementation patterns.
 - Read [references/banners-video.md](references/banners-video.md) for SVG banners/posters, Remotion, Motion Canvas, aspect-ratio variants, captions, motion, and export verification.
+- Read [references/media-players.md](references/media-players.md) when implementing browser audio/video players and DSP libraries (hls.js, Shaka Player, dash.js, Video.js, Plyr, wavesurfer.js, Howler.js, Tone.js).
 
 ## Required workflow
 

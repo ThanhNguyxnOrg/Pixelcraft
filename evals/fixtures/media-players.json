@@ -1,0 +1,53 @@
+{
+  "schemaVersion": 1,
+  "id": "media-players",
+  "skill": "pixelcraft-media",
+  "title": "Select and implement adaptive video players, waveform audio, and Web Audio DSP safely",
+  "contextSnapshot": {
+    "surface": "course platform with HLS/DASH video lessons and 60-minute podcast waveform player",
+    "platform": "Web (Chromium + iOS Safari) + TypeScript",
+    "mode": "Operate",
+    "states": ["Safari native HLS fallback", "fatal media error recovery", "pre-computed waveform peaks", "captions enabled"],
+    "constraints": ["no client-side 60-minute MP3 decode spike", "WCAG 1.2.2 captions", "clean unmount disposal"]
+  },
+  "prompt": "Implement an adaptive HLS/DASH video player that works on both Chromium and iOS Safari, plus a waveform player for hour-long podcasts and interactive Web Audio controls.",
+  "expectedRouting": ["pixelcraft-media", "references/media-players.md", "pixelcraft-accessibility"],
+  "forbiddenBehaviors": [
+    "uses hls.js without checking video.canPlayType('application/vnd.apple.mpegurl') for iOS Safari fallback",
+    "decodes an entire 60-minute audio file client-side in wavesurfer.js instead of passing pre-computed peaks and duration",
+    "autoplays unmuted audio or triggers Tone.js playback outside a user gesture"
+  ],
+  "rubricDimensions": [
+    {
+      "dimension": "streaming and cross-browser playback",
+      "pass": "branches Hls.isSupported() with native Safari HLS fallback (or Shaka Player with polyfill/isBrowserSupported/probeSupport) and throttled fatal error recovery",
+      "fail": "breaks on iOS Safari or loops infinitely on fatal media errors"
+    },
+    {
+      "dimension": "audio performance and gesture unlock",
+      "pass": "passes pre-computed peaks + duration to wavesurfer.js, unlocks Tone.js via await Tone.start() inside a user gesture, and disposes instances on unmount",
+      "fail": "downloads/decodes huge audio files just to draw peaks or leaks AudioContext/MSE instances"
+    },
+    {
+      "dimension": "media accessibility",
+      "pass": "provides <track kind='captions'>, keyboard-operable controls, muted playsInline for ambient video, and prefers-reduced-motion respect",
+      "fail": "ships uncaptioned video, unmuted autoplay, or pointer-only scrubbers"
+    }
+  ],
+  "negativeControls": [
+    {
+      "name": "missing safari hls fallback",
+      "input": "instantiate new Hls() unconditionally without Hls.isSupported() or canPlayType fallback",
+      "mustNot": "omit Safari native HLS fallback when using hls.js"
+    },
+    {
+      "name": "tonejs autoplay on mount",
+      "input": "call synth.triggerAttackRelease('C4', '8n') inside useEffect on page load without Tone.start()",
+      "mustNot": "schedule Tone.js audio before awaiting Tone.start() in a user gesture"
+    }
+  ],
+  "baseline": {
+    "withoutSkill": "breaks HLS on iOS Safari, decodes massive audio files client-side for waveforms, triggers Tone.js before user gesture, and leaks player instances",
+    "withSkill": "wires Safari HLS fallback, throttled error recovery, pre-computed wavesurfer peaks, user-gesture Tone.start(), captions, and clean unmount disposal"
+  }
+}
