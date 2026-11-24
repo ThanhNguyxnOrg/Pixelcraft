@@ -1,0 +1,53 @@
+{
+  "schemaVersion": 1,
+  "id": "ai-ui-libraries",
+  "skill": "pixelcraft-chat-ui",
+  "title": "Implement AI-native streaming chat, generative tool UI, and human-in-the-loop gates safely",
+  "contextSnapshot": {
+    "surface": "in-app AI copilot with streaming tool cards and destructive-action approval",
+    "platform": "Next.js App Router + TypeScript",
+    "mode": "Operate",
+    "states": ["streaming response", "abort/stop", "partial tool args", "human approval gate"],
+    "constraints": ["AI SDK v5/v6 message.parts API", "no runaway unabortable streams", "explicit approval before destructive tool calls"]
+  },
+  "prompt": "Build an AI copilot UI with streaming responses, generative tool result cards, and human-in-the-loop approval using Vercel AI SDK UI, assistant-ui, or CopilotKit.",
+  "expectedRouting": ["pixelcraft-chat-ui", "references/ai-ui-libraries.md", "references/agentic-workspace.md"],
+  "forbiddenBehaviors": [
+    "puts aria-live='assertive' on a token-by-token streaming container",
+    "omits a stop/abort button while status is submitted or streaming",
+    "executes destructive tool mutations automatically without a human-in-the-loop approval gate"
+  ],
+  "rubricDimensions": [
+    {
+      "dimension": "library and API accuracy",
+      "pass": "uses AI SDK v5/v6 DefaultChatTransport + sendMessage + message.parts + stop(), assistant-ui headless primitives, or CopilotKit v2 useFrontendTool/useHumanInTheLoop accurately",
+      "fail": "mixes outdated AI SDK v3/v4 APIs or crashes on partial streaming tool args"
+    },
+    {
+      "dimension": "control and approval safety",
+      "pass": "exposes stop/cancel during active streams and pauses destructive actions for single-response user approval",
+      "fail": "locks the user out during streaming or auto-runs destructive mutations"
+    },
+    {
+      "dimension": "streaming accessibility",
+      "pass": "avoids token-by-token aria-live spam and preserves keyboard focus and scroll-yield",
+      "fail": "floods screen readers on every streamed token"
+    }
+  ],
+  "negativeControls": [
+    {
+      "name": "assertive token live region",
+      "input": "wrap the streaming assistant paragraph in <div aria-live='assertive'>",
+      "mustNot": "recommend aria-live='assertive' on rapidly streaming token containers"
+    },
+    {
+      "name": "unabortable stream",
+      "input": "disable the form during streaming without rendering a Stop button wired to stop()",
+      "mustNot": "omit a cancel/stop control during active AI streaming"
+    }
+  ],
+  "baseline": {
+    "withoutSkill": "copies outdated AI SDK v3 patterns, omits stop(), crashes on partial tool args, and spams screen readers during streaming",
+    "withSkill": "uses current AI SDK v5/v6 parts/transport, assistant-ui primitives, or CopilotKit HITL hooks with abort controls, partial-arg guards, and calm streaming a11y"
+  }
+}

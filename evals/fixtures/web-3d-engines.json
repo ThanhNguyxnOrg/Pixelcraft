@@ -1,0 +1,53 @@
+{
+  "schemaVersion": 1,
+  "id": "web-3d-engines",
+  "skill": "pixelcraft-spatial",
+  "title": "Select right-sized Web 3D engines and enforce disposal, tree-shaking, and mobile ergonomics",
+  "contextSnapshot": {
+    "surface": "e-commerce 3D/AR product viewer and Vue/Svelte interactive 3D configurator",
+    "platform": "Web (HTML, Vue 3 / TresJS v5, Babylon.js WebGPU)",
+    "mode": "Operate",
+    "states": ["poster before GLB load", "AR launch", "WebGPU XR init", "route unmount disposal"],
+    "constraints": ["no scroll hijacking on mobile", "tree-shaken Babylon ES6 imports", "TresJS v5 API accuracy"]
+  },
+  "prompt": "Choose the right Web 3D engines for an AR product preview and an interactive WebGPU/WebXR configurator, avoiding bundle bloat, scroll traps, and GPU leaks.",
+  "expectedRouting": ["pixelcraft-spatial", "references/web-3d-engines.md", "pixelcraft-web"],
+  "forbiddenBehaviors": [
+    "builds a full custom WebGL engine just to display a single GLB product preview when <model-viewer> fits",
+    "uses removed TresJS v4 useRenderLoop or useCamera APIs in TresJS v5",
+    "omits poster, alt, or touch-action='pan-y' on <model-viewer> or skips engine.dispose() in Babylon.js"
+  ],
+  "rubricDimensions": [
+    {
+      "dimension": "engine right-sizing",
+      "pass": "selects <model-viewer> for GLB/AR product previews and Babylon.js/PlayCanvas/Threlte/TresJS/luma.gl based on framework and scene complexity",
+      "fail": "over-engineers a single product viewer or picks an engine mismatched to the host framework"
+    },
+    {
+      "dimension": "version-accurate APIs and tree-shaking",
+      "pass": "uses Babylon @babylonjs/core/* subpaths + WebGPUEngine initAsync({ xrCompatible: true }), TresJS v5 useLoop/useTres, and Threlte manual texture disposal notes",
+      "fail": "uses deprecated v4 TresJS composables or monolithic unshaken imports"
+    },
+    {
+      "dimension": "UX and GPU hygiene",
+      "pass": "includes poster, alt, touch-action='pan-y' on <model-viewer> and disposes engines/scenes on unmount",
+      "fail": "hijacks mobile vertical scrolling or leaks WebGL/WebGPU contexts"
+    }
+  ],
+  "negativeControls": [
+    {
+      "name": "tresjs v4 removed hook",
+      "input": "call useRenderLoop() in a TresJS v5 Vue component",
+      "mustNot": "recommend removed useRenderLoop() for TresJS v5"
+    },
+    {
+      "name": "model-viewer missing poster and alt",
+      "input": "render <model-viewer src='chair.glb' camera-controls /> without alt, poster, or touch-action",
+      "mustNot": "omit alt, poster, and touch-action='pan-y' on <model-viewer>"
+    }
+  ],
+  "baseline": {
+    "withoutSkill": "writes heavy custom Three.js code for simple GLB previews, copies deprecated TresJS v4 hooks, and leaks GPU resources on unmount",
+    "withSkill": "right-sizes to <model-viewer> or tree-shaken Babylon.js/Threlte/TresJS v5 with accessible posters, non-blocking touch-action, and clean GPU disposal"
+  }
+}

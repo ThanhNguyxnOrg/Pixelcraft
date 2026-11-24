@@ -87,3 +87,5 @@ Be explicit: browser rendering and interaction can be inspected here when a brow
 - Read [references/scala-laminar.md](references/scala-laminar.md) for Scala.js/Laminar.
 - Read [references/java-web.md](references/java-web.md) for Vaadin and Thymeleaf.
 - Read [references/pwa.md](references/pwa.md) whenever the browser app must be installable, offline-capable, push-enabled, cache-managed, update-aware, or evaluated on iOS/iPadOS home-screen behavior.
+- Read [references/enterprise-data-ui.md](references/enterprise-data-ui.md) when building headless tables (TanStack Table), enterprise data grids (AG Grid, MUI X Data Grid), spreadsheet UIs (Handsontable), virtualized lists/tables (TanStack Virtual, React Virtuoso), or calendars/schedulers/timelines (FullCalendar, Bryntum, DayPilot, vis-timeline).
+- Read [references/local-first-sync.md](references/local-first-sync.md) when implementing local-first, offline-sync, or multiplayer CRDT engines (Yjs, Automerge Repo, Liveblocks, RxDB) and collaborative presence/undo UX.
