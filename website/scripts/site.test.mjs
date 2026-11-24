@@ -8,6 +8,18 @@ import { resolve, dirname } from "node:path";
 import { fileURLToPath } from "node:url";
 const website = fileURLToPath(new URL("../", import.meta.url));
 const output = resolve(website, "out");
+test("source Markdown preserves documentation but removes executable markup and URL schemes", async () => {
+  const { renderSkillMarkdown } = await import("../src/data/markdown.mjs");
+  const html = renderSkillMarkdown(
+    `# Example\n\n[Reference](https://github.com/ThanhNguyxnOrg/Pixelcraft)\n\n\`\`\`ts\nconst value = '<safe>';\n\`\`\`\n\n<script>alert(1)</script><img src="/example.png" alt="Example" onerror="alert(1)"><a href="javascript:alert(1)">Unsafe</a><a href="java&#x73;cript:alert(1)">Encoded</a><iframe src="https://example.com"></iframe>`,
+  );
+  assert.match(html, /<h1>Example<\/h1>/);
+  assert.match(html, /href="https:\/\/github.com\/ThanhNguyxnOrg\/Pixelcraft"/);
+  assert.match(html, /class="language-ts"/);
+  assert.match(html, /&lt;safe&gt;/);
+  assert.match(html, /alt="Example"/);
+  assert.doesNotMatch(html, /<script|onerror|javascript:|<iframe/);
+});
 
 test("every repository skill has a source-backed static page", async () => {
   const names = (await readdir(resolve(website, "../skills"))).filter((name) =>

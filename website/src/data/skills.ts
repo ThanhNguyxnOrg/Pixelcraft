@@ -1,6 +1,6 @@
 import { readFileSync, readdirSync } from "node:fs";
 import { resolve } from "node:path";
-import { marked } from "marked";
+import { renderSkillMarkdown } from "./markdown.mjs";
 
 export const repository = "https://github.com/ThanhNguyxnOrg/Pixelcraft";
 export const installBase = "npx skills add ThanhNguyxnOrg/Pixelcraft";
@@ -177,10 +177,22 @@ const root = resolve(process.cwd(), "../skills");
 const names = readdirSync(root)
   .filter((name) => name.startsWith("pixelcraft"))
   .sort();
-export const skills = names
-  .map((name) => {
-    const slug =
-      name === "pixelcraft" ? "pixelcraft" : name.replace("pixelcraft-", "");
+const slugs = Object.keys(metadata);
+const expectedNames = slugs.map((slug) =>
+  slug === "pixelcraft" ? slug : `pixelcraft-${slug}`,
+);
+if (
+  names.length !== expectedNames.length ||
+  names.some((name) => !expectedNames.includes(name))
+) {
+  throw new Error(
+    "Website skill metadata must match the repository skill folders exactly.",
+  );
+}
+// Routes and source URLs come only from the authored metadata keys, never filesystem names.
+export const skills = slugs
+  .map((slug) => {
+    const name = slug === "pixelcraft" ? slug : `pixelcraft-${slug}`;
     const source = readFileSync(`${root}/${name}/SKILL.md`, "utf8");
     const body = source.replace(/^---\r?\n[\s\S]*?\r?\n---\r?\n/, "");
     if (!metadata[slug]) throw new Error(`Missing website metadata: ${name}`);
@@ -194,7 +206,7 @@ export const skills = names
       slug,
       ...metadata[slug],
       body,
-      html: marked.parse(withLinks) as string,
+      html: renderSkillMarkdown(withLinks),
       sourceUrl: `${repository}/blob/main/skills/${name}/SKILL.md`,
     };
   })
