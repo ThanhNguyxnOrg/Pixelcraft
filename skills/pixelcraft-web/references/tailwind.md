@@ -4,6 +4,8 @@ Tailwind is an implementation layer, not the design direction. Treat utility cla
 
 ## Token mapping
 
+These examples target v4. If the existing project uses v3, preserve its configuration and content discovery unless migration is in scope; verify the installed major before copying CSS directives.
+
 Tailwind v4 is CSS-first. Import generated variables and bridge them into `@theme` only where utilities are needed:
 
 ```css

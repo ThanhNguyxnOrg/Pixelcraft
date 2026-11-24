@@ -35,6 +35,8 @@ React does not create semantics for you. Use real controls, label association wi
 
 ## States idiom
 
+Check the installed React/Next.js versions and router before using these examples. Server Actions and route-segment conventions here assume a compatible App Router; verify `useFormStatus` for the installed React version. Preserve existing Pages Router or client mutation patterns when a migration is out of scope.
+
 Use route-level `loading`/`error`/`not-found` plus component-level state deliberately; they are not substitutes for empty/partial/offline/optimistic states. Server Actions need pending indication, duplicate-submit protection, validation error return shape, input preservation, and rollback semantics. Cache freshness/revalidation must be visible when user decisions depend on stale data.
 
 ## Forms idiom
@@ -62,7 +64,6 @@ npm run lint
 npm run test -- --run
 npm run build
 npx playwright test
-npx next build --debug 2>/dev/null || true
 ```
 
 Use the actual package manager/scripts. Inspect browser rendering and hydration timing when interaction quality matters.

@@ -27,14 +27,15 @@ Do not infer greenfield merely because the current folder is empty; inspect pare
 3. **Distinguish fact from inference.** Cite key files in the repo map. Classify material facts as user-provided, repo-observed, artifact-observed, analytics/research, assumption, or unknown. Mark unread/generated/ignored areas explicitly.
 4. **Intake design inputs.** Use [references/design-input.md](references/design-input.md) for Figma, screenshots, mockups, existing UI, prototypes, and reference imagery: classify specification versus inspiration, record provenance/version/breakpoints/constraints, assess completeness, and decide whether `pixelcraft-handoff` is needed.
 5. **Map existing authority.** Decide whether tokens/components/conventions are authoritative, partial, inconsistent, or absent. Existing project decisions outrank Pixelcraft taste.
-6. **Write `.pixelcraft/plan.md`** using [references/plan-template.md](references/plan-template.md). Include exact platform skill/framework reference routing and available verification capabilities.
+6. **Check resolved versions and APIs.** Before using a version-sensitive API or changing a dependency, apply [references/stack-freshness.md](references/stack-freshness.md) to the affected package/runtime and API. Use the installed or locked version unless an upgrade is in scope.
+7. **Write `.pixelcraft/plan.md`** using [references/plan-template.md](references/plan-template.md). Include exact platform skill/framework reference routing and available verification capabilities.
 
 ## Greenfield workflow
 
 1. **Intake requirements before candidates:** target platforms/input modalities, audience/locales, team languages and operational experience, offline/network model, performance/hardware constraints, accessibility/legal requirements, distribution/store/update model, existing backend/protocol, maintenance horizon, budget/timeline, hard exclusions, and any supplied design inputs. Classify those inputs using [references/design-input.md](references/design-input.md). Ask only for missing facts that materially change selection.
 2. **Generate candidates across languages.** Use [references/stack-selection.md](references/stack-selection.md). Consider the full catalog rather than defaulting to TypeScript/React.
 3. **Build a weighted matrix.** Choose weights from requirements, score evidence honestly, include uncertainty, and reject candidates that fail hard constraints regardless of weighted total.
-4. **Recommend one stack plus runner-up.** Record why the runner-up lost. Any web choice must be justified against native/TUI/server-rendered alternatives; TypeScript/React is never a default.
+4. **Verify and recommend one stack plus runner-up.** Apply [references/stack-freshness.md](references/stack-freshness.md) before finalizing the selected versions and APIs. Record why the runner-up lost. Any web choice must be justified against native/TUI/server-rendered alternatives; TypeScript/React is never a default.
 5. **Write `.pixelcraft/plan.md`** before visual direction begins.
 
 ## Required plan contents

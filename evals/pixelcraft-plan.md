@@ -1,5 +1,11 @@
 # pixelcraft-plan evaluation cases
 
+## Case — resolved versions before choosing an API
+
+Ask for a filter UI in a locked brownfield app; the available docs MCP returns a new-major API that conflicts with the lockfile. Repeat for a greenfield app with the MCP rate-limited, then with both version sources offline.
+
+Pass: preserve the brownfield lock, locate matching official API docs and record the version/source/date/result before building. Fall back to official docs and the registry without requiring MCP. Offline, document the assumption and affected check without claiming a latest version. Reuse matching evidence instead of looking up the same API again.
+
 ## Case 1 — greenfield plan
 
 **Prompt**

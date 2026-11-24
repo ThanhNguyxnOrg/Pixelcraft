@@ -61,6 +61,12 @@ Hybrid surfaces pick one primary mode per screen or region. Do not let a persuas
 
 One repair round is normal. Use at most three for reproducible, measurable failures, then report unresolved defects as OPEN and state unchecked scope. A command with a suppressed failure is a probe, not evidence of a passing check.
 
+## Scoped work and stopping
+
+- Before editing, name the affected route/interaction, preserved behavior, and the smallest check that can disprove success. For narrow changes, reuse the current plan and approved direction; read only the relevant reference sections. New or materially changed flows still need the full applicable finish gate.
+- Reuse recorded repository and version evidence unless scope, inputs, or dependencies change. Run the affected check first; expand coverage for shared behavior or a demonstrated risk. Do not rerun unchanged commands to gain confidence or repeat a failed lookup without a better source.
+- If the tool/time/context budget runs low, preserve revision, changed scope, evidence paths, unchecked checks and the next discriminating command in the handoff. Never trade outcome evidence for a completion claim.
+
 ## Platform routing
 
 After detecting the stack, use the matching platform skill by name and read only the relevant framework reference inside it:

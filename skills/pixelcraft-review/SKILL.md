@@ -49,6 +49,7 @@ Every finding requires: severity, evidence (`file:line`, screenshot region/devic
 1. Establish scope, mode, direction card/project system, commit/build state, target platforms, locales, and user tasks.
 2. Gather deterministic evidence first: run scanners/tests/builds; inspect files; capture rendered/device states where possible.
 3. Walk primary flows using personas as hypotheses; do not claim they are users.
+   Inspect the changed route or diff for unfinished handlers, dead actions and demo data presented as real. Confirm a suspected omission through the affected interaction; a TODO in an unrelated test or a truthful empty state is not evidence of failure.
 4. Apply heuristics and floor checks. Separate actual violation from risk/opportunity; use the structured critique protocol when the output informs a design decision.
 5. Compare against slop fingerprints and `.pixelcraft/history.json`; identify repetition or absence of subject commitment.
 6. Rank by user impact and floor authority, not ease of fixing.

@@ -15,6 +15,8 @@ For finish-gate and anti-slop changes, compare a landing page, a dashboard, and 
 
 ## Interpretation
 
+For scoped-work or freshness experiments use the same model, task, lockfile and fixture for both runs. Record repeated file reads, duplicate tool calls, input/output tokens when exposed, tool time, repair rounds, and confirmed task outcomes. Do not reward reduced cost if it comes from skipping applicable verification. Keep agent-backed evaluation opt-in.
+
 - The baseline can still pass; the goal is measuring whether the skill improves routing, specificity, verification, and constraint fidelity.
 - Do not score keyword presence alone. A response that names a skill but ignores its constraints is a failure.
 - A response that uses the skill's behavior without literally naming it can still satisfy the behavioral criterion.

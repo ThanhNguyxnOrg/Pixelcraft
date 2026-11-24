@@ -10,6 +10,7 @@ The floor is non-negotiable unless the user explicitly waives a scoped item. It 
 - Missing material must be omitted, requested, or visibly marked as an approved placeholder.
 - Never use stock-looking fake proof to fill a layout. Empty space is better than false evidence.
 - Generated imagery must match the brief and must not accidentally include illegible pseudo-text unless intentionally abstract.
+- Deliver the in-scope behavior, not a stub: no dead primary actions, unfinished handlers, or omitted implementation represented by TODO or ellipsis. Approved placeholders, fixtures, and intentional display truncation are not defects; label demo data and do not present it as production truth.
 
 ## 2. Accessibility
 
