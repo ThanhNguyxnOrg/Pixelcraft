@@ -19,7 +19,7 @@ export function SkillIndex() {
         return (
           s.name.includes(q) ||
           s.purpose.toLowerCase().includes(q) ||
-          s.references.some((r) => r.includes(q))
+          s.references.some((r) => `${r}.md`.toLowerCase().includes(q))
         );
       }),
     [q, filter],
