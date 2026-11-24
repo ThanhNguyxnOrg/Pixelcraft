@@ -27,10 +27,7 @@ export default function Showcase() {
             <button
               aria-pressed={surface === "web"}
               data-surface="web"
-              onClick={() => {
-                setSurface("web");
-                setDesign("after");
-              }}
+              onClick={() => setSurface("web")}
             >
               {surface === "web" && (
                 <motion.span
@@ -52,10 +49,7 @@ export default function Showcase() {
             <button
               aria-pressed={surface === "mobile"}
               data-surface="mobile"
-              onClick={() => {
-                setSurface("mobile");
-                setDesign("after");
-              }}
+              onClick={() => setSurface("mobile")}
             >
               {surface === "mobile" && (
                 <motion.span
@@ -77,10 +71,7 @@ export default function Showcase() {
             <button
               aria-pressed={surface === "desktop"}
               data-surface="desktop"
-              onClick={() => {
-                setSurface("desktop");
-                setDesign("after");
-              }}
+              onClick={() => setSurface("desktop")}
             >
               {surface === "desktop" && (
                 <motion.span
@@ -102,10 +93,7 @@ export default function Showcase() {
             <button
               aria-pressed={surface === "terminal"}
               data-surface="terminal"
-              onClick={() => {
-                setSurface("terminal");
-                setDesign("after");
-              }}
+              onClick={() => setSurface("terminal")}
             >
               {surface === "terminal" && (
                 <motion.span
@@ -157,46 +145,130 @@ export default function Showcase() {
           animate={{ opacity: 1, y: 0 }}
           transition={{ duration: 0.22 }}
         >
-          <div className="demo-before" hidden={design !== "before"}>
-            <div className="default-nav">
-              TravelApp <span>Home　About　Contact</span>
-            </div>
-            <div className="default-content">
-              <span className="default-pill">Your next adventure awaits</span>
-              <h3>
-                Discover Your Perfect
-                <br />
-                Travel Experience
-              </h3>
-              <p>
-                Explore amazing destinations and create unforgettable memories
-                <br />
-                with our all-in-one travel platform.
-              </p>
-              <button
-                data-open-stays=""
-                onClick={() => dialog.current?.showModal()}
-              >
-                Get Started →
-              </button>
-              <div className="default-features">
-                <div>
-                  01
-                  <br />
-                  <strong>Amazing Places</strong>
+          <div
+            className="demo-before"
+            data-preview={`before-${surface}`}
+            hidden={design !== "before"}
+          >
+            {surface === "web" && (
+              <>
+                <div className="default-nav">
+                  TravelApp <span>Home　About　Contact</span>
                 </div>
-                <div>
-                  02
-                  <br />
-                  <strong>Easy Booking</strong>
+                <div className="default-content">
+                  <span className="default-pill">
+                    Your next adventure awaits
+                  </span>
+                  <h3>
+                    Discover Your Perfect
+                    <br />
+                    Travel Experience
+                  </h3>
+                  <p>
+                    Explore amazing destinations and create unforgettable
+                    memories
+                    <br />
+                    with our all-in-one travel platform.
+                  </p>
+                  <button
+                    data-open-stays=""
+                    onClick={() => dialog.current?.showModal()}
+                  >
+                    Get Started →
+                  </button>
+                  <div className="default-features">
+                    <div>
+                      01
+                      <br />
+                      <strong>Amazing Places</strong>
+                    </div>
+                    <div>
+                      02
+                      <br />
+                      <strong>Easy Booking</strong>
+                    </div>
+                    <div>
+                      03
+                      <br />
+                      <strong>Great Experiences</strong>
+                    </div>
+                  </div>
                 </div>
-                <div>
-                  03
-                  <br />
-                  <strong>Great Experiences</strong>
+              </>
+            )}
+            {surface === "mobile" && (
+              <div className="baseline-phone">
+                <div className="baseline-phone-screen">
+                  <div className="default-nav">
+                    TravelApp <span>PLACES</span>
+                  </div>
+                  <div className="baseline-phone-content">
+                    <span className="baseline-kicker">
+                      MOBILE · GENERIC BASELINE
+                    </span>
+                    <h3>Find your next stay</h3>
+                    <p>Great places. Great adventures.</p>
+                    <div className="baseline-card">
+                      <strong>Lake cabin</strong>
+                      <p>A place to relax.</p>
+                      <button
+                        className="baseline-action"
+                        onClick={() => dialog.current?.showModal()}
+                      >
+                        View demo stay →
+                      </button>
+                    </div>
+                    <div className="baseline-card">
+                      <strong>Collections</strong>
+                      <p>Browse all places.</p>
+                    </div>
+                  </div>
                 </div>
               </div>
-            </div>
+            )}
+            {surface === "desktop" && (
+              <div className="baseline-desktop">
+                <div className="default-nav">
+                  TravelApp Admin <span>WORKSPACE</span>
+                </div>
+                <div className="baseline-workspace">
+                  <aside>
+                    <strong>Menu</strong>
+                    <p>Home</p>
+                    <p>Projects</p>
+                    <p>Settings</p>
+                  </aside>
+                  <section>
+                    <span className="baseline-kicker">
+                      DESKTOP · GENERIC BASELINE
+                    </span>
+                    <h3>Dashboard</h3>
+                    <p>Your projects in one place.</p>
+                    <div className="baseline-card">
+                      <strong>The lakeside collection</strong>
+                      <p>Cover story: Ready for review</p>
+                      <p>Photography: Selected</p>
+                      <p>Reading order: Defined</p>
+                    </div>
+                    <button
+                      className="baseline-action"
+                      aria-pressed={draftSaved}
+                      onClick={() => setDraftSaved(!draftSaved)}
+                    >
+                      {draftSaved ? "Saved ✓" : "Save draft"}
+                    </button>
+                  </section>
+                </div>
+              </div>
+            )}
+            {surface === "terminal" && (
+              <div className="baseline-terminal">
+                <span className="baseline-kicker">
+                  TERMINAL · GENERIC BASELINE
+                </span>
+                <pre>{`$ review elsewhere/terminal-ui\n\nInterface review\n----------------\nFocus order: checked [rendered]\nEmpty state: checked [rendered]\nToken mapping: checked [static]\nNative runtime: not checked\n\nReview complete. See details above.\n$ _`}</pre>
+              </div>
+            )}
           </div>
           <div
             className="surface-preview preview-web"

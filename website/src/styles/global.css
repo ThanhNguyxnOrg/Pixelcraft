@@ -837,6 +837,84 @@ button:disabled {
   gap: 13%;
   min-height: 414px;
 }
+.baseline-kicker {
+  font: 9px var(--mono);
+  letter-spacing: 0.5px;
+}
+.baseline-phone {
+  padding: 16px;
+}
+.baseline-phone-screen {
+  max-width: 280px;
+  margin-inline: auto;
+  border: 8px solid #3b3842;
+  border-radius: 20px;
+  overflow: hidden;
+  background: #f6f4fb;
+}
+.baseline-phone-content {
+  padding: 20px 14px;
+}
+.baseline-phone-content h3 {
+  margin-block: 15px 8px;
+  font-size: 23px;
+  line-height: 1.2;
+}
+.baseline-phone-content p,
+.baseline-workspace p {
+  font-size: 12px;
+  line-height: 1.6;
+}
+.baseline-card {
+  padding: 14px;
+  margin-block: 15px;
+  border: 1px solid #dcd6e6;
+  border-radius: 8px;
+  background: #fff;
+  overflow-wrap: anywhere;
+}
+.baseline-card strong {
+  font-size: 13px;
+}
+.baseline-action {
+  min-height: 38px;
+  border: 0;
+  padding: 10px 14px;
+  border-radius: 6px;
+  font-size: 12px;
+  background: #7547c1;
+  color: #fff;
+}
+.baseline-workspace {
+  display: grid;
+  grid-template-columns: clamp(64px, 14vw, 150px) minmax(0, 1fr);
+  min-height: 360px;
+}
+.baseline-workspace > aside {
+  padding: 20px 10px;
+  background: #ece8f2;
+  font-size: 12px;
+}
+.baseline-workspace > section {
+  min-width: 0;
+  padding: clamp(12px, 3vw, 30px);
+}
+.baseline-workspace h3 {
+  font-size: 25px;
+  margin-block: 15px 8px;
+}
+.baseline-terminal {
+  min-height: 415px;
+  padding: clamp(16px, 3vw, 30px);
+  background: #202020;
+  color: #d0d0d0;
+}
+.baseline-terminal pre {
+  white-space: pre-wrap;
+  overflow-wrap: anywhere;
+  font: 12px/1.9 var(--mono);
+  margin-block-start: 30px;
+}
 .mobile-intro h3 {
   font-size: 36px;
   line-height: 1.2;
