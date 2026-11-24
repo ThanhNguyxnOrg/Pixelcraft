@@ -257,6 +257,19 @@ gh release download <tag> --repo ThanhNguyxnOrg/Pixelcraft --pattern pixelcraft-
 
 Each archive contains canonical `skills/` plus generated `adapters/`. Either copy a canonical `skills/<name>` directory into a verified target or copy the matching generated project-root fragment from `adapters/<agent>/`.
 
+### npm package (pending the first approved release)
+
+After `@thanhnguyxnorg/pixelcraft` is publicly available, install the CLI without `npx`:
+
+```bash
+npm install -g @thanhnguyxnorg/pixelcraft
+pixelcraft add all --agent cursor
+```
+
+Pi can then also install it with `pi install npm:@thanhnguyxnorg/pixelcraft`. Until release, use the Git-based or local installers above.
+
+Maintainers: use `npm run test:distribution` to inspect the package without publishing. The tag workflow calls the org's reusable npm publisher with provenance only if `PIXELCRAFT_NPM_APPROVED_TAG` matches the exact tag and the GitHub Release job succeeds. After explicit release approval, confirm npm scope ownership and grant the org's `NPM_TOKEN` publish access to this package and GitHub repository, set the repository variable to the approved `v<package.json version>`, and push that tag from the approved revision. Clear the variable after release.
+
 ### Manual git clone/copy
 
 Clone once, choose a target directory, and copy either all skills or selected self-contained folders:

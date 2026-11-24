@@ -1,8 +1,16 @@
 {
-  "name": "pixelcraft",
+  "name": "@thanhnguyxnorg/pixelcraft",
   "version": "0.2.0",
   "description": "Portable Agent Skills pack for distinctive UI and rigorous UX across frontend stacks",
   "license": "MIT",
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/ThanhNguyxnOrg/Pixelcraft.git"
+  },
+  "publishConfig": {
+    "registry": "https://registry.npmjs.org/",
+    "access": "public"
+  },
   "type": "module",
   "keywords": ["agent-skills", "pi-package", "frontend", "ui", "ux"],
   "pi": {
@@ -19,6 +27,7 @@
     "build:adapters": "node scripts/build-adapters.mjs",
     "test:adapters": "node scripts/test-build-adapters.mjs",
     "test:installers": "node scripts/test-installers.mjs",
+    "test:distribution": "node scripts/test-distribution.mjs",
     "test:tokens": "node scripts/test-export-tokens.mjs",
     "test:validator": "node scripts/test-validate-skills.mjs",
     "test:style-inventory": "node scripts/test-style-inventory.mjs",
@@ -27,6 +36,11 @@
     "test:shoot": "node scripts/test-shoot.mjs"
   },
   "files": [
+    ".agents/plugins/marketplace.json",
+    ".claude-plugin/",
+    "plugin.json",
+    "gemini-extension.json",
+    "assets/pixelcraft-logo-512.png",
     "bin/",
     "scripts/",
     "skills/",
