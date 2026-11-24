@@ -47,6 +47,7 @@ const [pack] = JSON.parse(execFileSync(npmCli ? process.execPath : 'npm', npmCli
   cwd: root,
   encoding: 'utf8',
 }));
+assert.equal(pack.name, 'pixelcraft');
 const files = new Set(pack.files.map((entry) => entry.path));
 for (const expected of ['package.json', pkg.bin.pixelcraft, 'plugin.json', 'gemini-extension.json',
   '.claude-plugin/marketplace.json', '.agents/plugins/marketplace.json', 'assets/pixelcraft-logo-512.png']) {

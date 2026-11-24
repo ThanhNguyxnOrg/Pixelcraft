@@ -259,16 +259,16 @@ Each archive contains canonical `skills/` plus generated `adapters/`. Either cop
 
 ### npm package (pending the first approved release)
 
-After `@thanhnguyxnorg/pixelcraft` is publicly available, install the CLI without `npx`:
+After `pixelcraft` is publicly available on npm, install the CLI without `npx`:
 
 ```bash
-npm install -g @thanhnguyxnorg/pixelcraft
+npm i -g pixelcraft
 pixelcraft add all --agent cursor
 ```
 
-Pi can then also install it with `pi install npm:@thanhnguyxnorg/pixelcraft`. Until release, use the Git-based or local installers above.
+Pi can then also install it with `pi install npm:pixelcraft`. Until release, use the Git-based or local installers above.
 
-Maintainers: use `npm run test:distribution` to inspect the package without publishing. After explicit release approval, push the matching `v<package.json version>` tag from the approved revision in `ThanhNguyxnOrg/Pixelcraft`; the workflow rejects mismatched tags before creating a GitHub Release. After the GitHub Release job succeeds, the org's reusable workflow publishes to npm with provenance. The npm scope must exist and the repository must have access to an `NPM_TOKEN` authorized to publish this package. No per-release variable is needed.
+Maintainers: use `npm run test:distribution` to inspect the package without publishing. After explicit release approval, push the matching `v<package.json version>` tag from the approved revision in `ThanhNguyxnOrg/Pixelcraft`; the workflow rejects mismatched tags before creating a GitHub Release. After the GitHub Release job succeeds, the org's reusable workflow publishes to npm with provenance. The repository must have access to an `NPM_TOKEN` authorized to publish the unscoped `pixelcraft` package. No per-release variable is needed.
 
 ### Manual git clone/copy
 
