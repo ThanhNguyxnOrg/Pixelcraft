@@ -10,6 +10,10 @@ metadata:
 
 Use this skill when the rendering surface is an email client. Email is not the modern web: CSS support is fragmented, images may be blocked, dark mode may mutate colors, and forwarding/clipping/rendering are outside your control.
 
+## Surface craft
+
+Make the subject and opening live text state who sent the message, why it matters and what to do next; use image-led moments only if the same path survives images off. Inspect a sent message in representative clients, with dark mode, narrow width and plain-text fallback. An attractive browser preview does not prove that email clients preserve contrast or links.
+
 ## Detection signals
 
 `.mjml`, React Email packages/templates, table-heavy HTML email, inline CSS tooling, ESP templates, plaintext templates, MIME generation, email screenshots/previews, localization catalogs.

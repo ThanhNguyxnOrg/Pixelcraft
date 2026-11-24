@@ -10,6 +10,10 @@ metadata:
 
 Use this skill when the surface is a desktop window rather than a browser page or phone screen. Desktop quality depends on window behavior, input acceleration, persistence, menus, shortcuts, density, and platform chrome as much as visual styling.
 
+## Surface craft
+
+Organize persistent navigation, working content and one contextual inspector around the object being edited; hide secondary chrome without hiding state or actions from menus and shortcuts. Resize to the supported minimum, detach or collapse the inspector, then reopen the last workspace and verify selection, keyboard focus and document state.
+
 ## Detection signals
 
 `src-tauri/tauri.conf.json`, Electron main/preload packages/config, Qt `.pro`/CMake/PySide/QML imports, `.csproj` WinUI/WPF/Avalonia references, Xcode/AppKit targets, GTK build definitions, Rust `egui`/`slint`/`dioxus`/`iced` dependencies, installers/bundles, menu/shortcut registration, multi-window process architecture.

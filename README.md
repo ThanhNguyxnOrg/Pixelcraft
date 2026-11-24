@@ -305,6 +305,14 @@ node skills/pixelcraft-visual-qa/scripts/shoot.mjs dist/index.html --out visual-
 
 For local files, `shoot.mjs` serves only the file's own directory by default. Use `--root` only when shared parent assets are required; it exposes every non-dotfile beneath that root to page scripts during capture (`.env`, `.git/` and other dot-segments are refused). HTTP error pages are captured with their `status` recorded; use `--allow-http-error` only when intentionally reviewing 404/500 designs.
 
+Measure typography, color, estimated geometry, motion signals and payload on a browser surface:
+
+```bash
+node skills/pixelcraft-visual-qa/scripts/style-inventory.mjs dist/index.html --breakpoints 390x844,768x1024,1440x900 --out inventory.json
+```
+
+Use identical settings and fixtures for before/after, keep the JSON beside screenshots and task evidence, and use native device/client evidence for non-browser surfaces. See the [measured craft guide](skills/pixelcraft-visual-qa/references/measured-craft.md) for limits and platform alternatives.
+
 Inspect installer behavior:
 
 ```bash

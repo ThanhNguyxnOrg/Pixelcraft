@@ -10,6 +10,10 @@ metadata:
 
 Constraint is the primary design material. Do not shrink a desktop/mobile interface: determine viewing distance, input device, interruption cost, refresh capability, compute/memory budget, physical ergonomics, safety context, and failure recovery before layout.
 
+## Surface craft
+
+Prioritize the one task the physical situation allows: visible spatial focus from the sofa, an at-a-glance answer on the wrist, or a static acknowledgment on low-refresh displays. Verify at the actual viewing distance, input device and refresh class. If effects compete with guidance, remove the effects; do not infer hardware readiness from web emulation.
+
 ## References
 
 - Read [references/tv-wearables.md](references/tv-wearables.md) for TV/console, D-pad focus engines, overscan/title-safe layout, tvOS, Android TV/Leanback/Compose for TV, webOS/Tizen, watchOS, and Wear OS.

@@ -10,6 +10,10 @@ metadata:
 
 Use this skill when UI lives inside or around a game loop. Game UI must remain legible under motion, stress, distance, controller input, variable aspect ratios, localization expansion, and platform certification expectations.
 
+## Surface craft
+
+Separate always-needed survival information from inspect-on-demand stats. Preserve HUD anchors across resolution and safe-area changes; teach an action with its current input glyph, not a hard-coded device prompt. Test in motion against changing scene luminance, after swapping input, and from the target viewing distance. Do not infer readability from a paused screenshot.
+
 ## Detection signals
 
 Unity `ProjectSettings/`, `.unity`, UXML/USS/UI Builder assets; Godot `project.godot`, `.tscn`, `.gd`, Control/Theme resources; Unreal `.uproject`, UMG widget assets/Blueprints; input maps, localization pipelines, platform target settings, safe-area/certification documentation.

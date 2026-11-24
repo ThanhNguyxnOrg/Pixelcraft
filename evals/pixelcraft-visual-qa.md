@@ -1,5 +1,11 @@
 # pixelcraft-visual-qa evaluation cases
 
+## Case — attractive capture hides motion, latency, or input failures
+
+Compare two versions of a responsive product demo, where the more expressive version increases initial payload and relies on an animation to reveal essential text. Repeat for a controller HUD with muted color and a native window with keyboard-only input.
+
+Pass: compare like-for-like artifacts and inspect real reduced-motion behavior; use controller/device or native resize/focus evidence where applicable. Report a usable fallback and task outcome, or label missing runtime checks `not-checked`. Fail if gallery medians, a CSS media-rule hit, or browser emulation are presented as proof of usability on every platform.
+
 ## Case — desktop passes but the responsive task cannot ship
 
 **Prompt:** Verify a local ecommerce search/filter flow. Its wide capture looks polished, but the submit button is covered at 390px and has no visible keyboard focus. A loading fixture never resolves; one error fixture is unavailable. The clipping still reproduces after three scoped repairs. A teammate suggests accepting a new screenshot baseline and calling the build passing.

@@ -10,6 +10,10 @@ metadata:
 
 Use this skill when the workload is a data app, AI/ML demo, dashboard, notebook surface, BI/reporting product, or internal operational tool—regardless of implementation language. The scope is the workload, not Python. Flet and Kivy are cross-platform application frameworks and route through `pixelcraft-mobile`; Qt/PySide belongs to `pixelcraft-desktop`; Textual/Rich belongs to `pixelcraft-tui`; Django/Jinja belongs to `pixelcraft-web`.
 
+## Surface craft
+
+Keep active filters, data freshness and the selected result visibly linked. Put stable summaries near the controls that change them; defer heavier details without replacing the working context. Test a slow query, an empty result, a changed filter and a stale result. Do not copy a dashboard layout without its data provenance or rerun behavior.
+
 ## Detection signals
 
 Python imports/entry points (`st.*`, `gr.*`, `rx.*`, NiceGUI `ui.*`, Dash callbacks, Panel objects, Shiny UI/server), `.streamlit/config.toml`, notebooks/ipywidgets, R `DESCRIPTION`/`app.R` with Shiny/bslib, Julia `Project.toml` with Genie/Stipple, Observable `observablehq.config.*`/data loaders, Evidence `evidence.config.yaml`/`theme.yaml`/`pages`/`sources`, SQL/warehouse configuration, model/demo artifacts, cache/data-loader definitions.

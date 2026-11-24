@@ -28,6 +28,7 @@ Craft is controlled decision-making under constraints. Apply the committed direc
 5. Let mode control intensity. Operate prioritizes scanability and consistency; Persuade/Experience can carry stronger composition and imagery; Communicate must survive constrained renderers.
 6. Do not use decoration to hide missing hierarchy. Establish position, scale, weight, spacing, and grouping first.
 7. Keep platform translation idiomatic: CSS pixels are not pt/dp/sp/native units; desktop windows are not mobile screens; terminal cells and email clients are not browsers.
+8. Measure a craft choice in its own units: text scaling or terminal cells for hierarchy, actual output/client crop for geometry and color, and input-to-feedback or frame stability for motion. A web corpus range is not a quota for native or exported surfaces.
 
 ## Rapid critique checklist
 
