@@ -20,19 +20,49 @@ Token files are JSON. Groups are nested objects; token leaves contain `$value`. 
 }
 ```
 
-Common types include `color`, `dimension`, `fontFamily`, `fontWeight`, `duration`, `number`, `strokeStyle`, `border`, `transition`, `shadow`, `gradient`, and `typography`. Use exact spec definitions before adding complex composite types.
+Common types include `color`, `dimension`, `fontFamily`, `fontWeight`, `duration`, `cubicBezier`, `number`, `strokeStyle`, `border`, `transition`, `shadow`, `gradient`, and `typography`. Use exact spec definitions before adding complex composite types.
 
-## References
+## References, `$extends`, `$root`, and `$deprecated`
 
-Use curly references such as `{color.brand}` to preserve relationships. Pixelcraft's bundled exporter resolves this common form. Some secondary guides describe additional reference syntax in 2025.10; verify the primary specification before implementing advanced `$ref`/JSON Pointer behavior.
+- **Curly alias references:** use `{color.brand}` for token-to-token aliases (supported by Pixelcraft's zero-dependency exporter and all DTCG compilers). JSON Pointer `$ref` inside composite values or resolver documents requires a full DTCG 2025.10 compiler such as Terrazzo or Style Dictionary v4.
+- **`$root`:** define a group's default token value (`"accent": { "$root": { "$value": ... }, "hover": { "$value": ... } }`) so a group can hold both a base value and nested child tokens without inventing ad-hoc `.default` names.
+- **`$extends`:** inherit and override an entire group (for example, a compact or brand variant group inheriting from a base group) without duplicating unchanged child tokens.
+- **`$deprecated`:** mark obsolete tokens or groups using `"$deprecated": true` or a replacement string (`"$deprecated": "Use color.action.primary instead; scheduled for removal in v3."`) so compilers emit build warnings automatically.
 
-## Modes and themes
+## Modes and themes (DTCG 2025.10 Resolver)
 
-The format does not force one universal theme architecture. Use one explicit approach:
+The **W3C DTCG 2025.10 Resolver Specification** (`*.resolver.json`) is the standard multi-theme / multi-brand composition format. A resolver document declares `sets` (base and shared token files), `modifiers` with named `contexts` (such as `theme: light | dark | high-contrast` or `density: default | compact`), and an explicit `resolutionOrder`:
 
-1. separate files per mode (`tokens.base.json`, `tokens.dark.json`) with identical semantic paths;
-2. `$extensions` metadata declaring mode-specific values for a compiler you control;
-3. parallel groups such as `theme.light` and `theme.dark` when tooling is simple.
+```json
+{
+  "version": "2025.10",
+  "sets": {
+    "primitives": { "sources": [{ "$ref": "./primitives.tokens.json" }] },
+    "semantic": { "sources": [{ "$ref": "./semantic.tokens.json" }] }
+  },
+  "modifiers": {
+    "theme": {
+      "default": "light",
+      "contexts": {
+        "light": [{ "$ref": "./themes/light.tokens.json" }],
+        "dark": [{ "$ref": "./themes/dark.tokens.json" }],
+        "high-contrast": [{ "$ref": "./themes/high-contrast.tokens.json" }]
+      }
+    }
+  },
+  "resolutionOrder": [
+    { "$ref": "#/sets/primitives" },
+    { "$ref": "#/sets/semantic" },
+    { "$ref": "#/modifiers/theme" }
+  ]
+}
+```
+
+Choose the lightest theme architecture that matches your compiler:
+
+1. **DTCG Resolver (`*.resolver.json`)** — preferred for production multi-theme/multi-brand systems using Terrazzo or Resolver-aware Style Dictionary pipelines;
+2. **Token-level `$extensions.pixelcraft.modes`** — compact single-file subset supported directly by Pixelcraft's zero-dependency `scripts/export-tokens.mjs` exporter;
+3. **Separate files per mode (`tokens.base.json`, `tokens.dark.json`)** — simple fallback when a legacy pipeline expects flat file merges with identical semantic paths.
 
 Rules:
 
@@ -51,4 +81,4 @@ Rules:
 
 ## Validation
 
-Minimum checks: JSON parses; groups/tokens do not conflict; `$type` known/inherited; `$value` shape valid; references resolve; no cycles; units explicit for dimensions; alpha in range; required semantic roles exist. The bundled exporter performs a practical subset and intentionally fails unknown malformed tokens rather than guessing.
+Minimum checks: JSON parses; groups/tokens do not conflict; `$type` known/inherited; `$value` shape valid; references and `$extends` resolve; no cycles; units explicit for dimensions; alpha in range; `$deprecated` replacements point to live tokens; required semantic roles exist. The bundled exporter validates its supported subset and fails malformed tokens rather than guessing.

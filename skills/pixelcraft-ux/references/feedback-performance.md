@@ -1,30 +1,50 @@
 # Feedback, response time, and perceived performance
 
-Evidence: response-time limits, feedback principles, and state-hardening practice.
+Evidence: response-time limits, Core Web Vitals (INP / LoAF), streaming UX patterns, and state-hardening practice.
 
-## Time budget
+## Time budget and INP / LoAF
 
 | Elapsed time | UX requirement |
 |---|---|
-| ~0.1s | direct manipulation feels instantaneous; press/drag feedback must appear here |
-| ~1s | user flow remains uninterrupted; avoid blocking chrome or unnecessary progress UI |
-| ~10s | outer attention boundary; before this show explicit progress, scope, cancellation, or background completion |
+| `≤ 100 ms` | Direct manipulation feels instantaneous; press/drag/focus feedback must appear here |
+| `≤ 200 ms` (INP good) | Web **Interaction to Next Paint (INP)** ceiling; inspect **Long Animation Frames (LoAF, > 50 ms)** and yield to the main thread (`scheduler.yield()` / chunked rendering / web workers) before heavy synchronous work blocks paint |
+| `≤ 400 ms` (Doherty) | User momentum stays intact for search, filters, tab switches, and optimistic updates; never insert artificial animation delays |
+| `~1 s` | Flow stays uninterrupted; avoid modal blocking chrome or flashing progress indicators below ~200–300 ms |
+| `> 10 s` | Outer attention boundary; show explicit progress or stage status, cancellation, and whether navigating away cancels work |
 
-Doherty: when feedback plus meaningful work stays near or under ~400ms, perceived momentum rises. Do not add artificial animation delay that breaks this rhythm.
+## Skeleton vs. spinner vs. progress rules
 
-## Feedback design
+Choose the loading pattern by duration and layout predictability—never throw a full-page spinner at every fetch:
 
-- Acknowledge input immediately with pressed/pending/selection state independent of network completion.
-- Distinguish queued, processing, uploaded, verified, indexed, synced, and failed when users care about lifecycle.
-- Use determinate progress when real progress exists. Use sparse indeterminate feedback otherwise; never fake precision.
-- For long work, explain what can safely be done meanwhile and whether leaving/navigating away cancels it.
-- Use undo instead of confirmation when reversal is cheap and reliable. Reserve confirmation for irreversible, high-cost, ambiguous, or externally visible destruction.
-- Destructive copy names the object/consequence: “Delete 14 invoices” not “Are you sure?” Double protection must be proportionate, not habitual friction.
+| Situation | Use | Do not use |
+|---|---|---|
+| Fast response (`< 200–300 ms`) | No loader (or subtle pressed state); delay indicator onset to avoid visual flash | Flashing skeleton/spinner that disappears in 1 frame |
+| Structured page/list load (`300 ms – ~3 s`) | **Skeleton** matching real container geometry (`aria-busy="true"`, single polite announcement) | Generic centered spinner that causes severe CLS on hydrate, or skeletons with fake numbers |
+| Single button / inline action | Inline button pending label + spinner inside fixed-width button (`aria-disabled="true"` preserving focus) | Replacing the entire screen with a backdrop overlay |
+| Multi-second upload, export, or batch job (`> 2–3 s`) | **Determinate progress bar** (with bytes/items/step count) + Cancel control | Fake progress bar that stalls at 99% |
+| Indeterminate multi-step backend work | **Stage list** (`Queued → Validating → Indexing`) + Cancel / background notice | Silent frozen button or bare looping spinner with no context |
 
-## Perceived performance
+## AI and streaming UX (TTFT vs. completion)
 
-- Prioritize primary content/action over decorative media and below-fold assets.
-- Reserve media/layout dimensions to prevent layout shift. Skeletons should preserve structure without pretending content exists.
-- Make repeated interactions cheaper through caching, optimistic UI with rollback, prefetching only high-probability next steps, and stable navigation.
-- Do not block input during animation/hydration/network activity unless operation truly is modal.
-- Measure or inspect the actual path: startup, route transition, input latency, scroll/jank, image decode, database/API wait. A fast Lighthouse score alone does not prove interaction quality.
+LLM and agentic tasks split latency into **Time to First Token (TTFT)** and **Total Completion Time**:
+
+- **Acknowledge immediately (`< 100 ms`):** append the user's message optimistically, focus/scroll cleanly, and indicate connection or tool execution before the first token arrives.
+- **Keep reading stable during streaming:** stream into reserved/growing containers without shifting controls above the stream; disable auto-scroll the moment the user scrolls upward and offer a “Jump to latest” control.
+- **Separate thinking/tools from answer:** show tool invocations or reasoning summaries in compact collapsible status blocks so users know progress is real without drowning the final answer.
+- **Make stop/cancel first-class:** stopping mid-stream preserves generated text, stops billing/network traffic, and keeps the input ready for immediate correction.
+
+## Optimistic UI and rollback race conditions
+
+Optimistic updates improve perceived speed only when reconciliation is race-safe:
+
+- **Tag every mutation with a monotonic client token/version** so a slow response from mutation #1 cannot overwrite the newer optimistic state of mutation #2.
+- **Mark unconfirmed state subtly** when financial, collaborative, or offline stakes are high (e.g., pending sync badge).
+- **Preserve user edits on failure:** if an optimistic edit rolls back, do not wipe what the user typed—restore the previous committed value clearly OR keep the failed draft editable with a one-click Retry and an explicit notice explaining what failed.
+- **Guard double-submit & idempotency:** disable duplicate dispatch with an idempotency key while keeping keyboard focus intact.
+
+## Destructive feedback and perceived performance
+
+- Use **undo** instead of confirmation whenever reversal is cheap and reliable (`Deleted "Q3 Draft" · Undo` toast with generous timeout and keyboard access). Reserve modal confirmation for irreversible, high-cost, ambiguous, or externally visible destruction.
+- Name the exact object and consequence in destructive copy: “Delete 14 invoices” not “Are you sure?”
+- Prioritize primary content/action over decorative media and below-fold assets; reserve media dimensions (`width`/`height`/`aspect-ratio`) to keep CLS near `0`.
+- Measure or inspect the actual interactive path (startup, route transition, INP/LoAF traces, scroll/jank, image decode, API wait). A high synthetic Lighthouse score alone does not prove responsive interaction.

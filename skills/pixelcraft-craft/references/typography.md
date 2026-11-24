@@ -49,6 +49,32 @@ Choose a typographic voice from the direction: editorial, instrumental, humanist
 - Avoid tracked-out lowercase; uppercase/labels can receive modest tracking. Extreme negative tracking breaks script rendering.
 - Preserve hanging punctuation, baseline rhythm, paragraph spacing, and orphan/widow behavior where platform allows.
 
+### Modern web typographic controls
+
+Apply modern CSS typographic primitives progressively without breaking non-Latin scripts or CLS budgets:
+
+- **Line wrapping:** use `text-wrap: balance` on short headings/titles (≤ 4–6 lines) to eliminate awkward single-word last lines, and `text-wrap: pretty` on body prose paragraphs to reduce orphans.
+- **Optical cap-height alignment:** use `text-box-trim: trim-both` with `text-box-edge: cap alphabetic` (progressively, checking browser support) on buttons, badges, and tight headings so icons and uppercase labels optically center without magic pixel padding offsets.
+- **Dark-mode halation via variable `GRAD` axis:** when a variable typeface provides a `GRAD` (grade) axis, reduce grade slightly in dark mode (`font-variation-settings: "GRAD" -25`) to soften light-on-dark stroke bloom without changing glyph advance widths or causing layout shift.
+- **Zero-CLS fallback metrics:** pair webfont `@font-face` declarations with metric-matched fallback faces using `size-adjust`, `ascent-override`, `descent-override`, and `line-gap-override` so font swap never shifts headings or paragraphs.
+- **Typographic vertical rhythm units:** use `cap` (cap height) to align inline icons with capitals, and `lh` / `rlh` (line-height / root line-height) for paragraph margins, vertical gaps, and list indents that automatically scale with font size and leading.
+
+```css
+@font-face {
+  font-family: "EditorialFallback";
+  src: local("Georgia");
+  size-adjust: 104%;
+  ascent-override: 92%;
+  descent-override: 24%;
+}
+h1, h2 { text-wrap: balance; text-box-trim: trim-both; text-box-edge: cap alphabetic; }
+p { text-wrap: pretty; margin-block-end: 1rlh; }
+.inline-icon { height: 1cap; width: auto; }
+@media (prefers-color-scheme: dark) {
+  body { font-variation-settings: "GRAD" -25; }
+}
+```
+
 ## International script floor
 
 Declare fallback behavior per script, not just `sans-serif`: Latin extended/combining marks, Cyrillic, Greek, Arabic, Hebrew, Indic shaping, Thai/Lao/Khmer line breaking, CJK/Hangul, emoji/ZWJ, and numeric systems required by the audience. Do not fake bold/italic, do not put translated copy in Latin-only display fonts that silently fall back, and do not let expressive crop/tracking/masking damage shaping.

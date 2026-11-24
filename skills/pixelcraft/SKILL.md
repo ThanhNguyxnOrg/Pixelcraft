@@ -1,6 +1,6 @@
 ---
 name: pixelcraft
-description: Orchestrates distinctive, evidence-verified UI work across any frontend stack. Use when designing, building, redesigning, auditing, or polishing interfaces, pages, screens, components, emails, terminal UI, game UI, or app shells. Detects the stack and surface mode, runs the Pixelcraft loop, routes to named Pixelcraft skills, applies the mandatory cross-platform floor, and produces an evidence-labeled final report.
+description: Orchestrates distinctive, evidence-verified UI work across any frontend stack. Use when designing, building, redesigning, auditing, or polishing web apps, mobile apps, desktop windows, data apps, terminal UI, game UI, emails, paginated documents/PDFs/slides, social/video media, chat/bot/AI assistant UI, spatial/XR, constrained TV/wearable/voice/embedded surfaces, browser/IDE extensions, dataviz dashboards, brand kits, or Figma design handoffs. Detects the stack and surface mode, runs the Pixelcraft loop, routes to named Pixelcraft skills, applies the mandatory cross-platform floor, and produces an evidence-labeled final report.
 license: MIT
 metadata:
   version: 0.1.0

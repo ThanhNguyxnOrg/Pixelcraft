@@ -21,6 +21,19 @@ Record before coding:
 
 Do not treat an entire page capture as a precise component contract when only one region was approved.
 
+## 1b. Structured design-source intake (Figma MCP, Code Connect, Penpot)
+
+Prefer machine-readable design metadata over eyeballing screenshots whenever tools are available:
+
+| Source / tool | Operational workflow | What it establishes |
+|---|---|---|
+| **Figma MCP Server** | 1) Call `get_code_connect_map` to locate existing production component bindings; 2) call `get_variable_defs` to fetch bound semantic variables and mode values; 3) call `get_design_context` for Auto Layout hierarchy, constraints, and variants; 4) call `get_screenshot` as the visual verification reference. | Authoritative layout structure, variable tokens, and mapped codebase components (`artifact-observed`) |
+| **Figma Code Connect** | Consume component imports/props directly from `*.figma.tsx`/`.ts`/`.swift`/`.kt` bindings; never re-implement a Code-Connected primitive as raw markup. | Verified component API reuse (`static`) |
+| **Figma Variables REST API** | Pull collection/mode JSON via `GET /v1/files/:file_key/variables/local` into DTCG / Resolver files (`pixelcraft-tokens`) rather than hand-transcribing hex codes. | Canonical mode/token parity across light, dark, brand, and density |
+| **Penpot & Tokens Studio** | Export W3C DTCG JSON / CSS tokens directly from Penpot Design Tokens or Tokens Studio Git sync; inspect flex/grid layout properties rather than absolute x/y coordinates. | Open-format tokens and semantic layout intent |
+
+Treat any auto-generated HTML/CSS snippet emitted by Figma MCP or Dev Mode as a **structural reference**, never final production code—refactor into the repository's real components, semantic tokens, routing, and accessibility primitives.
+
 ## 2. Inventory implementation before generation
 
 Reuse is the default. Build a mapping table before writing UI:
@@ -52,16 +65,21 @@ Capture collections/modes such as light/dark/brand/density/locale as explicit th
 
 Preserve the target platform's architecture and idioms:
 
-| Stack | Translation posture |
+| Stack / Surface | Translation posture |
 |---|---|
-| React/Next/Solid/Qwik | compose existing components/hooks; preserve state ownership, server/client boundaries, routing, accessibility semantics, and CSS architecture |
-| Vue/Nuxt | map props/slots/composables and template structure; preserve reactivity ownership rather than copying DOM literalism |
-| Svelte/Angular/Lit/server-rendered web | use framework-native component contracts, control flow, form behavior, hydration boundaries, and CSS scoping |
-| Flutter | translate layout intent into widget composition/constraints, ThemeData/tokens, MediaQuery/size classes, semantic widgets, and immutable state flow |
-| SwiftUI/UIKit | use view composition/modifiers or existing view controllers, Dynamic Type, safe areas, trait/size classes, environment/theme propagation |
-| Jetpack Compose/Multiplatform | use composables/slots/Modifier chains, Material or project theme tokens, density/insets, state hoisting, semantics |
-| React Native/Expo | preserve native navigation/gesture expectations, StyleSheet/theme tokens, safe areas, platform splitting only when justified |
-| TUI/email/document/game/constrained | translate visual meaning into the medium's constraints; never pretend DOM/CSS capabilities exist |
+| React / Next.js / TanStack Start / React Router v7 / Solid / Qwik | compose existing components/hooks/loaders; preserve state ownership, server/client boundaries, routing, accessibility semantics, and CSS architecture |
+| Vue / Nuxt | map props/slots/composables and template structure; preserve reactivity ownership rather than copying DOM literalism |
+| Svelte / Angular / Astro / htmx / Lit / server-rendered web | use framework-native component contracts, islands/partial hydration, server-driven HTML forms/swaps, Shadow DOM encapsulation, and CSS scoping |
+| Flutter | translate layout intent into widget composition/constraints, `ThemeData`/tokens, `MediaQuery`/size classes, semantic widgets, and immutable state flow |
+| SwiftUI / UIKit | use view composition/modifiers or existing view controllers, Dynamic Type, safe areas, trait/size classes, environment/theme propagation |
+| Jetpack Compose / Multiplatform | use composables/slots/Modifier chains, Material or project theme tokens, density/insets, state hoisting, semantics |
+| React Native / Expo / LynxJS | preserve native navigation/gesture expectations, StyleSheet/CSS tokens, safe areas, native accessibility attributes, and platform splitting only when justified |
+| Desktop (Tauri, Electron, Qt, WinUI/WPF, Avalonia, Rust GPUI/Slint) | map layout into native windowing, menus, keyboard shortcuts, system theme/DPI scaling, and platform accessibility APIs (UI Automation / NSAccessibility / AccessKit) |
+| Data apps (marimo, Streamlit, Gradio, Reflex, NiceGUI, Dash, Shiny, Observable) | map visual hierarchy onto framework-native layout containers, reactive state cells, and accessible chart/table outputs without fighting framework rerun lifecycles |
+| Extensions (browser MV3, VS Code webviews, Raycast, Figma/Office) | isolate content-script styles inside Shadow DOM, bind host theme variables (`--vscode-*`), respect CSP, and fit compact popup/sidebar budgets |
+| Spatial / XR (visionOS, Android XR, Horizon OS, WebXR, Unity XRI) | translate 2D frames into comfortable viewing depth, angular target sizes, gaze/hand/controller affordances, and passthrough-safe contrast surfaces |
+| Media (Satori, Takumi, Remotion, Motion Canvas, FFmpeg) | respect explicit renderer subset limits (Flexbox-only Satori, deterministic frame math, bundled fonts, platform safe zones) |
+| TUI / email / document / game / constrained | translate visual meaning into the medium's constraints; never pretend DOM/CSS capabilities exist |
 
 Responsive behavior must be inferred from constraints and breakpoint evidence, not guessed from one desktop capture. If missing, implement the smallest defensible adaptation and label it an assumption.
 

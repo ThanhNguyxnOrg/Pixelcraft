@@ -23,47 +23,63 @@ Maskable icons need generous quiet space because Android masks crop corners/circ
 
 Use platform-native source generation rather than manually resizing arbitrarily.
 
-### iOS/iPadOS
+### iOS / iPadOS / macOS (iOS 18+ Dark/Tinted & Apple 26 Icon Composer `.icon`)
 
-Modern Xcode asset catalogs normally use a single **1024×1024** App Store/icon source from which required variants are produced. Rules:
+Modern Apple platforms require layered appearance-aware icons rather than a single flat light-mode square:
 
-- supply square artwork without transparency in the final icon;
-- do not add rounded corners manually—the system applies the mask;
-- keep critical detail away from edges because cropping/scaling is platform-controlled;
-- verify small sizes, Spotlight/settings scale, dark/tinted icon variants where supported, and App Store rendering.
+- **iOS 18+ App Icons (Asset Catalog):** supply three distinct **1024×1024** variants when targeting iOS 18+: **Any Appearance (Light)** (opaque background, no manual rounded corners), **Dark** (transparent foreground artwork over dark system backdrop or custom dark ground), and **Tinted** (grayscale/monochrome foreground alpha mask so iOS tinting stays crisp without muddy contrast).
+- **iOS 26 / macOS 26 Liquid Glass Icon Composer (`.icon` bundles):** author multi-layer `.icon` bundles via Apple **Icon Composer** (layered SVG/PNG foreground, specular glass material parameters, background fill) so the OS renders dynamic specular highlights, depth parallax, clear/tinted modes, and Reduce Transparency fallbacks automatically across iOS, iPadOS, macOS, and watchOS.
+- Keep critical artwork away from outer edges because platform masks and optical specular rims crop/refract near boundaries; verify Spotlight, Settings, Dock magnification, and small-size legibility.
 
 ### Android adaptive icons
 
 Android adaptive icons use foreground/background layers and runtime masks. The canonical design canvas is **108×108dp**, with the inner **72×72dp** treated as the visible safe zone; outer regions can be cropped by masks. Current Android also supports monochrome themed icons. Test foreground/background separation, monochrome recognizability, round/squircle masks, scaling, and themed contrast. Verify current platform guidance before release because mask and themed-icon behavior evolves.
 
-### macOS and Windows
+### Windows and Linux desktop
 
-- macOS: preserve platform depth/shape conventions and test Dock magnification/dark context; use asset-catalog generation rather than embedding fake rounded-rectangle chrome inside every layer.
 - Windows: produce ICO/MSIX/Store assets according to target packaging. ICO commonly includes 16/24/32/48/256 px entries, but packaging requirements depend on installer/store target—verify current documentation instead of treating that list as law.
 - Linux/desktop: provide scalable SVG plus PNG sizes required by the shell/theme target.
 
-## SVG optimization
+## SVG optimization and raster-to-vector tracing caveats
 
-Use SVGO or equivalent in the pipeline, but configure preservation deliberately:
+Use **SVGO (v3/v4)** extending `preset-default` rather than overriding the entire plugin array (`removeViewBox` is deprecated/disabled by default in modern SVGO—do not pass removed plugin keys):
 
-```json
-{
-  "plugins": [
-    { "name": "removeViewBox", "active": false },
-    { "name": "cleanupIds", "params": { "preserve": ["pixelcraft-title", "pixelcraft-desc"] } }
-  ]
-}
+```js
+// svgo.config.mjs
+export default {
+  multipass: true,
+  plugins: [
+    {
+      name: 'preset-default',
+      params: {
+        overrides: {
+          cleanupIds: {
+            preserve: ['brand-logo-title', 'brand-logo-desc'],
+          },
+        },
+      },
+    },
+  ],
+};
 ```
 
 Rules:
 
-- never strip `viewBox`; width/height can still be controlled by consumers;
+- always preserve `viewBox` (modern SVGO keeps `viewBox` by default inside `preset-default`);
 - keep `<title>`/`<desc>` and accessible IDs when inline SVG must expose meaning;
 - do not collapse/merge paths when that destroys mask/animation/semantic structure;
 - convert text to paths for portable logo artwork or embed a properly licensed font; do both consciously;
 - inspect optimizer diff visually—small numeric rounding can deform pixel-aligned marks;
 - sanitize untrusted SVG before serving it;
 - retain unminified source in version control or a design artifact store.
+
+### Raster-to-vector tracing caveats (Recraft SVG / VTracer)
+
+Image generators and auto-tracers (**Recraft SVG** native vector output, **VTracer** color raster tracing) are starting points, not finished master logos:
+
+- Inspect node counts, redundant overlapping fills, unclosed paths, tiny stray speckles, and uneven Bézier handles in a real vector editor (Figma, Illustrator, Inkscape) before shipping.
+- Rebuild geometric marks cleanly from true primitives/grid geometry rather than shipping auto-traced splines with wobbling curves.
+- Verify crisp rendering at `16×16` and `32×32 px` before exporting favicons or app icons.
 
 ## Font subsetting
 
@@ -89,37 +105,55 @@ pyftsubset Input.ttf \
 - WOFF2 is the normal web delivery format; keep WOFF/TTF/OTF only where a renderer/platform requires them;
 - verify license permission for embedding/subsetting/conversion.
 
-## Raster image format choice
+## Raster image format choice and `<picture>` fallback
 
 | Format | Use | Avoid |
 |---|---|---|
 | SVG | logos/icons/simple vector art | complex photographic texture or untrusted active content |
-| AVIF | high compression photos/gradients where support/encode cost is acceptable | requiring universal legacy fallback without alternative |
+| AVIF | high compression photos/gradients paired with WebP/JPEG fallback | bare `<img src="*.avif">` without fallback for older viewers/mail clients |
 | WebP | broad modern photographic/alpha compression baseline | assuming it is always smaller/better than AVIF/JPEG |
 | PNG | lossless UI, transparency, pixel-aligned artwork, compatibility | large photos where lossy compression is appropriate |
-| JPEG | legacy photographic compatibility without alpha | text/line art/transparency/repeated editing |
+| JPEG | universal photographic compatibility without alpha | text/line art/transparency/repeated editing |
 
-Use responsive markup deliberately:
+Use `<picture>` with ordered `<source>` candidates and a universally decodable fallback `<img>`:
 
 ```html
-<img
-  src="hero-1024.avif"
-  srcset="hero-640.avif 640w, hero-1024.avif 1024w, hero-1920.avif 1920w"
-  sizes="(max-width: 720px) 100vw, 60vw"
-  width="1024" height="640" alt="..." />
+<picture>
+  <source
+    type="image/avif"
+    srcset="hero-640.avif 640w, hero-1024.avif 1024w, hero-1920.avif 1920w"
+    sizes="(max-width: 720px) 100vw, 60vw" />
+  <source
+    type="image/webp"
+    srcset="hero-640.webp 640w, hero-1024.webp 1024w, hero-1920.webp 1920w"
+    sizes="(max-width: 720px) 100vw, 60vw" />
+  <img
+    src="hero-1024.jpg"
+    srcset="hero-640.jpg 640w, hero-1024.jpg 1024w, hero-1920.jpg 1920w"
+    sizes="(max-width: 720px) 100vw, 60vw"
+    width="1024" height="640" alt="Descriptive alt text" />
+</picture>
 ```
 
 `srcset` width descriptors describe image resource width; `sizes` tells the browser the rendered layout width. Density descriptors (`1x/2x/3x`) fit fixed-size icons/thumbnails, while width descriptors fit fluid layout. Do not ship retina multiplication when the source lacks detail or text becomes illegible.
 
+## Provenance and C2PA Content Credentials
+
+Preserve or attach **C2PA Content Credentials** (`c2patool` / generator-signed manifests) on AI-generated or AI-edited brand imagery whenever publishing externally or handing off to legal/brand teams:
+
+- Do not strip existing C2PA provenance manifests blindly during raster recompression without policy approval; configure export pipelines to preserve or re-sign assertions.
+- Record clearly in brand governance which assets are human-authored vectors, licensed photography, or AI-generated concept imagery (copyrightability and trademark clearance depend on honest provenance).
+
 ## Pipeline checklist
 
-- [ ] master vector has correct geometry/viewBox/metadata/license attribution;
+- [ ] master vector has clean geometry (not unedited auto-trace), `viewBox`, metadata, and license attribution;
 - [ ] text is converted to paths or the font license permits embedding;
-- [ ] light/dark/mono variants are deliberate, not automatic inversion;
-- [ ] SVG optimization preserves viewBox/a11y/geometry and visual output is diffed;
-- [ ] favicon ICO/SVG/apple touch/manifest/maskable files match documented dimensions;
-- [ ] native adaptive/store assets tested in real masks/scales;
+- [ ] light/dark/tinted/mono variants are deliberate, not automatic inversion;
+- [ ] SVGO v3/v4 (`preset-default`) output preserves `viewBox`/a11y/geometry and is visually diffed;
+- [ ] favicon ICO/SVG/apple-touch/manifest/maskable files match documented dimensions;
+- [ ] native adaptive/iOS 18+ Dark/Tinted and Apple 26 `.icon` assets tested in real masks/scales;
 - [ ] font subsets include required scripts/features and license/name metadata;
-- [ ] raster images use correct format/color profile/DPI-agnostic scaling/srcset;
+- [ ] raster images use `<picture>` AVIF/WebP/JPEG fallback, explicit `width`/`height`, and verified color profiles;
+- [ ] C2PA Content Credentials / provenance status recorded for generated assets;
 - [ ] generated outputs are reproducible from source and never hand-edited;
-- [ ] tiny-size legibility, contrast, transparency, dark background, and compression are inspected.
+- [ ] tiny-size legibility (`16–32 px`), contrast, transparency, dark background, and compression are inspected.

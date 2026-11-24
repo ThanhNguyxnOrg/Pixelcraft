@@ -1,6 +1,6 @@
 ---
 name: pixelcraft-accessibility
-description: Applies and verifies the accessibility floor across platforms. Use when designing or reviewing UI for WCAG 2.2 AA, semantic structure, keyboard/focus operability, contrast, target size, screen readers, Dynamic Type/text scaling, reduced motion, dragging alternatives, redundant entry, accessible authentication, high contrast, subtitles, controller remapping, TUI/email/game accessibility, or platform-specific assistive technology behavior.
+description: Applies and verifies the accessibility floor across platforms. Use when designing or reviewing UI for WCAG 2.2 AA, APCA contrast, ARIA APG patterns, semantic structure, keyboard/focus operability, target size, screen readers, Dynamic Type/text scaling, reduced motion, prefers-reduced-transparency, forced-colors, dragging alternatives, redundant entry, accessible authentication, EAA/ADA compliance context, subtitles, canvas/WebGL alternatives, AccessKit, controller remapping, or web/mobile/desktop/TUI/document/spatial/extension/email/game accessibility.
 license: MIT
 metadata:
   version: 0.1.0
@@ -12,11 +12,11 @@ Accessibility is a floor built during design, not a final repair pass. Meet the 
 
 ## References
 
-- Read [references/wcag22-checks.md](references/wcag22-checks.md) for the concrete WCAG 2.2 AA floor and pass/fail checks.
-- Read [references/apg-patterns.md](references/apg-patterns.md) before implementing or reviewing custom dialogs, menus, tabs, comboboxes, disclosures, grids, tooltips, carousels, live regions, trees, or drag/drop.
-- Read [references/platforms.md](references/platforms.md) when translating the floor to web, iOS, Android, Flutter/React Native, data apps, desktop, TUI, email, or game UI.
-- Read [references/motion-canvas.md](references/motion-canvas.md) when reviewing animation, reduced motion, custom cursor, canvas, WebGL, audio/video, or interactive graphics alternatives.
-- Read [references/verification.md](references/verification.md) before claiming compliance; separate automated evidence from manual judgment.
+- Read [references/wcag22-checks.md](references/wcag22-checks.md) for the concrete WCAG 2.2 AA floor, APCA cross-reference, regulatory scope (EAA / EN 301 549 / ADA Title II), and pass/fail checks.
+- Read [references/apg-patterns.md](references/apg-patterns.md) before implementing or reviewing native HTML primitives (`<dialog>`, Popover, `inert`, `<details name>`) or custom composite widgets.
+- Read [references/platforms.md](references/platforms.md) when translating the floor to web, iOS, Android, Flutter/React Native/LynxJS, data apps, desktop/AccessKit, TUI, email, documents/PDF/UA, chat UI, extensions, spatial/XR, constrained/TV/wearables, or game UI.
+- Read [references/motion-canvas.md](references/motion-canvas.md) when reviewing animation, reduced motion, prefers-reduced-transparency, flashing limits, custom cursor, canvas/WebGL DOM fallback, or audio/video captions.
+- Read [references/verification.md](references/verification.md) before claiming compliance; separate static linters, browser-rendered automated scans, and manual assistive-tech verification.
 
 ## Core rules
 

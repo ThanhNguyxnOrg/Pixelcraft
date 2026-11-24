@@ -28,7 +28,7 @@ The floor is non-negotiable unless the user explicitly waives a scoped item. It 
 - Acknowledge input quickly: target approximately 0.1s for direct manipulation feedback, 1s for uninterrupted flow, and explicit progress or interruption options beyond that.
 - Targets obey platform units: web floor 24×24 CSS px for WCAG 2.2 AA unless an exception applies; iOS baseline 44×44 pt; Android/Material baseline 48×48 dp.
 - Every asynchronous action exposes loading, success, failure, cancellation/retry, and duplicate-submission behavior.
-- destructive actions use confirmation or undo proportionate to consequence.
+- Destructive actions use confirmation or undo proportionate to consequence.
 - Escape/cancel/back behavior is consistent with the platform and never traps the user.
 - Gesture conflicts, edge swipes, nested scrolling, hover-only affordances, and focus loss are checked explicitly.
 

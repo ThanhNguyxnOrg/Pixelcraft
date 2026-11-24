@@ -1,6 +1,6 @@
 ---
 name: pixelcraft-handoff
-description: Translates approved designs, Figma selections, screenshots, mockups, and design-system artifacts into faithful implementation without losing existing architecture. Use for design-to-code translation, variable-to-token mapping, existing-component reuse, missing-state resolution, cross-stack implementation, ambiguity handling, and visual-fidelity checking with pixelcraft-visual-qa.
+description: Translates approved designs, Figma MCP context, Code Connect bindings, Dev Mode specs, Penpot files, screenshots, mockups, and motion handoff prototypes into faithful implementation without losing existing architecture. Use for design-to-code translation, variable-to-token mapping, existing-component reuse, missing-state resolution, cross-stack implementation, ambiguity handling, and visual-fidelity checking with pixelcraft-visual-qa.
 license: MIT
 metadata:
   version: 0.1.0

@@ -52,6 +52,46 @@ dark surface L .20 C .02 / dark raised L .26 C .025 / dark accent L .72 C .11
 - Test focus, selection, caret, placeholder, disabled, pressed, visited, chart grid, and error text independently in each mode.
 - Honor `prefers-contrast`, forced-colors, and platform high-contrast modes; do not remove system-controlled boundaries.
 
+### CSS Color 5, wide-gamut P3, and `forced-colors` idioms
+
+On modern web surfaces, derive state colors and modes systematically while keeping sRGB and Windows High Contrast (`forced-colors`) intact:
+
+```css
+:root {
+  color-scheme: light dark;
+  --accent: oklch(0.56 0.16 245);
+  /* Light/dark semantic pairing without duplicated media-query blocks */
+  --surface: light-dark(oklch(0.98 0.008 90), oklch(0.19 0.015 250));
+  --ink: light-dark(oklch(0.22 0.015 250), oklch(0.93 0.01 90));
+  /* Perceptual hover/tint states via CSS Color 5 color-mix() and relative color syntax */
+  --accent-hover: oklch(from var(--accent) calc(l - 0.07) c h);
+  --accent-soft: color-mix(in oklch, var(--accent) 14%, var(--surface));
+}
+
+/* Progressive wide-gamut Display P3 chroma boost when hardware supports it */
+@media (color-gamut: p3) {
+  :root {
+    --accent: oklch(0.58 0.22 245);
+  }
+}
+
+/* Forced Colors / Windows High Contrast: preserve boundaries via transparent borders & system colors */
+.button,
+.panel {
+  border: 1px solid transparent; /* invisible on normal displays; rendered in ButtonBorder under forced-colors */
+}
+@media (forced-colors: active) {
+  .button:focus-visible {
+    outline: 2px solid Highlight;
+    outline-offset: 2px;
+  }
+  .status-dot {
+    forced-color-adjust: none; /* opt out ONLY when a swatch carries semantic status paired with text */
+    border: 1px solid CanvasText;
+  }
+}
+```
+
 ### Perceptual contrast (APCA) and dark-mode halation
 
 WCAG 2.2 luminance ratios (`4.5:1` / `3:1`) remain the mandatory legal/accessibility floor, but they ignore polarity and font weight—creating **dark-mode false passes** where gray text on dark surfaces passes `4.5:1` mathematically yet dissolves visually from halation. Pair WCAG 2.2 AA with **APCA Lightness Contrast (`|Lc|`)** checks tied to font size and weight:

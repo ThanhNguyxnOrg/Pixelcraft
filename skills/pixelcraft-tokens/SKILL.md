@@ -1,6 +1,6 @@
 ---
 name: pixelcraft-tokens
-description: Creates and exports cross-platform design tokens in the W3C Design Tokens Community Group 2025.10 format. Use when defining color, type, spacing, radius, motion, elevation, theme, dark-mode, semantic, component, or multi-platform design-token systems; converting a direction card into reusable tokens; or exporting tokens for CSS, Tailwind, SwiftUI, Compose, Flutter, Python, Qt, or Textual.
+description: Creates, resolves, and exports cross-platform design tokens in the W3C Design Tokens Community Group (DTCG) 2025.10 format and DTCG Resolver specification. Use when defining OKLCH color ramps, type, spacing, radius, motion, elevation, theme, dark-mode, semantic, component, or multi-platform token systems; wiring Style Dictionary, Terrazzo, Tokens Studio, Figma Variables, or Code Connect pipelines; or exporting tokens to CSS, SCSS, Tailwind, TypeScript, SwiftUI, Compose, Android XML, Flutter, Python, Qt, Textual, XAML, or Rust.
 license: MIT
 metadata:
   version: 0.1.0
@@ -12,14 +12,14 @@ Tokens are design decisions in portable form. They encode hierarchy and semantic
 
 ## Reference and tools
 
-- Read [references/format.md](references/format.md) when authoring DTCG structure, references, modes, themes, or token tiers.
-- Read [references/theme-presets.md](references/theme-presets.md) when designing light/dark/high-contrast modes, dark elevation/accent behavior, forced-colors behavior, or exporter-supported DTCG mode overrides.
+- Read [references/format.md](references/format.md) when authoring DTCG 2025.10 structure, `$extends`/`$root`/`$deprecated`, references, or DTCG Resolver (`*.resolver.json`) modes and themes.
+- Read [references/theme-presets.md](references/theme-presets.md) when designing light/dark/high-contrast modes, `light-dark()`, `prefers-reduced-transparency`, forced-colors behavior, anti-FOUC theme initialization, or DTCG mode overrides.
 - Read [references/state-tokens.md](references/state-tokens.md) whenever defining interactive control states or validating state coverage across modes.
-- Read [references/governance.md](references/governance.md) before renaming, removing, versioning, deprecating, or meaningfully redefining tokens.
+- Read [references/governance.md](references/governance.md) before renaming, removing, versioning, deprecating (`$deprecated`), or meaningfully redefining tokens.
 - Read [references/adoption.md](references/adoption.md) when migrating consumers, inventorying hardcoded values, or improving documentation/usage of an existing system.
-- Read [references/token-tooling.md](references/token-tooling.md) when setting up Style Dictionary v4, Tokens Studio transforms, Figma Variables pipelines, or Figma Code Connect (`*.figma.tsx`) mappings.
+- Read [references/token-tooling.md](references/token-tooling.md) when setting up Terrazzo, Style Dictionary v4, Tokens Studio transforms, Figma Variables, Figma MCP Server, or Figma Code Connect mappings.
 - Use [assets/tokens.example.json](assets/tokens.example.json) as the canonical small example and [assets/tokens.modes.example.json](assets/tokens.modes.example.json) for mode overrides.
-- Run `node scripts/export-tokens.mjs --help` for exporter usage. The exporter supports `css`, `tailwind`, `swift`, `kotlin`, `dart`, `python`, `qt`, and `textual`.
+- Run `node scripts/export-tokens.mjs --help` for exporter usage. The exporter supports `css`, `tailwind`, `scss`, `ts`, `swift`, `kotlin`, `android-xml`, `dart`, `python`, `qt`, `textual`, `xaml`, and `rust`.
 
 ## Token tiers
 

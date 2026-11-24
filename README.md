@@ -40,69 +40,74 @@ The full architecture is documented in [`docs/ARCHITECTURE.md`](docs/ARCHITECTUR
 | `pixelcraft-plan` | Step-zero planning: brownfield repo mapping, greenfield requirements intake, optional product/stack discovery interview for unresolved material decisions, weighted stack selection, `.pixelcraft/plan.md` |
 | `pixelcraft-direction` | Divergent visual direction, scoring, motion identity, evidence-based reference analysis, repetition history, anti-slop fingerprints |
 | `pixelcraft-craft` | Typography, color, composition, motion language, animation principles, imagery, and icon craft |
-| `pixelcraft-tokens` | DTCG token structure and multi-platform token export |
-| `pixelcraft-ux` | JTBD, flows, information architecture, state matrices, forms, feedback, i18n UX, UX writing |
-| `pixelcraft-patterns` | Dashboard/admin, commerce, editors/canvas, communication, auth/onboarding, marketing composition, scrollytelling, settings, search/filtering, tables/CRUD |
-| `pixelcraft-dataviz` | Chart choice, encoding, truthful labeling, colorblind-safe palettes, tables/dashboards, streaming, node graphs, maps, scalable rendering, chart accessibility |
-| `pixelcraft-accessibility` | WCAG 2.2 AA floor, reduced motion, canvas/graphics alternatives, media controls, and platform verification |
-| `pixelcraft-review` | Audit/critique/polish modes, severity taxonomy, Nielsen checks, persona walkthroughs, slop scanning |
-| `pixelcraft-visual-qa` | Render/screenshot/video/trace QA, animation milestone capture, real-time graphics and GPU performance evidence |
-| `pixelcraft-extensions` | Browser MV3 extensions, content-script Shadow DOM UI, VS Code webviews, Raycast commands, Figma/Office plugins |
-| `pixelcraft-web` | HTML/CSS and web frameworks; GSAP/Motion/Lenis, Three.js/R3F/Spline, PixiJS/Canvas/WebGL, shaders/WebGPU, and interactive audio/video |
-| `pixelcraft-mobile` | SwiftUI, UIKit, Jetpack Compose, Flutter, React Native/Expo, Kotlin Multiplatform, Ionic/Capacitor, .NET MAUI, Flet, Kivy |
-| `pixelcraft-data-apps` | Streamlit, Gradio, Reflex, NiceGUI, Dash, Panel, Shiny, Jupyter widgets, R Shiny, Julia Genie, Observable Framework, Evidence |
-| `pixelcraft-desktop` | Tauri, Electron, Qt/PySide/QML, WinUI/WPF, AppKit, GTK, Avalonia, Rust GUI, JavaFX/Swing, C++ GUI, Go GUI, Uno |
-| `pixelcraft-tui` | Textual, Rich, Ink, Bubble Tea/Lip Gloss, Ratatui |
-| `pixelcraft-email` | Table HTML email, MJML, React Email, client quirks, dark mode, image blocking, plaintext |
-| `pixelcraft-document` | Print CSS/paged media, PDF pipelines, invoices/reports/CVs, slides, projector/document legibility |
-| `pixelcraft-media` | OG/social cards, SVG banners, platform safe zones, thumbnail legibility, Remotion/Motion Canvas |
-| `pixelcraft-chat-ui` | Slack Block Kit, Discord components, Telegram/Mini Apps, Zalo, WhatsApp, Teams Adaptive Cards, conversation design |
-| `pixelcraft-constrained` | TV/10-foot, wearables, e-ink, kiosk, embedded/LVGL, automotive templates, voice UI |
-| `pixelcraft-handoff` | Approved-design translation, variables-to-token mapping, component reuse, missing states and visual fidelity loops |
-| `pixelcraft-spatial` | visionOS, WebXR, Quest Interaction SDK, Unity XRI, embodied input, XR comfort/ergonomics/privacy/accessibility |
-| `pixelcraft-game-ui` | Unity UI Toolkit, Godot, Unreal UMG, LÖVE2D, Bevy, MonoGame, HUD principles |
-| `pixelcraft-brandkit` | Brand kits, identity boards, logo systems, moodboards, visual-world presentations, brand-specific prompting and QA |
+| `pixelcraft-tokens` | DTCG 2025.10 tokens & Resolver, Style Dictionary/Terrazzo/Figma MCP, and multi-platform token export (13 targets) |
+| `pixelcraft-ux` | JTBD, flows, information architecture, state matrices (incl. AI/streaming), forms, feedback, i18n UX, UX writing |
+| `pixelcraft-patterns` | Dashboard/admin, commerce, SaaS billing/paywalls, multi-tenant/RBAC/audit logs, notifications/inbox, scheduling/Kanban, history/diff/undo, AI-in-app & offline sync, editors/canvas, communication, auth/onboarding, marketing, scrollytelling, settings, search/filtering, tables/CRUD |
+| `pixelcraft-dataviz` | Chart choice, encoding, truthful labeling, colorblind-safe palettes, tables/dashboards, streaming, node graphs, maps/PMTiles/Turf, scalable rendering, chart accessibility |
+| `pixelcraft-accessibility` | WCAG 2.2 AA floor, native HTML APG replacements, AccessKit, reduced motion, canvas/graphics alternatives, media controls, and platform verification |
+| `pixelcraft-review` | Audit/critique/polish modes, severity taxonomy, Nielsen + AI heuristics, persona walkthroughs, slop scanning |
+| `pixelcraft-visual-qa` | Render/screenshot/video/trace QA, animation milestone capture, document/PDF/terminal/email/mobile/desktop/game captures, and GPU performance evidence |
+| `pixelcraft-extensions` | Browser MV3 extensions (WXT/Plasmo/Safari), Shadow DOM UI, VS Code webviews/Chat/MCP, Raycast, Figma plugins/widgets, Office, JetBrains, Obsidian, Shopify/Forge |
+| `pixelcraft-web` | HTML/CSS, JS/TS & non-JS web frameworks, styling/component/sync/auth/editor/grid ecosystems; GSAP/Motion/Lenis, Three.js/R3F/Babylon/PlayCanvas/Threlte/TresJS/`<model-viewer>`, PixiJS/Canvas/WebGL/WebGPU/TSL, and browser audio/video players |
+| `pixelcraft-mobile` | SwiftUI, UIKit, Jetpack Compose, Flutter, React Native/Expo, LynxJS, Kotlin Multiplatform, NativeScript/Skip, Ionic/Capacitor, .NET MAUI, Flet, Kivy |
+| `pixelcraft-data-apps` | Streamlit, Gradio, marimo/Solara/Mesop/Taipy, Chainlit/FastHTML/Preswald/internal tools, Reflex, NiceGUI, Dash, Panel, Shiny, Jupyter/AnyWidget, R Shiny, Julia Genie, Observable Framework, Evidence |
+| `pixelcraft-desktop` | Tauri v2, Electron/Electrobun, Qt 6/PySide6/QML, WinUI 3/WPF, AppKit/SwiftUI macOS, GTK4/libadwaita, Avalonia, Rust GUI (GPUI/Slint/Dioxus/Iced/egui), JavaFX/Swing, C++/Zig GUI, Go GUI (Wails v3/Fyne/Gio), Uno |
+| `pixelcraft-tui` | Textual, Rich, Ink, Bubble Tea v2/Lip Gloss v2, Ratatui, Terminal.Gui v2, Spectre.Console, prompt_toolkit, OpenTUI, FTXUI, CLI prompts, and modern terminal protocols |
+| `pixelcraft-email` | Table HTML email, MJML, React Email, Maizzle, Vue Email, Classic & New Outlook quirks, Gmail 102 KB limits, dark mode, image blocking, BIMI, plaintext |
+| `pixelcraft-document` | Print CSS/paged media, Typst/LaTeX/WeasyPrint/Paged.js/Playwright PDF/Gotenberg/React-PDF/`pdf-lib`/Quarto, PDF.js/PptxGenJS, invoices/reports/CVs, slides, PDF/UA verification |
+| `pixelcraft-media` | OG/social cards (Satori/Takumi/Resvg/Sharp/Playwright), SVG banners, platform safe zones, thumbnail legibility, Remotion/Motion Canvas/Revideo/FFmpeg |
+| `pixelcraft-chat-ui` | Host-constrained messaging & mini apps (Slack Block Kit, Discord Components V2, Telegram, Zalo, WhatsApp Flows, Teams Adaptive Cards, LINE LIFF, WeChat) and app-owned AI/agentic workspaces (Vercel AI SDK, assistant-ui, CopilotKit, AG-UI, MCP Apps, OpenAI Apps SDK, A2UI, LangGraph) |
+| `pixelcraft-constrained` | TV/10-foot (tvOS/Compose for TV/Roku/Fire TV), wearables (watchOS/Wear OS), e-ink, kiosk/POS/ISA-101 HMI, embedded (LVGL/Slint MCU/`embedded-graphics`), automotive (CarPlay/AAOS), voice (SSML & Realtime Voice AI) |
+| `pixelcraft-handoff` | Approved-design translation, Figma MCP/Code Connect/Variables, Penpot, component reuse, motion handoff, missing states and visual fidelity loops |
+| `pixelcraft-spatial` | visionOS 2/26, Android XR, Meta Horizon OS/Spatial SDK, WebXR (`@react-three/xr` v6/Wonderland/Needle), Unity XRI, Unreal OpenXR — embodied input, XR comfort/ergonomics/privacy/accessibility |
+| `pixelcraft-game-ui` | Unity UI Toolkit & uGUI, Godot 4.5, Unreal UMG/CommonUI/MVVM, LÖVE2D, Bevy, MonoGame, HTML5/middleware game UI (Phaser/PixiJS/NoesisGUI/RmlUi/Dear ImGui/Raylib/SDL3), HUD principles |
+| `pixelcraft-brandkit` | Brand kits, identity boards, logo systems, moodboards, governance, small-size icon pipelines, and token handoff |
 
 ## Supported stacks
 
 | Surface | Coverage |
 |---|---|
-| Web | HTML/CSS, React/Next.js, Vue/Nuxt, Svelte/SvelteKit, Solid, Angular, Astro, Qwik, htmx/Alpine, Lit/Web Components, Tailwind CSS v4, Leptos/Yew, Kotlin web, Elm, ClojureScript, F#/Fable, Scala/Laminar, Vaadin/Thymeleaf |
-| Server-rendered | Rails/Hotwire, Laravel Blade/Livewire, Django/Jinja, Phoenix LiveView, Blazor, Go templ/templates |
-| Mobile/cross-platform apps | SwiftUI, UIKit, Jetpack Compose, Flutter, React Native/Expo, Kotlin Multiplatform, Ionic/Capacitor, .NET MAUI, Flet, Kivy |
-| Data apps/internal tools | Streamlit, Gradio, Reflex, NiceGUI, Dash, Panel, Shiny for Python/R, Jupyter widgets, Julia Genie, Observable Framework, Evidence |
-| Desktop | Tauri, Electron, Qt/PySide/QML, WinUI/WPF, AppKit, GTK/libadwaita, Avalonia, egui/Slint/Dioxus/iced, JavaFX/Swing, Qt C++/ImGui/wxWidgets, Fyne/Wails/Gio, Uno |
-| Terminal | Textual, Rich, Ink, Bubble Tea/Lip Gloss, Ratatui |
-| Email | HTML tables, MJML, React Email, Outlook/Gmail/Apple Mail constraints |
-| Game UI | Unity UI Toolkit, Godot Control/Theme, Unreal UMG/Slate/CommonUI, LÖVE2D, Bevy, MonoGame, HUD/focus/safe-area principles |
-| Identity | Brand-kit and visual-world generation workflows with token handoff |
-
+| Web | HTML/CSS, React/Next/React Router v7/TanStack Start, Vue/Nuxt/Pinia, Svelte 5/SvelteKit 2, Solid/SolidStart, Angular, Astro 5, Qwik, Preact/Fresh/Hono, htmx/Alpine/Datastar/Unpoly, Lit/Web Components, Tailwind CSS v4, Rust Leptos/Yew/Dioxus, Kotlin/Wasm/Kobweb, Elm, ClojureScript, F#/Fable, Scala/Laminar, Java Vaadin/Hilla/Thymeleaf; sync engines (Zero/ElectricSQL/Yjs/PowerSync/Convex), auth/checkout, editors, grids, Three.js/WebGPU/Babylon/PlayCanvas/Threlte/TresJS, browser media players |
+| Server-rendered | Rails 8/Hotwire, Laravel Blade/Livewire, Inertia.js v2, Django/Jinja, FastHTML, Phoenix LiveView 1.0, Blazor .NET 9/10, Go templ/templates |
+| Mobile/cross-platform apps | SwiftUI (iOS 26 Liquid Glass), UIKit, Jetpack Compose (Material 3 Expressive), Flutter (Impeller/Skwasm), React Native/Expo (New Architecture/Expo Router/Uniwind), LynxJS, Kotlin Multiplatform (Compose iOS), NativeScript, Skip, Ionic/Capacitor, .NET MAUI, Flet, Kivy/KivyMD |
+| Data apps/internal tools | marimo, Solara, Mesop, Taipy, Streamlit, Gradio 5/6, Chainlit, FastHTML, Preswald, Reflex, NiceGUI, Dash 3, Panel, Shiny for Python/R, Jupyter/AnyWidget/Voilá, Julia Genie/Stipple, Observable Framework, Evidence, Retool/Appsmith/ToolJet |
+| Desktop | Tauri v2, Electron, Electrobun, Qt 6/PySide6/QML, WinUI 3/WPF, AppKit/SwiftUI macOS, GTK4/libadwaita, Avalonia 11, Rust GPUI/Slint/Dioxus/Iced/egui/Floem/Xilem/Relm4, JavaFX/Swing/FlatLaf, C++ Qt/ImGui/wxWidgets/FLTK/Zig DVUI, Go Fyne/Wails v3/Gio, Uno |
+| Terminal | Textual, Rich, Ink, Bubble Tea v2/Lip Gloss v2/Huh, Ratatui, Terminal.Gui v2, Spectre.Console, prompt_toolkit, OpenTUI, FTXUI, Notcurses, Clack/Inquirer, modern terminal protocols (DEC 2026/Kitty/Sixel/OSC 8) |
+| Email | HTML tables, MJML, React Email, Maizzle, Vue Email; Classic & New Outlook, Gmail 102 KB limits, Apple Mail dark mode, BIMI, plaintext parity |
+| Document & slides | Print CSS (`@page`/margin boxes), Typst, LaTeX, WeasyPrint, Paged.js, Playwright PDF, Gotenberg, PrinceXML, Vivliostyle, React-PDF, `pdf-lib`, Quarto, PDF.js, PptxGenJS, Slidev, reveal.js, Marp |
+| External media | OG/social cards (Satori, Takumi, Resvg, Sharp, Playwright), SVG posters, Remotion v4, Motion Canvas, Revideo, FFmpeg, YouTube/Bluesky/Discord/WhatsApp safe zones |
+| Chat & AI-native UI | Slack Block Kit/AI Assistant, Discord Components V2/Activities, Telegram Mini Apps, Zalo, WhatsApp Flows, Teams Adaptive Cards, LINE LIFF, WeChat; Vercel AI SDK, assistant-ui, CopilotKit, AG-UI, MCP Apps, OpenAI Apps SDK, A2UI, LangGraph |
+| Extensions & plugins | Chrome/Firefox/Safari MV3 (WXT, Plasmo, CRXJS), VS Code webviews/Chat/MCP, Raycast, Figma plugins/widgets, Office Add-ins, JetBrains Jewel/UI DSL, Obsidian, Shopify App Bridge/Polaris, Atlassian Forge |
+| Constrained & voice | tvOS, Compose for TV, Roku BrightScript, Fire TV/Vega OS, watchOS, Wear OS, e-ink, kiosk/POS/ISA-101 HMI, LVGL/Slint MCU/`embedded-graphics`, CarPlay/AAOS, SSML & Realtime Voice AI |
+| Spatial & XR | visionOS 2/26, Android XR (Compose for XR), Meta Horizon OS/Spatial SDK, WebXR (`@react-three/xr` v6/Wonderland/Needle), Unity XRI, Unreal OpenXR |
+| Game UI | Unity UI Toolkit & uGUI, Godot 4.5, Unreal UMG/CommonUI/MVVM, LÖVE2D, Bevy, MonoGame, Phaser/PixiJS/Kaplay, NoesisGUI/RmlUi/Gameface/Dear ImGui HUD, Raylib/SDL3/Defold/Cocos |
+| Identity | Brand-kit, logo systems, small-size icon pipelines, and visual-world generation workflows with DTCG token handoff |
 
 ### Language routing overview
 
 | Language | Frameworks/surfaces | Pixelcraft skill → reference |
 |---|---|---|
-| C# | Blazor, MAUI, WinUI/WPF, Avalonia, Uno, MonoGame | `pixelcraft-web` → `server-rendered`; `pixelcraft-mobile` → `dotnet-maui`; `pixelcraft-desktop` → `winui-wpf`/`avalonia`/`uno-platform`; `pixelcraft-game-ui` → `monogame` |
-| C++ | Qt/QML, Dear ImGui, wxWidgets | `pixelcraft-desktop` → `cpp-gui` |
-| Clojure | ClojureScript/Reagent/re-frame | `pixelcraft-web` → `clojurescript` |
-| Dart | Flutter mobile/web/desktop | `pixelcraft-mobile` → `flutter`; apply `pixelcraft-web` checks for browser-dominant surfaces |
+| C / C++ | Qt/QML, Dear ImGui, wxWidgets, FLTK, Clay, raygui, LVGL, FTXUI, Notcurses, RmlUi, NoesisGUI, SDL3, Raylib | `pixelcraft-desktop` → `cpp-gui`; `pixelcraft-tui` → `extended-tui-toolkits`; `pixelcraft-constrained` → `specialized-hardware`; `pixelcraft-game-ui` → `web-and-middleware-game-ui` |
+| C# | Blazor, MAUI, WinUI/WPF, Avalonia, Uno, Terminal.Gui/Spectre.Console, Unity uGUI/UI Toolkit, MonoGame | `pixelcraft-web` → `server-rendered`; `pixelcraft-mobile` → `dotnet-maui`; `pixelcraft-desktop` → `winui-wpf`/`avalonia`/`uno-platform`; `pixelcraft-tui` → `extended-tui-toolkits`; `pixelcraft-game-ui` → `unity-ugui`/`unity-ui-toolkit`/`monogame` |
+| Clojure | ClojureScript/Reagent/re-frame/UIx/Helix | `pixelcraft-web` → `clojurescript` |
+| Dart | Flutter mobile/web/desktop | `pixelcraft-mobile` → `flutter`; pair `pixelcraft-desktop` or `pixelcraft-web` checks by primary surface |
 | Elm | Elm Browser UI | `pixelcraft-web` → `elm` |
 | Elixir | Phoenix LiveView | `pixelcraft-web` → `server-rendered` |
 | F# | Fable/Feliz/Elmish, .NET UI | `pixelcraft-web` → `fsharp-fable`; desktop by actual framework |
-| Go | templ/templates, Bubble Tea/Lip Gloss, Fyne/Wails/Gio | `pixelcraft-web` → `server-rendered`; `pixelcraft-tui` → `bubbletea-lipgloss`; `pixelcraft-desktop` → `go-gui` |
-| Java | Vaadin/Thymeleaf, JavaFX/Swing | `pixelcraft-web` → `java-web`; `pixelcraft-desktop` → `javafx-swing` |
-| Julia | Genie/Stipple | `pixelcraft-data-apps` → `julia-genie` |
-| Kotlin | Compose, KMP, Compose Web/Kobweb | `pixelcraft-mobile` → `jetpack-compose`/`kotlin-multiplatform`; `pixelcraft-web` → `kotlin-web` |
-| Lua | LÖVE2D | `pixelcraft-game-ui` → `love2d` |
-| PHP | Laravel Blade/Livewire | `pixelcraft-web` → `server-rendered` |
-| Python | Streamlit/Gradio/Reflex/NiceGUI/Dash/Panel/Shiny/Jupyter; Flet/Kivy; Qt/PySide; Textual/Rich | `pixelcraft-data-apps` matching reference; `pixelcraft-mobile` → `flet`/`kivy`; `pixelcraft-desktop` → `qt-pyside-qml`; `pixelcraft-tui` → `textual`/`rich` |
-| R | Shiny/bslib | `pixelcraft-data-apps` → `r-shiny` |
-| Ruby | Rails/Hotwire | `pixelcraft-web` → `server-rendered` |
-| Rust | Leptos/Yew, egui/Slint/Dioxus/iced, Ratatui, Bevy | `pixelcraft-web` → `leptos-yew`; `pixelcraft-desktop` → `rust-gui`; `pixelcraft-tui` → `ratatui`; `pixelcraft-game-ui` → `bevy` |
+| Go | templ/templates, Bubble Tea/Lip Gloss/Huh/tview, Fyne/Wails (v2/v3)/Gio | `pixelcraft-web` → `server-rendered`; `pixelcraft-tui` → `bubbletea-lipgloss`/`extended-tui-toolkits`; `pixelcraft-desktop` → `go-gui` |
+| Java | Vaadin/Hilla/Thymeleaf/JTE/Qute, JavaFX/Swing/FlatLaf | `pixelcraft-web` → `java-web`; `pixelcraft-desktop` → `javafx-swing` |
+| Julia | Genie/Stipple, Makie | `pixelcraft-data-apps` → `julia-genie`; `pixelcraft-dataviz` → `libraries` |
+| Kotlin | Compose Android/TV/Wear/XR, KMP, Compose Web `wasmJs`/Kobweb, JetBrains Jewel/UI DSL | `pixelcraft-mobile` → `jetpack-compose`/`kotlin-multiplatform`; `pixelcraft-web` → `kotlin-web`; `pixelcraft-constrained` → `tv-wearables`; `pixelcraft-spatial` → `platforms`; `pixelcraft-extensions` → `ide-and-saas-plugins` |
+| Lua | LÖVE2D, Defold | `pixelcraft-game-ui` → `love2d`/`web-and-middleware-game-ui` |
+| PHP | Laravel Blade/Livewire/Inertia | `pixelcraft-web` → `server-rendered` |
+| Python | marimo/Solara/Mesop/Taipy/Streamlit/Gradio/Chainlit/Reflex/NiceGUI/Dash/Panel/Shiny/Jupyter/AnyWidget/FastHTML; Django; Flet/Kivy/KivyMD; Qt/PySide6; Textual/Rich/prompt_toolkit; WeasyPrint/ReportLab | `pixelcraft-data-apps` matching ref; `pixelcraft-web` → `server-rendered`; `pixelcraft-mobile` → `flet`/`kivy`; `pixelcraft-desktop` → `qt-pyside-qml`; `pixelcraft-tui` → `textual`/`rich`/`extended-tui-toolkits`; `pixelcraft-document` → `pdf-tools` |
+| R | Shiny/bslib, ggplot2, Quarto | `pixelcraft-data-apps` → `r-shiny`; `pixelcraft-dataviz` → `libraries`; `pixelcraft-document` → `pdf-tools` |
+| Ruby | Rails/Hotwire/Turbo 8/Inertia | `pixelcraft-web` → `server-rendered` |
+| Rust | Leptos/Yew/Dioxus Web, GPUI/Slint/Dioxus/Iced/egui/Floem/Xilem/Relm4, Ratatui, Bevy, Typst, `embedded-graphics`/Slint MCU | `pixelcraft-web` → `leptos-yew`; `pixelcraft-desktop` → `rust-gui`; `pixelcraft-tui` → `ratatui`; `pixelcraft-game-ui` → `bevy`; `pixelcraft-document` → `pdf-tools`; `pixelcraft-constrained` → `specialized-hardware` |
 | Scala | Scala.js/Laminar | `pixelcraft-web` → `scala-laminar` |
-| Swift | SwiftUI, UIKit, AppKit | `pixelcraft-mobile` → `swiftui`/`uikit`; `pixelcraft-desktop` → `appkit` |
-| TS/JS | React/Next, Vue/Nuxt, Svelte, Solid, Angular, Astro, Qwik, htmx/Alpine, Lit, Observable Framework, Evidence, Electron/Tauri, Ink | `pixelcraft-web` matching reference; `pixelcraft-data-apps` → `observable-framework`/`evidence`; `pixelcraft-desktop`/`pixelcraft-tui` matching reference |
-| Zig | no dedicated substantive reference yet | plan manually in `pixelcraft-plan`; inspect actual UI/library constraints |
+| Swift | SwiftUI/UIKit, AppKit/SwiftUI macOS, visionOS, Skip, tvOS/watchOS, Siri App Intents | `pixelcraft-mobile` → `swiftui`/`uikit`/`nativescript-and-skip`; `pixelcraft-desktop` → `appkit`; `pixelcraft-spatial` → `platforms`; `pixelcraft-constrained` → `tv-wearables`/`voice-ui` |
+| TS/JS | React/Next/RR7/TanStack Start, Vue/Nuxt, Svelte, Solid, Angular, Astro, Qwik, Preact/Fresh/Hono, htmx/Alpine/Datastar, Lit, RN/Expo/LynxJS/NativeScript/Ionic, Tauri/Electron/Electrobun, Ink/OpenTUI/Clack, Observable/Evidence, React Email/Maizzle/MJML, Slidev/PDF.js/PptxGenJS, Satori/Remotion, AI SDK/assistant-ui/CopilotKit, WXT/VS Code/Raycast/Figma, Phaser/PixiJS | route by surface (`pixelcraft-web`, `pixelcraft-mobile`, `pixelcraft-desktop`, `pixelcraft-tui`, `pixelcraft-data-apps`, `pixelcraft-email`, `pixelcraft-document`, `pixelcraft-media`, `pixelcraft-chat-ui`, `pixelcraft-extensions`, `pixelcraft-game-ui`) |
+| Zig | DVUI, C interop (`clay`/`raygui`/`SDL3`), Electrobun host | `pixelcraft-desktop` → `cpp-gui`/`electron`; verify current library APIs in `pixelcraft-plan` |
 
 ## Install
 
@@ -347,7 +352,7 @@ node skills/pixelcraft-tokens/scripts/export-tokens.mjs skills/pixelcraft-tokens
 node skills/pixelcraft-tokens/scripts/export-tokens.mjs skills/pixelcraft-tokens/assets/tokens.example.json --format all --out-dir generated/tokens
 ```
 
-Supported export formats are `css`, `tailwind`, `swift`, `kotlin`, `dart`, `python`, `qt`, `textual`, and `all`.
+Supported export formats are `css`, `tailwind`, `scss`, `ts`, `swift`, `kotlin`, `android-xml`, `dart`, `python`, `qt`, `textual`, `xaml`, `rust`, and `all`.
 
 Capture browser visual QA evidence when Playwright is installed:
 
@@ -361,6 +366,12 @@ Measure typography, color, estimated geometry, motion signals and payload on a b
 
 ```bash
 node skills/pixelcraft-visual-qa/scripts/style-inventory.mjs dist/index.html --breakpoints 390x844,768x1024,1440x900 --out inventory.json
+```
+
+Verify rendered evidence completeness through the finish gate before calling a UI flow done:
+
+```bash
+node skills/pixelcraft-visual-qa/scripts/finish-gate.mjs visual-qa/evidence.json
 ```
 
 Use identical settings and fixtures for before/after, keep the JSON beside screenshots and task evidence, and use native device/client evidence for non-browser surfaces. See the [measured craft guide](skills/pixelcraft-visual-qa/references/measured-craft.md) for limits and platform alternatives.
@@ -380,7 +391,8 @@ install.sh                   curl/bash installer (no Node required; pass --ref <
 install.ps1                  PowerShell installer (no Node required; pass -Ref <tag> for a release or -Ref <commit-sha> for a content-stable pin)
 scripts/                     validation, adapter builder, and contract test suites
 skills/                      26 self-contained Agent Skills
-evals/                       26 behavioural eval guides and machine-readable JSON fixtures
+evals/                       26 behavioural eval guides and machine-readable JSON fixtures (26/26 skills)
+website/                     interactive showcase site and gallery capture scripts
 assets/                      brand artwork and icons
 docs/ARCHITECTURE.md         system design and conventions
 docs/DESIGN-RATIONALE.md     contributor rationale for major rules
@@ -388,15 +400,15 @@ plugin.json                  portable plugin manifest
 gemini-extension.json        Gemini CLI extension manifest
 .claude-plugin/              Claude marketplace and plugin manifests
 .agents/plugins/             Codex local plugin catalog metadata
-.github/workflows/           validation and tag-release workflows
+.github/workflows/           validation, website deploy, and tag-release workflows
 ```
 
 ## Roadmap
 
-- automated model-execution eval harness on top of the existing `evals/` guides and JSON fixtures, plus expanding fixture coverage across all 26 skills;
-- showcase site with verified examples across supported stacks;
+- automated model-execution eval harness on top of the existing `evals/` guides and 26/26 JSON fixtures;
+- multi-stack showcase gallery specimens (mobile, desktop, TUI, data apps, email, document, game UI alongside web);
 - deeper framework coverage and version-specific verification matrices;
-- richer design-token conversion and implementation handoff;
+- richer DTCG Resolver and multi-platform token handoff;
 - internationalization of contributor documentation where useful, while keeping skill content consistently machine-readable.
 
 ## Contributing

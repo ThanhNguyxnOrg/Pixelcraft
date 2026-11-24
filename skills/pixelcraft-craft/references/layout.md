@@ -36,6 +36,18 @@
 - Test landscape/portrait, split window, dynamic text, RTL mirroring, safe area, virtual keyboard, controller focus order, and minimum terminal size as applicable.
 - Horizontal scrolling can be correct for data tables/timelines, but never accidental page overflow.
 
+## Modern CSS layout primitives
+
+Prefer native CSS layout primitives over JS resize observers or hardcoded breakpoint duplication when targeting modern browsers:
+
+| Primitive | Use for | Concrete idiom / guardrail |
+|---|---|---|
+| **Container Queries** (`@container`, `cqi`/`cqb`, style queries) | Component-level layout restructuring inside sidebars, split panes, and multi-column grids independent of viewport width | Declare `container-type: inline-size` on wrappers; size type/padding fluidly with `cqi`/`cqb`; use `@container style(--density: compact)` for token-driven density shifts |
+| **CSS Subgrid** (`grid-template-rows: subgrid` / `columns: subgrid`) | Aligning internal headings, metadata rows, and footers across sibling grid items without rigid fixed heights | Inherit parent tracks so multi-line localized titles stay baseline-aligned across rows |
+| **CSS Anchor Positioning** (`anchor-name`, `position-anchor`, `position-area`, `position-try-fallbacks`) | Tooltips, popovers, and menus tethered to triggers with automatic viewport collision flipping | Pair with Popover API; include `position-try-fallbacks: flip-block, flip-inline` and feature-detect (`@supports (anchor-name: --a)`) with fallback positioning for older browsers |
+| **Dynamic viewport units** (`svh`, `dvh`, `lvh`) | Full-height mobile shells, sticky composers, and hero frames with collapsible mobile browser toolbars | Use `svh` for stable initial-paint heights that must not jump as toolbars retract; reserve `dvh` for active interactive workspaces (e.g., chat input bars) where real-time bottom-edge fit matters; avoid `100vh` on mobile |
+| **Intrinsic sizing animation** (`interpolate-size: allow-keywords` / `calc-size()`) | Smooth disclosure, accordion, and `<details>` height transitions to/from `auto` without measuring `scrollHeight` in JS | Opt in via `interpolate-size: allow-keywords` (or `calc-size(auto, size)`) and gate motion under `prefers-reduced-motion` |
+
 ## Hierarchy checks
 
 Squint test: primary/secondary/tertiary grouping should remain visible when detail blurs. Remove one visual property at a time; if hierarchy disappears only when color is removed, color-only dependence is likely. Compare real content lengths rather than lorem ipsum symmetry.

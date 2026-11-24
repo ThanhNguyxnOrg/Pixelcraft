@@ -23,7 +23,7 @@ Write or update `.pixelcraft/brief.md` when the project directory is writable. I
 ## Evidence
 | Fact or requirement | Class | Source/scope |
 |---|---|---|
-|  | user-provided / repo-observed / artifact-observed / analytics/research / assumption / unknown |  |
+|  | user-provided / repo-observed / artifact-observed / research/analytics / assumption / unknown |  |
 
 ## Constraints and authority
 - Explicit user decisions:
@@ -53,7 +53,7 @@ Write or update `.pixelcraft/brief.md` when the project directory is writable. I
 ## Field rules
 
 1. **Outcome before appearance.** “Increase activation by improving first-run completion” is actionable; “make it modern” is not.
-2. **Evidence class is mandatory.** Do not blend user facts, repository facts, visual-source observations, analytics/research evidence, assumptions, and unknowns into one undifferentiated list.
+2. **Evidence class is mandatory.** Do not blend user facts, repository facts, visual-source observations, research/analytics evidence, assumptions, and unknowns into one undifferentiated list.
 3. **Approval ownership names a role/person when known.** “Team” or “everyone” is not an approval owner.
 4. **Missing material is a constraint.** Record absent copy, data, imagery, legal text, logo assets, and customer evidence so the agent does not fabricate them.
 5. **Anti-goals must be behavioral.** “No dashboard clone” is weak; “do not use a three-card feature row as the main structure” is checkable.

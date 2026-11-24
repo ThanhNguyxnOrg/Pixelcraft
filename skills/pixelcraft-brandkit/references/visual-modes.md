@@ -8,7 +8,7 @@ Choose a mode from strategy, category, audience, emotional promise, and trust re
 
 **Visual cues:** near-black panels; monospace accents; command lines; terminal windows; prompt bars; subtle grid; cyan, blue, coral, or lime accents; pixel/CRT texture when appropriate.
 
-**Logo logic:** cursor + frame; bolt + build speed; scaffold + monogram; terminal glyph + symbol; modular construction mark.
+**Logo logic:** cursor + frame; modular bracket + joint; scaffold + monogram; terminal glyph + symbol; structural grid mark.
 
 **Mood:** precise, sharp, confident, builder-native.
 
@@ -16,17 +16,17 @@ Choose a mode from strategy, category, audience, emotional promise, and trust re
 
 **Use for:** business tools, growth tools, sales agents, automation, productivity.
 
-**Visual cues:** black/dark red/amber; glowing UI chips; card systems; segmented flows; icon rows; reward/progress motifs; minimal hero text.
+**Visual cues:** charcoal/obsidian base with restrained crimson, amber, or cobalt signal accents; crisp UI chips; segmented flows; icon rows; progress motifs; sparse display type.
 
-**Logo logic:** signal, gift, path, operator mark, switch, loop, command system.
+**Logo logic:** signal, path, operator mark, switch, loop, modular command mark.
 
-**Mood:** fast, operational, tactical, premium.
+**Mood:** fast, operational, tactical, disciplined.
 
 ## 3. Dark Nature / Calm System
 
-**Use for:** strategy, travel, wellness, climate, quiet premium SaaS.
+**Use for:** strategy, travel, wellness, climate, quiet operational SaaS.
 
-**Visual cues:** deep green; lime accent; misty landscapes; image/UI circles; soft overlays; calm page labels; dark editorial grid.
+**Visual cues:** deep forest or slate green; lime or warm sand accent; atmospheric landscapes; calm page labels; dark editorial grid.
 
 **Logo logic:** path, leaf, moon, horizon, compass, portal, folded mark.
 
@@ -36,9 +36,9 @@ Choose a mode from strategy, category, audience, emotional promise, and trust re
 
 **Use for:** security, compliance, monitoring, network products.
 
-**Visual cues:** black/navy; shield forms; radar lines; threat labels; subtle motion traces; red/blue alert chips; controlled gradients.
+**Visual cues:** black/navy; shield forms; radar lines; threat labels; subtle motion traces; red/blue alert chips; controlled tonal contrast.
 
-**Logo logic:** shield, raptor, eye, watch, boundary, protected core.
+**Logo logic:** shield, boundary, watch reticle, protected core, locked seam.
 
 **Mood:** serious, vigilant, precise.
 
@@ -46,31 +46,31 @@ Choose a mode from strategy, category, audience, emotional promise, and trust re
 
 **Use for:** legal, privacy, compliance, documents, trust brands.
 
-**Visual cues:** warm ivory; paper texture; small serif labels; seals/badges; color wheel/palette object; calm stationery; deep blue, red, gold accents.
+**Visual cues:** warm ivory; paper texture; small serif labels; seals/badges; calm stationery; deep blue, crimson, or ochre accents.
 
-**Logo logic:** seal, dog, shield, document, stamp, monogram.
+**Logo logic:** seal, verification stamp, folded document, architectural pillar, monogram.
 
 **Mood:** trustworthy, refined, institutional but modern.
 
 ## 6. Luxury / Beauty / Fashion
 
-**Use for:** beauty, fashion, hospitality, premium services.
+**Use for:** beauty, fashion, hospitality, craft goods.
 
-**Visual cues:** ivory/stone/espresso; serif wordmark; elegant monogram; paper grain; embossing; product labels; editorial crops; soft shadows.
+**Visual cues:** ivory/stone/espresso; serif wordmark; sculpted monogram; paper grain; blind emboss; product labels; editorial crops; soft directional light.
 
 **Logo logic:** monogram, seal, petal, vessel, ritual object, refined typographic mark.
 
-**Mood:** tasteful, adult, expensive.
+**Mood:** restrained, tactile, editorial.
 
 ## 7. Voice / Communication
 
 **Use for:** voice AI, chat, assistants, speech, audio.
 
-**Visual cues:** dark indigo; lilac glow; waveform; mic motif; phone crop; command input; app icon.
+**Visual cues:** matte graphite or warm acoustic off-white; signal vermilion, amber, or cobalt metering accent; precision oscillograph bars; perforated speaker/grille grid; phone or recorder crop; command input; app icon.
 
-**Logo logic:** wave + initial; sound orb; speech path; microphone abstraction; pulse ring.
+**Logo logic:** wave + initial; acoustic slit; speech path; directional mic aperture; resonant bar mark.
 
-**Mood:** fluid, intelligent, intimate.
+**Mood:** fluid, clear, intimate.
 
 ## 8. Cultural / Experimental
 

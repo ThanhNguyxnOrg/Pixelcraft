@@ -1,6 +1,6 @@
 ---
 name: pixelcraft-visual-qa
-description: Verifies interfaces through rendered evidence using a render → screenshot → self-critique → fix loop. Use for visual QA, screenshot review, responsive/light/dark/reduced-motion inspection, browser or device verification, horizontal overflow, clipping, contrast, performance budget review, pre-submit checks, and honest rendered-vs-static evidence reporting across web, mobile, desktop, terminal, email, document, and game surfaces.
+description: Verifies interfaces through rendered evidence using a render → screenshot → self-critique → fix loop and finish gate. Use for visual QA, Playwright screenshot/video/trace capture, Core Web Vitals (LCP, INP, CLS), responsive/light/dark/reduced-motion inspection, browser or device verification, WebGL/WebGPU profiling, horizontal overflow, clipping, contrast, PDF/document raster checks, and honest rendered-vs-static evidence reporting across web, mobile, desktop, terminal, email, document, and game surfaces.
 license: MIT
 metadata:
   version: 0.1.0
@@ -23,8 +23,9 @@ Render the actual surface, inspect representative captures, execute the primary 
 - Run `node scripts/style-inventory.mjs <url-or-html-file>` when a rendered style/payload inventory would make critique measurable; it emits JSON rather than proof of quality.
 - Read [references/capture-mobile.md](references/capture-mobile.md) for iOS simulator, Android emulator/device, responsive viewport, gesture, and safe-area capture.
 - Read [references/capture-terminal.md](references/capture-terminal.md) for tmux, VHS, asciinema, snapshot backends, color fallback, resize, and scrollback evidence.
-- Read [references/capture-email.md](references/capture-email.md) for email-client matrix, image blocking, dark mode, plaintext, and capture limitations.
-- Read [references/capture-desktop-game.md](references/capture-desktop-game.md) for native windows, high-DPI, multi-window, frame capture, HUD legibility, and game-safe-area checks.
+- Read [references/capture-email.md](references/capture-email.md) for email-client matrix, 102 KB Gmail clipping, image blocking, dark mode, plaintext, and local SMTP capture.
+- Read [references/capture-document.md](references/capture-document.md) when verifying final PDFs, print layouts, PDF/UA tags, embedded fonts, or Slidev/Marp slide exports.
+- Read [references/capture-desktop-game.md](references/capture-desktop-game.md) for native windows, Wayland/X11/macOS/Windows capture, Electron/Tauri drivers, high-DPI, frame capture, HUD legibility, and game-safe-area checks.
 - Run `node scripts/shoot.mjs --help` for optional browser capture/audit. The script has no required dependencies; it uses Playwright only when already installed or installable by the user.
 
 ## Required loop

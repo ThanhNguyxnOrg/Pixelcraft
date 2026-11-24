@@ -2,22 +2,27 @@
 
 Evidence: WCAG, axe-core, generated-code accessibility repair research.
 
-## Automated evidence (`static` or tool-generated `rendered` when run in renderer)
+## Automated evidence (`rendered` in live browser/emulator vs. `static` in source)
 
-| Tool/surface | Detects | Does not prove |
-|---|---|---|
-| axe-core/browser scan | many missing labels/names, contrast, invalid ARIA, landmarks, duplicate IDs | actual usability, correct focus order, meaningful labels, cognitive load |
-| Lighthouse accessibility | selected DOM/browser rules | full WCAG conformance |
-| Accessibility Inspector/Xcode | iOS/macOS accessibility tree, labels/traits/audit | real VoiceOver task completion |
-| Android Accessibility Scanner/Layout Inspector | touch target/content description/contrast heuristics | correct TalkBack flow or meaningful behavior |
-| linters/static scanners | banned patterns, hardcoded assumptions | rendered visibility and interaction quality |
+Distinguish where the tool executes when assigning Pixelcraft evidence labels:
+
+- **Browser/renderer-executed scans** (`@axe-core/playwright`, Storybook `@storybook/addon-a11y`, Lighthouse accessibility, Playwright `toMatchAriaSnapshot()`, Xcode Accessibility Inspector, Android Accessibility Scanner) inspect a live rendered DOM or platform accessibility tree → label **`rendered` (automated subset — not manual proof)**.
+- **Source linters and static scanners** (`eslint-plugin-jsx-a11y`, `svelte-check`, `slop-scan.mjs`, template AST checks) inspect source files without rendering → label **`static`**.
+
+| Tool / surface | Evidence label | Detects | Does not prove |
+|---|---|---|---|
+| `@axe-core/playwright` / live axe-core scan | `rendered` (automated subset) | missing labels/names, computed contrast, invalid ARIA, landmarks, duplicate IDs in real browser states | task usability, logical focus order, meaningful copy, screen-reader ergonomics |
+| Playwright `toMatchAriaSnapshot()` | `rendered` (regression) | unintended accessibility-tree role/name/hierarchy regressions across states | visual contrast, focus visibility, or whether the snapshot itself is good UX |
+| Storybook `@storybook/addon-a11y` | `rendered` (isolated component) | per-variant/state axe violations during component development | page-level landmark hierarchy, keyboard focus restoration across flows |
+| `eslint-plugin-jsx-a11y` / static scanners | `static` | missing `alt`/labels, click-on-div without keyboard handler, banned patterns at edit time | computed contrast, CSS hiding/occlusion, runtime focus management |
+| Accessibility Inspector (Xcode) / Accessibility Scanner (Android) | `rendered` (automated subset) | native accessibility tree, touch target size, label/trait audits | real VoiceOver/TalkBack task completion |
 
 Automated zero means “no detected violations in scanned scope,” never “accessible.”
 
 ## Manual protocol
 
 1. Keyboard/controller only: complete primary task (stopping before final payment or other irreversible commit unless running in an explicitly isolated sandbox, mock, or test mode), reverse direction, close/escape, recover after error.
-2. Screen reader: inspect name/role/value/order/status/error/form behavior. Use the platform pairing realistically (NVDA/JAWS+Chrome/Edge, VoiceOver+Safari/iOS, TalkBack+Android/Chrome, orca+Linux).
+2. Screen reader: inspect name/role/value/order/status/error/form behavior. Use the platform pairing realistically (NVDA/JAWS+Chrome/Edge, VoiceOver+Safari/iOS, TalkBack+Android/Chrome, Orca+Linux).
 3. Zoom/reflow/text scaling: 200% or platform largest text where practical; verify clipping/overlap/truncation.
 4. Visual modes: dark/light/high contrast/increased contrast/forced colors; inspect state boundaries and focus.
 5. Input modalities: touch target one-hand, keyboard, mouse, controller/switch/voice where applicable.
@@ -27,7 +32,7 @@ Automated zero means “no detected violations in scanned scope,” never “acc
 
 ## Reporting language
 
-Use: “axe-core scan of `<scope>` reported zero violations `static`; keyboard checkout flow verified up to final payment confirmation `rendered`; live payment submission `not run` (no isolated sandbox/test mode); VoiceOver not tested `not-checked`.”
+Use: “`eslint-plugin-jsx-a11y` passed on `<scope>` `static`; `@axe-core/playwright` scan of rendered checkout states reported zero violations `rendered` (automated subset); keyboard checkout flow verified up to final payment confirmation `rendered`; live payment submission `not-checked` (no isolated sandbox/test mode); VoiceOver screen-reader walkthrough `not-checked`.”
 
 Never use: “WCAG compliant” unless the full scoped conformance process actually happened and legal/conformance language is intended.
 
