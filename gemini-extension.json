@@ -1,5 +1,6 @@
 {
   "name": "pixelcraft",
   "version": "0.1.0",
-  "description": "Portable Agent Skills for distinctive UI and rigorous UX across frontend stacks"
+  "description": "Portable Agent Skills for distinctive UI and rigorous UX across frontend stacks",
+  "contextFileName": "GEMINI.md"
 }

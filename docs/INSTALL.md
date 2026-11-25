@@ -112,32 +112,33 @@ In Claude Desktop/Cowork, enter `ThanhNguyxnOrg/Pixelcraft` under **Plugins → 
 - **ChatGPT Agent Plugins:** Pixelcraft is a skills-only [OpenAI Agent Plugin](https://developers.openai.com/plugins/build/plugins) (not a legacy ChatGPT plugin or server-backed Apps SDK integration). In the ChatGPT desktop app, open this repository as a project and select Pixelcraft from the project marketplace. For managed workspaces, an eligible admin can [import and sync the GitHub marketplace](https://developers.openai.com/codex/enterprise/plugin-management) using `ThanhNguyxnOrg/Pixelcraft` with **Path** left empty.
 - **ChatGPT personal skills:** Where enabled, use **Plugins → Skills → Create → Upload from your computer** or **Create with editor**. The [ChatGPT help page](https://help.openai.com/en/articles/20001066-skills-in-chatgpt) does not specify the exact accepted archive layout; Pixelcraft's per-skill ZIPs follow Claude's documented layout, and ChatGPT ZIP upload acceptance is `not-checked`.
 
-## All 20 native host installation paths
+## Native host installation paths
 
-"Not checked" means the host path is documented but was not exercised inside its client. No entry below implies submission to a public host catalog.
+"Not checked" means the host path is documented and manifest-validated (`static`), but was not exercised inside its client UI. No entry below implies listing in a vendor's curated catalog until submitted and approved.
 
 | Host | Installation | Verification status |
 |---|---|---|
-| [Claude Code](https://code.claude.com/docs/en/plugins/marketplace-reference) | Marketplace commands above; loads `.claude-plugin/plugin.json` and discovers `skills/`. | CLI install checked. |
+| [Claude Code](https://code.claude.com/docs/en/plugins/marketplace-reference) | `/plugin marketplace add ThanhNguyxnOrg/Pixelcraft` then `/plugin install pixelcraft@pixelcraft`; loads `.claude-plugin/plugin.json` and discovers `skills/`. | CLI install checked. |
 | [Claude Desktop / Cowork / web](https://support.claude.com/en/articles/12512198-how-to-create-custom-skills) | Marketplace or per-skill ZIP upload above. | ZIP contents checked; client sync `not-checked`. |
-| [ChatGPT](https://learn.chatgpt.com/docs/plugins) | Portable `plugin.json` + `.agents/plugins/marketplace.json`, or Skills editor. | Client/workspace `not-checked`. |
-| [Cursor](https://cursor.com/docs/reference/plugins) | Bundled Cursor installer, or place `plugin.json` + `skills/` under `~/.cursor/plugins/local/pixelcraft/`. | Installer checked; plugin loading `not-checked`. |
+| [Google Antigravity](https://antigravity.google/docs/plugins/) | `agy plugin install https://github.com/ThanhNguyxnOrg/Pixelcraft` (reads `.antigravity-plugin/plugin.json` with logo & starter prompts), or `pixelcraft add all --agent antigravity` into `.agents/skills`. | Manifest schema checked (`static`); client install `not-checked`. |
+| [Cursor](https://cursor.com/docs/reference/plugins) | Bundled Cursor installer (`--agent cursor`), Cursor marketplace import via `.cursor-plugin/marketplace.json`, or copy `.cursor-plugin/plugin.json` + `skills/` into `~/.cursor/plugins/local/pixelcraft/`. | Manifest schema & installer checked (`static`); IDE plugin loading `not-checked`. |
+| [Codex CLI and App](https://developers.openai.com/plugins/build/plugins#package-and-distribute-plugins) | CLI: `codex plugin marketplace add ThanhNguyxnOrg/Pixelcraft`, then `codex plugin add pixelcraft@pixelcraft` (reads `.codex-plugin/plugin.json` & `.agents/plugins/marketplace.json`). IDE: `pixelcraft add all --agent codex`. | Local CLI plugin & manifest checked; IDE `not-checked`. |
+| [ChatGPT](https://learn.chatgpt.com/docs/plugins) | Portable `plugin.json` + `.codex-plugin/plugin.json` + `.agents/plugins/marketplace.json`, or Skills editor. | Manifest checked (`static`); client/workspace `not-checked`. |
+| [GitHub Copilot CLI & VS Code](https://docs.github.com/en/copilot/how-tos/copilot-cli/customize-copilot/plugins-finding-installing) | CLI: `copilot plugin marketplace add ThanhNguyxnOrg/Pixelcraft` then `copilot plugin install pixelcraft@pixelcraft` (reads `.github/plugin/marketplace.json` & Agent Plugins 1.0 `plugin.json`). VS Code: `pixelcraft add all --agent copilot`. | Local catalog & installer placement checked; IDE discovery `not-checked`. |
+| [Gemini CLI](https://geminicli.com/docs/extensions/reference/) | `gemini extensions install https://github.com/ThanhNguyxnOrg/Pixelcraft` and restart (loads `gemini-extension.json` + `GEMINI.md` context bootstrap). | Local extension install checked. |
+| [Devin CLI](https://docs.devin.ai/) | `devin plugins install ThanhNguyxnOrg/Pixelcraft` (reads `.devin-plugin/plugin.json`), or `pixelcraft add all --agent devin`. | Manifest & installer checked (`static`); Devin CLI client `not-checked`. |
+| [Qwen Code](https://github.com/QwenLM/qwen-code) | `qwen extensions install ThanhNguyxnOrg/Pixelcraft` (consumes `.claude-plugin/marketplace.json`). | Manifest checked (`static`); client `not-checked`. |
 | [OpenCode](https://opencode.ai/docs/skills/) | Bundled installer `--agent opencode`, or add checkout's `skills/` path to OpenCode `skills` config. | Local CLI discovered 26 skills. |
-| [Pi](https://docs.pi.dev/latest/packages) | `pi install git:github.com/ThanhNguyxnOrg/Pixelcraft` (or `pi install ./Pixelcraft`). | Local package install checked. |
-| [Codex CLI and IDE](https://developers.openai.com/plugins/build/plugins#package-and-distribute-plugins) | CLI: `codex plugin marketplace add ThanhNguyxnOrg/Pixelcraft` then `codex plugin add pixelcraft@pixelcraft`. IDE: `pixelcraft add all --agent codex`. | Local CLI plugin checked; IDE `not-checked`. |
-| [Gemini CLI](https://geminicli.com/docs/extensions/reference/) | `gemini extensions install https://github.com/ThanhNguyxnOrg/Pixelcraft` and restart. | Local extension install checked. |
-| [GitHub Copilot CLI](https://docs.github.com/en/copilot/how-tos/copilot-cli/customize-copilot/plugins-finding-installing) | `copilot plugin marketplace add ThanhNguyxnOrg/Pixelcraft` then `copilot plugin install pixelcraft@pixelcraft`. | Local catalog and install checked. |
-| [GitHub Copilot in VS Code](https://docs.github.com/en/copilot/concepts/customizations/agent-skills) | `pixelcraft add all --agent copilot` into `.github/skills`; open a new chat and ask for a skill by name. | Installer placement checked; IDE discovery `not-checked`. |
+| [Pi](https://docs.pi.dev/latest/packages) | `pi install npm:@thanhnguyxn/pixelcraft` or `pi install git:github.com/ThanhNguyxnOrg/Pixelcraft`. | Local package install checked. |
+| [Factory Droid](https://docs.factory.com/harness/plugins) | `droid plugin marketplace add ThanhNguyxnOrg/Pixelcraft` then `droid plugin install pixelcraft@Pixelcraft`, or `--agent droid` into `.factory/skills`. | Local marketplace plugin install checked. |
 | [Windsurf Cascade](https://docs.windsurf.com/windsurf/cascade/skills) | Bundled installer `--agent windsurf` or copy into the client's skills directory. | Installer placement checked; client discovery `not-checked`. |
 | [Kiro](https://kiro.dev/docs/skills/) | `pixelcraft add all --agent kiro` into `.kiro/skills` (or `--global`). Native Agent Skills, not a Kiro Power. | Installer placement checked; client discovery `not-checked`. |
 | [Amp](https://ampcode.com/docs/customize/skills) | `amp skill add https://github.com/ThanhNguyxnOrg/Pixelcraft` or `--agent amp` into `.agents/skills`. | Client discovery `not-checked`. |
 | [Cline](https://docs.cline.bot/customization/skills) | `pixelcraft add all --agent cline` into `.cline/skills`. | Installer placement checked; client discovery `not-checked`. |
 | [Roo Code](https://roocodeinc.github.io/Roo-Code/features/skills/) | `pixelcraft add all --agent roo` into `.roo/skills`. | Installer placement checked; client discovery `not-checked`. |
 | [Zed](https://zed.dev/docs/ai/skills) | `pixelcraft add all --agent zed` into `.agents/skills`; inspect via Skills in Zed Settings Editor. | Installer placement checked; client discovery `not-checked`. |
-| [Factory Droid](https://docs.factory.com/harness/plugins) | `droid plugin marketplace add ThanhNguyxnOrg/Pixelcraft` then `droid plugin install pixelcraft@Pixelcraft`, or `--agent droid` into `.factory/skills`. | Local marketplace plugin install checked. |
 | [Goose](https://github.com/block/goose/blob/main/documentation/docs/guides/context-engineering/using-skills.md) | `pixelcraft add all --agent goose` into `.agents/skills`, then `goose skills list`. | Local CLI discovered 26 skills. |
-| [Google Antigravity](https://antigravity.google/docs/skills) | `pixelcraft add all --agent antigravity` into `.agents/skills`; inspect via Customizations. | Installer placement checked; client discovery `not-checked`. |
-| [skills.sh](https://www.skills.sh/docs/cli) | `npx skills add ThanhNguyxnOrg/Pixelcraft`; no npm package required. | Local pack discovery checked; public listing `not-checked`. |
+| [skills.sh](https://www.skills.sh/docs/cli) | `npx skills add ThanhNguyxnOrg/Pixelcraft`; no npm package required. | Local pack discovery checked. |
 
 ## Shell installers without Node.js
 
@@ -203,13 +204,18 @@ Do not construct cross-skill relative links after copying; every skill folder is
 
 ## npm package and maintainer release flow
 
-Once `@thanhnguyxn/pixelcraft` is published to npm:
+Install the published CLI globally from npm (zero runtime dependencies, Node.js `>=18`):
 
 ```bash
 npm i -g @thanhnguyxn/pixelcraft
 pixelcraft add all --agent cursor
 ```
 
-Pi users can then also run `pi install npm:@thanhnguyxn/pixelcraft`. Until publication, use any Git or shell installer above.
+Pi users can install directly from npm as well:
 
-**Maintainers:** Run `npm run test:distribution` and `npm run test:release-archives` to inspect packaging without publishing. The [organization Release Controller](https://github.com/ThanhNguyxnOrg/.github/blob/main/docs/agent-automation.md#release-safety) opens a release PR with version bumps and changelog updates; merging it approves tag creation, GitHub Release archive publishing, and npm provenance publishing (requires an `NPM_TOKEN` authorized for `@thanhnguyxn/pixelcraft`).
+```bash
+pi install npm:@thanhnguyxn/pixelcraft
+```
+
+**Maintainers:** Run `npm run test:distribution`, `npm run sync:docs:check`, and `npm run test:release-archives` to inspect packaging without publishing. The [organization Release Controller](https://github.com/ThanhNguyxnOrg/.github/blob/main/docs/agent-automation.md#release-safety) opens a release PR with synchronized version bumps across all manifests (`release-policy.json` in `ThanhNguyxnOrg/.github`) and changelog updates; merging it approves tag creation, GitHub Release archive publishing, and npm provenance publishing (requires an `NPM_TOKEN` authorized for `@thanhnguyxn/pixelcraft`).
+

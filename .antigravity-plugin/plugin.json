@@ -1,0 +1,32 @@
+{
+  "$schema": "https://antigravity.google/schemas/v1/plugin.json",
+  "name": "pixelcraft",
+  "displayName": "Pixelcraft",
+  "version": "0.1.0",
+  "description": "Portable Agent Skills for distinctive, evidence-verified UI and rigorous UX across web, mobile, desktop, TUI, document, email, and game stacks.",
+  "logo": "assets/pixelcraft-logo-256.png",
+  "suggestedPrompts": [
+    "Redesign this app screen using Pixelcraft Grill-Me discovery and 3 divergent directions",
+    "Audit this UI with pixelcraft-review and report rendered vs static evidence",
+    "Build an accessible multi-state interface and export DTCG tokens for my target stack"
+  ],
+  "author": {
+    "name": "ThanhNguyxnOrg",
+    "url": "https://github.com/ThanhNguyxnOrg"
+  },
+  "homepage": "https://thanhnguyxnorg.github.io/Pixelcraft/",
+  "repository": "https://github.com/ThanhNguyxnOrg/Pixelcraft",
+  "license": "MIT",
+  "keywords": [
+    "frontend",
+    "ui",
+    "ux",
+    "design-system",
+    "design-tokens",
+    "accessibility",
+    "wcag",
+    "tui",
+    "mobile",
+    "desktop"
+  ]
+}

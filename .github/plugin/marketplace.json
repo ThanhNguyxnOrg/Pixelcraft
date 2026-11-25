@@ -1,0 +1,34 @@
+{
+  "name": "pixelcraft",
+  "metadata": {
+    "description": "Portable Agent Skills for distinctive UI and rigorous UX across frontend stacks",
+    "version": "0.1.0"
+  },
+  "owner": {
+    "name": "ThanhNguyxnOrg"
+  },
+  "plugins": [
+    {
+      "name": "pixelcraft",
+      "source": "./",
+      "description": "Portable Agent Skills for distinctive UI and rigorous UX across frontend stacks",
+      "version": "0.1.0",
+      "author": {
+        "name": "ThanhNguyxnOrg",
+        "url": "https://github.com/ThanhNguyxnOrg"
+      },
+      "homepage": "https://thanhnguyxnorg.github.io/Pixelcraft/",
+      "repository": "https://github.com/ThanhNguyxnOrg/Pixelcraft",
+      "license": "MIT",
+      "keywords": [
+        "frontend",
+        "ui",
+        "ux",
+        "design-system",
+        "design-tokens",
+        "accessibility",
+        "wcag"
+      ]
+    }
+  ]
+}

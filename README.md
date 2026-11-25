@@ -27,13 +27,13 @@ Pixelcraft counters generic "AI-generated" interfaces at the process level: code
 | Method | Command | Best for |
 |---|---|---|
 | **Vercel `skills` CLI** | `npx skills add ThanhNguyxnOrg/Pixelcraft` | Auto-detecting coding agents (Node `>=22.20`) |
+| **npm global CLI** | `npm i -g @thanhnguyxn/pixelcraft && pixelcraft` | Interactive Node.js (`>=18`) wizard & `doctor`/`check` CLI |
 | **Claude Code plugin** | `/plugin marketplace add ThanhNguyxnOrg/Pixelcraft` → `/plugin install pixelcraft@pixelcraft` | Plugin-managed updates in Claude Code |
-| **Guided wizard** | `git clone https://github.com/ThanhNguyxnOrg/Pixelcraft.git "$HOME/Pixelcraft" && node "$HOME/Pixelcraft/bin/pixelcraft.mjs"` | Interactive Node.js (`>=18`) setup with zero dependencies |
-| **Direct CLI** | `node "$HOME/Pixelcraft/bin/pixelcraft.mjs" add all --agent claude` | Scriptable project or `--global` installs |
+| **Google Antigravity** | `agy plugin install https://github.com/ThanhNguyxnOrg/Pixelcraft` | Native Antigravity App & CLI plugin install |
 | **curl / bash** | `curl -fsSL https://raw.githubusercontent.com/ThanhNguyxnOrg/Pixelcraft/main/install.sh \| bash -s -- --agent claude --skills all` | Linux / macOS without Node.js |
 | **PowerShell** | `irm https://raw.githubusercontent.com/ThanhNguyxnOrg/Pixelcraft/main/install.ps1 \| iex` | Windows without Node.js |
 
-For all **20 native host paths** (Claude Desktop/web ZIPs, ChatGPT Agent Plugins, Cursor, Codex, Gemini CLI, GitHub Copilot, OpenCode, Windsurf, Kiro, Cline, Roo Code, Factory Droid, Zed, Amp, Goose, Pi, Google Antigravity), offline release archives, and maintainer release packaging, see **[`docs/INSTALL.md`](docs/INSTALL.md)**.
+For all **native host paths** (Claude Desktop/web ZIPs, ChatGPT/Codex `.codex-plugin/`, Cursor `.cursor-plugin/`, Antigravity `.antigravity-plugin/`, GitHub Copilot `.github/plugin/`, Gemini CLI, Devin CLI, Qwen Code, OpenCode, Windsurf, Kiro, Cline, Roo Code, Factory Droid, Zed, Amp, Goose, Pi), offline release archives, and maintainer release packaging, see **[`docs/INSTALL.md`](docs/INSTALL.md)**.
 
 ---
 
@@ -236,12 +236,15 @@ website/                     7-section React/Vite/Tailwind showcase + 22-exhibit
 assets/                      brand artwork, banner, and icons
 docs/ARCHITECTURE.md         system architecture and loop contract
 docs/DESIGN-RATIONALE.md     contributor rationale for rules and trade-offs
-docs/INSTALL.md              all 20 host installation paths, ZIP uploads, and release notes
-plugin.json                  portable Agent Plugin manifest
-gemini-extension.json        Gemini CLI extension manifest
-.claude-plugin/              Claude marketplace and plugin manifests
-.agents/plugins/             Codex local plugin catalog metadata
-.github/                     CI workflows, issue forms, and PR template
+docs/INSTALL.md              native host installation paths, ZIP uploads, and release notes
+plugin.json                  Agent Plugins 1.0 portable manifest
+gemini-extension.json        Gemini CLI extension manifest (+ GEMINI.md context bootstrap)
+.claude-plugin/              Claude Code, Cowork, Droid & Qwen marketplace/plugin manifests
+.cursor-plugin/              Cursor Marketplace plugin and catalog manifests
+.antigravity-plugin/         Google Antigravity App & CLI plugin manifest
+.codex-plugin/               OpenAI Codex / ChatGPT plugin manifest (+ .agents/plugins/)
+.devin-plugin/               Devin CLI plugin manifest
+.github/                     GitHub Copilot plugin marketplace, CI workflows, and templates
 ```
 
 ---
