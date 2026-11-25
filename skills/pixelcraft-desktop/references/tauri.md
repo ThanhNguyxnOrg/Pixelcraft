@@ -37,19 +37,48 @@ async fn export_report(
   - **`tauri-plugin-single-instance`**: focuses the existing window and forwards CLI/file-open args instead of spawning duplicate instances.
   - **`tauri-plugin-deep-link`**: handles custom URL schemes (`myapp://...`) cleanly on both cold start and warm launch.
 
-## Window chrome, drag regions, & macOS Overlay titlebar
+## The 8 WebView Giveaway Killers & Tauri v2 shell craft
 
-Decide between native titlebars and integrated chrome upfront:
+Every Tauri v2 desktop app must eliminate the 8 browser-in-a-box giveaways so the app feels indistinguishable from native OS software:
 
-- On macOS, set `"titleBarStyle": "Overlay"` (and `"hiddenTitle": true` when providing a custom header) in `tauri.conf.json`, reserving safe left-side clearance (~`72–80 px`) so traffic-light buttons never collide with sidebar toggles or tabs.
-- Mark draggable chrome with **`data-tauri-drag-region`**, and ensure interactive controls inside headers (`<button>`, `<input>`, tabs) sit in non-drag child containers or do not inherit drag-swallowing pointer behavior so clicks and double-click maximize remain reliable.
-- Support minimum window sizes (`minWidth`, `minHeight`), DPI changes across monitors, and native menus (`tauri::menu`) + keyboard accelerators so desktop shortcuts are discoverable in the OS menu bar.
+1. **Arrow cursor on UI chrome**: set `cursor: default` across buttons, tabs, sidebar rows, menus, and headers—reserve `cursor: pointer` strictly for external web hyperlinks (`a[href^="http"]`).
+2. **Non-selectable chrome**: apply `user-select: none; -webkit-user-select: none;` to all toolbars, sidebars, tabs, menus, and buttons; opt into `user-select: text` only inside editors, tables, logs, and message bodies.
+3. **Suppress browser giveaways in production**: disable default WebView `contextmenu` ("Inspect Element" / "Reload") outside debug builds (`#[cfg(not(debug_assertions))]`), block accidental `Cmd/Ctrl+R` page reloads and rubber-band pinch-zoom, and set `overscroll-behavior: none` on `html, body`.
+4. **Zero white flash on dark cold start**: configure `"visible": false` and a dark/theme-matched `"backgroundColor"` in `tauri.conf.json`, then call `window.show()` from a frontend-ready command (or after first paint) so dark-mode launches never flash `#ffffff` (`< 300–500 ms` cold start).
+5. **Custom titlebar geometry & fullscreen traffic lights**: use `"titleBarStyle": "Overlay"` + `"hiddenTitle": true` on macOS with a `40–52 px` header band marked **`data-tauri-drag-region`** (keeping interactive child `<button>`/`<input>` controls outside drag capture), double-click titlebar to zoom/maximize per OS setting, and reserve **`72–80 px` left inset** for macOS traffic lights—collapsing that left inset when the window enters macOS fullscreen!
+6. **Native OS materials + inactive-window dimming**: pair `window-vibrancy` (`NSVisualEffectView` / `Mica` / `Acrylic`) with a `tauri://focus` / `tauri://blur` (`data-window-focused="false"`) style that softens sidebar/titlebar contrast when unfocused so multi-window focus is unmistakable.
+7. **Two-way native file drag-and-drop & dialogs**: listen to native `DragDropEvent` (`onDragDropEvent` with physical file paths + drop-target highlight—never relying solely on sandboxed HTML5 `File` blobs) and `tauri-plugin-drag` for dragging files out to Finder/Explorer, plus `tauri-plugin-dialog` for native open/save sheets.
+8. **Native OS menu bar, platform modifiers & single-instance deep links**: register `tauri::menu::Menu` (`File/Edit/View/Window/Help`) with `CmdOrCtrl+...` accelerators, plus `tauri-plugin-single-instance` + `tauri-plugin-deep-link`.
 
-## Typography, motion, accessibility, states, & forms idioms
+```css
+/* Desktop WebView shell baseline */
+html, body {
+  overscroll-behavior: none;
+  user-select: none;
+  -webkit-user-select: none;
+  cursor: default;
+}
+.selectable-pane, input, textarea, [contenteditable="true"] {
+  user-select: text;
+  -webkit-user-select: text;
+  cursor: auto;
+}
+a[href^="http"] { cursor: pointer; }
+.titlebar {
+  block-size: 44px;
+  padding-inline-start: var(--macos-traffic-inset, 78px); /* set to 12px when fullscreen or non-macOS */
+}
+[data-window-focused="false"] .sidebar,
+[data-window-focused="false"] .titlebar {
+  opacity: 0.78;
+}
+```
 
-Bundle custom web fonts locally so desktop apps work identically offline. Honor `@media (prefers-reduced-motion: reduce)` inside the WebView and verify actual propagation on WebView2 (Windows), WKWebView (macOS), and WebKitGTK (Linux).
+## Storage, signing, & accessibility idioms
 
-Web accessibility inside the WebView is necessary but insufficient: verify native menus, global/window shortcuts, tray menus, file dialogs (`tauri-plugin-dialog`), custom titlebar buttons, and multi-window focus restoration per OS. Model desktop process states explicitly (Rust backend init errors, updater restart prompt, file permission denial, single-instance handoff, unsaved-document close intercept via `on_window_event(WindowEvent::CloseRequested)`).
+- **OS-standard paths & atomic writes**: resolve paths via `app.path().app_config_dir()` / `app_data_dir()` / `app_cache_dir()` (XDG / `~/Library/Application Support` / `%APPDATA%`); persist JSON/project files via `temp file → File::sync_all() → fs::rename` and run local SQLite in `WAL` mode ([working-context.md](working-context.md)).
+- **2026 signing & `Ed25519` delta updates**: sign macOS Universal builds with Developer ID + Hardened Runtime + `notarytool` + `stapler`; sign Windows `.msi`/NSIS installers with Azure Artifact Signing / HSM Authenticode (building SmartScreen reputation consistently in CI); and sign `tauri-plugin-updater` artifacts with `minisign`/`Ed25519` keys.
+- **Accessibility & idle CPU**: bundle local `.woff2` fonts, honor `prefers-reduced-motion`, pause background timers/animations when minimized (`~0%` idle CPU), guard unsaved work via `on_window_event(WindowEvent::CloseRequested)`, and verify native menus, dialogs, and WebView content with `VoiceOver`, `NVDA`/`Narrator`, and `Orca`.
 
 ## Tauri v2 mobile targets
 
@@ -60,14 +89,14 @@ When sharing a Tauri v2 codebase across desktop and iOS/Android, isolate mobile 
 | Do | Don't |
 |---|---|
 | Stream progress/logs via `tauri::ipc::Channel<T>` and binary data via `ipc::Response` | Serialize megabyte buffers as JSON arrays or spam global window events |
-| Scope `src-tauri/capabilities/*.json` per window and platform | Grant wildcard permissions or untrusted `remote.urls` access |
-| Use `tauri-plugin-window-state` + `tauri-plugin-single-instance` | Hand-roll un-clamped window restore or allow accidental duplicate instances |
-| Reserve traffic-light inset with `titleBarStyle: "Overlay"` and clean `data-tauri-drag-region` | Cover macOS traffic lights or let drag regions intercept header button clicks |
-| Intercept `WindowEvent::CloseRequested` to guard unsaved work | Let window close discard unsaved edits without warning |
+| Start window `"visible": false` with dark `backgroundColor`, `cursor: default`, `user-select: none`, and `overscroll-behavior: none` | Flash white on dark launch, show `cursor: pointer` on every button, or leave browser "Inspect Element" context menus in prod |
+| Reserve `72–80 px` macOS traffic-light inset (resetting on fullscreen) + inactive-window dimming | Cover macOS traffic lights, swallow header clicks inside drag regions, or keep unfocused windows at full active contrast |
+| Write config/DB to `app_config_dir()` / `app_data_dir()` atomically (`sync_all` + `rename`) + SQLite `WAL` | Write files next to the binary or overwrite user documents in place without `fsync` |
+| Scope `src-tauri/capabilities/*.json`, intercept `CloseRequested`, and sign updates with `Ed25519` | Grant wildcard permissions, drop unsaved edits on close, or ship unsigned updaters |
 
 ## Known traps
 
-WebView engine differences (WKWebView vs WebView2 vs WebKitGTK CSS/backdrop/font quirks), white launch flash when `backgroundColor` isn't set before WebView hydration, CSP blocking bundled assets or IPC, forgetting to register a plugin's capability permission in `capabilities/*.json`, synchronous `#[tauri::command]` blocking the main thread, cold-start deep links firing before frontend listeners mount.
+WebView engine differences (WKWebView vs WebView2 vs WebKitGTK CSS/backdrop/font quirks), white launch flash when `visible: false` + `backgroundColor` is omitted, forgetting to collapse the `72–80 px` traffic-light padding in macOS fullscreen, `Cmd/Ctrl+R` reloading the SPA in production, synchronous `#[tauri::command]` blocking the main thread, cold-start deep links firing before frontend listeners mount.
 
 ## Verification commands
 
@@ -75,8 +104,7 @@ WebView engine differences (WKWebView vs WebView2 vs WebKitGTK CSS/backdrop/font
 cargo tauri info
 npm run build
 cargo test --manifest-path src-tauri/Cargo.toml
-cargo tauri dev
 cargo tauri build
 ```
 
-`cargo tauri info`, `npm run build`, and `cargo test` provide environment and `static` evidence. Run packaged or `cargo tauri dev` builds on each target OS (macOS/Windows/Linux) to verify native menus, custom titlebars, drag regions, DPI scaling, screen readers, and dirty-close behavior for `rendered` evidence; browser-only dev preview is inner-DOM evidence only—label untested OSes `not-checked`.
+`cargo tauri info`, `npm run build`, and `cargo test` provide environment and `static` evidence. Run packaged builds on each target OS (macOS/Windows/Linux) to verify `< 500 ms` cold start, `~0%` idle CPU, all 8 WebView giveaway killers, native menus, mixed-DPI bounds clamping, screen readers (`VoiceOver`/`NVDA`/`Narrator`/`Orca`), and dirty-close behavior for `rendered` evidence; browser-only dev preview is inner-DOM evidence only—label untested OSes `not-checked`.

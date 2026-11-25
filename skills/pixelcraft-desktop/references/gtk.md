@@ -44,10 +44,12 @@ template $InvoiceWindow : Adw.ApplicationWindow {
 }
 ```
 
-## Wayland, XDG Desktop Portals, & Flatpak
+## Wayland, XDG paths, atomic storage, & Linux packaging
 
-- **Wayland has no global window positioning**: Wayland intentionally prevents apps from querying or setting absolute `(x, y)` desktop coordinates. Persist `default-width`, `default-height`, and `maximized` state only; use `AdwDialog`, `GtkPopover`, and `transient-for` relationships rather than manual screen coordinate math.
-- **XDG Desktop Portals & Flatpak**: use portal-backed GTK4 APIs (`GtkFileDialog`, `GtkUriLauncher`, `GtkFileLauncher`, `GNotification`) or `libportal` / Rust `ashpd` so file open/save, print, notifications, and dark-mode settings work cleanly inside Flatpak sandboxes without granting broad `--filesystem=home` permissions.
+- **Wayland has no global window positioning**: Wayland intentionally prevents apps from querying or setting absolute `(x, y)` desktop coordinates. Persist `default-width`, `default-height`, and `maximized` state only; use `AdwDialog`, `GtkPopover`, and `transient-for` relationships rather than manual screen coordinate math, and preserve libadwaita's `:backdrop` unfocused headerbar/sidebar dimming so multi-window focus stays clear.
+- **XDG Desktop Portals & Flatpak**: use portal-backed GTK4 APIs (`GtkFileDialog`, `GtkUriLauncher`, `GtkFileLauncher`, `GNotification`, `GtkDropTarget` / `GdkDrag` two-way file DnD) or `libportal` / Rust `ashpd` so file open/save, print, notifications, and dark-mode settings work cleanly inside Flatpak sandboxes without broad `--filesystem=home` permissions.
+- **XDG Base Directories & atomic writes**: store config in `g_get_user_config_dir()` (`$XDG_CONFIG_HOME`), persistent data/SQLite (`WAL` mode) in `g_get_user_data_dir()` (`$XDG_DATA_HOME`), state in `g_get_user_state_dir()` (`$XDG_STATE_HOME`), and caches in `g_get_user_cache_dir()` (`$XDG_CACHE_HOME`). Write files atomically via `g_file_set_contents_full(..., G_FILE_SET_CONTENTS_CONSISTENT, ...)` (temp file + `fsync` + atomic `rename`).
+- **Linux packaging & signing**: distribute `.deb`/`.rpm`, **Flatpak** (Flathub manifest), and/or GPG-signed **AppImage** accompanied by validated `.desktop` + **AppStream metainfo XML** (`appstreamcli validate --pedantic` + `desktop-file-validate`).
 
 ## States, `close-request`, & async main-loop discipline
 
@@ -61,22 +63,22 @@ static gboolean on_close_request(GtkWindow *win, gpointer user_data) {
 }
 ```
 
-Never block the GLib main loop (`GMainContext`) with synchronous disk or network I/O; run work via `GTask` / `GIO` async APIs (or Rust `gio::spawn_blocking` / Python `GLib.idle_add` handoff) with `GCancellable` cancellation and visible progress.
+Never block the GLib main loop (`GMainContext`) with synchronous disk or network I/O; run work via `GTask` / `GIO` async APIs (or Rust `gio::spawn_blocking` / Python `GLib.idle_add` handoff) with `GCancellable` cancellation, `< 300 ms` cold start, and `~0%` idle CPU.
 
 ## Typography, motion, accessibility, & forms idioms
 
 Use Pango text layout with semantic style classes (`title-1`, `heading`, `body`, `caption`); always escape dynamic user strings with `g_markup_escape_text` before passing into Pango markup. Honor `gtk-enable-animations` (`GtkSettings`) for custom motion—libadwaita animations honor it automatically.
 
-Use `GtkAccessible` properties (`GTK_ACCESSIBLE_PROPERTY_LABEL`, `DESCRIPTION`), keyboard shortcuts (`GtkShortcutController` + `AdwShortcutsDialog`), mnemonics (`_Save`), and `AdwEntryRow` / `AdwComboRow` / `AdwSwitchRow` inside `AdwPreferencesGroup` for clean, accessible forms. Verify with **Orca** screen reader, keyboard-only traversal, and High Contrast mode.
+Use `GtkAccessible` properties (`GTK_ACCESSIBLE_PROPERTY_LABEL`, `DESCRIPTION`), keyboard shortcuts (`GtkShortcutController` + `AdwShortcutsDialog`), mnemonics (`_Save`), and `AdwEntryRow` / `AdwComboRow` / `AdwSwitchRow` inside `AdwPreferencesGroup` for clean, accessible forms. Verify with **Orca** (AT-SPI2) screen reader, keyboard-only traversal, and High Contrast mode.
 
 ## Do/don't pairs
 
 | Do | Don't |
 |---|---|
 | Connect `GtkWindow::close-request` to prompt on dirty documents | Reference removed GTK3 `delete-event` or lose edits on window close |
-| Use `AdwNavigationSplitView` + `AdwBreakpoint` + `AdwDialog` | Use deprecated `AdwLeaflet`, `GtkMessageDialog`, or fixed desktop widths |
-| Use `GtkFileDialog` / XDG Portals inside Flatpak | Request unrestricted `--filesystem=host` just to pick a file |
-| Persist `width`/`height`/`maximized` on Wayland | Attempt to save/restore global `(x, y)` screen coordinates on Wayland |
+| Use `AdwNavigationSplitView` + `AdwBreakpoint` + `AdwDialog` + `:backdrop` dimming | Use deprecated `AdwLeaflet`, `GtkMessageDialog`, or override `:backdrop` unfocused states |
+| Use `GtkFileDialog` / XDG Portals + XDG Base Dirs + `G_FILE_SET_CONTENTS_CONSISTENT` atomic saves | Request unrestricted `--filesystem=host` or write dotfiles directly into `$HOME` |
+| Persist `width`/`height`/`maximized` on Wayland and validate AppStream/`.desktop` metadata | Attempt to save/restore global `(x, y)` coordinates on Wayland or ship invalid `.metainfo.xml` |
 | Escape dynamic strings with `g_markup_escape_text` before Pango markup | Interpolate raw filenames into `<b>%s</b>` markup strings |
 
 ## Known traps
@@ -86,12 +88,10 @@ Blocking `GMainContext` during I/O, using deprecated GTK3/libadwaita 1.0 APIs, b
 ## Verification commands
 
 ```sh
-# Run the test suite matching your language binding:
-meson test -C build          # C / Vala / Blueprint projects
-cargo test                   # gtk4-rs / Relm4 Rust projects
-python -m pytest             # PyGObject projects
-# Inspect live GTK4 widget tree, CSS, and accessibility:
+meson test -C build
+desktop-file-validate data/*.desktop
+appstreamcli validate --no-net data/*.metainfo.xml
 GTK_DEBUG=interactive ./build/your-app
 ```
 
-Build and unit tests are `static` evidence. Inspect live GTK Inspector (`GTK_DEBUG=interactive`), Wayland/tiling resize across breakpoints, Dark & High Contrast themes, Orca screen reader, keyboard-only navigation, and Flatpak sandbox portal behavior for `rendered` evidence; label untested desktop environments `not-checked`.
+Build, metadata validation, and unit tests are `static` evidence. Inspect live GTK Inspector (`GTK_DEBUG=interactive`), Wayland/tiling resize across breakpoints, Dark & High Contrast themes, **Orca** AT-SPI screen reader, keyboard-only navigation, and Flatpak sandbox portal behavior for `rendered` evidence; label untested desktop environments `not-checked`.

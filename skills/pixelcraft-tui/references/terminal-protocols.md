@@ -6,54 +6,72 @@ Modern terminal emulators (Ghostty, Kitty, WezTerm, Alacritty, iTerm2, Windows T
 
 | Protocol | Sequence / contract | Purpose | Mandatory fallback & safety rule |
 |---|---|---|---|
+| **DEC Mode 2004** (Bracketed Paste) | Enable: `ESC [ ? 2004 h` · Disable: `ESC [ ? 2004 l` · Paste payload wrapped in `ESC [ 200 ~ ... ESC [ 201 ~` | Distinguishes pasted multi-line text from typed keystrokes. | **Mandatory** whenever reading raw/interactive input so pasting multi-line configs/SQL/commands never fires each newline as an accidental `Enter` submit! Always disable (`?2004l`) on exit. |
 | **DEC Mode 2026** (Synchronized Output) | Begin: `ESC [ ? 2026 h` · End: `ESC [ ? 2026 l` (query via DECRQM `ESC [ ? 2026 $ p`) | Batches screen updates atomically so the terminal renders one complete frame with zero mid-frame tearing/flicker. | Safely ignored by older terminals; **always** emit `ESC [ ? 2026 l` on exit/panic so terminals never freeze waiting for end-of-frame. |
 | **Graphics Protocols** (Kitty / Sixel / iTerm2) | Kitty `APC G ... ST` · Sixel `DCS q ... ST` · iTerm2 `OSC 1337 ; File=... BEL/ST` | Renders crisp thumbnails, charts, or previews inside character cells. | Probe support (or use `ratatui-image` / Chafa-style detection); degrade cleanly to **Unicode halfblocks (`▀`/`▄`)**, Braille, or an explicit text placeholder (`[Image: diagram.png]`) inside unsupported terminals or un-configured `tmux`/SSH. |
 | **OSC 8 Hyperlinks** | `OSC 8 ; params ; URI ST label OSC 8 ; ; ST` | Makes labels clickable links in supporting terminals without cluttering narrow columns. | Never hide essential URLs behind `"click here"`—keep link text self-explanatory or print the raw URL in plain/`!isatty` output so piped logs and non-OSC-8 terminals still have the destination. |
 | **Kitty Keyboard Protocol (`CSI u`)** | Push flags: `ESC [ > flags u` · Pop on exit: `ESC [ < u` | Disambiguates `Ctrl+I` vs `Tab`, `Ctrl+M` vs `Enter`, `Ctrl+[` vs `Esc`, `Shift+Enter`, and key release/repeat events. | Negotiate cleanly and **always pop (`ESC [ < u`) on exit/panic**; maintain legacy ANSI keybinding fallbacks so users on older terminals or basic SSH sessions can complete every task. |
-| **OSC 52 Clipboard** | `OSC 52 ; c ; <base64-utf8> ST` | Copies text directly to the user's local clipboard even across remote SSH and `tmux` (`set-clipboard on`) without `pbcopy`/`xclip`/`wl-copy`. | Respect emulator payload caps (~100 KB), handle user/terminal security denial silently, and show a visible confirmation or copyable view if clipboard writes are disabled. |
+| **OSC 52 Clipboard** | `OSC 52 ; c ; <base64-utf8> ST` | Copies text directly to the user's local clipboard even across remote SSH and `tmux` (`set-clipboard on`) without `pbcopy`/`xclip`/`wl-copy`. | Pair with local OS clipboard when running locally, respect emulator payload caps (~100 KB), handle security denial silently, and show visible copy confirmation. |
 | **OSC 9;4 Progress** | `OSC 9 ; 4 ; <state> ; <0-100> ST` (`0`=clear, `1`=normal, `2`=error, `3`=indeterminate, `4`=paused) | Surfaces native taskbar/tab progress bars in Windows Terminal, Ghostty, WezTerm, and iTerm2. | Emit **only** to an interactive TTY and **always emit `state=0` (clear)** on completion, error exit, or `SIGINT` so stuck progress indicators never linger on the terminal tab. |
 
-```text
-# OSC 8 clickable hyperlink (ST = ESC \)
-\x1b]8;;https://example.com/docs\x1b\\Read docs\x1b]8;;\x1b\\
+## Grapheme-cluster column width (`UAX #29`) & `--ascii` fallback
 
-# OSC 9;4 progress bar (42% normal), then clear on exit
-\x1b]9;4;1;42\x1b\\
-\x1b]9;4;0;\x1b\\
-```
+**Never** compute terminal column width with `.length`, `.len()`, `len()`, or UTF-16 code units—every border and table column will misalign on real international text:
 
-## Capability & environment-variable matrix
+- Segment by **Unicode Standard Annex #29 (`UAX #29`) extended grapheme clusters** + **East Asian Width**:
+  - **CJK ideographs** (`日本語` / `中文`) = **`2` cols** per character;
+  - **ZWJ Emoji sequences** (`👨‍👩‍👧‍👦`) = **`2` cols** total (not 8 or 11);
+  - **Variation Selector-16 (`VS16`, `U+FE0F`)** (`⚠️`) = **`2` cols**;
+  - **Vietnamese & combining diacritics** (e.g., `Nguyễn` NFD combining marks `U+0300`–`U+036F`) = **`0` extra cols**.
+- Use proven width libraries per runtime: `unicode-segmentation` + `unicode-width` (Rust), `rivo/uniseg` / `go-runewidth` / `lipgloss.Width` (Go), `Intl.Segmenter` + `string-width` (Node/Bun), and `wcwidth` / `rich.cells.cell_len` (Python).
+- **`--ascii` & non-UTF-8 locale fallback**: when `--ascii` is passed, `TERM=dumb`, or `LC_ALL`/`LANG` is `C`/`POSIX` (non-UTF-8), replace Unicode box-drawing (`╭─╮` → `+--+`), Braille spinners (`⠋` → `- \ | /`), and status glyphs (`✔`/`✖` → `[OK]`/`[ERR]`).
 
-Check environment variables and TTY state in deterministic precedence order—never spray ANSI escapes unconditionally into files or CI logs:
+## 6-step panic & signal terminal restoration hook
 
-| Signal | Meaning | Required behavior |
-|---|---|---|
-| `!isatty(stdout)` | Output is piped or redirected to a file | Disable alt-screen, spinners, cursor motion, OSC 9;4, and ANSI color on `stdout` (unless explicitly overridden by `--color=always` / `FORCE_COLOR`); write human progress to `stderr` only if `isatty(stderr)`. |
-| `TERM=dumb` (or unset `TERM`) | Minimal non-ANSI environment (Emacs shell, basic CI, serial console) | Emit plain UTF-8/ASCII lines only; disable all CSI/OSC escapes, box drawing assumptions, and cursor addressing. |
-| `NO_COLOR` (present and non-empty, per `no-color.org`) | User explicitly opted out of ANSI color | Strip all foreground/background color codes while preserving bold/plain-text markers (`[OK]`, `[ERR]`, `>`). `NO_COLOR` overrides `COLORTERM` and default TTY color detection. |
-| `FORCE_COLOR` (non-empty and not `"0"`) | Caller forces color despite non-TTY pipe (e.g., CI log viewer) | Allow ANSI color output when explicitly non-zero; never enable full-screen interactive prompts or cursor-movement redraws just because `FORCE_COLOR` is set. |
-| `COLORTERM=truecolor` or `24bit` | Terminal advertises 24-bit RGB support | Permit RGB colors (still respecting `NO_COLOR` and light/dark readability); otherwise downsample cleanly to ANSI 256 or ANSI 16. |
-| `CI=true` / `CI=1` | Headless automated pipeline | Disable interactive prompts (`--no-interactive` default), switch spinners to discrete timestamped/milestone lines, and exit non-zero cleanly when required args are missing. |
+Register a teardown hook covering normal exit, **`SIGINT`**, **`SIGTERM`**, **`SIGHUP`**, and uncaught **panics/exceptions** that executes all 6 restoration steps in order before writing any crash traceback:
+
+1. **Leave alternate screen**: `\x1b[?1049l`
+2. **Disable mouse tracking**: `\x1b[?1000l\x1b[?1002l\x1b[?1003l\x1b[?1006l`
+3. **Disable bracketed paste**: `\x1b[?2004l`
+4. **Disable synchronized output**: `\x1b[?2026l` (and clear `OSC 9;4` progress `\x1b]9;4;0;\x1b\\`)
+5. **Pop Kitty keyboard protocol flags**: `\x1b[<u`
+6. **Show cursor & exit raw mode**: `\x1b[?25h` + restore cooked `termios` / console mode.
+
+## Capability, stream hygiene, `SIGPIPE`, & 16-color light/dark themes
+
+| Signal / Condition | Required behavior |
+|---|---|
+| **Stream separation (`stdout` vs `stderr`)** | Interactive TUI chrome, spinners, progress bars, and human warnings go strictly to `stderr` (or alternate screen only when `isatty(stdout)`). Machine-parseable payloads (`--json`, `--plain`, CSV) go strictly to `stdout`. |
+| **Downstream pipe close (`SIGPIPE` / `EPIPE` / `BrokenPipeError`)** | Piping into `head -n 5` or `jq` closes `stdout` early. Catch `BrokenPipe` / `EPIPE` / `BrokenPipeError` and exit `0` **silently**—never print uncaught stack traces or panic dumps! |
+| `NO_COLOR` (non-empty) / `TERM=dumb` / `CI=true` | Strip ANSI colors (`NO_COLOR`), disable all CSI/OSC escapes (`TERM=dumb`), disable interactive prompts (`CI=true`), and preserve text state markers (`[OK]`, `[ERR]`, `>`). |
+| **16-color dark & light ANSI themes** | **Never** hardcode `#ffffff` assuming a black terminal or `#000000` assuming a white terminal. Default primary text/surfaces to terminal `Reset`/`Default` + ANSI 16 semantic roles (or query background luminance before choosing light vs dark truecolor ramps). |
+
+## CLI & TUI distribution standards
+
+Ship production terminal tools with complete operator ergonomics:
+- **Standard flags & semantic exit codes**: `-h`/`--help`, `-V`/`--version`, `--json`/`--plain`, `--no-color`, `--ascii`; exit **`0`** on success, **`1`** on runtime/API failure, **`2`** on CLI usage/flag error, and **`130`** on `SIGINT` (`Ctrl+C`).
+- **Shell completions & `man` page**: generate completions for **`bash`, `zsh`, `fish`, and `pwsh`** (`mycli completions <shell>`) plus a `roff` **`man` page** (`man 1 mycli`).
+- **Native package channels**: distribute reproducible checksummed releases via **Homebrew**, **Winget**, **Scoop**, **Cargo** (`cargo-dist` / `crates.io`), **npm** (platform-specific binaries or clean Node/Bun bin), or **PyPI** (`uv tool install` / `pipx`).
 
 ## Do/don't pairs
 
 | Do | Don't |
 |---|---|
-| Wrap complex frame redraws in DEC Mode 2026 (`?2026h` … `?2026l`) with cleanup on panic | Stream partial cursor redraws causing visible tearing or leave `?2026h` unclosed |
-| Pop Kitty keyboard protocol (`CSI < u`) and clear OSC 9;4 (`9;4;0`) on exit and `SIGINT` | Leave the user's shell stuck in `CSI u` mode or with a permanent error progress bar |
-| Honor `NO_COLOR` (non-empty), `TERM=dumb`, and `!isatty(stdout)` strictly | Ignore `NO_COLOR` or dump raw ANSI escape sequences into piped JSON output |
-| Provide Unicode halfblock or text fallback when Kitty/Sixel graphics aren't supported | Emit raw Sixel or Kitty APC bytes unconditionally into `tmux` or unsupported terminals |
-| Keep OSC 8 link text meaningful or print the URL in plain mode | Output `[click here]` with OSC 8 so non-supporting terminals lose the URL entirely |
+| Enable Bracketed Paste (`?2004h`) on input views and run the full 6-step teardown on panic/signal | Let multi-line paste fire `Enter` on every newline or leave `?1049h`/`?1003h`/`CSI u` stuck after a crash |
+| Measure columns with `UAX #29` grapheme + East Asian Width (`unicode-width`, `uniseg`, `string-width`, `wcwidth`) + `--ascii` fallback | Align borders with `.length`/`.len()`, breaking CJK, `👨‍👩‍👧‍👦`, `⚠️`, and Vietnamese diacritics |
+| Route spinners/logs to `stderr`, JSON/plain data to `stdout`, and exit silently on `SIGPIPE`/`EPIPE` | Leak spinner ANSI codes into `stdout` pipes or dump a stack trace on `mycli list \| head -n 5` |
+| Use terminal `Reset`/`Default` + 16-color-safe ANSI roles across both light and dark terminals | Hardcode `#ffffff` text invisible on Solarized/macOS Light terminals |
+| Ship `--help`, `--version`, `0/1/2/130` exit codes, `bash`/`zsh`/`fish`/`pwsh` completions, and a `man` page | Exit `0` on errors or ship an opaque binary with no `--version` or shell completions |
 
 ## Verification commands
 
 ```sh
-# Test capability degradation matrix explicitly:
+# Test capability degradation, ASCII fallback, and silent SIGPIPE exit:
 NO_COLOR=1 your-cli --help
 TERM=dumb your-cli --help
-CI=1 your-cli --help | cat
+your-cli --plain | head -n 5
 # Verify stdout remains free of ANSI escape sequences when piped:
-your-cli --help | LC_ALL=C grep -P '\x1b\[' && echo "FAIL: ANSI leaked to pipe" || echo "OK: clean pipe"
+if your-cli --help | LC_ALL=C grep -q $'\x1b\['; then echo "FAIL: ANSI leaked"; exit 1; fi
 ```
 
-Piped escape checks provide deterministic `static`/output evidence. Inspect synchronized output, Kitty keyboard keys, OSC 8 clicks, OSC 52 clipboard over SSH/`tmux`, OSC 9;4 progress clearing, and graphics fallbacks in at least two real terminal emulators (`rendered`; label untested emulators `not-checked`).
+Piped escape and `head -n 5` `SIGPIPE` checks provide deterministic `static`/output evidence. Inspect Bracketed Paste, `OSC 52` clipboard over SSH/`tmux`, `UAX #29` CJK/ZWJ/Vietnamese alignment, light+dark 16-color legibility, and 6-step signal/panic restoration in at least two real terminal emulators (`rendered`; label untested emulators `not-checked`).

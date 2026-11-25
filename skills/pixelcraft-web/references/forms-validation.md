@@ -107,7 +107,8 @@ export async function saveProfile(_prev: unknown, formData: FormData) {
 - **Multi-step wizards**: keep one typed parent schema (or per-step sub-schemas merged on final submit); validate only the active step on `Next`, allow stepping backward without losing values, and mirror step progress in URL/state.
 - **Server validation errors**: map field-level backend errors back to their exact field (`setError` in RHF, `submission.reply({ fieldErrors })` in Conform, `setError` in Superforms) and focus the first invalid field or error summary while preserving every entered value.
 - **Async validation**: always debounce (`300–500 ms`), cancel stale in-flight checks (`AbortSignal` / request token), and show pending state without blocking unrelated fields.
-- **Autosave & draft recovery**: debounce draft writes to `IndexedDB`/Dexie (or `sessionStorage` for tiny non-sensitive drafts), clear the draft on confirmed submit, and offer explicit `Restore draft` / `Discard` when reloading an unfinished form.
+- **Synchronous submit lock & idempotent create/pay mutations**: guard `onSubmit` with a synchronous ref lock (`submittingRef.current = true` before the first `await`) plus `aria-busy="true"` and an `Idempotency-Key` header on create/billing mutations ([auth-and-checkout-ui.md](auth-and-checkout-ui.md)) so rapid double-Enter or double-click never creates duplicate records.
+- **Autosave & `401` session-expiry draft preservation**: debounce draft writes to `IndexedDB`/Dexie (or `sessionStorage` for tiny non-sensitive payloads), snapshot dirty form values immediately if a submit fails with `401 Unauthorized` prior to re-authentication, clear the draft on confirmed `2xx` persistence, and offer explicit `Restore draft` / `Discard` recovery on return.
 
 ## Do/don't pairs
 
@@ -117,5 +118,6 @@ export async function saveProfile(_prev: unknown, formData: FormData) {
 | Key `useFieldArray` rows by generated `field.key` / `field.id` (`keyName: 'key'` if records have `id`) | Key repeatable form rows by array `index` (corrupts values on delete/reorder) |
 | Match Zod v4 with `z.email()`, `@hookform/resolvers` v5+, and `@conform-to/zod/v4` | Mix Zod v4 schemas into outdated Zod v3 resolver subpaths |
 | Share one Standard Schema between client form validation and server action/endpoint | Duplicate regexes manually in client inputs and backend handlers |
+| Lock submit synchronously before `await`, attach `Idempotency-Key`, and snapshot drafts on `401` | Allow fast double-submits to create duplicate rows or lose long forms on session expiry |
 | Use `defineField` in VeeValidate v4 to bind `aria-invalid` dynamically from field state | Use deprecated `defineComponentBinds` or omit `aria-invalid` / `aria-describedby` |
 | Debounce async validators (`300–500 ms`) and ignore stale responses | Fire an API check on every keystroke without debounce or race protection |

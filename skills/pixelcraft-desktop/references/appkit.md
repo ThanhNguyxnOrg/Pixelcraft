@@ -59,20 +59,21 @@ In SwiftUI for macOS, read `@Environment(\.accessibilityReduceMotion)`, `@Enviro
 - Use macOS semantic text styles (`.body`, `.headline`, `.callout`) and verify Retina vector/SF Symbol sharpness.
 - Implement `NSAccessibility` roles, labels, and custom actions on custom AppKit views; never suppress the system keyboard focus ring (`focusRingType = .none`) without a high-contrast replacement. Verify **Full Keyboard Access** (`System Settings → Keyboard → Keyboard navigation`) and **VoiceOver** across toolbars, sidebars, sheets, and modals.
 
-## Sandbox, permissions, & notarization
+## Storage, notarization, & `Ed25519` auto-updates
 
-- Under **App Sandbox**, request least-privilege entitlements (`com.apple.security.files.user-selected.read-write`) and persist user-granted folder access with **security-scoped bookmarks** rather than failing silently after relaunch.
-- For direct distribution outside the Mac App Store, enable Hardened Runtime, sign with Developer ID, and notarize (`xcrun notarytool submit` + `xcrun stapler staple`) so Gatekeeper never blocks users.
+- **OS-standard paths & atomic writes**: store app support files in `FileManager.default.urls(for: .applicationSupportDirectory, in: .userDomainMask)` (`~/Library/Application Support/<BundleId>`), caches in `~/Library/Caches`, and logs in `~/Library/Logs`—never inside `.app` bundles. Persist project/config files atomically (`try data.write(to: url, options: .atomic)` or temp file + `fsync` + `replaceItemAt`) and configure local SQLite in `WAL` mode with versioned migrations ([working-context.md](working-context.md)).
+- **Two-way Finder drag-and-drop & inactive window dimming**: support dragging files in from and out to Finder/Desktop (`NSDraggingDestination` / `NSDraggingSource`, SwiftUI `.draggable` / `.dropDestination`), dim sidebar/toolbar prominence when `appearsActive == false` (`@Environment(\.controlActiveState)`), and maintain `< 300 ms` cold start + `~0%` idle CPU when occluded (`NSWindow.occlusionState`).
+- **Sandbox, Universal binaries & notarization**: under **App Sandbox**, request minimal entitlements (`com.apple.security.files.user-selected.read-write`) and persist user-granted folder access with **security-scoped bookmarks**. For direct distribution outside the Mac App Store, build Universal (`arm64 + x86_64`) or explicit-arch bundles, enable **Hardened Runtime**, sign with **Developer ID Application**, notarize (`xcrun notarytool submit --wait`), staple (`xcrun stapler staple`), and ship **Sparkle 2** (`Ed25519` / `EdDSA`-signed) background delta updates that roll back cleanly on launch failure.
 
 ## Do/don't pairs
 
 | Do | Don't |
 |---|---|
-| `DocumentGroup` / `NSDocument` with dirty dot, autosave, and Save prompt on close | Silently discard edits when clicking the red close button |
+| `DocumentGroup` / `NSDocument` with dirty dot, atomic `.atomic` saves, and Save prompt on close | Overwrite files non-atomically in place or discard edits on close |
 | Wire active-window menu items via `.commands` + `@FocusedValue` or Responder Chain | Hard-code menu actions to a singleton window reference |
 | Check `accessibilityDisplayShouldReduceTransparency` & `IncreaseContrast` around `NSGlassEffectView`/`.glassEffect` | Ship unreadable translucent glass toolbars over high-contrast documents |
-| Provide `Settings` scene (`Cmd+,`) and native `NSToolbar` / sidebar navigation | Paste an iOS bottom tab bar or custom web-style hamburger drawer into macOS |
-| Persist folder access via security-scoped bookmarks in sandboxed builds | Assume raw POSIX paths survive relaunch under App Sandbox |
+| Sign Developer ID + Hardened Runtime + `notarytool` + `stapler` + Sparkle 2 `Ed25519` updates | Ship unnotarized `.dmg`s blocked by Gatekeeper or unsigned auto-updaters |
+| Persist folder access via security-scoped bookmarks and store app data in `~/Library/Application Support` | Assume raw POSIX paths survive relaunch under App Sandbox |
 
 ## Known traps
 

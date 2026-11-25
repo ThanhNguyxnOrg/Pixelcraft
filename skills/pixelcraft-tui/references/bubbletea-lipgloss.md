@@ -41,41 +41,39 @@ Reuse first-party Charm libraries instead of reimplementing terminal primitives 
 | **Fang** | Modern Cobra CLI wrapper | Styled help text, manpages, version output, and shell completions out of the box |
 | **Teatest** | Headless Bubble Tea test harness (`x/exp/teatest`) | Automated keystroke simulation, resize tests, and golden output assertions |
 
-## Token mapping, layout, & typography
+## Token mapping, `UAX #29` width, & `--ascii` fallback
 
-Centralize semantic `lipgloss.Style` definitions in one styles struct derived from detected terminal color profile / light-dark background (`lipgloss.HasDarkBackground` / v2 background-color query) so colors never clash on light terminals or disappear under `NO_COLOR=1`.
+Centralize semantic `lipgloss.Style` definitions in one styles struct derived from detected terminal color profile / light-dark background (`lipgloss.HasDarkBackground` / v2 background-color query) so colors never clash on light terminals or disappear under `NO_COLOR=1` (never hardcode `#ffffff` or `#000000` without adapting to background luminance).
 
-Always recompute pane widths/heights on `tea.WindowSizeMsg` using `lipgloss.Width(...)` and `lipgloss.Height(...)` (which account for ANSI codes and wide CJK/emoji cells—never measure terminal layout with Go `len(str)`). Define a clean `80×24` minimum layout and collapse secondary panes gracefully.
+Always recompute pane widths/heights on `tea.WindowSizeMsg` using **`lipgloss.Width(...)`**, **`github.com/rivo/uniseg`** (`uniseg.StringWidth` / `uniseg.NewGraphemes`), or `go-runewidth`—**never** Go `len(str)` or `utf8.RuneCountInString(str)`, which corrupt borders on CJK (`2` cols), ZWJ emoji (`👨‍👩‍👧‍👦` = `2` cols), `VS16` (`⚠️` = `2` cols), and Vietnamese combining diacritics (`0` extra cols). Switch `lipgloss.RoundedBorder()` to `lipgloss.ASCIIBorder()` when `--ascii`, `TERM=dumb`, or non-UTF-8 locale is detected, and define a clean `80×24` minimum layout.
 
-## Motion, accessibility, states, & forms idioms
+## Bracketed Paste, `OSC 52`, `SIGPIPE`, 6-step teardown & CLI packaging
 
-Keep `tea.Tick` / spinner rates bounded and cancel background goroutines/HTTP requests via `context.Context` stored in model state. Tag async messages with request IDs/generations so stale `tea.Cmd` results never overwrite newer user filters or selections.
-
-Expose keyboard help via `bubbles/help` + `bubbles/key` (`?` toggle for full keymap), show plain-text focus/selection markers (`>`, `[x]`) alongside color, support `Esc`/`q`/`Ctrl+C` cleanly, and provide non-interactive flags (`--json`, `--no-interactive`) when stdout is not a TTY. For standalone forms, honor `ACCESSIBLE=1` (`huh.WithAccessible(true)`) so screen-reader users get linear prompts instead of cursor-rewriting widgets.
+- **Bracketed Paste (`DECSET 2004`) & `OSC 52` clipboard**: handle `tea.PasteMsg` (Bubble Tea enables `?2004h` automatically) so pasted multi-line configs enter `textarea`/`textinput` cleanly without firing `enter` per newline; copy via **`OSC 52`** (`github.com/aymanbagabas/go-osc52/v2` / Bubble Tea v2 `tea.SetClipboard`) alongside local OS clipboard so remote SSH/`tmux` copies work out of the box.
+- **Stream hygiene, `EPIPE`, & 6-step panic/signal restoration**: run interactive Bubble Tea on `tea.WithOutput(os.Stderr)` when `stdout` must emit pipeable selections, write `--json`/`--plain` strictly to `os.Stdout` while ignoring `errors.Is(err, syscall.EPIPE)` (exiting `0` silently on `| head -n 5`), and ensure `recover()` + `SIGINT`/`SIGTERM`/`SIGHUP` handlers complete the full 6-step terminal reset (`?1049l`, mouse `?1000l/?1002l/?1003l/?1006l`, `?2004l`, `?2026l`, `\x1b[<u`, `?25h` + raw mode restore—see [terminal-protocols.md](terminal-protocols.md)).
+- **Accessibility, exit codes & distribution**: keep `tea.Tick` bounded, cancel async work via `context.Context` + request generation IDs, honor `ACCESSIBLE=1` (`huh.WithAccessible(true)`), use semantic exit codes (`0`, `1`, `2`, `130`), and wire **Fang** / Cobra to emit `--help`, `--version`, **`bash`/`zsh`/`fish`/`pwsh` completions**, **`man` pages**, and **GoReleaser** Homebrew/Winget/Scoop binaries.
 
 ## Do/don't pairs
 
 | Do | Don't |
 |---|---|
-| Centralize semantic Lip Gloss styles and measure with `lipgloss.Width` | Scatter raw ANSI hex colors or align columns using `len(s)` |
-| Recompute layout on every `tea.WindowSizeMsg` (tested at `80×24`) | Capture terminal width once at startup or hard-code 120 columns |
-| Use Bubble Tea v2 `tea.View` + Lip Gloss v2 `Layer`/`table`/`tree` on new v2 apps | Mix v1 `tea.EnterAltScreen` commands with v2 declarative `tea.View` |
-| Use **Huh** (`WithAccessible`) or **Bubbles** + **Teatest** golden tests | Hand-roll text cursor editing and skip automated TUI tests |
-| Track request generation / `context.Context` cancellation in `Update` | Allow stale async `tea.Cmd` responses to clobber active model state |
+| Measure/truncate graphemes with `lipgloss.Width` / `rivo/uniseg` + `lipgloss.ASCIIBorder()` fallback | Align columns with `len(s)` or `utf8.RuneCountInString(s)` (corrupts CJK, `👨‍👩‍👧‍👦`, and Vietnamese) |
+| Handle `tea.PasteMsg` (`?2004h`), `OSC 52` SSH copy, and full 6-step reset on panic/signal | Treat pasted newlines as `Enter` submits or leave `?1049h`/`CSI u` active on panic |
+| Route TUI chrome to `stderr` when piping, ignore `syscall.EPIPE` on `stdout`, and ship Fang/Cobra completions + `man` | Pollute `stdout` JSON with spinner ANSI codes or print errors on `mycli --plain \| head -n 5` |
+| Recompute layout on every `tea.WindowSizeMsg` (tested at `80×24`) + light/dark-adaptive styles | Hard-code `120` columns or `#ffffff` text unreadable on light terminals |
+| Use Bubble Tea v2 `tea.View` + Lip Gloss v2 `Layer` + **Huh** (`WithAccessible`) + **Teatest** | Mix v1 `tea.EnterAltScreen` commands with v2 `tea.View` or skip automated TUI tests |
 
 ## Known traps
 
-Measuring printable width with `len()` instead of `lipgloss.Width()` (breaks on ANSI codes and CJK/emoji), forgetting to check `go.mod` for Bubble Tea v1 vs v2 API differences, leaving alt-screen/raw mode active on non-TTY piped output, unbounded `tea.Tick` loops saturating CPU, overlapping modals corrupting cells without Lip Gloss v2 `Layer`, ignoring light-background terminal contrast.
+Measuring printable width with `len()` or `RuneCountInString()` instead of `lipgloss.Width()` / `uniseg`, forgetting `recover()` cleanup when spawning custom goroutines, leaving alt-screen/raw mode active on non-TTY piped output, unhandled `EPIPE` errors when piped to `head`, ignoring light-background terminal contrast.
 
 ## Verification commands
 
 ```sh
 go test ./...
 go vet ./...
-go run ./cmd/app --help
-# Verify NO_COLOR, narrow width, and non-TTY piped output:
 NO_COLOR=1 COLUMNS=80 go run ./cmd/app --help
-go run ./cmd/app --help | cat
+go run ./cmd/app --plain | head -n 5
 ```
 
-`go test` (including **Teatest** golden-file simulations) and `go vet` provide `static`/virtual-buffer evidence. Run the binary in real dark and light terminals at `80×24`, `NO_COLOR=1`, `TERM=dumb`, and piped stdin/stdout for `rendered` evidence; label untested emulators `not-checked`.
+`go test` (including **Teatest** golden-file simulations) and `go vet` provide `static`/virtual-buffer evidence. Run the binary in real dark and light terminals at `80×24`, `NO_COLOR=1`, `TERM=dumb`, `--ascii`, multi-line paste, and piped `head -n 5` for `rendered` evidence; label untested emulators `not-checked`.

@@ -70,7 +70,13 @@ export function useReducedMotion(): boolean {
 
 Use `Pressable`, `accessibilityRole`, `accessibilityLabel`, `accessibilityState`, `accessibilityHint` (sparingly), and `accessibilityLiveRegion`. Keep hit areas ≥ `44 pt` (iOS) / `48 dp` (Android) using `hitSlop` when visual icons are compact.
 
-Model async state explicitly (`loading`, `refreshing`, `empty`, `error`, `offline`, `optimistic`) with idempotent mutations and rollback on failure. For forms, configure `keyboardType`, `autoComplete`, `textContentType`, `returnKeyType`, focus forwarding via refs, paste/password-manager compatibility, and validation after field completion.
+Model async state explicitly (`loading`, `refreshing`, `empty`, `error`, `offline`, `optimistic`) with idempotent mutations, visible offline sync queues, and persisted router/draft recovery across OS background process death (`adb shell am kill` / iOS eviction via `react-native-mmkv` or SQLite—never assuming JS memory survives backgrounding). Set **`keyboardDismissMode="interactive"`** alongside `react-native-keyboard-controller`, pass gesture `velocity` into Reanimated 4 `withSpring`, and configure `keyboardType`, `autoComplete`, `textContentType`, `returnKeyType`, unobstructed paste/password-manager support, and post-blur validation.
+
+## 2026 App Store & Google Play submission gates
+
+- **Secrets in Keychain / Android Keystore**: store auth/refresh tokens solely in **`expo-secure-store`** (or `react-native-keychain`)—**never** in plaintext `AsyncStorage` or unencrypted MMKV.
+- **iOS (Xcode 26 SDK)**: declare `ios.privacyManifests` in `app.config.ts` (`PrivacyInfo.xcprivacy` covering app + native modules), enable `CADisableMinimumFrameDurationOnPhone: true` in `ios.infoPlist` for `120fps` ProMotion (`< 8.33 ms`/frame), include **`expo-apple-authentication`** whenever any social login exists, wire real **in-app Account Deletion**, and use zero-permission `expo-image-picker` (`PHPicker`) with `Linking.openSettings()` recovery when camera/mic/location is denied.
+- **Android (`targetSdkVersion 36`, `.aab`)**: enable `edgeToEdgeEnabled: true` (`react-native-edge-to-edge`) + Predictive Back, unlock `sw >= 600dp` tablet/foldable orientations (`expo-screen-orientation` / adaptive layouts rather than hard-locking portrait), ship Android **Baseline Profiles** to keep cold start `< 1.2 s`, and ensure RN + every native JSI/C++ module compiles with **NDK r28+ for `16 KB` memory page alignment** (verify release builds with `zipalign -c -P 16`). Upload Hermes/ProGuard/R8 & dSYM symbols in CI (`>= 99.5%` crash-free, `0` ANRs).
 
 ## Do/don't pairs
 
@@ -78,13 +84,14 @@ Model async state explicitly (`loading`, `refreshing`, `empty`, `error`, `offlin
 |---|---|
 | `<Pressable accessibilityRole="button" accessibilityLabel="Save invoice">` | Tap-only `<Text>` or unlabeled `<TouchableOpacity>` icon |
 | `FlashList` v2 or `LegendList` with stable keys for large feeds | Mapping hundreds of items inside `<ScrollView>` |
-| `react-native-keyboard-controller` + `useSafeAreaInsets()` | Hard-coded `KeyboardAvoidingView` magic `keyboardVerticalOffset` |
-| Reanimated 4 UI-thread transitions + `AccessibilityInfo.isReduceMotionEnabled()` | JS `setInterval` animations or unconditional looping motion |
+| `react-native-keyboard-controller` + `keyboardDismissMode="interactive"` + `useSafeAreaInsets()` | Hard-coded `KeyboardAvoidingView` magic `keyboardVerticalOffset` |
+| Reanimated 4 UI-thread springs seeded with gesture `velocity` + `CADisableMinimumFrameDurationOnPhone` | JS-coupled scroll listeners, `setInterval` animations, or `60 Hz`-capped ProMotion |
+| Store tokens in `expo-secure-store`, configure `privacyManifests`, `targetSdk 36`, and `16 KB` `.so` alignment | Save JWTs in `AsyncStorage`, ship `4 KB`-aligned native `.so` modules, or link Account Deletion to email |
 | `expo-image` + build-time `expo-font` config plugin | Uncached `<Image>` flickering or runtime font flash on every launch |
 
 ## Known traps
 
-JS-thread blocking / excessive Fabric shadow-tree updates, unmaintained third-party libraries incompatible with New Architecture / Bridgeless mode, Expo SDK / native dependency drift, double safe-area padding with Expo Router headers, Android 15/16 edge-to-edge keyboard overlap, controlled `TextInput` cursor jumps, platform shadow/elevation divergence, font scaling clipped by fixed row heights.
+JS-thread blocking / excessive Fabric shadow-tree updates, native modules bundling `4 KB`-aligned `.so` binaries rejected on Android 15/16 (`16 KB` page requirement), storing tokens in `AsyncStorage`, state wiped on `adb shell am kill`, double safe-area padding with Expo Router headers, Android 16 edge-to-edge keyboard overlap, controlled `TextInput` cursor jumps, font scaling clipped by fixed row heights.
 
 ## Verification commands
 
@@ -92,7 +99,8 @@ JS-thread blocking / excessive Fabric shadow-tree updates, unmaintained third-pa
 npm run lint
 npm run test -- --watch=false
 CI=1 npx expo install --check
-npx expo start
+# Verify 16 KB ELF alignment on Android release APK:
+zipalign -c -P 16 -v 4 android/app/build/outputs/apk/release/app-release.apk
 ```
 
-Use the project's locally installed Expo CLI (`static` dependency verification via `CI=1 npx expo install --check` without auto-mutating packages; run `expo install --fix` only when authorized). Run native iOS/Android dev builds (`npx expo run:ios` / `npx expo run:android`) and inspect React Native DevTools, VoiceOver/TalkBack, `200%` font scaling, Dark Mode, offline/throttled network, and Android predictive back / iOS swipe-back for `rendered` evidence; label untested devices `not-checked`.
+Use the project's locally installed Expo CLI (`static` dependency verification via `CI=1 npx expo install --check` and `zipalign -c -P 16`). Run native release/dev builds (`npx expo run:ios` / `npx expo run:android`) across `>= 2` physical iOS devices and `>= 3` physical Android devices (Pixel + OEM skins) checking VoiceOver/TalkBack, `200%` font scaling, Dark Mode, `adb shell am kill` process-death restoration, offline sync, and Android predictive back / iOS swipe-back for `rendered` evidence; label untested devices `not-checked`.

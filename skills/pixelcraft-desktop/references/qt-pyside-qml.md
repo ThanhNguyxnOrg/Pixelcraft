@@ -39,11 +39,11 @@ def is_system_dark(app: QApplication) -> bool:
 
 Load custom fonts via `QFontDatabase.addApplicationFont(...)` and verify platform fallback chains (CJK/RTL/emoji) and point-vs-pixel scaling. Keep QML `NumberAnimation` / `Behavior` and `QPropertyAnimation` brief and interruptible; because Qt does not expose one uniform cross-OS reduced-motion property across every desktop environment, query platform hooks or provide an explicit app-level reduced-motion preference so animations can be disabled cleanly.
 
-## Accessibility, states, & forms idioms
+## Accessibility, atomic `QSaveFile` storage, & states idioms
 
-Use standard Qt/QML controls first (they implement `QAccessible` / platform UIA / NSAccessibility / AT-SPI peers automatically). Set `accessibleName` / `Accessible.name`, `Accessible.role`, `Accessible.description`, keyboard shortcuts (`QShortcut` / `Action`), mnemonics (`&Save`), and explicit `QWidget.setTabOrder` / `KeyNavigation` chains.
+Use standard Qt/QML controls first (they implement `QAccessible` / platform UIA / NSAccessibility / AT-SPI peers automatically). Set `accessibleName` / `Accessible.name`, `Accessible.role`, `Accessible.description`, keyboard shortcuts (`QShortcut` / `Action`), mnemonics (`&Save`), and explicit `QWidget.setTabOrder` / `KeyNavigation` chains; verify with **`NVDA`/`JAWS`/`Narrator`**, **`VoiceOver`**, and **`Orca`**.
 
-Never block the Qt GUI event loop (`QApplication.exec()`) with synchronous network or disk I/O—use `QThreadPool` + `QRunnable` / `QObject` worker signals (or Python `QtAsyncio` / `QProcess`) with cancellation and progress states. Intercept `closeEvent` to protect dirty documents. In forms, pair `QFormLayout` / labeled `TextField` controls with `QValidator` / post-edit validation text (not red borders alone) and preserve input on failed submits.
+Never block the Qt GUI event loop (`QApplication.exec()`) with synchronous network or disk I/O—use `QThreadPool` + `QRunnable` / `QObject` worker signals (or Python `QtAsyncio` / `QProcess`) with cancellation, `< 400 ms` cold start, and `~0%` idle CPU when minimized. Resolve OS-standard directories via **`QStandardPaths::writableLocation(QStandardPaths::AppConfigLocation / AppLocalDataLocation)`**, write user/config files atomically with **`QSaveFile`** (`open` → `write` → `commit()`, which performs `fsync` + atomic rename automatically), run local SQLite in `WAL` mode, clamp restored geometry (`QGuiApplication::screens()`) across mixed-DPI monitors ([working-context.md](working-context.md)), and intercept `closeEvent` to protect dirty documents. In forms, pair `QFormLayout` / labeled `TextField` controls with `QValidator` / post-edit validation text (not red borders alone) and preserve input on failed submits.
 
 ## PyQt6 & Qt Designer (`.ui` / `uic`)
 

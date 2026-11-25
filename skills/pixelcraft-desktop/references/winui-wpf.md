@@ -60,10 +60,16 @@ Always keep `AppWindowTitleBar.PreferredHeightOption` tall enough for Windows 11
 
 ## Layout, typography, accessibility, states, & forms
 
-- Use `Grid`, `StackPanel`, `NavigationView` (WinUI 3), `VisualStateManager` adaptive triggers, `UseLayoutRounding="True"`, per-monitor DPI awareness (`PerMonitorV2`), and minimum window dimensions.
+- Use `Grid`, `StackPanel`, `NavigationView` (WinUI 3), `VisualStateManager` adaptive triggers, `UseLayoutRounding="True"`, per-monitor DPI awareness (`PerMonitorV2` across `100%` ↔ `200%` monitors with off-screen bounds clamping on unplug), and minimum window dimensions. Dim titlebar/caption chrome when `WindowActivationState.Deactivated` fires.
 - Respect Windows **Text Scaling** (`UISettings.TextScaleFactor` / `IsTextScaleFactorEnabled="True"` in WinUI 3) and verify ClearType/DirectWrite legibility and localization expansion.
-- Set **`AutomationProperties.Name`**, `AutomationProperties.LabeledBy`, `AutomationProperties.HeadingLevel`, `AutomationProperties.LiveSetting`, keyboard accelerators (`KeyboardAccelerator`), and access keys (`AccessKey`). Verify with **Accessibility Insights for Windows** (UIA tree) and **Narrator**—custom `ControlTemplate` overrides frequently strip UIA control patterns if not verified.
-- Model MVVM async state via `CommunityToolkit.Mvvm` (`[RelayCommand(IncludeCancelCommand = true)]`), marshal UI updates onto `DispatcherQueue` (WinUI 3) / `Dispatcher` (WPF), guard window `Closing` for unsaved documents, and show inline error text (not red borders alone) in forms.
+- Set **`AutomationProperties.Name`**, `AutomationProperties.LabeledBy`, `AutomationProperties.HeadingLevel`, `AutomationProperties.LiveSetting`, keyboard accelerators (`KeyboardAccelerator`), and access keys (`AccessKey`). Verify with **Accessibility Insights for Windows** (UIA tree) plus **`NVDA`**, **`JAWS`**, and **`Narrator`**—custom `ControlTemplate` overrides frequently strip UIA control patterns if not verified.
+- Model MVVM async state via `CommunityToolkit.Mvvm` (`[RelayCommand(IncludeCancelCommand = true)]`), marshal UI updates onto `DispatcherQueue` (WinUI 3) / `Dispatcher` (WPF), keep idle CPU at `~0%` (`< 400 ms` cold start), guard window `Closing` for unsaved documents, and show inline error text (not red borders alone) in forms.
+
+## Atomic `%APPDATA%` storage, `WebView2` hygiene & 2026 Windows signing
+
+- **OS-standard paths & atomic writes**: store roaming config under `Environment.SpecialFolder.ApplicationData` (`%APPDATA%\<App>`) and databases/caches/logs under `LocalApplicationData` (`%LOCALAPPDATA%\<App>`)—**never** beside `.exe` inside `Program Files`. Write files atomically (write `.tmp` → `FileStream.Flush(flushToDisk: true)` → `File.Move(..., overwrite: true)` / `File.Replace`) and configure SQLite in `WAL` mode.
+- **Embedded `WebView2` giveaway killers**: whenever hosting `CoreWebView2` inside WinUI/WPF, set `DefaultBackgroundColor = Colors.Transparent` (eliminating dark-mode white flash), disable `AreDefaultContextMenusEnabled`, `AreBrowserAcceleratorKeysEnabled` (`Ctrl+R`/`F5`), `IsPinchZoomEnabled`, and `IsSwipeNavigationEnabled` in production, and enforce `cursor: default` + `user-select: none` on UI chrome ([tauri.md](tauri.md)).
+- **2026 Authenticode & SmartScreen reality**: sign `.exe`/`.msi`/`.msix` via **Azure Artifact Signing (Trusted Signing)** or FIPS 140-2 Level 2+ HSM OV/EV keys (`signtool`). **Note that since 2024 Microsoft removed instant EV certificate SmartScreen bypass**—new EV certs still face SmartScreen until publisher reputation accrues across consistent, reproducible signed CI releases and WinGet/MSIX distribution. Ship cryptographically signed delta updates (**Velopack** or MSIX App Installer) with background staging and crash rollback.
 
 ## Do/don't pairs
 
@@ -71,21 +77,22 @@ Always keep `AppWindowTitleBar.PreferredHeightOption` tall enough for Windows 11
 |---|---|
 | Use `{x:Bind}` + `ThemeResource` + `ThemeDictionaries` (`HighContrast`) in WinUI 3 | Scatter `StaticResource` raw hex brushes that fail Windows High Contrast |
 | Enable `ThemeMode="System"` in .NET 9/10 WPF for modern Fluent dark/light parity | Ship raw 2006 Aero gray styles or broken custom dark-mode hacks |
-| Check `UISettings.AnimationsEnabled` / `SystemParameters.ClientAreaAnimation` | Ignore Windows "Animation effects: Off" setting in custom storyboards |
-| Define clean `AppWindowTitleBar` / `SetDragRectangles` preserving Snap Layouts | Strip titlebar chrome without drag regions or maximize Snap hover support |
-| Verify UIA tree with Accessibility Insights and Narrator | Assume custom XAML templates preserve keyboard focus and screen-reader roles |
+| Store config/DB in `%APPDATA%` / `%LOCALAPPDATA%` via `Flush(true)` + atomic `File.Move` + SQLite `WAL` | Write files next to `.exe` in `Program Files` or overwrite user projects non-atomically |
+| Sign CI releases consistently with Azure Artifact Signing / HSM Authenticode + signed Velopack/MSIX updates | Assume buying an EV certificate instantly bypasses Windows SmartScreen in 2026 |
+| Define clean `AppWindowTitleBar` / `SetDragRectangles` preserving Snap Layouts + mixed-DPI clamping | Strip titlebar chrome without drag regions or restore windows off-screen after monitor unplug |
+| Verify UIA tree with Accessibility Insights, `NVDA`, `JAWS`, and `Narrator` | Assume custom XAML templates preserve keyboard focus and screen-reader roles |
 
 ## Known traps
 
-Forgetting `{x:Bind}` defaults to `Mode=OneTime` (UI stops updating), missing `HighContrast` dictionary entries causing invisible borders/text, silent WPF `{Binding}` typos in Debug output, unpackaged WinUI 3 missing Windows App Runtime bootstrap/self-contained config, `DispatcherQueue` cross-thread exceptions, fixed-width panels clipping 150%/200% Windows Text Scaling.
+Forgetting `{x:Bind}` defaults to `Mode=OneTime` (UI stops updating), missing `HighContrast` dictionary entries causing invisible borders/text, `WebView2` flashing white before `DefaultBackgroundColor` applies, unpackaged WinUI 3 missing Windows App Runtime bootstrap, `DispatcherQueue` cross-thread exceptions, fixed-width panels clipping `150%`/`200%` Windows Text Scaling.
 
 ## Verification commands
 
 ```sh
 dotnet build
 dotnet test
-# Run the Windows target app on a Windows host:
-dotnet run --project src/App/App.csproj
+# Verify Authenticode signature on Windows release artifact:
+signtool verify /pa /v bin/Release/net9.0-windows/win-x64/publish/App.exe
 ```
 
-`dotnet build` and `dotnet test` are `static` evidence. Run on real Windows 11 (packaged MSIX and/or unpackaged) across **Accessibility Insights for Windows**, **Narrator**, Windows High Contrast themes, Dark/Light mode, `150%`/`200%` DPI & Text Scaling, multi-monitor Snap Layouts, and dirty-close recovery for `rendered` evidence; label untested configurations `not-checked`.
+`dotnet build`, `dotnet test`, and `signtool verify` are `static` evidence. Run on real Windows 11 across **Accessibility Insights for Windows**, **`NVDA`**, **`JAWS`**, **`Narrator`**, Windows High Contrast themes, Dark/Light mode, `100%` ↔ `200%` mixed-DPI & Text Scaling, Snap Layouts, and dirty-close recovery for `rendered` evidence; label untested configurations `not-checked`.

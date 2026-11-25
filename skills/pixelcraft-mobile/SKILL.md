@@ -29,12 +29,10 @@ Give the primary task a short route with native back/dismiss behavior; add delig
 
 ## Platform-wide rules
 
-- Respect safe areas, Android 15/16 enforced edge-to-edge insets, status/navigation bars, display cutouts, split screen, landscape, foldables, keyboards, and edge gestures.
-- Preserve state across process death/backgrounding where the platform expects it; interruption is normal mobile behavior.
-- Back/swipe/home interruption must never silently discard work or duplicate side effects.
-- Use platform pickers, keyboards, autofill, share sheets, permissions prompts, undo, and text editing behavior before custom replacements.
-- Explain permission value before prompting and provide denied-state recovery.
-- Test dark/light, increased contrast, reduced transparency, reduced motion, bold/expanded text (`200%` / `AX3`), RTL, offline, slow network, one-hand use, screen reader, keyboard/controller where relevant.
+- **2026 App Store (iOS / Xcode 26 SDK) gates**: ship `PrivacyInfo.xcprivacy` covering first-party code and every embedded third-party SDK (Required Reason APIs + tracking domains); store tokens exclusively in **Keychain** (never `UserDefaults` / `AsyncStorage`); offer **Sign in with Apple** parity whenever 3rd-party social login exists; provide discoverable **in-app Account Deletion** that actually deletes/schedules deletion (never linking to a support email); and use contextual just-in-time permission priming, zero-permission `PhotosPicker`/`PHPickerViewController` (plus `.limited` photo support), and inline Settings deep-link recovery when denied.
+- **2026 Google Play (`targetSdk 36` / Android 16 `.aab`) gates**: enforce mandatory **Edge-to-Edge** (`enableEdgeToEdge()` / `WindowCompat.setDecorFitsSystemWindows(window, false)` / `WindowInsets.ime`); never hard-lock portrait on `sw >= 600dp` tablets/foldables and survive fold/unfold posture transitions without state loss; compile all native `.so` libraries for **`16 KB` memory page size** (NDK r28+ / `-Wl,-z,max-page-size=16384`, verified via `zipalign -c -P 16`); store secrets in **Android Keystore** (Jetpack Tink / `EncryptedSharedPreferences`, never plaintext `SharedPreferences`); and wire **Predictive Back** (`OnBackInvokedCallback` / `PredictiveBackHandler`).
+- **Physics, cold start & `120fps` ProMotion**: hit **`< 800 ms–1.2 s`** cold start on mid-tier hardware (hard ceiling `< 2.0 s`) via **Android Baseline Profiles** and deferred SDK init; unlock **`120fps` ProMotion (`< 8.33 ms`/frame)** on iOS via `CADisableMinimumFrameDurationOnPhone = true` in `Info.plist` with UI/Impeller-thread animations (zero JS-bridge scroll coupling); support scroll-coupled **interactive keyboard dismissal** (`.scrollDismissesKeyboard(.interactively)` / `WindowInsetsAnimationCompat` / `keyboardDismissMode="interactive"`) and spring gesture **`panVelocity`** handover.
+- **4-tier haptics & process-death resilience**: restrict haptics to 4 semantic tiers (light selection tick, crisp state toggle, success confirmation, warning/error double-tap—never buzzing routine taps or scrolling); survive OS background RAM eviction (`adb shell am kill <pkg>` / Xcode termination) via `SavedStateHandle`/`rememberSaveable`/`@SceneStorage`/`RestorationMixin`; expose visible offline mutation sync queues; maintain **`>= 99.5%` crash-free sessions** (`0` ANRs) with automated dSYM/R8/ProGuard symbolication; and verify on **`>= 2` iOS + `>= 3` Android physical devices** (across OEM skins) with VoiceOver + TalkBack at **`200%` (`AX3`)** font scale.
 
 ## Anti-lazy-default & anti-slop guard
 
@@ -44,15 +42,13 @@ Give the primary task a short route with native back/dismiss behavior; add delig
 
 ## Common mobile-specific failures
 
-- fixed-height rows clipping Dynamic Type or `sp` scaling;
-- bottom CTAs hidden by home indicator, keyboard, or Android 15/16 gesture bar;
-- custom nav bars that break swipe-back or Android predictive back;
+- fixed-height rows clipping Dynamic Type (`AX3`) or `200%` `sp` scaling, or hard-locked portrait breaking `sw >= 600dp` foldables/tablets on Android 16;
+- bottom CTAs hidden by home indicator, soft keyboard, or Android 15/16 edge-to-edge gesture bar;
+- `4 KB`-aligned native `.so` binaries rejected by Google Play, missing `PrivacyInfo.xcprivacy`, tokens in `UserDefaults`/`SharedPreferences`, or fake "email us to delete account" links;
+- animations capped at `60 Hz` on ProMotion iPhones (missing `CADisableMinimumFrameDurationOnPhone`), springs dropping `panVelocity`, or non-interactive keyboard dismissal;
+- custom nav bars breaking swipe-back / Predictive Back, or state lost on `adb shell am kill` background eviction;
 - Liquid Glass stacked on reading content or unreadable under Reduce Transparency / Increase Contrast;
-- web-style cards/hero layouts transplanted into native product UI;
-- haptics/animation on every interaction;
-- permission primer loops with no escape;
-- scroll views nesting unpredictably or fighting edge gestures;
-- cross-platform UI forced to look identical at the expense of both platforms.
+- haptics buzzing on every routine tap/scroll rather than the 4 semantic tiers.
 
 ## Verification options
 
@@ -61,11 +57,11 @@ Rendered verification is possible only through simulator/emulator/device tooling
 ## Pre-submit checklist
 
 - [ ] zero `TODO`s, placeholder stubs, invented copy, or dead tap/gesture handlers;
-- [ ] safe areas, Android 15/16 edge-to-edge insets, cutouts, and keyboard avoidance verified without hidden bottom CTAs;
-- [ ] Dynamic Type (`AX3`) / `sp` (`200%`) reflows cleanly without clipped labels, and touch targets meet `44×44 pt` / `48×48 dp`;
-- [ ] native navigation (swipe-back, predictive back, sheet detents) and interruption/process-death state preservation work cleanly;
-- [ ] loading, empty, error, offline, and denied-permission states are wired end to end;
-- [ ] Dark Mode, Increase Contrast, Reduce Transparency, Reduce Motion, and VoiceOver/TalkBack checked (or labeled `not-checked` honestly).
+- [ ] App Store gates met: Xcode 26 SDK, `PrivacyInfo.xcprivacy` (app + SDKs), Keychain-only tokens, Sign in with Apple parity, real in-app Account Deletion, `PhotosPicker`/`PHPicker` + Settings recovery;
+- [ ] Google Play gates met: `targetSdk 36` `.aab`, mandatory Edge-to-Edge + `WindowInsets.ime`, `sw >= 600dp` foldable/tablet posture resilience, `16 KB` `.so` alignment (`zipalign -c -P 16`), Keystore/Tink storage, Predictive Back;
+- [ ] `< 800 ms–1.2 s` cold start (Baseline Profiles), `120fps` ProMotion (`CADisableMinimumFrameDurationOnPhone`), interactive keyboard drag, `panVelocity` spring handover, and 4-tier haptics verified;
+- [ ] OS process-death (`adb shell am kill` / background eviction) restoration, visible offline sync queue, dSYM/R8 symbolication (`>= 99.5%` crash-free, `0` ANRs), and Dynamic Type `AX3` / `200%` `sp` reflow (`44 pt` / `48 dp` targets) verified;
+- [ ] Dark Mode, Increase Contrast, Reduce Transparency, Reduce Motion, and VoiceOver + TalkBack across `>= 2` iOS + `>= 3` Android OEM devices checked (or labeled `not-checked` honestly).
 
 ## Framework routing
 

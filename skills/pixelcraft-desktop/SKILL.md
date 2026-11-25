@@ -29,43 +29,49 @@ Organize persistent navigation, working content and one contextual inspector aro
 
 ## Platform-wide rules
 
-- Do not trap the user in fixed-size windows unless the interaction truly is modal/essential.
-- Every primary task works without a mouse; shortcuts must be discoverable, non-conflicting, localizable, and documented.
-- Dirty document state must survive close/crash/logout semantics or warn proportionately.
-- Multi-window state must not leak selection/editing focus or duplicate destructive operations.
-- High-DPI scaling must keep icons/type sharp; do not hard-code pixel screenshots as the only UI.
-- Honor reduced motion, reduced transparency, high contrast, screen readers, platform accessibility APIs, keyboard navigation, and system theme.
+- **Startup & idle CPU envelope**: hit **`< 300–500 ms`** cold start on Native/Tauri/Rust/C++/Qt/AppKit/WinUI/GTK apps or **`< 1.0–1.2 s`** on Electron (explicitly justifying Chromium's memory footprint in the brief); hold **`~0%` idle CPU** when minimized or unfocused; offload heavy I/O to worker threads/processes.
+- **Window geometry & mixed-DPI clamping**: never trap users in fixed-size windows unless truly modal; preserve split ratios and window bounds across mixed-DPI (`100%` ↔ `200%`) monitors and **clamp off-screen coordinates** onto a connected display's work area if an external monitor was unplugged (respecting Wayland's size-only model).
+- **OS-standard paths & atomic persistence**: store config, caches, DBs, and logs in XDG / `~/Library/Application Support` / `%APPDATA%` (never beside the executable); write project/config files atomically (**write temp → `fsync` → atomic rename**) and run local SQLite in **`WAL` mode** with versioned schema migrations.
+- **Keyboard acceleration & multi-window hygiene**: every primary workflow completes without a mouse (`Tab`, `F6` pane cycle, platform `Cmd` vs `Ctrl` accelerators, `Escape`); guard dirty documents on close/quit; soften unfocused window chrome so active focus across multiple windows is unmistakable.
+- **2026 code signing, auto-updates & accessibility**: macOS Developer ID + Hardened Runtime + minimal Entitlements + `xcrun notarytool` + `xcrun stapler staple` (Universal `arm64 + x86_64` or explicit arch); Windows Authenticode via **Azure Artifact Signing (Trusted Signing)** or HSM OV/EV—noting that **since 2024 Microsoft removed instant EV SmartScreen bypass, so reputation must be built cleanly via consistent signed CI releases**; Linux `.deb`/`.rpm`/Flatpak/GPG-signed AppImage with AppStream metadata; `Ed25519`/`minisign`-signed delta auto-updates with background staging and crash rollback; screen-reader verification across **`NVDA`/`JAWS`/`Narrator`**, **`VoiceOver`**, and **`Orca`** (AT-SPI/AccessKit).
+
+## The 8 WebView Giveaway Killers (mandatory for Tauri / Electron / Wails / WebView2)
+
+1. **`cursor: default`** on buttons, tabs, sidebar rows, menus, and chrome—reserve `cursor: pointer` strictly for external web links.
+2. **`user-select: none`** on all toolbars, sidebars, tabs, menus, and buttons (selectable strictly inside editor/content/log panes).
+3. **Block browser tells in production**: suppress raw browser `contextmenu` ("Inspect Element"), `Cmd/Ctrl+R` page reload, `Cmd/Ctrl +`/`-` accidental pinch-zoom, and rubber-band `overscroll-behavior` on outer chrome.
+4. **Zero white flash on dark cold start**: create hidden native window (`show: false` / `visible: false`) with dark/theme-matched native `backgroundColor` before first paint, revealing on ready.
+5. **Custom `40–52 px` titlebar geometry**: dedicated drag region (`data-tauri-drag-region` / `-webkit-app-region: drag`) excluding interactive buttons, double-click to maximize/zoom per OS setting, and **`72–80 px` left inset** for macOS traffic lights (collapsed on fullscreen).
+6. **Native OS materials + inactive-window dimming**: pair `NSVisualEffectView` / `Mica` / `Acrylic` / libadwaita backdrops (plus High Contrast / Reduce Transparency fallbacks) with `:window-inactive` / focus-state dimming on unfocused sidebars/titlebars.
+7. **Two-way native OS file drag-and-drop & dialogs**: support dropping files from Finder/Explorer with visual drop targets, dragging files out to Desktop/apps, and native OS file open/save dialogs.
+8. **Native OS menu bar & single-instance deep links**: register real `File/Edit/View/Window/Help` menus with `Cmd`/`Ctrl` shortcuts and single-instance deep-link activation.
 
 ## Anti-lazy-default & anti-slop guard
 
 - **Never default to plain `Tkinter` on greenfield Python desktop apps**: choose **PySide6 / Qt Quick**, **Flet**, **NiceGUI**, **Tauri** (Python sidecar), or **Textual** instead; apply strict DPI/threading/theme hygiene when inheriting brownfield `CustomTkinter` or `Dear PyGui`.
 - **Reject unjustified ~200 MB Electron web-SPA wrappers**: when targeting a single OS, prefer native **SwiftUI/AppKit** (macOS), **WinUI 3** (Windows), or **GTK4 + libadwaita** (Linux); when cross-platform efficiency matters, evaluate **Tauri v2**, **Qt 6**, **Avalonia**, **Slint**, or **GPUI** before bundling Chromium.
-- **Reject web-page chrome masquerading as a desktop app**: never paste an unadapted browser SPA into a desktop window without native menus, discoverable keyboard shortcuts, dirty-document close confirmation, and multi-monitor restore.
+- **Reject web-page chrome masquerading as a desktop app**: never paste an unadapted browser SPA into a desktop window without all 8 WebView Giveaway Killers, native menus, keyboard shortcuts, dirty-document close confirmation, and multi-monitor restore.
 
 ## Common desktop failures
 
-- browser SPA pasted into Electron/Tauri/Wails shell with no menus/shortcuts/native behavior;
-- custom titlebar missing drag regions, double-click maximize, right-click system menu, Snap Layouts, or accessible controls;
-- panes that collapse irreversibly or lose resize state;
-- restoring a window at off-screen coordinates after an external monitor is unplugged;
-- fixed 1024px layout clipped on small screens/high scaling;
-- shortcut conflicts with platform/input method/window manager;
-- hidden focus because custom controls never implement keyboard behavior;
-- modal dialog chains blocking unrelated windows;
-- ignoring multi-instance/file association/deep-link startup state.
+- WebView shell leaking `cursor: pointer`, selectable button text, white dark-mode launch flash, `Ctrl+R` reload, or browser "Inspect Element" menus;
+- custom titlebar colliding with macOS traffic lights (`< 72 px` inset or stuck inset in fullscreen), swallowing button clicks, or breaking Windows Snap Layouts;
+- restoring a window at off-screen coordinates after an external monitor is unplugged or blurring across `100%` ↔ `200%` mixed-DPI displays;
+- writing `config.json`/SQLite next to the binary or truncating project files non-atomically without `fsync` + `rename`;
+- assuming Windows EV certs still grant instant SmartScreen bypass or shipping unsigned auto-updaters.
 
 ## Verification options
 
-Rendered verification requires running the actual app/windowing stack or platform-specific UI tests. Webview DOM inspection only covers inner content, not menus/titlebar/window integration. `Avalonia.Headless`, Qt test tools, XCUITest, Accessibility Insights for Windows (UIA), VoiceOver/Narrator/Orca, screenshot/golden tests, and manual resize/multi-monitor checks provide distinct evidence. Label untested OS/window-manager combinations `not-checked`.
+Rendered verification requires running the actual app/windowing stack or platform-specific UI tests. Webview DOM inspection only covers inner content, not menus/titlebar/window integration. `Avalonia.Headless`, Qt test tools, XCUITest, Accessibility Insights for Windows (UIA), `NVDA`/`JAWS`/`Narrator`/`VoiceOver`/`Orca`, screenshot/golden tests, and manual resize/multi-monitor checks provide distinct evidence. Label untested OS/window-manager combinations `not-checked`.
 
 ## Pre-submit checklist
 
 - [ ] zero `TODO`s, placeholder stubs, invented copy, or dead menu/toolbar/shortcut handlers;
-- [ ] native or properly wired hybrid chrome preserves drag, resize, minimize, maximize/Snap Layouts, and minimum bounds;
-- [ ] window geometry and pane splits restore safely and clamp on-screen when monitors disconnect;
-- [ ] every primary workflow completes by keyboard (`Tab`, `F6` pane focus, shortcuts, `Escape`), with background I/O off the UI thread and dirty-close protection;
-- [ ] fractional HiDPI scaling, system Light/Dark/High Contrast, Reduce Transparency/Motion, and platform screen readers (VoiceOver/Narrator/Orca or AccessKit) checked or honestly labeled `not-checked`;
-- [ ] rendered desktop verification distinguishes live window runs (`rendered`) from compile/unit checks (`static`).
+- [ ] all 8 WebView Giveaway Killers enforced (if Tauri/Electron/Wails/WebView2), `< 300–500 ms` (`< 1.2 s` Electron) cold start, and `~0%` idle CPU when minimized/unfocused;
+- [ ] window geometry and pane splits restore safely across `100%` ↔ `200%` mixed-DPI monitors and clamp on-screen when monitors disconnect;
+- [ ] OS-standard storage paths (XDG / `Application Support` / `%APPDATA%`), atomic `temp → fsync → rename` file writes, SQLite `WAL` migrations, and dirty-close protection wired;
+- [ ] every primary workflow completes by keyboard (`Tab`, `F6` pane focus, `Cmd`/`Ctrl` menu shortcuts, `Escape`) with non-blocking worker I/O;
+- [ ] 2026 signing/notarization (`notarytool`+`stapler`, Azure Artifact Signing, AppStream/GPG, `Ed25519` delta updates with rollback) and `NVDA`/`JAWS`/`Narrator`/`VoiceOver`/`Orca` checked or honestly labeled `not-checked`.
 
 ## Framework routing
 

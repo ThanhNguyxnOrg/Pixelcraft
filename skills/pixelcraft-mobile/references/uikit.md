@@ -57,11 +57,13 @@ Use `UIViewPropertyAnimator` for interruptible animations and check `UIAccessibi
 
 Configure `accessibilityLabel`, `accessibilityValue`, `accessibilityHint` (sparingly), `accessibilityTraits`, `accessibilityCustomActions`, `accessibilityElements` order, and `UIAccessibility.post(notification: .announcement / .screenChanged, argument:)`. Verify touch hit areas are at least `44×44 pt` (expanding via `point(inside:with:)` when a visual glyph is smaller).
 
-## States & forms idioms
+## States, forms & 2026 App Store gates
 
-Drive tables and collections with `UICollectionViewDiffableDataSource` / `UITableViewDiffableDataSource` using stable item identifiers—never rely on `reloadData()` to hide identity bugs. Reset reused cell state explicitly in `prepareForReuse()` or cell configuration handlers. Preserve state across backgrounding via `NSUserActivity` / scene state restoration.
+Drive tables and collections with `UICollectionViewDiffableDataSource` / `UITableViewDiffableDataSource` using stable item identifiers—never rely on `reloadData()` to hide identity bugs. Reset reused cell state explicitly in `prepareForReuse()` or cell configuration handlers. Preserve route and draft state across OS background memory eviction via `NSUserActivity` and `UIWindowSceneDelegate` state restoration (`stateRestorationActivity(for:)`).
 
-In forms, configure `keyboardType`, `textContentType`, `returnKeyType`, password autofill/passkeys, and pin bottom actions to `view.keyboardLayoutGuide.topAnchor`. Manage `becomeFirstResponder()` / `resignFirstResponder()` deliberately and validate after field completion rather than interrupting every keystroke.
+In forms and scrollable editors, set **`scrollView.keyboardDismissMode = .interactive`**, configure `keyboardType`, `textContentType`, `returnKeyType`, password autofill/passkeys, and pin bottom actions to `view.keyboardLayoutGuide.topAnchor`. Manage `becomeFirstResponder()` / `resignFirstResponder()` deliberately and validate after field completion rather than interrupting every keystroke.
+
+- **App Store privacy, security & compliance**: compile against the **Xcode 26 SDK**, ship `PrivacyInfo.xcprivacy` covering first-party code and every embedded SDK, store tokens solely in **Keychain** (never `UserDefaults`), include **Sign in with Apple** (`ASAuthorizationAppleIDButton`) alongside any third-party social login, ship real **in-app Account Deletion** (never a `mailto:` support link), use **`PHPickerViewController`** (and support `.limited` photo library authorization + `UIApplication.openSettingsURLString` recovery when camera/mic/location is denied), and enable **`CADisableMinimumFrameDurationOnPhone = true`** in `Info.plist` for `120fps` ProMotion responsiveness with `UISpringTimingParameters(dampingRatio:initialVelocity:)` velocity handover.
 
 ## Do/don't pairs
 
@@ -69,14 +71,15 @@ In forms, configure `keyboardType`, `textContentType`, `returnKeyType`, password
 |---|---|
 | `registerForTraitChanges([UITraitUserInterfaceStyle.self])` | Overriding deprecated `traitCollectionDidChange(_:)` on iOS 17+ |
 | `UIButton(configuration: .filled())` / `.glass()` | Adding `UITapGestureRecognizer` to a plain `UILabel` |
-| Pin bottom CTA to `view.keyboardLayoutGuide.topAnchor` | Manually parsing keyboard frame notifications with magic offsets |
+| Pin bottom CTA to `view.keyboardLayoutGuide.topAnchor` + `keyboardDismissMode = .interactive` | Manually parsing keyboard frame notifications with magic offsets |
+| Use `PHPickerViewController`, Keychain storage, `PrivacyInfo.xcprivacy`, and real in-app Account Deletion | Use legacy `UIImagePickerController` for photo picking, save tokens in `UserDefaults`, or link account deletion to email |
 | `contentUnavailableConfiguration = UIContentUnavailableConfiguration.empty()` | Toggling ad-hoc hidden empty-state views over a collection view |
 | `UIFontMetrics.default.scaledFont(for:)` + `adjustsFontForContentSizeCategory` | Fixed point `UIFont(name:size:)` ignoring Dynamic Type |
 | Check `isReduceTransparencyEnabled` around `UIGlassEffect` | Leave translucent glass unreadable under Reduce Transparency / Increase Contrast |
 
 ## Known traps
 
-Auto Layout constraint ambiguity, cell reuse state leakage, retain cycles in trait/button closures (`[weak self]`), Swift 6 `@MainActor` sendability warnings silenced with unsafe `@unchecked Sendable`, keyboard obstruction, modal presentation dismissal skipping `viewWillAppear` on page-sheet parents, missing `UIGlassEffect` accessibility fallbacks.
+Auto Layout constraint ambiguity, cell reuse state leakage, retain cycles in trait/button closures (`[weak self]`), Swift 6 `@MainActor` sendability warnings silenced with unsafe `@unchecked Sendable`, keyboard obstruction, modal presentation dismissal skipping `viewWillAppear` on page-sheet parents, missing `UIGlassEffect` accessibility fallbacks, tokens leaked into `UserDefaults`, missing `CADisableMinimumFrameDurationOnPhone`.
 
 ## Verification commands
 
@@ -86,4 +89,4 @@ xcodebuild -scheme App -destination 'platform=iOS Simulator,name=<SimulatorName>
 xcodebuild test -scheme App -destination 'platform=iOS Simulator,name=<SimulatorName>'
 ```
 
-Inspect real simulator/device builds with View Debugger, Accessibility Inspector, VoiceOver, Dynamic Type (`AX3`), Dark Mode, Increase Contrast, Reduce Transparency, and rotation/split-screen for `rendered` evidence; compilation alone is `static`. Label untested hardware `not-checked`.
+Inspect real simulator and physical-device builds (`>= 2` iOS devices) with View Debugger, Accessibility Inspector, VoiceOver, Dynamic Type (`AX3` / `200%`), Dark Mode, Increase Contrast, Reduce Transparency, background termination restoration, and rotation/split-screen for `rendered` evidence; compilation alone is `static`. Label untested hardware `not-checked`.

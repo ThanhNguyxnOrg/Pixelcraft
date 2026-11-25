@@ -49,19 +49,45 @@ const mutation = useMutation({
 - Use **XState v5** when a flow has explicit finite states, guards, cancellation, retries, or parallel regions. Use `setup({ types, actors: { ...: fromPromise(...) } }).createMachine(...)` (not v4's two-argument `createMachine`) and read snapshots in React with `useSelector(actorRef, selector)` + `actorRef.send(event)`.
 - Use **RxJS** only when composing complex asynchronous event streams (cancellation via `switchMap`, backpressure, WebSocket multiplexing) where simple promises/effects become race-prone.
 
-## URL state (`nuqs` v2 / typed router params)
+## URL-as-State (`nuqs` v2 / typed router params) & network race cancellation
 
-- Keep filter, search, sort, tab, and pagination state in the URL with typed parsers (`parseAsInteger`, `parseAsStringLiteral`, `.withDefault(...)`) and batch related keys with `useQueryStates`.
-- Wrap App Router / SPA roots in the matching `<NuqsAdapter>` and choose `history: 'replace'` for high-frequency typing/sliders vs `history: 'push'` for discrete navigation steps.
+- **URL-as-State completeness**: serialize search queries (`?q=`), active filters, sort column/direction (`?sort=created_at:desc`), pagination/cursor, active tab, and shareable inspector/drawer IDs (`?invoice=inv_1042`) into URL query/path so page reload, browser Back/Forward, and shared links reproduce the exact view without trapped memory state.
+- Wrap App Router / SPA roots in the matching `<NuqsAdapter>` and choose `history: 'replace'` (throttled) for high-frequency typing/sliders vs `history: 'push'` for discrete facet, tab, pagination, or drawer navigation steps.
+- **Query cancellation (`AbortController`)**: forward TanStack Query's `signal` (`queryFn: ({ signal }) => fetch(url, { signal })`) or an explicit `AbortController` on rapid search/filter/tenant transitions so a slow 800 ms response for an earlier filter never overwrites a fast 90 ms response for the latest filter.
 
 ```tsx
-const [filters, setFilters] = useQueryStates(
+const [view, setView] = useQueryStates(
   {
     q: parseAsString.withDefault(''),
+    sort: parseAsStringLiteral(['newest', 'amount'] as const).withDefault('newest'),
     page: parseAsInteger.withDefault(1),
+    drawerId: parseAsString,
   },
   { history: 'replace' }
 );
+```
+
+## Multi-tab auth & tenant synchronization (`BroadcastChannel` + `storage`)
+
+Users routinely keep 5–10 SaaS tabs open. If Tab B signs out, refreshes tokens, or switches active workspace/organization (`org_acme` → `org_globex`), background Tab A must react immediately—otherwise Tab A will display stale UI or fire mutations into the wrong tenant:
+
+- Scope every server-cache key by tenant (`['org', activeOrgId, 'projects', filters]`) rather than global `['projects']`.
+- Broadcast `SIGN_OUT`, `SESSION_REFRESHED`, and `ORG_CHANGED` over `BroadcastChannel` (with `window.addEventListener('storage', ...)` fallback where needed) so sibling tabs clear/re-scope caches immediately or prompt before overwriting unsaved drafts:
+
+```ts
+type AuthSyncMessage =
+  | { type: 'SIGN_OUT' }
+  | { type: 'ORG_CHANGED'; orgId: string };
+
+export function connectMultiTabSync(onEvent: (msg: AuthSyncMessage) => void) {
+  if (typeof BroadcastChannel === 'undefined') return () => {};
+  const channel = new BroadcastChannel('app:auth-tenant-sync');
+  channel.onmessage = (e: MessageEvent<AuthSyncMessage>) => onEvent(e.data);
+  return {
+    post: (msg: AuthSyncMessage) => channel.postMessage(msg),
+    close: () => channel.close(),
+  };
+}
 ```
 
 ## Local persistence (Dexie / `idb` / `idb-keyval`)
@@ -73,8 +99,9 @@ const [filters, setFilters] = useQueryStates(
 
 | Do | Don't |
 |---|---|
-| Keep API entities in TanStack Query / tRPC v11 / oRPC / Apollo and client UI toggles in Zustand / Pinia / SignalStore | Mirror fetched server data into a global client store by hand |
+| Keep API entities in TanStack Query / tRPC v11 / oRPC / Apollo (keyed by `orgId` + `signal`) and UI toggles in Zustand / Pinia / SignalStore | Mirror fetched server data into a global store or omit `AbortSignal` on rapid filter fetches |
 | Instantiate Zustand / Svelte rune / Pinia stores per request in SSR frameworks | Export a global singleton store mutated during SSR requests |
+| Propagate sign-out and workspace/tenant switches across tabs via `BroadcastChannel` | Let background tabs stay logged in after sign-out or write mutations to a stale tenant |
 | Use XState v5 `setup().createMachine()` + `useSelector` for multi-step retry/cancel flows | Stack 6 booleans (`loading`, `retrying`, `failed`, `cancelled`) that allow invalid states |
-| Batch related URL params (`useQueryStates`) with typed parsers | Serialize giant JSON blobs or sensitive tokens into `window.location.search` |
+| Serialize search, filters, sort, pagination, tabs, and shareable drawer IDs in the URL (`useQueryStates`) | Store filter/drawer state only in memory or serialize sensitive tokens into `window.location.search` |
 | Use Dexie (append `db.version(N + 1)` for migrations) or `idb`/`idb-keyval` for offline storage | Add unmaintained `localForage`, edit shipped Dexie `.version(N)` upgrades, or stuff MBs into `localStorage` |

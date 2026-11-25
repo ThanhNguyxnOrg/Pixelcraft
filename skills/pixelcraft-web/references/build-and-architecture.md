@@ -149,13 +149,57 @@ const serwist = new Serwist({
 serwist.addEventListeners();
 ```
 
+## Post-tag performance budgets & third-party script isolation
+
+Measure production performance **after** analytics, GTM, ad pixels, A/B testing, and chat widgets are active—never solely on a clean dev build.
+
+### Mandatory production budgets (simulated mid-tier mobile, Slow 4G + 4× CPU throttle)
+
+| Metric / Audit | Studio-grade floor | Measurement rule |
+|---|---|---|
+| **Lighthouse Mobile** | **Perf ≥ 90**, **A11y ≥ 95**, **Best Practices ≥ 95**, **SEO ≥ 95** | Run against production build with real tags/consent state active |
+| **Largest Contentful Paint (LCP)** | **< 2.5 s** (p75 field & lab) | Never lazy-load LCP hero media; set `fetchpriority="high"` + responsive `srcset` |
+| **Interaction to Next Paint (INP)** | **< 200 ms** (p75 field & lab) | Yield long tasks (`scheduler.yield()`), isolate 3rd-party scripts off main thread |
+| **Cumulative Layout Shift (CLS)** | **< 0.10** (target `0.00` above fold) | Explicit media dimensions, metric-matched font fallbacks, zero-shift consent UI |
+
+### Third-party tag, pixel, and chat widget isolation
+
+- **Edge / Worker offloading**: route analytics and ad pixels through server-side/edge gateways (**Cloudflare Zaraz**, server-side GTM) or isolate main-thread scripts in a Web Worker via **Partytown** (`@builder.io/partytown`) where compatible.
+- **Interaction facades**: never boot heavy third-party embeds (YouTube/Vimeo iframes, Intercom/Crisp/Zendesk live chat, Calendly, heavy maps) on initial page load. Render a lightweight static button/thumbnail facade (`lite-youtube-embed` or a semantic `"Chat with support"` button) and dynamically import the vendor SDK on `pointerenter`, `focus`, or `click`.
+- **Consent Mode v2 without CLS**: initialize default consent state synchronously in `<head>` (`ad_storage`, `ad_user_data`, `ad_personalization`, `analytics_storage` set to `'denied'` before any tag script executes) and upgrade via `gtag('consent', 'update', ...)` after explicit user choice. Render cookie/consent UI as a fixed bottom sheet/banner (`position: fixed`) with keyboard non-trapping focus—never inject a flow banner at the top of `<body>` that pushes page content down after hydration.
+
+## CDN cache control & mandatory HTTP security headers
+
+| Resource class | Recommended `Cache-Control` header | Rationale |
+|---|---|---|
+| Content-hashed build assets (`/_next/static/*`, `/assets/*.[hash].*`, subset `.woff2`) | `public, max-age=31536000, immutable` | Safe 1-year browser + CDN edge caching; filename changes on rebuild |
+| Public SSG/ISR HTML & public JSON feeds | `public, max-age=0, s-maxage=60, stale-while-revalidate=86400` | Instant CDN edge response with background revalidation |
+| Authenticated, user-specific, checkout, or tenant-scoped HTML/API | `private, no-store` (+ `Vary: Cookie, Authorization` if shared proxy exists) | Prevents catastrophic cross-tenant/session cache poisoning at CDN edge |
+
+Ship these baseline HTTP security headers on every HTML response (via edge middleware, CDN rules, or reverse proxy):
+
+- **`Content-Security-Policy`**: strict allowlist or per-request nonce (`script-src 'self' 'nonce-...' 'strict-dynamic'; object-src 'none'; base-uri 'self'; frame-ancestors 'none'`).
+- **`Strict-Transport-Security`**: `max-age=63072000; includeSubDomains; preload`.
+- **`X-Content-Type-Options`**: `nosniff`.
+- **`Referrer-Policy`**: `strict-origin-when-cross-origin`.
+- **`Permissions-Policy`**: `camera=(), microphone=(), geolocation=(), payment=(self)` (enable capabilities only on routes that use them).
+
+## Technical SEO, redesign migration & AI/social unfurl readiness
+
+- **Per-route metadata & structured data**: emit a unique `<title>`, `<meta name="description">`, self-referencing `<link rel="canonical" href="https://...">`, `robots.txt`, generated `sitemap.xml`, `hreflang` + `x-default` alternates ([i18n-engineering.md](i18n-engineering.md)), and schema-valid JSON-LD (`Organization`, `Product`, `Article`, `FAQPage`, `BreadcrumbList`) matching visible page facts.
+- **Redesign `301` redirect map & zero broken/orphan links**: when replacing an existing site, crawl and inventory every legacy URL before launch, enforce single-hop `301` (or method-preserving `308`) redirects for every changed slug, and run an automated link checker in CI to verify `0` internal `404`s, `0` redirect loops, and `0` orphaned public pages.
+- **SSR/SSG semantic HTML & `/llms.txt` for AI search**: ensure primary headings, pricing, docs, and article copy render in initial SSR/SSG semantic HTML (`<main>`, `<article>`, `<table>`) without requiring client JS execution; publish a concise `/llms.txt` markdown index at the domain root linking canonical product, documentation, and policy URLs for AI crawlers and answer engines.
+- **Zalo, Slack, iMessage, Facebook & LinkedIn Open Graph cards**: always serve `og:image` and `twitter:image` (`twitter:card="summary_large_image"`) as **`1200×630` absolute `https://` URLs** in **JPEG or PNG** (`< 600 KB`) with explicit `og:image:width="1200"` and `og:image:height="630"`. Never use relative `/og.png` paths, and never serve SVG or WebP-only `og:image` URLs—Zalo, enterprise Slack/Teams unfurlers, and legacy chat crawlers silently drop WebP/SVG previews.
+
 ## Do/don't pairs
 
 | Do | Don't |
 |---|---|
 | Use `oxc` and `build.rolldownOptions` on Vite 8+ | Copy legacy `esbuild` / `optimizeDeps.esbuildOptions` snippets into Vite 8 configs |
 | Mark `react` / `react-dom` as `singleton: true` in Module Federation | Load duplicate React runtimes across host and remote containers |
-| Offload heavy parsing and `OffscreenCanvas` rendering to Web Workers | Block the main thread with synchronous multi-megabyte parsing or rendering |
+| Gate 3rd-party pixels/chat behind Zaraz/Partytown, click-to-load facades, and fixed Consent Mode v2 UI | Load GTM, Intercom, and YouTube iframes synchronously on `<head>` or push layout down with a late cookie bar |
+| Serve `immutable` cache headers on hashed assets, `private, no-store` on auth routes, and CSP/HSTS/`nosniff` headers | Cache personalized responses at the CDN edge or ship HTML without `frame-ancestors` / CSP |
+| Ship a tested legacy `301` redirect map, `/llms.txt`, and `1200×630` HTTPS PNG/JPEG `og:image` tags | Drop old indexed URLs to `404` on redesign or use relative/WebP/SVG `og:image` URLs that break in Zalo/Slack |
 | Persist offline state in IndexedDB/Cache API and use Serwist/Workbox | Store state in Service Worker module globals that vanish when the worker sleeps |
 | Match rendering strategy (SSG/ISR/Islands/SSR/SPA) to route interactivity | Ship a full SPA bundle for a static marketing/docs site |
 
@@ -163,6 +207,7 @@ serwist.addEventListeners();
 
 ```sh
 npm run build
+npx lighthouse http://localhost:4173 --preset=perf --form-factor=mobile
 ```
 
-Inspect generated bundle chunks and source-map visualizer output (`static`) and verify hydration timing, INP, Service Worker lifecycle, and offline fallback in a real browser (`rendered`).
+Inspect generated bundle chunks, HTTP response/security/cache headers, `sitemap.xml`/`robots.txt`/`llms.txt`, and `301` redirect rules (`static`), and verify post-tag Lighthouse Mobile scores (`Perf >= 90`, `A11y/BP/SEO >= 95`), CWV (`LCP < 2.5s`, `INP < 200ms`, `CLS < 0.1`), Service Worker lifecycle, and OG card metadata in a real browser (`rendered`).
