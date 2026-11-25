@@ -2,23 +2,18 @@ import { AnimatePresence, motion, useReducedMotion } from "motion/react";
 import { useEffect, useRef, useState } from "react";
 import {
   AGENT_TARGET_COUNT,
-  GALLERY,
   NPM_PKG,
   REPO_URL,
   SKILLS,
   STACKS,
   THESIS,
+  TOTAL_GALLERY_EXHIBITS,
   TOTAL_REFERENCES,
   TOTAL_SCRIPTS,
   VERSION,
 } from "../data";
-import {
-  gsap,
-  MOTION_OK,
-  ScrollTrigger,
-  SplitText,
-  useGSAP,
-} from "../lib/gsap";
+import { gsap, MOTION_OK, ScrollTrigger, useGSAP } from "../lib/gsap";
+import { useLocale } from "../lib/i18n";
 import { PixelLogo } from "./PixelLogo";
 import { CopyCommand, PixelIcon, useMotionPause } from "./pixel";
 
@@ -99,6 +94,7 @@ function StackTicker() {
 export function Masthead() {
   const root = useRef<HTMLElement>(null);
   const { paused } = useMotionPause();
+  const { t } = useLocale();
   const reducedMotion = useReducedMotion();
   const [res, setRes] = useState<number>(512);
   const activeChapter = THESIS.find((c) => c.res === res) ?? THESIS[3];
@@ -108,51 +104,36 @@ export function Masthead() {
       if (paused) return;
       const mm = gsap.matchMedia();
       mm.add(MOTION_OK, () => {
+        // Keep H1 visible at frame 0 (opacity: 1) so Core Web Vitals LCP fires immediately while preserving smooth motion.
         const tl = gsap.timeline({
           defaults: { ease: "expo.out" },
-          delay: 0.05,
         });
-        tl.from('[data-stage="badge"]', { y: 12, opacity: 0, duration: 0.55 });
+        tl.from('[data-stage="badge"]', { y: 8, duration: 0.42 });
+        tl.from('[data-stage="avg"]', { y: 10, duration: 0.45 }, 0.02);
         tl.from(
-          '[data-stage="avg"]',
-          { opacity: 0, y: 10, duration: 0.55 },
-          0.06,
+          '[data-stage="claim"]',
+          { y: 14, duration: 0.52, clearProps: "transform" },
+          0.04,
         );
-        SplitText.create('[data-stage="claim"]', {
-          type: "lines,words",
-          mask: "lines",
-          autoSplit: true,
-          onSplit: (self) =>
-            gsap.from(self.words, {
-              yPercent: 105,
-              rotate: 1.5,
-              duration: 0.72,
-              stagger: 0.04,
-              delay: 0.12,
-              ease: "expo.out",
-            }),
-        });
         tl.from(
           '[data-stage="rest"] > *',
           {
-            y: 18,
-            opacity: 0,
-            duration: 0.62,
-            stagger: 0.06,
-            clearProps: "transform,opacity",
+            y: 12,
+            duration: 0.48,
+            stagger: 0.04,
+            clearProps: "transform",
           },
-          0.3,
+          0.12,
         );
         tl.from(
           '[data-stage="stat"]',
           {
-            y: 20,
-            opacity: 0,
-            duration: 0.62,
-            stagger: 0.05,
-            clearProps: "transform,opacity",
+            y: 14,
+            duration: 0.48,
+            stagger: 0.04,
+            clearProps: "transform",
           },
-          0.42,
+          0.18,
         );
         gsap.utils.toArray<HTMLElement>('[data-stage="num"]').forEach((el) => {
           const end = Number(el.dataset.value);
@@ -161,13 +142,13 @@ export function Masthead() {
             o,
             {
               v: end,
-              duration: 0.75,
+              duration: 0.65,
               ease: "power3.out",
               onUpdate: () => {
                 el.textContent = String(Math.round(o.v) || end);
               },
             },
-            0.42,
+            0.18,
           );
         });
         gsap.to('[data-stage="copy"]', {
@@ -337,7 +318,8 @@ export function Masthead() {
             />
             <span className="truncate">
               Open source · MIT{" "}
-              <span className="max-sm:hidden">· Agent Skills </span>· v{VERSION}
+              <span className="max-sm:hidden">· {t.masthead.badgeTail} </span>·
+              v{VERSION}
             </span>
           </p>
 
@@ -349,22 +331,20 @@ export function Masthead() {
               data-stage="avg"
               className="display-light block text-ink-muted"
             >
-              Agents design the average.
+              {t.masthead.avg}
             </span>
             <span
               data-stage="claim"
               className="display-wide mt-2 block text-ink"
             >
-              Pixelcraft makes them{" "}
-              <span className="text-action">diverge.</span>
+              {t.masthead.claimPrefix}
+              <span className="text-action">{t.masthead.claimAccent}</span>
             </span>
           </h1>
 
           <div data-stage="rest" className="min-w-0">
             <p className="mt-6 max-w-[46ch] text-[1.0625rem] leading-relaxed text-ink-muted sm:mt-7 sm:text-[1.1875rem]">
-              An open-source skill pack for coding agents. It forces divergent
-              directions before code, applies an accessibility and UX floor by
-              default, and reports only what was actually verified.
+              {t.masthead.lede}
             </p>
             <div className="mt-7 max-w-[36rem] sm:mt-8">
               <CopyCommand
@@ -379,7 +359,7 @@ export function Masthead() {
                 className="inline-flex min-h-12 items-center gap-2.5 rounded-full bg-ink px-5 font-mono text-[0.8125rem] font-semibold text-void transition-colors duration-150 hover:bg-action sm:px-6 motion-reduce:transition-none"
               >
                 <PixelIcon name="star" size={13} />
-                View on GitHub
+                {t.masthead.ctaGithub}
               </a>
               <a
                 data-magnetic
@@ -387,7 +367,7 @@ export function Masthead() {
                 className="surface inline-flex min-h-12 items-center gap-2.5 rounded-full px-5 font-mono text-[0.8125rem] text-ink backdrop-blur-md transition-colors hover:bg-white/10 sm:px-6 motion-reduce:transition-none"
               >
                 <PixelIcon name="scan" size={12} />
-                Inspect {GALLERY.length} exhibits
+                {t.masthead.ctaGallery(TOTAL_GALLERY_EXHIBITS)}
               </a>
             </div>
           </div>
@@ -395,12 +375,14 @@ export function Masthead() {
 
         <div className="mt-auto grid min-w-0 gap-4 pt-10 sm:pt-12 lg:grid-cols-12 lg:items-end">
           <dl className="grid min-w-0 grid-cols-2 gap-3 sm:grid-cols-4 lg:col-span-7">
-            {[
-              [SKILLS.length, "skills"],
-              [TOTAL_REFERENCES, "reference files"],
-              [TOTAL_SCRIPTS, "scripts that run"],
-              [AGENT_TARGET_COUNT, "agent targets"],
-            ].map(([n, l]) => (
+            {(
+              [
+                [SKILLS.length, t.masthead.stats[0]],
+                [TOTAL_REFERENCES, t.masthead.stats[1]],
+                [TOTAL_SCRIPTS, t.masthead.stats[2]],
+                [AGENT_TARGET_COUNT, t.masthead.stats[3]],
+              ] as const
+            ).map(([n, l]) => (
               <div
                 key={l}
                 data-stage="stat"
@@ -427,7 +409,7 @@ export function Masthead() {
           >
             <div className="flex flex-wrap items-center justify-between gap-2 pb-2.5">
               <span className="font-pixel text-[0.625rem] tracking-[0.06em] text-action uppercase">
-                Specimen resolution
+                {t.masthead.resLabel}
               </span>
               <span className="font-mono text-[0.6875rem] text-ink-faint">
                 {activeChapter.title}

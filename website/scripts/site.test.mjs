@@ -244,6 +244,8 @@ test("technical SEO, Schema.org JSON-LD, font preloads, and discovery manifests 
   assert.match(llms, /^# Pixelcraft/m);
   const manifest = JSON.parse(await read("dist/manifest.webmanifest"));
   assert.equal(manifest.short_name, "Pixelcraft");
+  const notFound = await read("dist/404.html");
+  assert.match(notFound, /HTTP 404/);
 
   const gallery = JSON.parse(await read("src/generated/gallery.json"));
   for (const id of Object.keys(gallery.items)) {

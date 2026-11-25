@@ -1,6 +1,7 @@
 import { motion, useReducedMotion } from "motion/react";
 import { useRef, useState } from "react";
-import { GALLERY, NPM_PKG, SKILLS } from "../data";
+import { NPM_PKG, REFINE_SPECIMENS, SKILLS } from "../data";
+import { useLocale } from "../lib/i18n";
 import { usePromoMotion } from "../lib/usePromoMotion";
 import { PixelIcon, PixelLabel } from "./pixel";
 
@@ -254,14 +255,10 @@ function DirectionPromo() {
   );
 }
 
-const REFINE_IDS = ["swiftui", "tui", "python", "store", "gamehud"] as const;
-
 function RefinePromo({ specimenId }: { specimenId: string }) {
   const root = useRef<HTMLDivElement>(null);
   const specimen =
-    GALLERY.find((g) => g.id === specimenId) ??
-    GALLERY.find((g) => g.id === "coffee") ??
-    GALLERY[0];
+    REFINE_SPECIMENS.find((g) => g.id === specimenId) ?? REFINE_SPECIMENS[0];
   usePromoMotion(root, (tl) => {
     tl.fromTo(
       "[data-refine-after]",
@@ -298,6 +295,7 @@ function RefinePromo({ specimenId }: { specimenId: string }) {
         alt=""
         width={1440}
         height={900}
+        loading="lazy"
         decoding="async"
         className="absolute inset-0 h-full w-full object-cover"
       />
@@ -311,6 +309,7 @@ function RefinePromo({ specimenId }: { specimenId: string }) {
           alt=""
           width={1440}
           height={900}
+          loading="lazy"
           decoding="async"
           className="h-full w-full object-cover"
         />
@@ -319,13 +318,13 @@ function RefinePromo({ specimenId }: { specimenId: string }) {
         data-promo-label
         className="absolute start-3 top-3 rounded-full bg-void/90 px-3 py-1.5 font-mono text-[0.625rem] text-ink backdrop-blur-sm"
       >
-        DEFAULT · {specimen.scanBefore.score}
+        DEFAULT · {specimen.scoreBefore}
       </span>
       <span
         data-promo-label
         className="absolute end-3 top-3 rounded-full bg-action px-3 py-1.5 font-mono text-[0.625rem] font-medium text-on-action"
       >
-        PIXELCRAFT · {specimen.scanAfter.score}
+        PIXELCRAFT · {specimen.scoreAfter}
       </span>
       <div
         data-refine-divider
@@ -338,9 +337,8 @@ function RefinePromo({ specimenId }: { specimenId: string }) {
 
 export function MotionDemos() {
   const [specimenId, setSpecimenId] = useState<string>("swiftui");
-  const specimenChoices = REFINE_IDS.map((id) =>
-    GALLERY.find((g) => g.id === id),
-  ).filter((g): g is NonNullable<typeof g> => Boolean(g));
+  const { t } = useLocale();
+  const specimenChoices = REFINE_SPECIMENS;
 
   return (
     <section
@@ -351,20 +349,19 @@ export function MotionDemos() {
       <div className="mx-auto max-w-[88rem] px-5 sm:px-8">
         <div className="mb-12 flex flex-wrap items-end justify-between gap-6">
           <div>
-            <PixelLabel>Pixelcraft, in small moves</PixelLabel>
+            <PixelLabel>{t.demos.kicker}</PixelLabel>
             <h2
               id="demos-title"
               data-split
               className="mt-5 max-w-[17ch] display-wide text-[clamp(2rem,4.4vw,4rem)] leading-[.98]"
             >
-              Less default.
+              {t.demos.titleLine1}
               <br />
-              <span className="text-action">More deliberate.</span>
+              <span className="text-action">{t.demos.titleLine2}</span>
             </h2>
           </div>
           <p className="max-w-[36ch] text-[0.9375rem] leading-relaxed text-ink-muted">
-            Three interactive studies. One design loop. Authored illustrations
-            and real captures, not live AI runs.
+            {t.demos.lede}
           </p>
         </div>
         <div className="grid grid-cols-1 gap-x-7 gap-y-14 lg:grid-cols-2">
@@ -448,9 +445,7 @@ export function MotionDemos() {
                             className="pointer-events-none absolute inset-0 rounded-xl bg-action"
                           />
                         ) : null}
-                        <span className="relative z-10">
-                          {g.stack ?? g.title.split(" ")[0]}
-                        </span>
+                        <span className="relative z-10">{g.stack}</span>
                       </button>
                     );
                   })}

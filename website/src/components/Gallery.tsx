@@ -6,14 +6,15 @@ import {
   type CSSProperties,
   type PointerEvent as ReactPointerEvent,
 } from "react";
+import { REPO_URL } from "../data";
 import {
   GALLERY,
-  REPO_URL,
   type Ecosystem,
   type GalleryItem,
   type ScanFinding,
-} from "../data";
+} from "../galleryData";
 import galleryMeta from "../generated/gallery.json";
+import { useLocale } from "../lib/i18n";
 import { onJump, readUrlParam, writeUrlParams } from "../lib/urlState";
 import { EvidenceStamp, PixelIcon, PixelLabel, Reveal } from "./pixel";
 import { Tabs } from "./Tabs";
@@ -410,6 +411,8 @@ function ExhibitWorkbench({ item }: { item: GalleryItem }) {
                         alt={`${item.title}, built with Pixelcraft (${item.stackLabel})`}
                         width={w}
                         height={h}
+                        loading="lazy"
+                        decoding="async"
                         draggable={false}
                         className="absolute inset-0 h-full w-full object-cover"
                       />
@@ -424,6 +427,8 @@ function ExhibitWorkbench({ item }: { item: GalleryItem }) {
                             alt={`${item.title}, default agent output`}
                             width={w}
                             height={h}
+                            loading="lazy"
+                            decoding="async"
                             draggable={false}
                             className="absolute inset-0 h-full w-full object-cover"
                           />
@@ -797,6 +802,7 @@ function ExhibitWorkbench({ item }: { item: GalleryItem }) {
 }
 
 export function Gallery() {
+  const { t } = useLocale();
   const [ecoFilter, setEcoFilter] = useState<EcosystemFilter>("All");
   const [modeFilter, setModeFilter] = useState<ModeFilter>("All");
   const [active, setActive] = useState(() => {
@@ -878,21 +884,17 @@ export function Gallery() {
         <div className="grid min-w-0 gap-4 lg:grid-cols-12 lg:items-end lg:gap-6">
           <div className="min-w-0 lg:col-span-7">
             <p className="font-mono text-[0.8125rem] font-semibold text-paper-ink-2">
-              Multi-stack proof workbench · {GALLERY.length} surfaces · 5
-              ecosystems
+              {t.gallery.kicker(GALLERY.length)}
             </p>
             <h2
               id="gallery-title"
               className="mt-2 max-w-[18ch] display-wide text-[clamp(1.85rem,4vw,3.4rem)] leading-[1.03] text-balance text-paper-ink"
             >
-              Not just React landing pages. {GALLERY.length} real surface diffs.
+              {t.gallery.title(GALLERY.length)}
             </h2>
           </div>
           <p className="max-w-[48ch] text-[0.98rem] leading-relaxed text-paper-ink-2 sm:text-[1rem] lg:col-span-5">
-            Compare default agent output against Pixelcraft across SwiftUI,
-            Jetpack Compose, Flutter, Rust Ratatui, Tauri v2, Python marimo,
-            Elixir LiveView, MJML email, Typst PDF, Godot 4.5 HUD, and modern
-            web frameworks — with live mobile/desktop stages and direct demos.
+            {t.gallery.lede}
           </p>
         </div>
 
@@ -1129,7 +1131,7 @@ export function Gallery() {
                         alt=""
                         width={480}
                         height={300}
-                        loading={idx < 8 ? "eager" : "lazy"}
+                        loading="lazy"
                         decoding="async"
                         className="h-full w-full object-cover"
                       />

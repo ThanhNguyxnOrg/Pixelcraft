@@ -2,13 +2,14 @@ import { motion, useReducedMotion } from "motion/react";
 import { useState, type ComponentProps } from "react";
 import {
   AGENT_TARGET_COUNT,
-  GALLERY,
   SKILLS,
   TOKEN_FORMATS,
   TOTAL_EVAL_FIXTURES,
+  TOTAL_GALLERY_EXHIBITS,
   TOTAL_REFERENCES,
   TOTAL_SCRIPTS,
 } from "../data";
+import { useLocale } from "../lib/i18n";
 import { publicUrl } from "../lib/publicUrl";
 import { dispatchJump } from "../lib/urlState";
 import { EvidenceStamp, PixelFrame, PixelIcon, SectionHead } from "./pixel";
@@ -32,6 +33,7 @@ type Pillar = {
 
 export function Blueprint() {
   const reducedMotion = useReducedMotion();
+  const { t } = useLocale();
   const [activeId, setActiveId] = useState<string>("strategy");
 
   const pillars: Pillar[] = [
@@ -87,7 +89,7 @@ export function Blueprint() {
       engineeredStandard: `Typed zero-lock-in build, shareable URL query state, global Ctrl/⌘+K palette, and ${TOTAL_EVAL_FIXTURES} offline evaluation fixtures.`,
       deliverables: [
         "Shareable URL query synchronization (?exhibit=, ?view=, ?skill=, ?agent=) across Workbench, Skill Index, and Installer.",
-        `Instant Ctrl/⌘+K Command Palette indexing all ${GALLERY.length} exhibits, ${SKILLS.length} skills, and ${AGENT_TARGET_COUNT} agent hosts.`,
+        `Instant Ctrl/⌘+K Command Palette indexing all ${TOTAL_GALLERY_EXHIBITS} exhibits, ${SKILLS.length} skills, and ${AGENT_TARGET_COUNT} agent hosts.`,
         `Automated CI pipeline running TypeScript strict check, Prettier, slop-scan dogfooding, ${TOTAL_REFERENCES}-ref sync, and live bundle probes.`,
       ],
       proofLabel: "Open Ctrl/⌘+K palette",
@@ -100,17 +102,17 @@ export function Blueprint() {
       domain: "Zero CLS · WebP · Offscreen Pause",
       evidence: "rendered",
       summary:
-        "High craft never excuses sluggish pages. Critical fonts preload ahead of render, media streams support HTTP 206 byte ranges, and off-screen animations pause automatically.",
+        "High craft never excuses sluggish pages. Critical fonts preload ahead of render, heavy evidence chunks code-split asynchronously, and off-screen animations pause automatically.",
       templateDefault:
         "Uncompressed multi-megabyte PNGs, layout-shifting webfont swaps, and continuous off-screen GPU loops.",
       engineeredStandard:
-        "Preloaded WOFF2 fonts, explicit 1440×900 aspect-ratio locks, 88-quality WebP captures, and ScrollTrigger/IntersectionObserver pause.",
+        "Preloaded WOFF2 fonts, async gallery-evidence chunk splitting, frame-0 H1 LCP, lazy WebP plates, and offscreen motion pause.",
       deliverables: [
-        "Rollup chunk splitting (vendor, motion, choreography, showcase-data) with immutable 1-year asset caching.",
-        "Explicit width/height dimensions on every gallery plate and lazy decoding across the 22-surface contact sheet.",
+        "Rollup async chunk splitting (vendor, motion, choreography, showcase-data, gallery-evidence) with 1-year immutable asset caching.",
+        "Explicit width/height dimensions on every gallery plate and lazy decoding across all 22 proof exhibits.",
         "Automatic visibilitychange and IntersectionObserver suspension for canvas particles, tickers, and background video.",
       ],
-      proofLabel: `Inspect ${GALLERY.length} WebP exhibits ↓`,
+      proofLabel: `Inspect ${TOTAL_GALLERY_EXHIBITS} WebP exhibits ↓`,
       proofHref: "#gallery",
     },
     {
@@ -124,9 +126,9 @@ export function Blueprint() {
       templateDefault:
         "Missing canonical URLs, broken social cards, empty meta descriptions, and unstructured div soup.",
       engineeredStandard:
-        "Canonical URLs, Schema.org @graph JSON-LD (WebSite + SoftwareSourceCode + FAQPage), XML sitemap, robots.txt, and llms.txt.",
+        "Canonical URLs, Schema.org @graph JSON-LD (WebSite + SoftwareSourceCode + FAQPage), XML sitemap, robots.txt, llms.txt, and EN/VI locale switching.",
       deliverables: [
-        `Auto-generated sitemap.xml indexing the canonical showcase and all ${GALLERY.length} standalone multi-stack HTML exhibits.`,
+        `Auto-generated sitemap.xml indexing the canonical showcase and all ${TOTAL_GALLERY_EXHIBITS} standalone multi-stack HTML exhibits.`,
         "Schema.org application/ld+json structured data embedded in both index.html and every standalone gallery exhibit.",
         `Machine-readable llms.txt manifest exposing all ${SKILLS.length} skills, ${TOTAL_SCRIPTS} QA CLIs, and live exhibit URLs.`,
       ],
@@ -144,9 +146,9 @@ export function Blueprint() {
       templateDefault:
         "Removed focus outlines, low-contrast muted text, desktop layouts squeezed onto phones, and color-only status dots.",
       engineeredStandard:
-        "WCAG 2.2 AA contrast, >= 24px/44px touch targets, mobile thumb-zone bottom dock, forced-colors mode, and WCAG 2.2.2 motion pause.",
+        "WCAG 2.2 AA contrast, >= 24px/44px touch targets across all 22 exhibits, mobile thumb-zone bottom dock, forced-colors mode, and WCAG 2.2.2 motion pause.",
       deliverables: [
-        "Verified 0 horizontal overflow (docScrollWidth === innerWidth) at 320×568, 390×844 mobile touch, and 1440×900 desktop.",
+        "Verified 0 horizontal overflow (docScrollWidth === innerWidth) and 0 undersized targets (< 24px) at 390×844 mobile touch and 1440×900 desktop.",
         "Full keyboard roving-tabindex tabs, skip-to-content links across all 22 exhibits, and high-contrast forced-colors overrides.",
         "One-click 'Pause page motion' control halting GSAP timelines, Motion springs, tickers, and background media.",
       ],
@@ -164,11 +166,11 @@ export function Blueprint() {
       templateDefault:
         "Third-party tracker scripts, unvetted CDN tags, missing CSP headers, and intrusive cookie banners.",
       engineeredStandard:
-        "Strict Content-Security-Policy, Permissions-Policy, COOP, nosniff, path-traversal rejection, and zero cookies or analytics.",
+        "Strict Content-Security-Policy, Permissions-Policy, COOP, nosniff, path-traversal rejection, branded 404.html, and zero cookies or analytics.",
       deliverables: [
         "Production server (scripts/serve.mjs) enforces CSP, X-Frame-Options: SAMEORIGIN, COOP: same-origin, and Permissions-Policy.",
         "Automated server.test.mjs verifies URL-encoded directory traversal (%2e%2e%2f) rejection, HTTP 416 range bounds, and HEAD/gzip.",
-        "Zero cookies, zero third-party analytics beacons, and 100% offline-capable local fonts and media.",
+        "Zero cookies, zero third-party analytics beacons, branded 404 recovery page, and transparent GDPR/CCPA/PDPD disclosure.",
       ],
       proofLabel: "Read llms.txt spec ↗",
       proofHref: publicUrl("llms.txt"),
@@ -203,18 +205,13 @@ export function Blueprint() {
       aria-labelledby="blueprint-title"
       className="relative overflow-x-clip border-y border-line bg-deep/60"
     >
-      <div className="mx-auto max-w-[88rem] px-4 py-16 sm:px-8 sm:py-24 lg:py-32">
+      <div className="mx-auto max-w-[88rem] px-4 py-16 sm:px-8 sm:py-24 lg:py-28">
         <SectionHead
           id="blueprint-title"
-          kicker="Production engineering standard · 8 pillars"
-          title="What separates engineered craft from a reskinned template."
+          kicker={t.blueprint.kicker}
+          title={t.blueprint.title}
         >
-          <p>
-            High-value software isn’t measured by page count. Inspect how
-            strategy, design tokens, performance, technical SEO, accessibility,
-            security, and automated QA are wired into this showcase and every
-            exhibit.
-          </p>
+          <p>{t.blueprint.lede}</p>
         </SectionHead>
 
         <div className="mt-10 grid min-w-0 gap-6 sm:mt-12 lg:grid-cols-12 lg:items-start">
@@ -312,7 +309,7 @@ export function Blueprint() {
               <div className="grid min-w-0 gap-4 md:grid-cols-2">
                 <div className="rounded-tile border border-line bg-deep p-4">
                   <p className="font-mono text-[0.6875rem] font-semibold text-p1 uppercase">
-                    Commodity template shortcut
+                    {t.blueprint.shortcutLabel}
                   </p>
                   <p className="mt-2 text-[0.875rem] leading-relaxed text-ink-muted">
                     {active.templateDefault}
@@ -320,7 +317,7 @@ export function Blueprint() {
                 </div>
                 <div className="rounded-tile border border-action/40 bg-raised/70 p-4">
                   <p className="font-mono text-[0.6875rem] font-semibold text-action uppercase">
-                    Engineered production standard
+                    {t.blueprint.standardLabel}
                   </p>
                   <p className="mt-2 text-[0.875rem] leading-relaxed text-ink">
                     {active.engineeredStandard}
@@ -330,7 +327,7 @@ export function Blueprint() {
 
               <div>
                 <h4 className="font-mono text-[0.75rem] font-semibold text-ink-faint uppercase">
-                  Shipped implementation in this repository
+                  {t.blueprint.shippedLabel}
                 </h4>
                 <ul className="mt-3 grid gap-2.5 text-[0.9375rem] leading-relaxed text-ink-muted">
                   {active.deliverables.map((item) => (
@@ -349,7 +346,7 @@ export function Blueprint() {
 
               <div className="flex flex-wrap items-center justify-between gap-3 border-t border-line pt-4">
                 <span className="font-mono text-[0.75rem] text-ink-faint">
-                  0 cookies · 0 trackers · 100% source-verifiable
+                  {t.blueprint.zeroTelemetry}
                 </span>
                 {active.proofAction ? (
                   <button

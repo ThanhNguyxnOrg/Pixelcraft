@@ -360,6 +360,25 @@ async function main() {
 
   const siteOrigin = "https://thanhnguyxnorg.github.io/Pixelcraft/";
 
+  // Read compact before/after score summary from gallery.json if present (avoids bundling 343KB findings eagerly)
+  const exhibitScores = {};
+  try {
+    const rawGallery = JSON.parse(
+      await readFile(
+        resolve(websiteRoot, "src/generated/gallery.json"),
+        "utf8",
+      ),
+    );
+    for (const [id, pair] of Object.entries(rawGallery.items ?? {})) {
+      exhibitScores[id] = {
+        before: pair?.before?.score ?? 0,
+        after: pair?.after?.score ?? 0,
+      };
+    }
+  } catch {
+    // gallery.json may not exist yet before first capture
+  }
+
   const meta = {
     version: pkg.version,
     npmPkg: pkg.name,
@@ -381,6 +400,7 @@ async function main() {
     totalEvalFixtures,
     totalGalleryExhibits,
     exhibitIds,
+    exhibitScores,
     stacks,
     skills,
   };

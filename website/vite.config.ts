@@ -75,6 +75,11 @@ export default defineConfig({
           if (id.includes("node_modules/motion")) return "motion";
           if (id.includes("node_modules/gsap") || id.includes("@gsap/react"))
             return "choreography";
+          if (
+            id.includes("src/galleryData.ts") ||
+            id.includes("src/generated/gallery.json")
+          )
+            return "gallery-evidence";
           if (id.includes("src/generated/") || id.includes("src/data.ts"))
             return "showcase-data";
         },

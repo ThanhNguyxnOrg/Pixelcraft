@@ -1,7 +1,11 @@
 import { useEffect, useRef, useState } from "react";
 import logoUrl from "../assets/pixelcraft-logo-256.png";
 import { motion, useReducedMotion, useScroll, useSpring } from "motion/react";
-import { GALLERY, NPM_PKG, REPO_URL, VERSION } from "../data";
+import { NPM_PKG, REPO_URL, TOTAL_GALLERY_EXHIBITS, VERSION } from "../data";
+import { useLocale } from "../lib/i18n";
+import { publicUrl } from "../lib/publicUrl";
+import { dispatchJump } from "../lib/urlState";
+import { useMediaPlayback } from "../lib/useMediaPlayback";
 import {
   CopyCommand,
   EvidenceStamp,
@@ -10,28 +14,6 @@ import {
   useMotionPause,
   type IconName,
 } from "./pixel";
-import { publicUrl } from "../lib/publicUrl";
-import { dispatchJump } from "../lib/urlState";
-import { useMediaPlayback } from "../lib/useMediaPlayback";
-
-const NAV: [string, string][] = [
-  ["#film", "Demos"],
-  ["#gallery", "Gallery"],
-  ["#loop", "Loop"],
-  ["#blueprint", "Blueprint"],
-  ["#tools", "Tools"],
-  ["#skills", "Skills"],
-  ["#floor", "Floor"],
-  ["#install", "Install"],
-];
-
-const MOBILE_DOCK: { href: string; short: string; icon: IconName }[] = [
-  { href: "#film", short: "Demos", icon: "play" },
-  { href: "#gallery", short: "Proofs", icon: "grid" },
-  { href: "#loop", short: "Loop", icon: "loop" },
-  { href: "#skills", short: "Skills", icon: "search" },
-  { href: "#install", short: "Install", icon: "arrow" },
-];
 
 /** Thin reading-progress line. Scroll-linked, so it is the one place motion tracks the user directly. */
 function Progress() {
@@ -54,8 +36,33 @@ export function Header() {
   const [open, setOpen] = useState(false);
   const [scrolled, setScrolled] = useState(false);
   const [active, setActive] = useState<string>("");
+  const { locale, setLocale, t } = useLocale();
   const reducedMotion = useReducedMotion();
   const btnRef = useRef<HTMLButtonElement>(null);
+
+  // Focused 6-item primary IA keeps cognitive load low; Tools/Floor/FAQ stay 1 tap away via mobile menu & Cmd+K.
+  const desktopNav: [string, string][] = [
+    ["#film", t.nav.demos],
+    ["#gallery", t.nav.gallery],
+    ["#loop", t.nav.loop],
+    ["#blueprint", t.nav.blueprint],
+    ["#skills", t.nav.skills],
+    ["#install", t.nav.install],
+  ];
+
+  const mobileMenuNav: [string, string][] = [
+    ...desktopNav,
+    ["#tools", t.nav.tools],
+    ["#floor", t.nav.floor],
+  ];
+
+  const mobileDock: { href: string; short: string; icon: IconName }[] = [
+    { href: "#film", short: t.dock.demos, icon: "play" },
+    { href: "#gallery", short: t.dock.proofs, icon: "grid" },
+    { href: "#loop", short: t.dock.loop, icon: "loop" },
+    { href: "#skills", short: t.dock.skills, icon: "search" },
+    { href: "#install", short: t.dock.install, icon: "arrow" },
+  ];
 
   useEffect(() => {
     const on = () => {
@@ -68,7 +75,7 @@ export function Header() {
   }, []);
 
   useEffect(() => {
-    const ids = NAV.map(([href]) => href.slice(1));
+    const ids = ["film", "gallery", "loop", "blueprint", "skills", "install"];
     const els = ids
       .map((id) => document.getElementById(id))
       .filter((el): el is HTMLElement => Boolean(el));
@@ -110,12 +117,12 @@ export function Header() {
           Skip to content
         </a>
         <div
-          className={`gborder mx-auto flex h-14 max-w-[74rem] items-center gap-2.5 rounded-full px-2.5 backdrop-blur-xl transition-colors duration-200 sm:gap-3 motion-reduce:transition-none ${scrolled ? "bg-void/90 shadow-lift" : "bg-void/65"}`}
+          className={`gborder mx-auto flex h-14 max-w-[74rem] items-center gap-2 rounded-full px-2.5 backdrop-blur-xl transition-colors duration-200 sm:gap-3 motion-reduce:transition-none ${scrolled ? "bg-void/90 shadow-lift" : "bg-void/65"}`}
         >
           <a
             href="#top"
             onClick={() => setActive("")}
-            className="flex min-h-10 items-center gap-2.5 ps-2"
+            className="flex min-h-10 items-center gap-2 ps-1.5 sm:gap-2.5 sm:ps-2"
             aria-label="Pixelcraft, back to top"
           >
             <img
@@ -125,13 +132,13 @@ export function Header() {
               height={30}
               className="size-[28px] shrink-0 sm:size-[30px]"
             />
-            <span className="font-pixel text-[0.875rem] font-bold tracking-[0.04em] max-[359px]:sr-only sm:text-[1rem]">
+            <span className="font-pixel text-[0.875rem] font-bold tracking-[0.04em] max-[399px]:sr-only sm:text-[1rem]">
               PIXELCRAFT
             </span>
           </a>
           <nav aria-label="Sections" className="ms-auto hidden xl:block">
             <ul className="flex items-center gap-0.5">
-              {NAV.map(([href, label]) => {
+              {desktopNav.map(([href, label]) => {
                 const current = active === href;
                 return (
                   <li key={href}>
@@ -171,17 +178,32 @@ export function Header() {
               })}
             </ul>
           </nav>
+
+          <button
+            type="button"
+            onClick={() => setLocale(locale === "en" ? "vi" : "en")}
+            aria-label={
+              locale === "en"
+                ? "Switch language to Vietnamese"
+                : "Switch language to English"
+            }
+            className="inline-flex min-h-10 shrink-0 items-center rounded-full border border-line bg-white/6 px-2.5 font-mono text-[0.75rem] font-medium text-ink-muted transition-colors hover:bg-white/12 hover:text-ink max-xl:ms-auto motion-reduce:transition-none"
+          >
+            {locale === "en" ? "EN" : "VI"}
+          </button>
+
           <button
             type="button"
             onClick={() => dispatchJump({ kind: "palette" })}
             aria-label="Search exhibits, skills, and commands (Ctrl or Command + K)"
-            className="inline-flex min-h-10 shrink-0 items-center gap-1.5 rounded-full border border-line bg-white/6 px-2.5 font-mono text-[0.75rem] text-ink-muted transition-colors hover:bg-white/12 hover:text-ink max-xl:ms-auto sm:px-3 motion-reduce:transition-none"
+            className="inline-flex min-h-10 shrink-0 items-center gap-1.5 rounded-full border border-line bg-white/6 px-2.5 font-mono text-[0.75rem] text-ink-muted transition-colors hover:bg-white/12 hover:text-ink sm:px-3 motion-reduce:transition-none"
           >
             <PixelIcon name="search" size={12} />
             <span aria-hidden="true" className="hidden sm:inline">
               ⌘K
             </span>
           </button>
+
           <a
             data-magnetic
             href={REPO_URL}
@@ -190,6 +212,7 @@ export function Header() {
             <PixelIcon name="star" size={12} />
             <span>GitHub</span>
           </a>
+
           <button
             ref={btnRef}
             type="button"
@@ -202,7 +225,7 @@ export function Header() {
             className="inline-flex min-h-10 shrink-0 items-center gap-2 rounded-full border border-line bg-white/8 px-2.5 font-mono text-[0.75rem] text-ink hover:bg-white/14 sm:px-3 xl:hidden"
           >
             <PixelIcon name={open ? "close" : "menu"} size={13} />
-            <span aria-hidden="true" className="hidden min-[440px]:inline">
+            <span aria-hidden="true" className="hidden min-[480px]:inline">
               {open ? "Close" : "Menu"}
             </span>
           </button>
@@ -220,7 +243,7 @@ export function Header() {
               className="gborder mx-auto mt-2 max-h-[calc(100dvh-9.5rem)] max-w-[74rem] overflow-x-hidden overflow-y-auto overscroll-contain rounded-card bg-void text-ink shadow-lift xl:hidden"
             >
               <ul className="grid gap-1 p-2 sm:grid-cols-2">
-                {NAV.map(([href, label]) => (
+                {mobileMenuNav.map(([href, label]) => (
                   <li key={href}>
                     <a
                       href={href}
@@ -251,7 +274,7 @@ export function Header() {
         className="fixed inset-x-0 bottom-0 z-40 border-t border-line-strong bg-void/95 pb-[env(safe-area-inset-bottom,0px)] backdrop-blur-xl xl:hidden"
       >
         <ul className="mx-auto grid max-w-[36rem] grid-cols-5 px-1">
-          {MOBILE_DOCK.map((item) => {
+          {mobileDock.map((item) => {
             const current = active === item.href;
             return (
               <li key={item.href} className="min-w-0">
@@ -310,8 +333,105 @@ function LoopBackdrop() {
   );
 }
 
+function LegalDialog({ onClose }: { onClose: () => void }) {
+  useEffect(() => {
+    const onKey = (e: KeyboardEvent) => {
+      if (e.key === "Escape") onClose();
+    };
+    window.addEventListener("keydown", onKey);
+    return () => window.removeEventListener("keydown", onKey);
+  }, [onClose]);
+
+  return (
+    <div className="fixed inset-0 z-50 px-4 pt-16 sm:pt-24">
+      <div
+        aria-hidden="true"
+        onClick={onClose}
+        className="fixed inset-0 bg-void/80 backdrop-blur-md"
+      />
+      <div
+        role="dialog"
+        aria-modal="true"
+        aria-labelledby="legal-dialog-title"
+        className="gborder relative z-10 mx-auto max-h-[80dvh] w-full max-w-[40rem] overflow-y-auto rounded-card bg-deep p-6 text-ink shadow-lift sm:p-8"
+      >
+        <div className="flex items-start justify-between gap-4 border-b border-line pb-4">
+          <div>
+            <p className="font-mono text-[0.75rem] text-action uppercase">
+              Governance · Privacy · Security
+            </p>
+            <h2
+              id="legal-dialog-title"
+              className="mt-1 display-wide text-[1.5rem] leading-tight"
+            >
+              Privacy, MIT License &amp; Security Disclosure
+            </h2>
+          </div>
+          <button
+            type="button"
+            onClick={onClose}
+            aria-label="Close legal disclosure"
+            className="inline-flex min-h-10 items-center rounded-full border border-line bg-panel px-3 font-mono text-[0.75rem] text-ink hover:border-action"
+          >
+            Close
+          </button>
+        </div>
+
+        <dl className="mt-5 grid gap-4 text-[0.9375rem] leading-relaxed text-ink-muted">
+          <div>
+            <dt className="font-mono text-[0.75rem] font-semibold text-ink uppercase">
+              Privacy &amp; Data Protection (GDPR / CCPA / Vietnam PDPD)
+            </dt>
+            <dd className="mt-1">
+              This static showcase sets zero cookies, runs zero third-party
+              analytics or advertising scripts, and stores zero personal data.
+              All fonts and media are self-hosted directly with the bundle, so
+              no consent banner is required.
+            </dd>
+          </div>
+          <div>
+            <dt className="font-mono text-[0.75rem] font-semibold text-ink uppercase">
+              Open-Source License &amp; Asset Ownership
+            </dt>
+            <dd className="mt-1">
+              Pixelcraft skills, CLI scripts, and showcase code are distributed
+              under the permissive MIT License. Bundled typefaces (Archivo, IBM
+              Plex Mono, Silkscreen, Public Sans, Work Sans, Barlow Condensed)
+              ship under the SIL Open Font License 1.1.
+            </dd>
+          </div>
+          <div>
+            <dt className="font-mono text-[0.75rem] font-semibold text-ink uppercase">
+              Security Headers &amp; Reporting
+            </dt>
+            <dd className="mt-1">
+              The included static server enforces strict
+              Content-Security-Policy, X-Frame-Options: SAMEORIGIN,
+              Cross-Origin-Opener-Policy, Permissions-Policy,
+              X-Content-Type-Options: nosniff, and path traversal rejection.
+              Report security or accessibility issues at{" "}
+              <a
+                href={`${REPO_URL}/issues`}
+                target="_blank"
+                rel="noreferrer"
+                className="text-action underline underline-offset-4"
+              >
+                GitHub Issues
+              </a>
+              .
+            </dd>
+          </div>
+        </dl>
+      </div>
+    </div>
+  );
+}
+
 export function Footer() {
   const { paused, setPaused } = useMotionPause();
+  const { t } = useLocale();
+  const [legalOpen, setLegalOpen] = useState(false);
+
   return (
     <footer className="relative isolate overflow-hidden bg-void">
       <LoopBackdrop />
@@ -319,15 +439,15 @@ export function Footer() {
         aria-hidden="true"
         className="absolute inset-0 -z-10 [background:linear-gradient(180deg,var(--color-void),color-mix(in_oklab,var(--color-void)_55%,transparent)_40%,var(--color-void)_100%)]"
       />
-      <div className="mx-auto max-w-[88rem] px-4 pt-24 sm:px-8 sm:pt-32 lg:pt-44">
+      <div className="mx-auto max-w-[88rem] px-4 pt-20 sm:px-8 sm:pt-28 lg:pt-36">
         <div className="grid min-w-0 gap-10 lg:grid-cols-12 lg:items-end lg:gap-12">
           <div className="min-w-0 lg:col-span-7">
-            <PixelLabel>Next step</PixelLabel>
+            <PixelLabel>{t.footer.kicker}</PixelLabel>
             <h2
               data-split
               className="mt-5 max-w-[14ch] display-wide text-[clamp(2.2rem,6.4vw,5.75rem)] leading-[0.94]"
             >
-              Install it. Then make your agent show its work.
+              {t.footer.headline}
             </h2>
           </div>
           <div className="min-w-0 lg:col-span-5">
@@ -338,18 +458,16 @@ export function Footer() {
           </div>
         </div>
 
-        <div className="mt-20 grid min-w-0 gap-12 border-t border-line pt-12 sm:mt-28 lg:grid-cols-12">
+        <div className="mt-16 grid min-w-0 gap-12 border-t border-line pt-12 sm:mt-24 lg:grid-cols-12">
           <div className="min-w-0 lg:col-span-4">
             <p className="max-w-[36ch] text-[0.9375rem] leading-relaxed text-ink-muted">
-              Portable Agent Skills for distinctive, evidence-verified UI and
-              rigorous UX across frontend stacks.
+              {t.footer.blurb}
             </p>
             <p className="mt-5 font-mono text-[0.8125rem] text-ink-faint">
               v{VERSION} · MIT License · © 2026 Pixelcraft contributors
             </p>
             <p className="mt-2 font-mono text-[0.75rem] text-ink-faint">
-              0 cookies · 0 analytics trackers · 100% self-hosted fonts &amp;
-              assets
+              {t.footer.privacyNote}
             </p>
             <div className="mt-5 flex flex-wrap items-center gap-2.5 text-[0.9375rem]">
               <a
@@ -376,28 +494,34 @@ export function Footer() {
               </a>
               <button
                 type="button"
+                onClick={() => setLegalOpen(true)}
+                className="inline-flex min-h-10 items-center gap-1.5 rounded-full border border-line bg-panel px-3.5 font-mono text-[0.75rem] text-ink-muted transition-colors hover:border-action hover:text-action motion-reduce:transition-none"
+              >
+                {t.footer.legalBtn}
+              </button>
+              <button
+                type="button"
                 aria-pressed={paused}
                 onClick={() => setPaused(!paused)}
                 className="surface inline-flex min-h-10 items-center gap-2 rounded-full px-4 font-mono text-[0.75rem] text-ink-muted transition-colors hover:bg-white/10 hover:text-ink motion-reduce:hidden"
               >
                 <PixelIcon name={paused ? "play" : "pause"} size={11} />
-                {paused ? "Resume page motion" : "Pause page motion"}
+                {paused ? t.footer.resumeMotion : t.footer.pauseMotion}
               </button>
             </div>
           </div>
 
           <div className="min-w-0 lg:col-span-7 lg:col-start-6">
             <h2 className="font-pixel text-[0.75rem] text-ink-faint uppercase">
-              Report for this page
+              {t.footer.reportTitle}
             </h2>
             <ul className="mt-5 grid gap-3.5 text-[0.9375rem] text-ink-muted">
               <li className="flex flex-wrap items-baseline gap-3">
                 <EvidenceStamp label="rendered" />
                 <span>
-                  All {GALLERY.length} gallery pages captured in Chromium at
-                  1440 × 900 and audited across 320px–1440px responsive
-                  viewports. Promo studies are authored illustrations, not live
-                  AI runs.
+                  All {TOTAL_GALLERY_EXHIBITS} gallery pages captured in
+                  Chromium at 1440 × 900 and verified across 320px–1440px
+                  viewports with 0 overflow and 0 undersized targets.
                 </span>
               </li>
               <li className="flex flex-wrap items-baseline gap-3">
@@ -436,10 +560,12 @@ export function Footer() {
 
       <p
         aria-hidden="true"
-        className="mt-20 flex justify-center overflow-hidden pb-[1.5vw] display-wide text-[clamp(3rem,12.2vw,14rem)] leading-[0.82] whitespace-nowrap text-raised/80 select-none sm:mt-24"
+        className="mt-16 flex justify-center overflow-hidden pb-[1.5vw] display-wide text-[clamp(3rem,12.2vw,14rem)] leading-[0.82] whitespace-nowrap text-raised/80 select-none sm:mt-20"
       >
         PIXELCRAFT
       </p>
+
+      {legalOpen ? <LegalDialog onClose={() => setLegalOpen(false)} /> : null}
     </footer>
   );
 }

@@ -1,0 +1,109 @@
+<!doctype html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1" />
+    <meta name="theme-color" content="#090d12" />
+    <meta name="robots" content="noindex" />
+    <title>404 — Page Not Found · Pixelcraft</title>
+    <link rel="stylesheet" href="./fonts/gallery.css" />
+    <style>
+      :root {
+        --bg: #090d12;
+        --panel: #121a24;
+        --line: #243242;
+        --ink: #f3f7fa;
+        --muted: #b6c4d1;
+        --mint: #96f2c6;
+        --on-mint: #090d12;
+      }
+      * {
+        box-sizing: border-box;
+      }
+      body {
+        margin: 0;
+        min-height: 100svh;
+        display: grid;
+        place-items: center;
+        padding: 24px;
+        background: var(--bg);
+        color: var(--ink);
+        font-family: "Public Sans", system-ui, sans-serif;
+      }
+      main {
+        width: 100%;
+        max-width: 38rem;
+        border: 1px solid var(--line);
+        border-radius: 20px;
+        background: var(--panel);
+        padding: 32px;
+      }
+      .code {
+        margin: 0;
+        font-family: "IBM Plex Mono", ui-monospace, monospace;
+        font-size: 0.8125rem;
+        letter-spacing: 0.08em;
+        text-transform: uppercase;
+        color: var(--mint);
+      }
+      h1 {
+        margin: 12px 0 0;
+        font-family: "Archivo", system-ui, sans-serif;
+        font-size: clamp(2rem, 6vw, 3.25rem);
+        line-height: 1.02;
+        letter-spacing: -0.03em;
+      }
+      p.desc {
+        margin: 16px 0 0;
+        line-height: 1.6;
+        color: var(--muted);
+      }
+      .actions {
+        margin-top: 28px;
+        display: flex;
+        flex-wrap: wrap;
+        gap: 12px;
+      }
+      a {
+        display: inline-flex;
+        align-items: center;
+        min-height: 44px;
+        padding: 0 20px;
+        border-radius: 999px;
+        font-family: "IBM Plex Mono", ui-monospace, monospace;
+        font-size: 0.8125rem;
+        font-weight: 600;
+        text-decoration: none;
+      }
+      a.primary {
+        background: var(--mint);
+        color: var(--on-mint);
+      }
+      a.secondary {
+        border: 1px solid var(--line);
+        color: var(--ink);
+        background: var(--bg);
+      }
+      a:focus-visible {
+        outline: 3px solid var(--mint);
+        outline-offset: 3px;
+      }
+    </style>
+  </head>
+  <body>
+    <main>
+      <p class="code">HTTP 404 · Route not found</p>
+      <h1>This page is off the grid.</h1>
+      <p class="desc">
+        The route you requested does not exist in the Pixelcraft showcase or its
+        22 standalone gallery exhibits. Return to the main showcase or jump
+        straight to the proof gallery.
+      </p>
+      <div class="actions">
+        <a class="primary" href="./">Back to Pixelcraft</a>
+        <a class="secondary" href="./#gallery">Inspect 22 exhibits</a>
+        <a class="secondary" href="./llms.txt">Open llms.txt</a>
+      </div>
+    </main>
+  </body>
+</html>

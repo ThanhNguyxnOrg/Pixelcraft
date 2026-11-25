@@ -2,7 +2,6 @@ import { AnimatePresence, motion, useReducedMotion } from "motion/react";
 import { useState } from "react";
 import {
   COMMANDS,
-  GALLERY,
   GATE_EXITS,
   SCAN_RULES,
   SHOOT_BREAKPOINTS,
@@ -10,6 +9,7 @@ import {
   TOOLS,
   TOTAL_SCRIPTS,
 } from "../data";
+import { GALLERY } from "../galleryData";
 import { PixelIcon, SectionHead, SpotTile } from "./pixel";
 
 const SEV: Record<string, string> = {

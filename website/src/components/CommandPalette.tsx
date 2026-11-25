@@ -1,6 +1,7 @@
 import { AnimatePresence, motion, useReducedMotion } from "motion/react";
 import { useEffect, useMemo, useRef, useState } from "react";
-import { AGENT_TARGETS, GALLERY, REPO_URL, SKILLS } from "../data";
+import { AGENT_TARGETS, REPO_URL, SKILLS } from "../data";
+import { GALLERY } from "../galleryData";
 import { publicUrl } from "../lib/publicUrl";
 import { dispatchJump, onJump } from "../lib/urlState";
 import { PixelIcon, useMotionPause } from "./pixel";
@@ -15,8 +16,12 @@ type CommandAction = {
   run: () => void;
 };
 
-export function CommandPalette() {
-  const [open, setOpen] = useState(false);
+export function CommandPalette({
+  initialOpen = false,
+}: {
+  initialOpen?: boolean;
+} = {}) {
+  const [open, setOpen] = useState(initialOpen);
   const [query, setQuery] = useState("");
   const [activeIdx, setActiveIdx] = useState(0);
   const [toast, setToast] = useState<string | null>(null);
