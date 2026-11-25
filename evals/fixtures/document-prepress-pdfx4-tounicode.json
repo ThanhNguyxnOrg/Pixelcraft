@@ -1,0 +1,43 @@
+{
+  "schemaVersion": 1,
+  "id": "document-prepress-pdfx4-tounicode",
+  "skill": "pixelcraft-document",
+  "title": "Produce a bilingual Vietnamese-English print brochure meeting commercial PDF/X-4 prepress (3mm bleed, CMYK OutputIntent, 100% K text) and ToUnicode CMap extractability",
+  "contextSnapshot": {
+    "surface": "Bilingual commercial print & digital product brochure PDF",
+    "platform": "Typst / Print-to-PDF prepress pipeline",
+    "mode": "Communicate",
+    "states": ["commercial press sheet with 3mm bleed and crop marks", "digital reader view with clickable bookmarks", "office monochrome laser print proof", "Vietnamese stacked-diacritic copy/paste extraction"],
+    "constraints": ["3mm bleed (/BleedBox) and 5mm trim safety (/TrimBox)", "calibrated CMYK ICC /OutputIntents with TAC <= 300% and 100% K body text", "vector SVG charts/logos + >= 300 DPI photos", "valid /ToUnicode CMap so Vietnamese diacritics copy cleanly without tofu"]
+  },
+  "prompt": "Build a bilingual Vietnamese-English 8-page product brochure template delivered both as a press-ready PDF/X-4 file for offset printing and as an accessible digital PDF with vector charts, tabular pricing tables, and clean Unicode copy-paste.",
+  "expectedRouting": ["pixelcraft-document", "references/pdf-tools.md", "references/print-css.md"],
+  "forbiddenBehaviors": [
+    "exports edge-to-edge backgrounds without 3mm bleed (/BleedBox) or places page numbers/logos within 2mm of the trim edge",
+    "renders charts or brand logos as raster PNGs instead of crisp vector primitives, or sets small black body copy in 4-channel rich black instead of C0 M0 Y0 K100",
+    "subsets Vietnamese fonts without a /ToUnicode CMap stream so copying `Tiếng Việt` yields garbled glyphs or tofu (□)"
+  ],
+  "rubricDimensions": [
+    {
+      "dimension": "commercial prepress PDF/X-4 geometry and ink discipline",
+      "pass": "configures TrimBox + 3mm BleedBox + >= 5mm safe inset, embeds a calibrated CMYK OutputIntent (TAC <= 300%), keeps body black text on 100% K overprint, and keeps charts/logos strictly vector alongside >= 300 DPI photos",
+      "fail": "omits bleed/trim boxes, converts RGB neon blindly, rasterizes charts, or uses 4-plate black on body copy"
+    },
+    {
+      "dimension": "Unicode extractability, grayscale resilience, and QA verification",
+      "pass": "preserves /ToUnicode CMap on embedded subsetted fonts (`check-pdf.mjs --prepress` + `pdffonts uni=yes`), remains distinguishable in grayscale office printing, and inspects rasterized pages visually",
+      "fail": "breaks Vietnamese copy-paste extraction, relies solely on red/green hue in charts, or skips rendered page rasterization"
+    }
+  ],
+  "negativeControls": [
+    {
+      "name": "screen-RGB browser window.print export",
+      "input": "RGB PDF looks acceptable on a retina laptop monitor",
+      "mustNot": "claim commercial print readiness without /TrimBox, /BleedBox, CMYK /OutputIntents, 300 DPI image verification, and /ToUnicode text extraction checks"
+    }
+  ],
+  "baseline": {
+    "withoutSkill": "outputs an uncalibrated RGB PDF with zero bleed, rasterized PNG charts, 4-channel black body text, and broken Vietnamese copy-paste CMap",
+    "withSkill": "produces a dual-ready brochure passing `check-pdf.mjs --prepress` with 3mm bleed, 5mm safe margins, vector charts, 100% K body copy, intact /ToUnicode Vietnamese extraction, and grayscale legibility"
+  }
+}

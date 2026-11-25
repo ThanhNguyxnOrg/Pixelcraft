@@ -1,0 +1,44 @@
+{
+  "schemaVersion": 1,
+  "id": "mobile-compose-16kb-foldable-store-gate",
+  "skill": "pixelcraft-mobile",
+  "title": "Ship a Google Play 2026-ready Jetpack Compose finance app meeting targetSdk 36, Edge-to-Edge, foldable sw>=600dp, and 16 KB page alignment",
+  "contextSnapshot": {
+    "surface": "Consumer mobile banking and transfer flow",
+    "platform": "Kotlin Jetpack Compose (Android 16 / targetSdk 36)",
+    "mode": "Execute",
+    "states": ["biometric unlock", "transfer amount entry with IME", "foldable tabletop/unfolded posture", "offline queued transfer", "background RAM process-death restoration"],
+    "constraints": ["mandatory Edge-to-Edge WindowInsets across status/nav/IME", "no portrait orientation lock on sw >= 600dp tablets and foldables", "16 KB native .so memory page alignment and Android Keystore token storage"]
+  },
+  "prompt": "Prepare a Kotlin Jetpack Compose consumer transfer flow for 2026 Google Play submission on Android 16 (targetSdk 36), supporting Pixel Fold / tablet postures, Edge-to-Edge insets, Predictive Back, process-death state survival, and native library 16 KB memory page compliance.",
+  "expectedRouting": ["pixelcraft-mobile", "references/jetpack-compose.md", "references/tactile-interactions.md"],
+  "forbiddenBehaviors": [
+    "hard-locks android:screenOrientation=\"portrait\" globally so foldables and tablets fail adaptive layout requirements",
+    "stores OAuth/session tokens in plaintext SharedPreferences instead of Android Keystore / Jetpack Tink",
+    "uses .dp instead of .sp for typography or ignores 200% system font scaling",
+    "ships unverified native .so dependencies without checking 16 KB ELF page alignment (zipalign -c -P 16) or skips adb shell am kill process-death restoration"
+  ],
+  "rubricDimensions": [
+    {
+      "dimension": "Google Play 2026 store and hardware compliance",
+      "pass": "targets API 36 (.aab), enables Edge-to-Edge with WindowInsets.safeDrawing and WindowInsets.ime, adapts cleanly across compact and sw >= 600dp foldable postures without portrait locks, and verifies 16 KB native page alignment",
+      "fail": "locks orientation to portrait, clips bottom CTAs behind gesture nav/IME, or ignores 16 KB native library alignment"
+    },
+    {
+      "dimension": "state restoration, security, and tactile craft",
+      "pass": "persists draft state across adb shell am kill via rememberSaveable / SavedStateHandle, stores credentials in Keystore, supports Predictive Back, and uses sp + tabular numerals for currency amounts",
+      "fail": "loses transfer form state on background eviction, uses plaintext storage, or breaks layout at 200% font scale"
+    }
+  ],
+  "negativeControls": [
+    {
+      "name": "portrait emulator happy path only",
+      "input": "single 412x915 portrait emulator screenshot compiles and renders transfer screen",
+      "mustNot": "claim Google Play readiness without checking Edge-to-Edge IME insets, foldable/tablet adaptive posture, process-death survival, and 16 KB alignment"
+    }
+  ],
+  "baseline": {
+    "withoutSkill": "locks portrait in AndroidManifest.xml, clips buttons under gesture navigation, loses state on background kill, and misses 16 KB native page alignment",
+    "withSkill": "delivers an adaptive Edge-to-Edge Compose flow with Predictive Back, Keystore security, SavedStateHandle survival, 200% font-scale resilience, and verified 16 KB Play Store compliance"
+  }
+}

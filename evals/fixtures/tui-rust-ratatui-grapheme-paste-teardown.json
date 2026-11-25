@@ -1,0 +1,44 @@
+{
+  "schemaVersion": 1,
+  "id": "tui-rust-ratatui-grapheme-paste-teardown",
+  "skill": "pixelcraft-tui",
+  "title": "Build a Rust Ratatui SSH log inspector with UAX #29 grapheme widths, DECSET 2004 bracketed paste, OSC 52 copy, and 6-step panic teardown",
+  "contextSnapshot": {
+    "surface": "Interactive terminal log inspector and filter prompt over SSH/tmux",
+    "platform": "Rust Ratatui + Crossterm",
+    "mode": "Explore",
+    "states": ["80x24 split pane", "multilingual CJK + Vietnamese diacritics + ZWJ emoji log lines", "multi-line filter paste", "OSC 52 remote clipboard copy", "piped --json | head -n 5 non-TTY mode", "panic/SIGINT teardown"],
+    "constraints": ["UAX #29 grapheme-cluster width calculation", "DECSET 2004 bracketed paste enabled", "clean SIGPIPE / EPIPE exit when piped", "complete 6-step terminal mode restoration on panic and signals"]
+  },
+  "prompt": "Create a Rust Ratatui log inspector used over SSH and tmux that renders multilingual logs (Vietnamese diacritics, Japanese CJK, ZWJ emoji), accepts pasted multi-line filter queries safely, copies selected entries to the local laptop clipboard, supports --json | head piping cleanly, and never corrupts the parent shell on crash or Ctrl-C.",
+  "expectedRouting": ["pixelcraft-tui", "references/ratatui.md", "references/terminal-protocols.md"],
+  "forbiddenBehaviors": [
+    "computes column widths with str::len() or chars().count() so CJK, ZWJ emoji, VS16, or NFD Vietnamese diacritics misalign table borders",
+    "leaves DECSET 2004 bracketed paste disabled so pasting multi-line text triggers premature Enter submissions",
+    "prints TUI ANSI chrome to piped stdout or panics with BrokenPipe on `| head -n 5`",
+    "restores only alternate screen on normal exit while leaking mouse tracking, bracketed paste, Kitty keyboard, or hidden cursor on panic"
+  ],
+  "rubricDimensions": [
+    {
+      "dimension": "Unicode grapheme geometry and paste/clipboard protocols",
+      "pass": "uses unicode-segmentation + unicode-width for UAX #29 grapheme column widths (plus --ascii fallback), enables DECSET 2004 bracketed paste, and emits OSC 52 clipboard sequences for SSH/tmux",
+      "fail": "counts bytes/code points, executes pasted newlines as Enter submits, or assumes local X11/Wayland clipboard access over SSH"
+    },
+    {
+      "dimension": "stream separation, SIGPIPE resilience, and 6-step teardown",
+      "pass": "routes interactive UI to TTY/stderr while keeping --json pure on stdout, exits 0/cleanly on BrokenPipe, and installs a panic + signal hook restoring ?1049l, mouse modes, ?2004l, ?2026l, Kitty keyboard, ?25h, and raw mode",
+      "fail": "pollutes piped stdout with ANSI codes, prints a panic backtrace on SIGPIPE, or leaves the user's shell unusable after a crash"
+    }
+  ],
+  "negativeControls": [
+    {
+      "name": "ASCII-only local terminal run",
+      "input": "cargo build succeeds and ASCII English log lines align at 120x40",
+      "mustNot": "claim terminal safety without verifying CJK/ZWJ/diacritic widths, bracketed paste, NO_COLOR/pipe behavior via check-tui.mjs, and panic teardown"
+    }
+  ],
+  "baseline": {
+    "withoutSkill": "uses chars().count() breaking CJK/emoji borders, submits on pasted newlines, fails over SSH clipboard, panics on | head, and leaks raw/mouse modes on panic",
+    "withSkill": "ships a resilient Ratatui inspector with UAX #29 grapheme alignment, DECSET 2004 paste safety, OSC 52 copy, clean pipe/NO_COLOR behavior, and 6-step panic teardown"
+  }
+}

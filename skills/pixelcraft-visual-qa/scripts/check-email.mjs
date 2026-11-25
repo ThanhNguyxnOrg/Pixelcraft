@@ -5,15 +5,17 @@ import path from 'node:path';
 const GMAIL_CLIP_BYTES = 102 * 1024;
 
 function help() {
-  return `Usage: node check-email.mjs <email.html> [--plaintext FILE] [--json]
+  return `Usage: node check-email.mjs <email.html> [--plaintext FILE] [--headers FILE] [--json]
 
 Static cross-client HTML email verification script. Checks Gmail 102 KB clip limit,
 Outlook Word-engine unsafe CSS (flex, grid, position: fixed, CSS custom properties),
-<img> missing alt, layout <table> missing role="presentation", missing <title> / lang,
-and optional plaintext companion parity.
+<img> missing alt, image-only links/CTAs with empty alt="", under-padded preheader spacers,
+layout <table> missing role="presentation", missing <title> / lang, optional plaintext
+companion parity, and optional RFC 8058 One-Click List-Unsubscribe headers.
 
 Options:
   --plaintext FILE   Verify companion plaintext email exists, is non-empty, and has parity
+  --headers FILE     Verify promotional bulk headers (List-Unsubscribe + RFC 8058 One-Click POST)
   --json             Print machine-readable JSON output
   --help             Show this help`;
 }
@@ -90,7 +92,7 @@ function visibleText(html) {
 }
 
 function parseCli(args) {
-  const out = { help: false, json: false, plaintext: '', input: '' };
+  const out = { help: false, json: false, plaintext: '', headers: '', input: '' };
   for (let i = 0; i < args.length; i += 1) {
     const arg = args[i];
     if (arg === '--help' || arg === '-h') out.help = true;
@@ -99,6 +101,10 @@ function parseCli(args) {
       if (!args[i + 1]) throw new Error('--plaintext requires a file path');
       out.plaintext = args[++i];
     } else if (arg.startsWith('--plaintext=')) out.plaintext = arg.slice('--plaintext='.length);
+    else if (arg === '--headers') {
+      if (!args[i + 1]) throw new Error('--headers requires a file path');
+      out.headers = args[++i];
+    } else if (arg.startsWith('--headers=')) out.headers = arg.slice('--headers='.length);
     else if (arg.startsWith('-')) throw new Error(`unknown option: ${arg}`);
     else if (!out.input) out.input = arg;
     else throw new Error(`unexpected argument: ${arg}`);
@@ -106,7 +112,50 @@ function parseCli(args) {
   return out;
 }
 
-function inspectEmail(html, plaintextContent, plaintextProvided) {
+function inspectHeaders(rawHeaders) {
+  const issues = [];
+  const trimmed = (rawHeaders || '').trim();
+  let listUnsub = '';
+  let listUnsubPost = '';
+  if (trimmed.startsWith('{')) {
+    const obj = JSON.parse(trimmed);
+    for (const [k, v] of Object.entries(obj)) {
+      const lower = k.toLowerCase();
+      if (lower === 'list-unsubscribe') listUnsub = String(v || '');
+      else if (lower === 'list-unsubscribe-post') listUnsubPost = String(v || '');
+    }
+  } else {
+    const unfolded = trimmed.replace(/\r?\n[ \t]+/g, ' ');
+    for (const line of unfolded.split(/\r?\n/)) {
+      const m = /^([A-Za-z0-9-]+)\s*:\s*(.*)$/.exec(line);
+      if (!m) continue;
+      const lower = m[1].toLowerCase();
+      if (lower === 'list-unsubscribe') listUnsub = m[2].trim();
+      else if (lower === 'list-unsubscribe-post') listUnsubPost = m[2].trim();
+    }
+  }
+  if (!/https:\/\/[^\s>]+/i.test(listUnsub)) {
+    issues.push({
+      rule: 'missing-list-unsubscribe',
+      severity: 'P1',
+      line: 1,
+      message: 'Bulk/promotional headers lack a List-Unsubscribe header containing an https:// endpoint.',
+      fix: 'Add List-Unsubscribe: <https://example.com/unsubscribe?...> alongside optional mailto: fallback.',
+    });
+  }
+  if (!/\bList-Unsubscribe\s*=\s*One-Click\b/i.test(listUnsubPost)) {
+    issues.push({
+      rule: 'missing-one-click-unsubscribe',
+      severity: 'P1',
+      line: 1,
+      message: 'Missing RFC 8058 List-Unsubscribe-Post: List-Unsubscribe=One-Click header required by Gmail, Yahoo, and Outlook.com bulk sender rules.',
+      fix: 'Emit List-Unsubscribe-Post: List-Unsubscribe=One-Click and process unsubscribes within 48 hours without login walls.',
+    });
+  }
+  return issues;
+}
+
+function inspectEmail(html, plaintextContent, plaintextProvided, headersContent = '', headersProvided = false) {
   const findings = [];
   const add = (rule, severity, line, message, fix) => {
     findings.push({ rule, severity, line, message, fix });
@@ -179,6 +228,37 @@ function inspectEmail(html, plaintextContent, plaintextProvided) {
     }
   }
 
+  // Image-only <a> link/CTA with empty alt="" and no accessible label
+  const anchorRe = /<a\b([^>]*)>([\s\S]*?)<\/a\s*>/gi;
+  while ((m = anchorRe.exec(cleaned))) {
+    const aAttrs = m[1] || '';
+    const aInner = m[2] || '';
+    if (/\baria-label(?:ledby)?\s*=\s*["'][^"']+["']/i.test(aAttrs)) continue;
+    if (!/<img\b/i.test(aInner)) continue;
+    const textOnly = visibleText(aInner);
+    if (textOnly.length > 0) continue;
+    const imgs = [...aInner.matchAll(/<img\b[^>]*>/gi)].map((x) => x[0]);
+    const hasNonEmptyAlt = imgs.some((tag) => {
+      const altMatch = /\balt\s*=\s*(?:"([^"]*)"|'([^']*)')/i.exec(tag);
+      return Boolean(altMatch && (altMatch[1] ?? altMatch[2] ?? '').trim());
+    });
+    const allHaveAltAttr = imgs.every((tag) => /\balt\s*=/i.test(tag));
+    if (allHaveAltAttr && !hasNonEmptyAlt) {
+      add('image-only-link-empty-alt', 'P0', lineOf(html, m.index),
+        'Image-only <a> link/CTA uses empty alt="" with no text or aria-label, leaving blocked-image clients and screen readers with an unlabeled link.',
+        'Replace image-only buttons with a bulletproof HTML/VML text CTA, or provide descriptive alt text on the linked <img>.');
+    }
+  }
+
+  // Under-padded hidden preheader spacer (e.g., 3-5 repeats instead of 50+ repeats)
+  const spacerTokens = cleaned.match(/(?:&#847;|&#x0*34f;|&zwnj;|&#8204;|\u034f|\u200c)/gi) || [];
+  if (spacerTokens.length > 0 && spacerTokens.length < 20) {
+    const firstSpacerIdx = cleaned.search(/(?:&#847;|&#x0*34f;|&zwnj;|&#8204;|\u034f|\u200c)/i);
+    add('short-preheader-spacer', 'P2', lineOf(html, Math.max(0, firstSpacerIdx)),
+      `Hidden preheader spacer contains only ${spacerTokens.length} zero-width token(s); inbox previews (~120-140 chars) may still leak body chrome like "View in browser".`,
+      'Repeat the &#847;&zwnj;&nbsp; spacer sequence at least 50-90 times after preheader copy.');
+  }
+
   // Layout <table> missing role="presentation" (exclude semantic data tables containing <th> or <caption>)
   const tableRe = /<table\b([^>]*)>/gi;
   while ((m = tableRe.exec(cleaned))) {
@@ -220,11 +300,22 @@ function inspectEmail(html, plaintextContent, plaintextProvided) {
     }
   }
 
+  // Optional RFC 8058 One-Click List-Unsubscribe header check
+  let headersStatus = 'not-checked';
+  if (headersProvided) {
+    const headerIssues = inspectHeaders(headersContent);
+    for (const issue of headerIssues) {
+      add(issue.rule, issue.severity, issue.line, issue.message, issue.fix);
+    }
+    headersStatus = headerIssues.length === 0 ? 'pass' : 'fail';
+  }
+
   return {
     byteSize,
     limitBytes: GMAIL_CLIP_BYTES,
     withinGmailLimit: byteSize <= GMAIL_CLIP_BYTES,
     plaintextStatus,
+    headersStatus,
     findings,
   };
 }
@@ -247,7 +338,14 @@ function main() {
     plaintextContent = fs.readFileSync(ptPath, 'utf8');
   }
 
-  const result = inspectEmail(html, plaintextContent, Boolean(cli.plaintext));
+  let headersContent = '';
+  if (cli.headers) {
+    const hdrPath = path.resolve(cli.headers);
+    if (!fs.existsSync(hdrPath)) throw new Error(`headers file not found: ${cli.headers}`);
+    headersContent = fs.readFileSync(hdrPath, 'utf8');
+  }
+
+  const result = inspectEmail(html, plaintextContent, Boolean(cli.plaintext), headersContent, Boolean(cli.headers));
   const report = {
     file: cli.input,
     label: 'static',
@@ -259,7 +357,7 @@ function main() {
   if (cli.json) {
     console.log(JSON.stringify(report, null, 2));
   } else {
-    console.log(`check-email [${report.label}]: ${report.pass ? 'PASS' : 'FAIL'} (${report.byteSize}/${report.limitBytes} bytes, plaintext: ${report.plaintextStatus})`);
+    console.log(`check-email [${report.label}]: ${report.pass ? 'PASS' : 'FAIL'} (${report.byteSize}/${report.limitBytes} bytes, plaintext: ${report.plaintextStatus}, headers: ${report.headersStatus})`);
     for (const f of report.findings) {
       console.log(`  ${f.severity} line ${f.line} ${f.rule} — ${f.message}\n    fix: ${f.fix}`);
     }

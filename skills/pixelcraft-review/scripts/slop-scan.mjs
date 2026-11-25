@@ -864,6 +864,106 @@ function scanTodoStubs(lines, ext, add) {
   });
 }
 
+function hasMv3ExtensionManifest(file) {
+  let dir = path.dirname(file);
+  for (let depth = 0; depth < 3; depth += 1) {
+    const manifestPath = path.join(dir, 'manifest.json');
+    if (fs.existsSync(manifestPath)) {
+      try {
+        const raw = fs.readFileSync(manifestPath, 'utf8');
+        if (/"manifest_version"\s*:\s*3\b/.test(raw)) return true;
+      } catch {}
+    }
+    const parent = path.dirname(dir);
+    if (parent === dir) break;
+    dir = parent;
+  }
+  return false;
+}
+
+function stripAllowedImportantBlocks(cssText) {
+  const chars = cssText.split('');
+  const mediaRe = /@media\b([^{]*)\{/gi;
+  let m;
+  while ((m = mediaRe.exec(cssText))) {
+    const query = m[1] || '';
+    if (!/\b(?:prefers-reduced-motion|print|forced-colors|prefers-contrast)\b/i.test(query)) continue;
+    const openIdx = m.index + m[0].length - 1;
+    const closeIdx = findBraceEnd(cssText, openIdx);
+    if (closeIdx > openIdx) {
+      blankRange(chars, m.index, closeIdx);
+      mediaRe.lastIndex = closeIdx + 1;
+    }
+  }
+  return chars.join('').replace(/\[hidden\]\s*\{\s*display\s*:\s*none\s*!important\s*;?\s*\}/gi, (s) => s.replace(/[^\r\n]/g, ' '));
+}
+
+function scanImportantSprawl(file, text, add) {
+  const matches = [];
+  for (const seg of cssSegments(file, text)) {
+    const cleaned = stripAllowedImportantBlocks(maskCssComments(seg.text));
+    const re = /!important\b/gi;
+    let m;
+    while ((m = re.exec(cleaned))) {
+      matches.push(seg.offset + m.index);
+    }
+  }
+  if (matches.length >= 4) {
+    add('important-override-sprawl', 'P2', 2, lineOf(text, matches[0]),
+      `${matches.length} !important declarations outside @media print / reduced-motion / forced-colors`,
+      'Resolve specificity cleanly with CSS @layer, semantic tokens, or component state variants instead of !important overrides.');
+  }
+}
+
+function scanImeEnterGuard(masked, text, ext, add) {
+  const webScriptExts = new Set(['.js', '.jsx', '.ts', '.tsx', '.vue', '.svelte', '.astro', '.html']);
+  if (!webScriptExts.has(ext)) return;
+  if (/\bisComposing\b|\bkeyCode\s*(?:===?|!==?)\s*229\b|\bcompositionstart\b/.test(masked)) return;
+
+  // 1. Multiline/chat composer Enter-without-Shift submit pattern missing IME composition check
+  const shiftEnterRe = /(?:\.key\s*===\s*['"]Enter['"]\s*&&\s*![a-zA-Z0-9_$.]+\.shiftKey|![a-zA-Z0-9_$.]+\.shiftKey\s*&&\s*[a-zA-Z0-9_$.]+\.key\s*===\s*['"]Enter['"])/g;
+  let m = shiftEnterRe.exec(masked);
+  if (m) {
+    add('ime-enter-without-composing', 'P1', 4, lineOf(text, m.index), m[0].replace(/\s+/g, ' '),
+      'Guard Enter-to-submit handlers with `if (e.isComposing || e.keyCode === 229) return;` so CJK/Vietnamese Telex IME candidate confirmation does not submit prematurely.');
+    return;
+  }
+
+  // 2. <input> or <textarea> inline keydown Enter submit without isComposing check
+  const fieldRe = /<(?:input|textarea)(?=[\s/>])/gi;
+  while ((m = fieldRe.exec(masked))) {
+    const end = findTagEnd(masked, m.index + m[0].length);
+    if (end < 0) continue;
+    const raw = masked.slice(m.index, end + 1);
+    fieldRe.lastIndex = end + 1;
+    if (/\bonKeyDown\s*=\s*\{[\s\S]*?\.key\s*===\s*['"]Enter['"][\s\S]*?\}/i.test(raw)
+        || /(?:@keydown|v-on:keydown|on:keydown)\.enter(?![a-zA-Z0-9_-])\s*=/i.test(raw)) {
+      add('ime-enter-without-composing', 'P1', 4, lineOf(text, m.index), raw.replace(/\s+/g, ' '),
+        'Check `event.isComposing || event.keyCode === 229` before submitting on Enter so IME composition commit never fires premature submission.');
+      return;
+    }
+  }
+}
+
+function scanMv3RemoteCode(file, masked, text, ext, add) {
+  const extCandidateExts = new Set(['.html', '.js', '.jsx', '.ts', '.tsx', '.vue', '.svelte']);
+  if (!extCandidateExts.has(ext)) return;
+  const hasExtApi = /\b(?:chrome|browser)\.(?:runtime|storage|tabs|scripting|action|sidePanel|alarms|permissions|webNavigation)\b|\bdefine(?:Background|ContentScript)\s*\(/.test(masked);
+  if (!hasExtApi && !hasMv3ExtensionManifest(file)) return;
+
+  const remoteScriptTag = /<script\b[^>]*\bsrc\s*=\s*["'](?:https?:)?\/\/[^"']+["'][^>]*>/i.exec(masked);
+  if (remoteScriptTag) {
+    add('mv3-remote-script', 'P0', 5, lineOf(text, remoteScriptTag.index), remoteScriptTag[0].replace(/\s+/g, ' '),
+      'Bundle all executable scripts inside the extension package; Chrome Web Store Manifest V3 strictly rejects Remotely Hosted Code.');
+    return;
+  }
+  const remoteDynamicImport = /\bimport\s*\(\s*["'`]https?:\/\/[^"'`]+["'`]\s*\)/.exec(masked);
+  if (remoteDynamicImport) {
+    add('mv3-remote-script', 'P0', 5, lineOf(text, remoteDynamicImport.index), remoteDynamicImport[0].replace(/\s+/g, ' '),
+      'Do not dynamically import remote https:// modules in a Manifest V3 extension; bundle dependencies locally at build time.');
+  }
+}
+
 function scanFile(file, root) {
   const text = fs.readFileSync(file, 'utf8');
   const ext = path.extname(file);
@@ -881,6 +981,9 @@ function scanFile(file, root) {
 
   // Pre-comment-mask anti-laziness check for unfinished TODO/FIXME/ellipsis stubs.
   scanTodoStubs(lines, ext, add);
+  scanImportantSprawl(file, text, add);
+  scanImeEnterGuard(masked, text, ext, add);
+  scanMv3RemoteCode(file, masked, text, ext, add);
 
   // Focus scan is heuristic; live keyboard testing remains authoritative.
   let cssMotionMatch = null;

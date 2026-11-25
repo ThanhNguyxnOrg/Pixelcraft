@@ -9,8 +9,9 @@ function help() {
   return `Usage: node check-tui.mjs [--cols N] [--json] (--input FILE | -- <cmd ...>)
 
 Inspect captured TUI output or execute a terminal command under NO_COLOR=1 and a non-TTY pipe.
-Verifies zero ANSI escape leakage under NO_COLOR=1, visible line widths within --cols,
-clean terminal teardown sequences, and zero exit status.
+Verifies zero ANSI escape leakage under NO_COLOR=1, UAX #29 grapheme-cluster visible line widths
+within --cols, clean 6-step terminal mode teardown (alternate screen, cursor, bracketed paste,
+synchronized output, mouse tracking, Kitty keyboard), and zero exit status.
 
 Options:
   --cols N       Maximum visible column width (default: 80)
@@ -19,6 +20,8 @@ Options:
   -- <cmd ...>   Execute command with NO_COLOR=1, FORCE_COLOR=0, TERM=dumb, COLUMNS=<cols>
   --help         Show this help`;
 }
+
+const graphemeSegmenter = new Intl.Segmenter('en', { granularity: 'grapheme' });
 
 function isWideCodePoint(cp) {
   return (cp >= 0x1100 && cp <= 0x115f)
@@ -35,14 +38,44 @@ function isWideCodePoint(cp) {
     || (cp >= 0x30000 && cp <= 0x3fffd);
 }
 
-function visibleWidth(line) {
+function isZeroWidthCodePoint(cp) {
+  return cp <= 0x1f
+    || (cp >= 0x7f && cp <= 0x9f)
+    || cp === 0x200b || cp === 0x200c || cp === 0x200d || cp === 0xfeff
+    || (cp >= 0xfe00 && cp <= 0xfe0f)
+    || (cp >= 0xe0100 && cp <= 0xe01ef);
+}
+
+export function visibleWidth(line) {
   const stripped = line.replace(ansiRe, '').replace(/\r/g, '');
   let width = 0;
-  for (const ch of stripped) {
-    if (/\p{Mark}/u.test(ch)) continue;
-    const cp = ch.codePointAt(0);
-    if (cp === 0x200d || (cp >= 0xfe00 && cp <= 0xfe0f)) continue;
-    width += ch === '\t' ? 4 : isWideCodePoint(cp) ? 2 : 1;
+  for (const { segment } of graphemeSegmenter.segment(stripped)) {
+    if (segment === '\t') {
+      width += 4;
+      continue;
+    }
+    if (/^\p{Mark}+$/u.test(segment)) continue;
+    const hasTextPresentation = segment.includes('\ufe0e');
+    if (!hasTextPresentation && (
+      segment.includes('\u200d')
+      || segment.includes('\ufe0f')
+      || segment.includes('\u20e3')
+      || /\p{Regional_Indicator}{2}/u.test(segment)
+      || /\p{Emoji_Presentation}/u.test(segment)
+    )) {
+      width += 2;
+      continue;
+    }
+    let baseCp = -1;
+    for (const ch of segment) {
+      if (/\p{Mark}/u.test(ch)) continue;
+      const cp = ch.codePointAt(0);
+      if (isZeroWidthCodePoint(cp)) continue;
+      baseCp = cp;
+      break;
+    }
+    if (baseCp < 0) continue;
+    width += isWideCodePoint(baseCp) ? 2 : 1;
   }
   return width;
 }
@@ -95,28 +128,69 @@ function analyzeOutput(text, cols, exitCode, execError, signal) {
     });
   }
 
-  // Unclosed alternate screen or cursor hide teardown leaks
-  const altEnter = (text.match(/\x1b\[\?1049h/g) || []).length;
-  const altExit = (text.match(/\x1b\[\?1049l/g) || []).length;
-  if (altEnter > altExit) {
-    findings.push({
-      rule: 'teardown-leak',
+  // Unclosed terminal protocol modes (6-step teardown hygiene)
+  const modePairs = [
+    {
+      enter: /\x1b\[\?1049h/g,
+      exit: /\x1b\[\?1049l/g,
       severity: 'P0',
-      line: 1,
       message: 'Alternate screen buffer entered (\\x1b[?1049h) without matching exit (\\x1b[?1049l).',
-      fix: 'Restore the primary screen buffer on normal exit, errors, and SIGINT/SIGTERM.',
-    });
-  }
-  const cursorHide = (text.match(/\x1b\[\?25l/g) || []).length;
-  const cursorShow = (text.match(/\x1b\[\?25h/g) || []).length;
-  if (cursorHide > cursorShow) {
-    findings.push({
-      rule: 'teardown-leak',
+      fix: 'Restore the primary screen buffer on normal exit, errors, panics, and SIGINT/SIGTERM.',
+    },
+    {
+      enter: /\x1b\[\?25l/g,
+      exit: /\x1b\[\?25h/g,
       severity: 'P0',
-      line: 1,
       message: 'Cursor hidden (\\x1b[?25l) without matching restore (\\x1b[?25h).',
       fix: 'Always restore cursor visibility in terminal teardown handlers.',
-    });
+    },
+    {
+      enter: /\x1b\[\?2004h/g,
+      exit: /\x1b\[\?2004l/g,
+      severity: 'P0',
+      message: 'Bracketed paste mode enabled (\\x1b[?2004h) without matching reset (\\x1b[?2004l).',
+      fix: 'Disable DECSET 2004 bracketed paste on exit so the parent shell is not polluted with paste escape wrappers.',
+    },
+    {
+      enter: /\x1b\[\?2026h/g,
+      exit: /\x1b\[\?2026l/g,
+      severity: 'P1',
+      message: 'Synchronized output mode enabled (\\x1b[?2026h) without matching flush/reset (\\x1b[?2026l).',
+      fix: 'Close synchronized frame updates with \\x1b[?2026l before exiting so terminal rendering does not freeze.',
+    },
+    {
+      enter: /\x1b\[>\d*(?:;\d*)*u/g,
+      exit: /\x1b\[<\d*u/g,
+      severity: 'P0',
+      message: 'Kitty keyboard protocol pushed (\\x1b[>...u) without matching pop (\\x1b[<u).',
+      fix: 'Pop Kitty keyboard enhancement flags (\\x1b[<u) on exit and panic.',
+    },
+  ];
+  for (const mode of modePairs) {
+    const enterCount = (text.match(mode.enter) || []).length;
+    const exitCount = (text.match(mode.exit) || []).length;
+    if (enterCount > exitCount) {
+      findings.push({
+        rule: 'teardown-leak',
+        severity: mode.severity,
+        line: 1,
+        message: mode.message,
+        fix: mode.fix,
+      });
+    }
+  }
+  for (const code of ['1000', '1002', '1003', '1006']) {
+    const enterRe = new RegExp(`\\x1b\\[\\?${code}h`, 'g');
+    const exitRe = new RegExp(`\\x1b\\[\\?${code}l`, 'g');
+    if ((text.match(enterRe) || []).length > (text.match(exitRe) || []).length) {
+      findings.push({
+        rule: 'teardown-leak',
+        severity: 'P0',
+        line: 1,
+        message: `Mouse tracking mode (\\x1b[?${code}h) enabled without matching disable (\\x1b[?${code}l).`,
+        fix: 'Disable all mouse tracking modes (?1000l/?1002l/?1003l/?1006l) before returning control to the shell.',
+      });
+    }
   }
 
   const lines = text.split(/\r?\n/);
@@ -234,9 +308,14 @@ function main() {
   if (!report.pass) process.exitCode = 1;
 }
 
-try {
-  main();
-} catch (error) {
-  console.error(`check-tui: ${error.message}`);
-  process.exit(1);
+import { fileURLToPath } from 'node:url';
+
+const isEntrypoint = process.argv[1] && path.resolve(process.argv[1]) === fileURLToPath(import.meta.url);
+if (isEntrypoint) {
+  try {
+    main();
+  } catch (error) {
+    console.error(`check-tui: ${error.message}`);
+    process.exit(1);
+  }
 }

@@ -115,14 +115,52 @@ try {
   for (const expected of ['gmail-clip-risk', 'missing-lang', 'missing-title', 'outlook-unsafe-css', 'img-missing-alt', 'layout-table-missing-role', 'plaintext-empty']) {
     assert.ok(emailRules.has(expected), `missing email finding '${expected}': ${[...emailRules]}`);
   }
-  console.log('ok 3 - check-email.mjs catches Gmail 102KB clip, Outlook-unsafe CSS, missing alt/role/title/lang, and plaintext gaps');
 
-  // 4. check-tui.mjs: clean capture & live NO_COLOR command pass; ANSI leak, >80 col overflow, teardown leak, and nonzero exit fail
+  // Email Studio-Grade checks: image-only link empty alt, short preheader spacer, and --headers RFC 8058 One-Click
+  const promoEmail = path.join(tmp, 'promo-email.html');
+  const badHeaders = path.join(tmp, 'bad-headers.eml');
+  const goodHeaders = path.join(tmp, 'good-headers.eml');
+  fs.writeFileSync(promoEmail, `<!doctype html>
+<html lang="en">
+<head><title>Spring Release</title></head>
+<body>
+  <div style="display:none;max-height:0;overflow:hidden;">Preview copy &#847;&zwnj;&nbsp;&#847;&zwnj;&nbsp;</div>
+  <table role="presentation" width="600">
+    <tr><td><a href="https://example.com/buy"><img src="https://example.com/cta.png" alt=""></a></td></tr>
+  </table>
+</body>
+</html>`);
+  fs.writeFileSync(badHeaders, 'Subject: Spring Release\nList-Unsubscribe: <mailto:unsub@example.com>\n');
+  const promoFail = runScript('check-email.mjs', [promoEmail, '--headers', badHeaders, '--json']);
+  assert.equal(promoFail.status, 1, 'image-only CTA + short preheader + missing RFC 8058 headers must fail');
+  const promoRules = new Set(JSON.parse(promoFail.stdout).findings.map((f) => f.rule));
+  for (const expected of ['image-only-link-empty-alt', 'short-preheader-spacer', 'missing-list-unsubscribe', 'missing-one-click-unsubscribe']) {
+    assert.ok(promoRules.has(expected), `missing promo email finding '${expected}': ${[...promoRules]}`);
+  }
+
+  fs.writeFileSync(goodHeaders, 'List-Unsubscribe: <https://example.com/unsub?id=1>, <mailto:unsub@example.com>\nList-Unsubscribe-Post: List-Unsubscribe=One-Click\n');
+  const headerPass = runScript('check-email.mjs', [goodEmail, '--plaintext', goodText, '--headers', goodHeaders, '--json']);
+  assert.equal(headerPass.status, 0, headerPass.stderr || headerPass.stdout);
+  assert.equal(JSON.parse(headerPass.stdout).headersStatus, 'pass');
+  console.log('ok 3 - check-email.mjs catches Gmail 102KB clip, Outlook-unsafe CSS, image-only empty-alt CTAs, short preheaders, RFC 8058 headers, and plaintext gaps');
+
+  // 4. check-tui.mjs: clean capture & live NO_COLOR command pass; ZWJ/VS16/NFD grapheme width exact; ANSI/overflow/6-step teardown fail
   const goodTui = path.join(tmp, 'good-tui.txt');
-  fs.writeFileSync(goodTui, 'STATUS   SERVICE    LATENCY\nOK       billing    12ms\nOK       ledger     18ms\n');
-  const tuiPassInput = runScript('check-tui.mjs', ['--input', goodTui, '--cols', '80', '--json']);
+  // Family ZWJ emoji (2 cols) + Warning VS16 (2 cols) + NFD Vietnamese "Tiếng Việt" (10 cols) + CJK "日本" (4 cols)
+  const graphemeLine = '👨‍👩‍👧‍👦 ⚠️ Tie\u0302\u0301ng Vie\u0323\u0302t 日本';
+  fs.writeFileSync(goodTui, `STATUS   SERVICE    LATENCY\n${graphemeLine}\n`);
+  const tuiPassInput = runScript('check-tui.mjs', ['--input', goodTui, '--cols', '30', '--json']);
   assert.equal(tuiPassInput.status, 0, tuiPassInput.stderr || tuiPassInput.stdout);
-  assert.equal(JSON.parse(tuiPassInput.stdout).label, 'static');
+  const tuiGraphemeJson = JSON.parse(tuiPassInput.stdout);
+  assert.equal(tuiGraphemeJson.label, 'static');
+  assert.equal(tuiGraphemeJson.pass, true);
+
+  // Exact grapheme width check on ZWJ + VS16 + NFD + CJK line (2 + 1 + 2 + 1 + 10 + 1 + 4 = 21 cols)
+  const exactGraphemeFile = path.join(tmp, 'grapheme-exact.txt');
+  fs.writeFileSync(exactGraphemeFile, `${graphemeLine}\n`);
+  const exactRes = JSON.parse(runScript('check-tui.mjs', ['--input', exactGraphemeFile, '--cols', '21', '--json']).stdout);
+  assert.equal(exactRes.maxWidth, 21, `expected ZWJ+VS16+NFD+CJK line to equal 21 cols, got ${exactRes.maxWidth}`);
+  assert.equal(exactRes.pass, true);
 
   const tuiPassCmd = runScript('check-tui.mjs', [
     '--cols', '60', '--json', '--', process.execPath, '-e',
@@ -135,7 +173,7 @@ try {
 
   const tuiFailAnsiWidth = runScript('check-tui.mjs', [
     '--cols', '40', '--json', '--', process.execPath, '-e',
-    'process.stdout.write("\\x1b[?1049h\\x1b[31m" + "X".repeat(55) + "\\x1b[0m\\n"); process.exit(1);',
+    'process.stdout.write("\\x1b[?1049h\\x1b[?2004h\\x1b[?1006h\\x1b[>1u\\x1b[31m" + "X".repeat(55) + "\\x1b[0m\\n"); process.exit(1);',
   ]);
   assert.equal(tuiFailAnsiWidth.status, 1, 'leaking ANSI, overflow, teardown leak, and nonzero exit must fail');
   const tuiFailJson = JSON.parse(tuiFailAnsiWidth.stdout);
@@ -143,9 +181,13 @@ try {
   for (const expected of ['nonzero-exit', 'teardown-leak', 'ansi-leak-no-color', 'line-overflow']) {
     assert.ok(tuiRules.has(expected), `missing TUI finding '${expected}': ${[...tuiRules]}`);
   }
-  console.log('ok 4 - check-tui.mjs validates NO_COLOR ANSI hygiene, visible column width, teardown leaks, and exit status');
+  const teardownMsgs = tuiFailJson.findings.filter((f) => f.rule === 'teardown-leak').map((f) => f.message).join(' | ');
+  assert.match(teardownMsgs, /2004h/, 'should report unclosed bracketed paste ?2004h');
+  assert.match(teardownMsgs, /1006h/, 'should report unclosed mouse tracking ?1006h');
+  assert.match(teardownMsgs, /Kitty keyboard/, 'should report unclosed Kitty keyboard push');
+  console.log('ok 4 - check-tui.mjs validates UAX #29 grapheme widths (ZWJ/VS16/NFD/CJK), NO_COLOR, 6-step teardown leaks, and exit status');
 
-  // 5. check-pdf.mjs: valid tagged PDF with embedded font passes; untagged/non-PDF fails with honest static label
+  // 5. check-pdf.mjs: valid tagged PDF passes; subset font missing /ToUnicode fails; --prepress checks /TrimBox /BleedBox /OutputIntents
   const goodPdf = path.join(tmp, 'tagged.pdf');
   fs.writeFileSync(goodPdf, Buffer.from(
     '%PDF-1.7\n'
@@ -169,6 +211,38 @@ try {
   assert.equal(pdfPassJson.markers.embeddedFonts, true);
   assert.equal(pdfPassJson.pass, true);
 
+  const subsetNoUnicodePdf = path.join(tmp, 'subset-no-unicode.pdf');
+  fs.writeFileSync(subsetNoUnicodePdf, Buffer.from(
+    '%PDF-1.7\n'
+    + '1 0 obj << /Type /Catalog /StructTreeRoot 2 0 R /MarkInfo << /Marked true >> /Lang (vi-VN) /Title (Bao Cao) >> endobj\n'
+    + '3 0 obj << /Type /Page >> endobj\n'
+    + '4 0 obj << /Type /Font /Subtype /Type0 /BaseFont /ABCDEF+BeVietnamPro /Encoding /Identity-H /FontFile2 5 0 R >> endobj\n'
+    + '%%EOF\n',
+    'latin1',
+  ));
+  const subsetFail = runScript('check-pdf.mjs', [subsetNoUnicodePdf, '--json']);
+  assert.equal(subsetFail.status, 1, 'subset Type0 font without /ToUnicode must fail');
+  assert.ok(JSON.parse(subsetFail.stdout).findings.some((f) => f.rule === 'missing-tounicode-cmap'));
+
+  const prepressFail = runScript('check-pdf.mjs', [goodPdf, '--prepress', '--json']);
+  assert.equal(prepressFail.status, 1, '--prepress without TrimBox/BleedBox/OutputIntents/ToUnicode must fail');
+  const prepressRules = new Set(JSON.parse(prepressFail.stdout).findings.map((f) => f.rule));
+  for (const expected of ['missing-tounicode-cmap', 'missing-trim-box', 'missing-bleed-box', 'missing-output-intent']) {
+    assert.ok(prepressRules.has(expected), `missing prepress finding '${expected}': ${[...prepressRules]}`);
+  }
+
+  const prepressPassPdf = path.join(tmp, 'prepress-ok.pdf');
+  fs.writeFileSync(prepressPassPdf, Buffer.from(
+    '%PDF-1.7\n'
+    + '1 0 obj << /Type /Catalog /StructTreeRoot 2 0 R /MarkInfo << /Marked true >> /Lang (en) /Title (Brochure) /OutputIntents [9 0 R] >> endobj\n'
+    + '3 0 obj << /Type /Page /TrimBox [0 0 595 842] /BleedBox [-8.5 -8.5 603.5 850.5] >> endobj\n'
+    + '4 0 obj << /Type /Font /Subtype /Type0 /BaseFont /ABCDEF+Fraunces /ToUnicode 6 0 R /FontFile2 7 0 R >> endobj\n'
+    + '%%EOF\n',
+    'latin1',
+  ));
+  const prepressOk = runScript('check-pdf.mjs', [prepressPassPdf, '--prepress', '--json']);
+  assert.equal(prepressOk.status, 0, prepressOk.stderr || prepressOk.stdout);
+
   const untaggedPdf = path.join(tmp, 'untagged.pdf');
   fs.writeFileSync(untaggedPdf, Buffer.from('%PDF-1.4\n1 0 obj << /Type /Page >> endobj\n%%EOF\n', 'latin1'));
   const pdfFail = runScript('check-pdf.mjs', [untaggedPdf, '--json']);
@@ -183,7 +257,7 @@ try {
   const fakePdfRes = runScript('check-pdf.mjs', [fakePdf, '--json']);
   assert.equal(fakePdfRes.status, 1);
   assert.equal(JSON.parse(fakePdfRes.stdout).findings[0].rule, 'invalid-pdf-header');
-  console.log('ok 5 - check-pdf.mjs validates %PDF header, page counts, PDF/UA markers, and embedded fonts with static labeling');
+  console.log('ok 5 - check-pdf.mjs validates %PDF header, PDF/UA markers, embedded fonts, /ToUnicode CMap, and --prepress PDF/X gates');
 
   console.log('cross-platform QA CLI tests passed');
 } finally {
