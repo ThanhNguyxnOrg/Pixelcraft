@@ -2,6 +2,8 @@ import { MotionConfig } from "motion/react";
 import { useRef, useState } from "react";
 import { Footer, Header } from "./components/Chrome";
 import { Authority } from "./components/Authority";
+import { Blueprint } from "./components/Blueprint";
+import { CommandPalette } from "./components/CommandPalette";
 import { Faq } from "./components/Faq";
 import { Floor } from "./components/Floor";
 import { Masthead } from "./components/Hero";
@@ -30,11 +32,13 @@ export default function App() {
           className="min-h-screen bg-void text-ink"
         >
           <Header />
+          <CommandPalette />
           <main id="main">
             <Masthead />
             <MotionDemos />
             <Gallery />
             <Loop />
+            <Blueprint />
             <Authority />
             <Receipt />
             <Tools />

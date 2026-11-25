@@ -3,101 +3,2653 @@
 <head>
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width, initial-scale=1">
-<title>Halden Roasters (with Pixelcraft)</title>
+<title>Halden Roasters — Lot 214 Huila Washed Caturra · Roast Telemetry &amp; Direct Drop</title>
+<meta name="description" content="Single-origin specialty coffee roasted Tuesday on a 12 kg Loring S15 and delivered Friday. Inspect Lot 214 bean-temperature and declining rate-of-rise telemetry, dial burr microns, and reserve 250 g.">
+<meta property="og:title" content="Halden Roasters — Lot 214 · Huila, Colombia · Washed Caturra">
+<meta property="og:description" content="Roasted Tuesday. On your counter Friday. Live roast-curve telemetry, brew-water &amp; micron dialer, farm-gate FOB ledger, and 250 g bag reservation.">
+<meta property="og:type" content="product">
+<meta property="og:url" content="https://haldenroasters.example/drops/lot-214">
+<link rel="canonical" href="https://haldenroasters.example/drops/lot-214">
+<link rel="icon" href="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 32 32'%3E%3Crect width='32' height='32' fill='%2316120e'/%3E%3Ccircle cx='16' cy='16' r='7' fill='%23e9a23b'/%3E%3C/svg%3E">
 <link rel="stylesheet" href="../../fonts/gallery.css">
+<script type="application/ld+json">
+{
+  "@context": "https://schema.org",
+  "@graph": [
+    {
+      "@type": "Organization",
+      "@id": "https://haldenroasters.example/#roastery",
+      "name": "Halden Roasters",
+      "url": "https://haldenroasters.example",
+      "description": "Illustrative small-batch specialty coffee roastery publishing full drum telemetry and farm-gate FOB pricing."
+    },
+    {
+      "@type": "Product",
+      "name": "Lot 214 · Huila, Colombia · Washed Caturra (250 g)",
+      "sku": "HR-214-250G",
+      "brand": { "@id": "https://haldenroasters.example/#roastery" },
+      "description": "Grown at 1,850 m in Acevedo, Huila and roasted light to 206.5°C (15.5% development ratio) for raw panela, crisp red apple, and pink pomelo.",
+      "offers": {
+        "@type": "Offer",
+        "priceCurrency": "USD",
+        "price": "18.00",
+        "availability": "https://schema.org/LimitedAvailability",
+        "url": "https://haldenroasters.example/drops/lot-214#allocation"
+      }
+    }
+  ]
+}
+</script>
 <style>
   :root {
-    --roast: #16120e; --roast-2: #1f1912; --rule: #3a2f22;
-    --ink: #efe6d6; --ink-dim: #b2a68e; --amber: #e9a23b; --on-amber: #16120e;
+    --roast: #16120e;
+    --roast-2: #1f1912;
+    --roast-3: #282017;
+    --roast-elevated: #231c14;
+    --roast-well: #110e0a;
+    --rule: #3a2f22;
+    --rule-strong: #534330;
+    --ink: #efe6d6;
+    --ink-dim: #b2a68e;
+    --ink-muted: #998c74;
+    --amber: #e9a23b;
+    --amber-bright: #f4b659;
+    --amber-tint: rgba(233, 162, 59, 0.13);
+    --amber-tint-strong: rgba(233, 162, 59, 0.24);
+    --on-amber: #16120e;
+    --copper: #d97724;
+    --copper-tint: rgba(217, 119, 36, 0.16);
+    --leaf: #8cc49a;
+    --leaf-tint: rgba(140, 196, 154, 0.14);
+    --alert: #eb8672;
+    --alert-tint: rgba(235, 134, 114, 0.14);
+    --grid-stroke: #33291d;
+    --dev-zone: rgba(233, 162, 59, 0.09);
     --display: "Barlow Condensed", "Arial Narrow", sans-serif;
-    --body: "Work Sans", system-ui, sans-serif;
+    --body: "Work Sans", system-ui, -apple-system, sans-serif;
     --data: "IBM Plex Mono", ui-monospace, monospace;
   }
-  * { box-sizing: border-box; }
-  body { margin: 0; background: var(--roast); color: var(--ink); font-family: var(--body); min-height: 100vh; display: flex; flex-direction: column; }
-  a { color: inherit; }
-  a:focus-visible { outline: 3px solid var(--amber); outline-offset: 3px; }
-  header { display: flex; justify-content: space-between; align-items: baseline; padding: 22px 64px; border-bottom: 1px solid var(--rule); font-family: var(--data); font-size: 13px; color: var(--ink-dim); gap: 24px; }
-  header strong { font-family: var(--display); font-size: 26px; letter-spacing: .06em; color: var(--ink); font-weight: 800; }
-  nav { display: flex; flex-wrap: wrap; gap: 28px; }
-  nav a { text-decoration: none; }
-  nav a:hover { color: var(--ink); text-decoration: underline; text-underline-offset: 4px; }
-  main { flex: 1; display: grid; grid-template-columns: 1.05fr 1fr; grid-template-rows: 1fr auto; gap: 36px 64px; padding: 40px 64px 32px; align-items: center; }
-  .lot { font-family: var(--data); font-size: 13px; color: var(--amber); margin: 0; }
-  h1 { font-family: var(--display); font-weight: 800; text-transform: uppercase; font-size: clamp(56px, 6.4vw, 94px); line-height: .88; margin: 16px 0 22px; max-width: 9.5em; letter-spacing: -.005em; }
-  .lede { font-size: 18px; line-height: 1.55; color: var(--ink-dim); max-width: 44ch; margin: 0 0 28px; }
-  .cta { display: inline-flex; align-items: center; gap: 14px; background: var(--amber); color: var(--on-amber); padding: 16px 26px; font-weight: 700; font-size: 17px; text-decoration: none; }
-  .cta:focus-visible { outline: 3px solid var(--ink); outline-offset: 3px; }
-  .cta span { font-family: var(--data); font-weight: 600; font-variant-numeric: tabular-nums; }
-  .note { font-family: var(--data); font-size: 13px; color: var(--ink-dim); margin: 16px 0 0; }
-  figure { margin: 0; }
-  svg { width: 100%; height: auto; display: block; }
-  figcaption { font-family: var(--data); font-size: 12px; color: var(--ink-dim); margin-top: 10px; }
-  dl { grid-column: 1 / -1; display: grid; grid-template-columns: repeat(4, 1fr); margin: 0; border-top: 1px solid var(--rule); }
-  dl div { padding: 20px 24px 8px; border-inline-end: 1px solid var(--rule); }
-  dl div:first-child { padding-inline-start: 0; }
-  dl div:last-child { border-inline-end: 0; }
-  dt { font-family: var(--data); font-size: 12px; color: var(--ink-dim); text-transform: uppercase; letter-spacing: .08em; }
-  dd { margin: 8px 0 0; font-family: var(--display); font-size: 30px; font-weight: 600; color: var(--ink); }
-  @media (max-width: 900px) {
-    header { padding: 18px 24px; flex-direction: column; gap: 12px; }
-    main { grid-template-columns: 1fr; padding: 28px 24px 32px; gap: 28px; }
-    dl { grid-template-columns: repeat(2, 1fr); }
-    dl div { padding: 16px 12px; border-inline-end: 0; border-bottom: 1px solid var(--rule); }
+
+  *, *::before, *::after {
+    box-sizing: border-box;
+  }
+
+  html {
+    background: var(--roast);
+    color: var(--ink);
+    scroll-behavior: smooth;
+  }
+
+  body {
+    margin: 0;
+    background: var(--roast);
+    color: var(--ink);
+    font-family: var(--body);
+    font-size: 16px;
+    line-height: 1.5;
+    min-height: 100vh;
+    overflow-x: clip;
+    -webkit-font-smoothing: antialiased;
+  }
+
+  a {
+    color: inherit;
+  }
+
+  button, input, select {
+    font: inherit;
+    color: inherit;
+  }
+
+  button {
+    cursor: pointer;
+  }
+
+  :focus-visible {
+    outline: 3px solid var(--amber);
+    outline-offset: 3px;
+  }
+
+  .cta:focus-visible,
+  .btn-amber:focus-visible {
+    outline: 3px solid var(--ink);
+    outline-offset: 3px;
+  }
+
+  .skip-link {
+    position: absolute;
+    top: -120px;
+    inset-inline-start: 16px;
+    z-index: 100;
+    background: var(--amber);
+    color: var(--on-amber);
+    font-family: var(--data);
+    font-size: 13px;
+    font-weight: 600;
+    padding: 10px 16px;
+    text-decoration: none;
+  }
+
+  .skip-link:focus {
+    top: 12px;
+  }
+
+  .sr-only {
+    position: absolute;
+    width: 1px;
+    height: 1px;
+    padding: 0;
+    margin: -1px;
+    overflow: hidden;
+    clip: rect(0, 0, 0, 0);
+    white-space: nowrap;
+    border: 0;
+  }
+
+  .tabular {
+    font-family: var(--data);
+    font-variant-numeric: tabular-nums;
+  }
+
+  /* Masthead */
+  .site-header {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    flex-wrap: wrap;
+    padding: 12px 48px;
+    border-bottom: 1px solid var(--rule);
+    background: var(--roast);
+    gap: 12px 18px;
+  }
+
+  .brand-cluster {
+    display: flex;
+    align-items: center;
+    flex-wrap: wrap;
+    gap: 12px;
+  }
+
+  .brand-mark {
+    font-family: var(--display);
+    font-size: 25px;
+    font-weight: 800;
+    letter-spacing: 0.06em;
+    color: var(--ink);
+    text-decoration: none;
+    line-height: 1;
+  }
+
+  .roastery-stamp {
+    font-family: var(--data);
+    font-size: 10.5px;
+    color: var(--ink-dim);
+    letter-spacing: 0.04em;
+    text-transform: uppercase;
+    padding: 3px 7px;
+    border: 1px solid var(--rule);
+    background: var(--roast-2);
+  }
+
+  .lot-switcher {
+    display: flex;
+    align-items: center;
+    flex-wrap: wrap;
+    gap: 6px;
+  }
+
+  .lot-pill {
+    background: var(--roast-2);
+    border: 1px solid var(--rule);
+    color: var(--ink-dim);
+    padding: 5px 9px;
+    font-family: var(--data);
+    font-size: 11.5px;
+    line-height: 1.2;
+    display: inline-flex;
+    align-items: center;
+    gap: 6px;
+    transition: border-color 140ms ease, background-color 140ms ease, color 140ms ease;
+  }
+
+  .lot-pill:hover {
+    border-color: var(--rule-strong);
+    color: var(--ink);
+  }
+
+  .lot-pill[aria-pressed="true"] {
+    background: var(--amber-tint);
+    border-color: var(--amber);
+    color: var(--ink);
+  }
+
+  .lot-pill .status-dot {
+    width: 7px;
+    height: 7px;
+    background: var(--amber);
+    display: inline-block;
+    flex-shrink: 0;
+  }
+
+  .lot-pill[data-lot-state="upcoming"] .status-dot {
+    background: transparent;
+    border: 1.5px solid var(--ink-dim);
+  }
+
+  .lot-pill[data-lot-state="archived"] .status-dot {
+    background: var(--ink-muted);
+    border-radius: 50%;
+  }
+
+  .primary-nav {
+    display: flex;
+    flex-wrap: wrap;
+    align-items: center;
+    gap: 16px;
+    font-family: var(--data);
+    font-size: 12px;
+    color: var(--ink-dim);
+  }
+
+  .primary-nav a {
+    text-decoration: none;
+    padding-block: 4px;
+  }
+
+  .primary-nav a:hover {
+    color: var(--ink);
+    text-decoration: underline;
+    text-underline-offset: 4px;
+  }
+
+  /* Above-the-fold 1440x900 Stage */
+  .dossier-shell {
+    max-width: 1440px;
+    margin-inline: auto;
+  }
+
+  .lead-stage {
+    display: grid;
+    grid-template-columns: minmax(0, 0.96fr) minmax(0, 1.14fr);
+    grid-template-rows: 1fr auto;
+    gap: 18px 48px;
+    padding: 20px 48px 16px;
+    align-items: center;
+    min-height: calc(900px - 56px);
+    border-bottom: 1px solid var(--rule);
+  }
+
+  .editorial-col {
+    display: flex;
+    flex-direction: column;
+    align-items: flex-start;
+  }
+
+  .lot-meta-row {
+    display: flex;
+    flex-wrap: wrap;
+    align-items: center;
+    gap: 10px;
+    margin-bottom: 10px;
+  }
+
+  .lot {
+    font-family: var(--data);
+    font-size: 13px;
+    color: var(--amber);
+    margin: 0;
+    letter-spacing: 0.02em;
+  }
+
+  .bag-counter {
+    font-family: var(--data);
+    font-size: 11px;
+    color: var(--leaf);
+    background: var(--leaf-tint);
+    border: 1px solid var(--leaf);
+    padding: 2px 8px;
+    font-variant-numeric: tabular-nums;
+  }
+
+  .bag-counter[data-tone="archive"] {
+    color: var(--ink-dim);
+    background: var(--roast-2);
+    border-color: var(--rule-strong);
+  }
+
+  h1 {
+    font-family: var(--display);
+    font-weight: 800;
+    text-transform: uppercase;
+    font-size: clamp(48px, 5.7vw, 84px);
+    line-height: 0.89;
+    margin: 4px 0 18px;
+    max-width: 9.8em;
+    letter-spacing: -0.005em;
+  }
+
+  .lede {
+    font-size: 17px;
+    line-height: 1.52;
+    color: var(--ink-dim);
+    max-width: 46ch;
+    margin: 0 0 22px;
+  }
+
+  .action-bar {
+    display: flex;
+    flex-wrap: wrap;
+    align-items: center;
+    gap: 14px;
+  }
+
+  .cta {
+    display: inline-flex;
+    align-items: center;
+    gap: 14px;
+    background: var(--amber);
+    color: var(--on-amber);
+    padding: 14px 24px;
+    font-weight: 700;
+    font-size: 16px;
+    text-decoration: none;
+    border: 1px solid var(--amber);
+    transition: background-color 140ms ease;
+  }
+
+  .cta:hover {
+    background: var(--amber-bright);
+  }
+
+  .cta span {
+    font-family: var(--data);
+    font-weight: 600;
+    font-variant-numeric: tabular-nums;
+    padding-inline-start: 12px;
+    border-inline-start: 1px solid rgba(22, 18, 14, 0.28);
+  }
+
+  .secondary-jump {
+    display: inline-flex;
+    align-items: center;
+    gap: 8px;
+    padding: 14px 18px;
+    border: 1px solid var(--rule-strong);
+    background: var(--roast-2);
+    color: var(--ink);
+    font-family: var(--data);
+    font-size: 13px;
+    text-decoration: none;
+    transition: border-color 140ms ease, background-color 140ms ease;
+  }
+
+  .secondary-jump:hover {
+    border-color: var(--amber);
+    background: var(--roast-3);
+  }
+
+  .note {
+    font-family: var(--data);
+    font-size: 12px;
+    color: var(--ink-dim);
+    margin: 14px 0 0;
+    line-height: 1.5;
+  }
+
+  /* Telemetry Panel */
+  .telemetry-card {
+    margin: 0;
+    background: var(--roast-2);
+    border: 1px solid var(--rule);
+    padding: 16px 18px 14px;
+    display: flex;
+    flex-direction: column;
+    gap: 12px;
+  }
+
+  .telemetry-header {
+    display: flex;
+    justify-content: space-between;
+    align-items: baseline;
+    flex-wrap: wrap;
+    gap: 8px 16px;
+    padding-bottom: 10px;
+    border-bottom: 1px solid var(--rule);
+  }
+
+  .batch-code {
+    font-family: var(--data);
+    font-size: 11px;
+    color: var(--ink-dim);
+    text-transform: uppercase;
+    letter-spacing: 0.06em;
+  }
+
+  .telemetry-kpis {
+    display: grid;
+    grid-template-columns: repeat(4, minmax(0, 1fr));
+    gap: 8px;
+  }
+
+  .kpi-cell {
+    background: var(--roast);
+    border: 1px solid var(--rule);
+    padding: 7px 10px;
+  }
+
+  .kpi-label {
+    display: block;
+    font-family: var(--data);
+    font-size: 10px;
+    text-transform: uppercase;
+    letter-spacing: 0.06em;
+    color: var(--ink-dim);
+  }
+
+  .kpi-val {
+    display: block;
+    font-family: var(--data);
+    font-size: 15px;
+    font-weight: 500;
+    color: var(--ink);
+    font-variant-numeric: tabular-nums;
+    margin-top: 2px;
+  }
+
+  .kpi-val.amber {
+    color: var(--amber);
+  }
+
+  .phase-strip {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 6px;
+  }
+
+  .phase-btn {
+    flex: 1 1 auto;
+    background: var(--roast);
+    border: 1px solid var(--rule);
+    color: var(--ink-dim);
+    font-family: var(--data);
+    font-size: 11px;
+    padding: 6px 8px;
+    text-align: start;
+    font-variant-numeric: tabular-nums;
+    transition: border-color 120ms ease, background-color 120ms ease, color 120ms ease;
+  }
+
+  .phase-btn:hover {
+    border-color: var(--rule-strong);
+    color: var(--ink);
+  }
+
+  .phase-btn[aria-pressed="true"] {
+    background: var(--amber-tint);
+    border-color: var(--amber);
+    color: var(--ink);
+  }
+
+  .phase-btn strong {
+    display: block;
+    font-weight: 500;
+    color: var(--ink);
+  }
+
+  .curve-wrap {
+    position: relative;
+    background: var(--roast-well);
+    border: 1px solid var(--rule);
+    padding: 8px 10px 4px;
+  }
+
+  .curve-svg {
+    width: 100%;
+    height: auto;
+    display: block;
+    cursor: crosshair;
+    touch-action: pan-y;
+  }
+
+  .scrubber-row {
+    display: grid;
+    grid-template-columns: auto 1fr auto;
+    align-items: center;
+    gap: 12px;
+    padding-top: 2px;
+  }
+
+  .scrubber-label {
+    font-family: var(--data);
+    font-size: 11px;
+    color: var(--ink-dim);
+    text-transform: uppercase;
+    letter-spacing: 0.05em;
+  }
+
+  input[type="range"] {
+    width: 100%;
+    accent-color: var(--amber);
+    background: transparent;
+    cursor: pointer;
+    margin: 0;
+  }
+
+  .chemistry-readout {
+    display: flex;
+    justify-content: space-between;
+    align-items: baseline;
+    gap: 12px;
+    font-family: var(--data);
+    font-size: 12px;
+    color: var(--ink-dim);
+    background: var(--roast);
+    border: 1px solid var(--rule);
+    padding: 8px 12px;
+  }
+
+  .chemistry-readout strong {
+    color: var(--amber);
+    font-weight: 500;
+    white-space: nowrap;
+  }
+
+  /* 4-column Spec Strip inside 1440x900 */
+  .origin-strip {
+    grid-column: 1 / -1;
+    display: grid;
+    grid-template-columns: repeat(4, minmax(0, 1fr));
+    margin: 0;
+    border-top: 1px solid var(--rule);
+  }
+
+  .origin-strip > div {
+    padding: 14px 20px 4px;
+    border-inline-end: 1px solid var(--rule);
+  }
+
+  .origin-strip > div:first-child {
+    padding-inline-start: 0;
+  }
+
+  .origin-strip > div:last-child {
+    border-inline-end: 0;
+  }
+
+  .origin-strip dt {
+    font-family: var(--data);
+    font-size: 11px;
+    color: var(--ink-dim);
+    text-transform: uppercase;
+    letter-spacing: 0.08em;
+  }
+
+  .origin-strip dd {
+    margin: 4px 0 0;
+    font-family: var(--display);
+    font-size: 27px;
+    font-weight: 600;
+    line-height: 1.05;
+    color: var(--ink);
+  }
+
+  .origin-strip dd small {
+    display: block;
+    font-family: var(--data);
+    font-size: 11px;
+    font-weight: 400;
+    color: var(--ink-dim);
+    margin-top: 3px;
+  }
+
+  /* Below-the-fold Dossier Sections */
+  .dossier-section {
+    padding: 56px 48px;
+    border-bottom: 1px solid var(--rule);
+  }
+
+  .section-head {
+    display: flex;
+    justify-content: space-between;
+    align-items: flex-end;
+    flex-wrap: wrap;
+    gap: 16px 32px;
+    margin-bottom: 32px;
+    padding-bottom: 18px;
+    border-bottom: 1px solid var(--rule);
+  }
+
+  .section-kicker {
+    font-family: var(--data);
+    font-size: 12px;
+    color: var(--amber);
+    text-transform: uppercase;
+    letter-spacing: 0.08em;
+    margin: 0 0 6px;
+  }
+
+  .section-title {
+    font-family: var(--display);
+    font-size: clamp(34px, 3.6vw, 48px);
+    font-weight: 800;
+    text-transform: uppercase;
+    line-height: 0.96;
+    margin: 0;
+    letter-spacing: 0.01em;
+  }
+
+  .section-sub {
+    font-size: 15px;
+    color: var(--ink-dim);
+    max-width: 52ch;
+    margin: 0;
+  }
+
+  /* Section 2: Brew Recipe & Grind Dialer */
+  .brew-grid {
+    display: grid;
+    grid-template-columns: minmax(0, 0.92fr) minmax(0, 1.08fr);
+    gap: 32px;
+    align-items: start;
+  }
+
+  .control-box {
+    background: var(--roast-2);
+    border: 1px solid var(--rule);
+    padding: 24px;
+    display: flex;
+    flex-direction: column;
+    gap: 22px;
+  }
+
+  .method-tabs {
+    display: grid;
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+    gap: 8px;
+  }
+
+  .method-btn {
+    background: var(--roast);
+    border: 1px solid var(--rule);
+    padding: 12px 14px;
+    text-align: start;
+    transition: border-color 140ms ease, background-color 140ms ease;
+  }
+
+  .method-btn:hover {
+    border-color: var(--rule-strong);
+  }
+
+  .method-btn[aria-pressed="true"] {
+    background: var(--amber-tint);
+    border-color: var(--amber);
+  }
+
+  .method-btn strong {
+    display: block;
+    font-family: var(--display);
+    font-size: 21px;
+    font-weight: 600;
+    letter-spacing: 0.02em;
+    text-transform: uppercase;
+    color: var(--ink);
+  }
+
+  .method-btn span {
+    display: block;
+    font-family: var(--data);
+    font-size: 11px;
+    color: var(--ink-dim);
+    margin-top: 2px;
+  }
+
+  .dose-control-head {
+    display: flex;
+    justify-content: space-between;
+    align-items: baseline;
+    margin-bottom: 8px;
+  }
+
+  .dose-control-head label {
+    font-family: var(--data);
+    font-size: 12px;
+    text-transform: uppercase;
+    letter-spacing: 0.06em;
+    color: var(--ink-dim);
+  }
+
+  .dose-readout {
+    font-family: var(--display);
+    font-size: 28px;
+    font-weight: 800;
+    color: var(--amber);
+  }
+
+  .dose-presets {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 6px;
+    margin-top: 10px;
+  }
+
+  .dose-chip {
+    background: var(--roast);
+    border: 1px solid var(--rule);
+    padding: 5px 10px;
+    font-family: var(--data);
+    font-size: 12px;
+    color: var(--ink-dim);
+  }
+
+  .dose-chip[aria-pressed="true"] {
+    border-color: var(--amber);
+    color: var(--ink);
+    background: var(--amber-tint);
+  }
+
+  .burr-matrix {
+    display: grid;
+    grid-template-columns: repeat(3, minmax(0, 1fr));
+    gap: 8px;
+    padding-top: 14px;
+    border-top: 1px solid var(--rule);
+  }
+
+  .burr-cell {
+    background: var(--roast);
+    border: 1px solid var(--rule);
+    padding: 10px;
+  }
+
+  .burr-cell span {
+    display: block;
+    font-family: var(--data);
+    font-size: 10px;
+    color: var(--ink-dim);
+    text-transform: uppercase;
+  }
+
+  .burr-cell strong {
+    display: block;
+    font-family: var(--data);
+    font-size: 13px;
+    color: var(--ink);
+    margin-top: 4px;
+  }
+
+  .pour-schedule-card {
+    background: var(--roast-2);
+    border: 1px solid var(--rule);
+    padding: 24px;
+  }
+
+  .recipe-summary-strip {
+    display: grid;
+    grid-template-columns: repeat(4, minmax(0, 1fr));
+    gap: 10px;
+    margin-bottom: 20px;
+  }
+
+  .recipe-stat {
+    background: var(--roast);
+    border: 1px solid var(--rule);
+    padding: 10px 12px;
+  }
+
+  .recipe-stat span {
+    display: block;
+    font-family: var(--data);
+    font-size: 11px;
+    color: var(--ink-dim);
+    text-transform: uppercase;
+  }
+
+  .recipe-stat strong {
+    display: block;
+    font-family: var(--display);
+    font-size: 26px;
+    font-weight: 600;
+    color: var(--ink);
+    margin-top: 2px;
+  }
+
+  .pour-table {
+    width: 100%;
+    border-collapse: collapse;
+    font-family: var(--data);
+    font-size: 13px;
+  }
+
+  .pour-table th {
+    text-align: start;
+    font-size: 11px;
+    text-transform: uppercase;
+    letter-spacing: 0.06em;
+    color: var(--ink-dim);
+    padding: 8px 10px;
+    border-bottom: 1px solid var(--rule-strong);
+  }
+
+  .pour-table td {
+    padding: 11px 10px;
+    border-bottom: 1px solid var(--rule);
+    vertical-align: top;
+  }
+
+  .pour-table tr:last-child td {
+    border-bottom: 0;
+  }
+
+  .pour-stage-tag {
+    color: var(--amber);
+    font-weight: 500;
+  }
+
+  /* Section 3: Bag Allocation & Reservation */
+  .allocation-grid {
+    display: grid;
+    grid-template-columns: minmax(0, 1.12fr) minmax(0, 0.88fr);
+    gap: 32px;
+    align-items: start;
+  }
+
+  .alloc-form {
+    background: var(--roast-2);
+    border: 1px solid var(--rule);
+    padding: 26px;
+    display: flex;
+    flex-direction: column;
+    gap: 22px;
+  }
+
+  fieldset {
+    border: 0;
+    margin: 0;
+    padding: 0;
+    min-width: 0;
+  }
+
+  legend {
+    font-family: var(--data);
+    font-size: 12px;
+    text-transform: uppercase;
+    letter-spacing: 0.07em;
+    color: var(--amber);
+    margin-bottom: 10px;
+    padding: 0;
+  }
+
+  .choice-grid {
+    display: grid;
+    grid-template-columns: repeat(3, minmax(0, 1fr));
+    gap: 10px;
+  }
+
+  .choice-grid.two-up {
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+  }
+
+  .choice-label {
+    position: relative;
+    display: flex;
+    flex-direction: column;
+    justify-content: space-between;
+    gap: 6px;
+    background: var(--roast);
+    border: 1px solid var(--rule);
+    padding: 13px 14px;
+    cursor: pointer;
+    transition: border-color 140ms ease, background-color 140ms ease;
+  }
+
+  .choice-label:hover {
+    border-color: var(--rule-strong);
+  }
+
+  .choice-label:has(input:checked) {
+    background: var(--amber-tint);
+    border-color: var(--amber);
+  }
+
+  .choice-label:has(input:focus-visible) {
+    outline: 3px solid var(--amber);
+    outline-offset: 2px;
+  }
+
+  .choice-top {
+    display: flex;
+    justify-content: space-between;
+    align-items: baseline;
+    gap: 8px;
+  }
+
+  .choice-top input {
+    accent-color: var(--amber);
+    margin: 0;
+  }
+
+  .choice-title {
+    font-family: var(--display);
+    font-size: 21px;
+    font-weight: 600;
+    text-transform: uppercase;
+    color: var(--ink);
+  }
+
+  .unit-case {
+    text-transform: none;
+  }
+
+  .choice-price {
+    font-family: var(--data);
+    font-size: 14px;
+    font-weight: 500;
+    color: var(--amber);
+    font-variant-numeric: tabular-nums;
+  }
+
+  .choice-desc {
+    font-family: var(--data);
+    font-size: 11px;
+    color: var(--ink-dim);
+  }
+
+  .field-row {
+    display: grid;
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+    gap: 14px;
+  }
+
+  .field-group {
+    display: flex;
+    flex-direction: column;
+    gap: 6px;
+  }
+
+  .field-group label {
+    font-family: var(--data);
+    font-size: 12px;
+    color: var(--ink-dim);
+  }
+
+  .text-input,
+  .select-input {
+    width: 100%;
+    background: var(--roast);
+    border: 1px solid var(--rule-strong);
+    color: var(--ink);
+    padding: 11px 12px;
+    font-family: var(--data);
+    font-size: 13px;
+  }
+
+  .text-input[aria-invalid="true"] {
+    border-color: var(--alert);
+    background: var(--alert-tint);
+  }
+
+  .field-error {
+    font-family: var(--data);
+    font-size: 12px;
+    color: var(--alert);
+    margin: 0;
+  }
+
+  .dispatch-ledger {
+    background: var(--roast-2);
+    border: 1px solid var(--rule);
+    padding: 26px;
+    display: flex;
+    flex-direction: column;
+    gap: 18px;
+  }
+
+  .ledger-heading {
+    display: flex;
+    justify-content: space-between;
+    align-items: baseline;
+    padding-bottom: 12px;
+    border-bottom: 1px solid var(--rule);
+  }
+
+  .ledger-heading h3 {
+    font-family: var(--display);
+    font-size: 28px;
+    text-transform: uppercase;
+    margin: 0;
+  }
+
+  .timeline-steps {
+    display: grid;
+    grid-template-columns: repeat(3, minmax(0, 1fr));
+    gap: 8px;
+  }
+
+  .step-box {
+    background: var(--roast);
+    border: 1px solid var(--rule);
+    padding: 10px;
+  }
+
+  .step-box span {
+    display: block;
+    font-family: var(--data);
+    font-size: 10px;
+    color: var(--ink-dim);
+    text-transform: uppercase;
+  }
+
+  .step-box strong {
+    display: block;
+    font-family: var(--data);
+    font-size: 13px;
+    color: var(--ink);
+    margin-top: 3px;
+  }
+
+  .cost-lines {
+    display: flex;
+    flex-direction: column;
+    gap: 8px;
+    font-family: var(--data);
+    font-size: 13px;
+    border-top: 1px solid var(--rule);
+    border-bottom: 1px solid var(--rule);
+    padding-block: 14px;
+  }
+
+  .cost-line {
+    display: flex;
+    justify-content: space-between;
+    color: var(--ink-dim);
+  }
+
+  .cost-line.total {
+    font-size: 16px;
+    color: var(--ink);
+    font-weight: 500;
+    padding-top: 6px;
+    border-top: 1px dashed var(--rule-strong);
+  }
+
+  .btn-amber {
+    width: 100%;
+    background: var(--amber);
+    color: var(--on-amber);
+    border: 1px solid var(--amber);
+    padding: 15px 20px;
+    font-family: var(--body);
+    font-size: 16px;
+    font-weight: 700;
+    display: inline-flex;
+    justify-content: space-between;
+    align-items: center;
+    transition: background-color 140ms ease;
+  }
+
+  .btn-amber:hover {
+    background: var(--amber-bright);
+  }
+
+  .reservation-status {
+    background: var(--roast);
+    border: 1px solid var(--rule);
+    padding: 14px;
+    font-family: var(--data);
+    font-size: 12px;
+    color: var(--ink-dim);
+  }
+
+  .reservation-status[data-confirmed="true"] {
+    border-color: var(--leaf);
+    background: var(--leaf-tint);
+    color: var(--ink);
+  }
+
+  /* Section 4: Farm-Gate FOB & Cupping Ledger */
+  .specimen-notice {
+    background: var(--roast-2);
+    border: 1px solid var(--rule-strong);
+    padding: 12px 16px;
+    font-family: var(--data);
+    font-size: 12px;
+    color: var(--ink-dim);
+    margin-bottom: 26px;
+    display: flex;
+    flex-wrap: wrap;
+    justify-content: space-between;
+    gap: 8px 16px;
+  }
+
+  .specimen-notice strong {
+    color: var(--amber);
+    font-weight: 500;
+  }
+
+  .transparency-grid {
+    display: grid;
+    grid-template-columns: minmax(0, 1.08fr) minmax(0, 0.92fr);
+    gap: 32px;
+    align-items: start;
+  }
+
+  .fob-card,
+  .cupping-card {
+    background: var(--roast-2);
+    border: 1px solid var(--rule);
+    padding: 24px;
+  }
+
+  .fob-card h3,
+  .cupping-card h3 {
+    font-family: var(--display);
+    font-size: 26px;
+    text-transform: uppercase;
+    margin: 0 0 6px;
+  }
+
+  .stacked-bar {
+    display: flex;
+    height: 22px;
+    width: 100%;
+    border: 1px solid var(--rule-strong);
+    overflow: hidden;
+    margin: 16px 0 18px;
+    background: var(--roast);
+  }
+
+  .bar-seg-farm { background: var(--amber); width: 25.8%; }
+  .bar-seg-roast { background: var(--copper); width: 28.6%; }
+  .bar-seg-pack { background: var(--ink-dim); width: 18.1%; }
+  .bar-seg-freight { background: var(--leaf); width: 7.8%; }
+  .bar-seg-margin { background: var(--rule-strong); width: 19.7%; }
+
+  .fob-table {
+    width: 100%;
+    border-collapse: collapse;
+    font-family: var(--data);
+    font-size: 12px;
+  }
+
+  .fob-table th,
+  .fob-table td {
+    padding: 9px 8px;
+    border-bottom: 1px solid var(--rule);
+    text-align: start;
+  }
+
+  .fob-table th {
+    color: var(--ink-dim);
+    text-transform: uppercase;
+    font-size: 11px;
+  }
+
+  .fob-table td:last-child,
+  .fob-table th:last-child {
+    text-align: end;
+    font-variant-numeric: tabular-nums;
+  }
+
+  .score-list {
+    display: flex;
+    flex-direction: column;
+    gap: 11px;
+    margin-top: 16px;
+  }
+
+  .score-row {
+    display: grid;
+    grid-template-columns: 128px 1fr 44px;
+    align-items: center;
+    gap: 12px;
+    font-family: var(--data);
+    font-size: 12px;
+  }
+
+  .score-track {
+    height: 8px;
+    background: var(--roast);
+    border: 1px solid var(--rule);
+    position: relative;
+  }
+
+  .score-fill {
+    height: 100%;
+    background: var(--amber);
+  }
+
+  .water-spec {
+    margin-top: 20px;
+    padding-top: 14px;
+    border-top: 1px solid var(--rule);
+    font-family: var(--data);
+    font-size: 12px;
+    color: var(--ink-dim);
+  }
+
+  /* Colophon Footer */
+  .site-footer {
+    padding: 34px 48px 44px;
+    display: flex;
+    justify-content: space-between;
+    align-items: flex-start;
+    flex-wrap: wrap;
+    gap: 24px 40px;
+    font-family: var(--data);
+    font-size: 12px;
+    color: var(--ink-dim);
+  }
+
+  .footer-actions {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 12px;
+  }
+
+  .quiet-btn {
+    background: var(--roast-2);
+    border: 1px solid var(--rule-strong);
+    color: var(--ink);
+    padding: 8px 14px;
+    font-family: var(--data);
+    font-size: 12px;
+  }
+
+  .quiet-btn:hover {
+    border-color: var(--amber);
+  }
+
+  /* Responsive Breakpoints down to 320px */
+  @media (max-width: 1080px) {
+    .site-header {
+      padding: 14px 24px;
+    }
+    .lead-stage {
+      grid-template-columns: 1fr;
+      min-height: auto;
+      padding: 28px 24px;
+      gap: 28px;
+    }
+    .dossier-section {
+      padding: 40px 24px;
+    }
+    .brew-grid,
+    .allocation-grid,
+    .transparency-grid {
+      grid-template-columns: 1fr;
+    }
+    .origin-strip {
+      grid-template-columns: repeat(2, minmax(0, 1fr));
+    }
+    .origin-strip > div {
+      padding: 14px 12px;
+      border-inline-end: 0;
+      border-bottom: 1px solid var(--rule);
+    }
+    .site-footer {
+      padding: 28px 24px 36px;
+    }
+  }
+
+  @media (max-width: 640px) {
+    .site-header {
+      padding: 12px 16px;
+      gap: 12px;
+    }
+    .lead-stage,
+    .dossier-section,
+    .site-footer {
+      padding-inline: 16px;
+    }
+    .telemetry-card,
+    .control-box,
+    .pour-schedule-card,
+    .alloc-form,
+    .dispatch-ledger,
+    .fob-card,
+    .cupping-card {
+      padding: 16px;
+    }
+    .telemetry-kpis,
+    .recipe-summary-strip {
+      grid-template-columns: repeat(2, minmax(0, 1fr));
+    }
+    .method-tabs,
+    .choice-grid,
+    .choice-grid.two-up,
+    .field-row,
+    .burr-matrix,
+    .timeline-steps,
+    .origin-strip {
+      grid-template-columns: 1fr;
+    }
+    .scrubber-row {
+      grid-template-columns: 1fr;
+      gap: 6px;
+    }
+    .chemistry-readout {
+      flex-direction: column;
+      gap: 4px;
+    }
+    .score-row {
+      grid-template-columns: 104px 1fr 38px;
+      gap: 8px;
+    }
+    .pour-table th,
+    .pour-table td {
+      padding: 8px 6px;
+      font-size: 11px;
+    }
+  }
+
+  @media (prefers-reduced-motion: reduce) {
+    html {
+      scroll-behavior: auto;
+    }
+    *, *::before, *::after {
+      animation-duration: 0.01ms !important;
+      animation-iteration-count: 1 !important;
+      transition-duration: 0.01ms !important;
+    }
+  }
+
+  @media (forced-colors: active) {
+    .lot-pill[aria-pressed="true"],
+    .phase-btn[aria-pressed="true"],
+    .method-btn[aria-pressed="true"],
+    .dose-chip[aria-pressed="true"],
+    .choice-label:has(input:checked) {
+      outline: 2px solid SelectedItem;
+    }
+    .cta,
+    .btn-amber {
+      border: 2px solid ButtonText;
+    }
+  }
+
+  @media print {
+    body {
+      background: #ffffff;
+      color: #111111;
+    }
+    .skip-link,
+    .lot-switcher,
+    .primary-nav,
+    .scrubber-row,
+    .footer-actions {
+      display: none !important;
+    }
+    .lead-stage,
+    .dossier-section {
+      min-height: auto;
+      padding: 18px 0;
+      border-color: #cccccc;
+    }
+    .telemetry-card,
+    .control-box,
+    .pour-schedule-card,
+    .alloc-form,
+    .dispatch-ledger,
+    .fob-card,
+    .cupping-card {
+      background: #ffffff;
+      border: 1px solid #888888;
+    }
   }
 </style>
 </head>
 <body>
-  <header>
-    <strong>HALDEN ROASTERS</strong>
-    <nav aria-label="Primary">
+  <a class="skip-link" href="#this-week">Skip to main content</a>
+
+  <header class="site-header">
+    <div class="brand-cluster">
+      <a class="brand-mark" href="#this-week">HALDEN ROASTERS</a>
+      <span class="roastery-stamp">Loring S15 · Red Hook</span>
+    </div>
+
+    <div class="lot-switcher" role="group" aria-label="Switch roast lot">
+      <button type="button" class="lot-pill" data-lot="214" data-lot-state="live" aria-pressed="true">
+        <span class="status-dot" aria-hidden="true"></span>
+        <span>Lot 214 · Huila [Live]</span>
+      </button>
+      <button type="button" class="lot-pill" data-lot="215" data-lot-state="upcoming" aria-pressed="false">
+        <span class="status-dot" aria-hidden="true"></span>
+        <span>Lot 215 · Kirinyaga [Tue]</span>
+      </button>
+      <button type="button" class="lot-pill" data-lot="211" data-lot-state="archived" aria-pressed="false">
+        <span class="status-dot" aria-hidden="true"></span>
+        <span>Lot 211 · Sidama [Archive]</span>
+      </button>
+    </div>
+
+    <nav class="primary-nav" aria-label="Primary">
       <a href="#this-week">This week</a>
-      <a href="#archive">Archive</a>
-      <a href="#subscribe">Subscribe</a>
-      <a href="#wholesale">Wholesale</a>
+      <a href="#brew-dialer">Brew dialer</a>
+      <a href="#allocation">Reserve</a>
+      <a href="#farm-gate">FOB ledger</a>
     </nav>
   </header>
-  <main id="this-week">
-    <section>
-      <p class="lot">Lot 214 · Huila, Colombia · washed Caturra</p>
-      <h1>Roasted Tuesday. On your counter Friday.</h1>
-      <p class="lede">Grown at 1,850 m and roasted light to keep the panela and red apple. Sixty bags this week, then it is gone.</p>
-      <a class="cta" href="#reserve" id="reserve">Reserve 250 g <span>$18</span></a>
-      <p class="note">Ships Friday in compostable paper. Cancel a subscription in one click.</p>
+
+  <main id="this-week" class="dossier-shell">
+    <!-- Above-the-fold 1440x900 editorial + roast-telemetry stage -->
+    <section class="lead-stage" aria-labelledby="drop-headline">
+      <div class="editorial-col">
+        <div class="lot-meta-row">
+          <p class="lot" id="lot-kicker">Lot 214 · Huila, Colombia · washed Caturra</p>
+          <span class="bag-counter" id="lot-availability">LIVE · 38 / 60 BAGS LEFT</span>
+        </div>
+
+        <h1 id="drop-headline">Roasted Tuesday. On your counter Friday.</h1>
+
+        <p class="lede" id="lot-lede">
+          Grown at 1,850 m at Finca El Puente in Acevedo and dropped light at 206.5°C to keep raw panela, crisp red apple, and pink pomelo. Sixty numbered pouches from Tuesday’s 12 kg drum, then the lot closes.
+        </p>
+
+        <div class="action-bar">
+          <a class="cta" href="#allocation" id="reserve">Reserve 250 g <span id="cta-price">$18</span></a>
+          <a class="secondary-jump" href="#brew-dialer">Dial brew &amp; grind ↓</a>
+        </div>
+
+        <p class="note" id="lot-dispatch-note">
+          Roasts Tue 06:30 EST · Dispatches Wed in home-compostable valve kraft · Pause or cancel bi-weekly rotation in one click.
+        </p>
+      </div>
+
+      <figure class="telemetry-card" id="roast-telemetry">
+        <div class="telemetry-header">
+          <span class="batch-code" id="batch-code">BATCH HR-214-04 · 12.0 KG GREEN · MOISTURE 10.8%</span>
+          <span class="batch-code" id="dtr-badge">DEV RATIO 15.5% · AGTRON 68 WHOLE / 81 GROUND</span>
+        </div>
+
+        <div class="telemetry-kpis" aria-live="polite" aria-atomic="true">
+          <div class="kpi-cell">
+            <span class="kpi-label">Roast Clock</span>
+            <span class="kpi-val" id="kpi-time">9:42</span>
+          </div>
+          <div class="kpi-cell">
+            <span class="kpi-label">Bean Temp</span>
+            <span class="kpi-val amber" id="kpi-bt">206.5°C</span>
+          </div>
+          <div class="kpi-cell">
+            <span class="kpi-label">Rate of Rise</span>
+            <span class="kpi-val" id="kpi-ror">4.2°C/m</span>
+          </div>
+          <div class="kpi-cell">
+            <span class="kpi-label">Drum Airflow</span>
+            <span class="kpi-val" id="kpi-air">78 Pa</span>
+          </div>
+        </div>
+
+        <div class="phase-strip" role="group" aria-label="Roast curve milestones">
+          <button type="button" class="phase-btn" data-phase="0" aria-pressed="false">
+            <strong>Charge</strong>0:00 · 198°C
+          </button>
+          <button type="button" class="phase-btn" data-phase="1" aria-pressed="false">
+            <strong>Turning Point</strong>1:28 · 92°C
+          </button>
+          <button type="button" class="phase-btn" data-phase="2" aria-pressed="false">
+            <strong>Maillard</strong>4:40 · 154°C
+          </button>
+          <button type="button" class="phase-btn" data-phase="3" aria-pressed="false">
+            <strong>First Crack</strong>8:12 · 196°C
+          </button>
+          <button type="button" class="phase-btn" data-phase="4" aria-pressed="true">
+            <strong>Drop</strong>9:42 · 206.5°C
+          </button>
+        </div>
+
+        <div class="curve-wrap">
+          <svg class="curve-svg" id="roast-svg" viewBox="0 0 602 252" role="img" aria-labelledby="curve-t curve-d">
+            <title id="curve-t">Interactive bean-temperature and declining rate-of-rise telemetry curve for Lot 214</title>
+            <desc id="curve-d">Bean temperature charges at 198 degrees Celsius at 0:00, reaches a turning point of 92 degrees at 1:28, enters Maillard yellowing at 154 degrees at 4:40, cracks at 196 degrees at 8:12, and drops at 206.5 degrees at 9:42. Rate of rise peaks at 18.4 degrees per minute after turning point and declines smoothly to 4.2 degrees per minute at drop without flick or crash.</desc>
+
+            <!-- Development time shaded window (8:12 to 9:42) -->
+            <rect id="svg-dev-window" x="454" y="20" width="82" height="206" fill="var(--dev-zone)" />
+
+            <!-- Horizontal temperature & RoR gridlines -->
+            <g stroke="var(--grid-stroke)" stroke-width="1">
+              <line x1="48" x2="544" y1="26" y2="26"/>
+              <line x1="48" x2="544" y1="76" y2="76"/>
+              <line x1="48" x2="544" y1="126" y2="126"/>
+              <line x1="48" x2="544" y1="176" y2="176"/>
+              <line x1="48" x2="544" y1="226" y2="226"/>
+            </g>
+
+            <!-- Axes labels -->
+            <g font-family="IBM Plex Mono, monospace" font-size="10.5" fill="var(--ink-dim)">
+              <text x="6" y="30">215°</text>
+              <text x="6" y="80">175°</text>
+              <text x="6" y="130">135°</text>
+              <text x="6" y="180">95°</text>
+              <text x="550" y="80">18°/m</text>
+              <text x="550" y="150">10°/m</text>
+              <text x="550" y="220">3°/m</text>
+              <text x="48" y="244">0:00</text>
+              <text x="166" y="244">2:30</text>
+              <text x="276" y="244">4:40</text>
+              <text x="438" y="244">8:12</text>
+              <text x="514" y="244">9:42</text>
+            </g>
+
+            <!-- Declining Rate-of-Rise (RoR) dashed path -->
+            <path id="ror-path" d="M 122 72 C 204 104, 344 156, 536 212" fill="none" stroke="var(--ink-dim)" stroke-width="2.2" stroke-dasharray="6 5"/>
+
+            <!-- Bean Temperature (BT) primary amber curve -->
+            <path id="bt-path" d="M 48 48 C 76 154, 98 182, 120 180 C 166 175, 222 134, 276 102 C 344 68, 404 54, 454 50 C 488 43, 514 39, 536 36" fill="none" stroke="var(--amber)" stroke-width="3.5"/>
+
+            <!-- Milestone square markers -->
+            <g id="milestone-nodes" fill="var(--ink)" stroke="var(--roast)" stroke-width="1.5">
+              <rect x="44" y="44" width="8" height="8"/>
+              <rect x="116" y="176" width="8" height="8"/>
+              <rect x="272" y="98" width="8" height="8"/>
+              <rect x="450" y="46" width="8" height="8"/>
+              <rect x="532" y="32" width="8" height="8"/>
+            </g>
+
+            <!-- Clear callout annotations -->
+            <g font-family="IBM Plex Mono, monospace" font-size="11" fill="var(--ink)">
+              <text id="lbl-tp" x="128" y="196">TP 1:28 · 92°C</text>
+              <text id="lbl-yellow" x="284" y="116">Maillard 4:40</text>
+              <text id="lbl-fc" x="444" y="38" text-anchor="end">first crack 8:12</text>
+              <text id="lbl-drop" x="534" y="19" text-anchor="end" fill="var(--amber)">drop 9:42 · 206.5°C</text>
+              <text x="366" y="186" text-anchor="end" font-size="10.5" fill="var(--ink-dim)">declining RoR (°C/min)</text>
+            </g>
+
+            <!-- Interactive Scrubber Crosshair & Active Playhead -->
+            <line id="scrub-line" x1="536" x2="536" y1="22" y2="226" stroke="var(--amber)" stroke-width="1" stroke-dasharray="3 3"/>
+            <circle id="scrub-bt-dot" cx="536" cy="36" r="6" fill="var(--amber)" stroke="var(--ink)" stroke-width="2"/>
+            <circle id="scrub-ror-dot" cx="536" cy="212" r="4.5" fill="var(--roast)" stroke="var(--ink-dim)" stroke-width="2"/>
+          </svg>
+        </div>
+
+        <div class="scrubber-row">
+          <label class="scrubber-label" for="roast-scrubber">Scrub drum timeline</label>
+          <input type="range" id="roast-scrubber" min="0" max="582" step="1" value="582" aria-describedby="chem-note">
+          <span class="tabular scrubber-label" id="scrubber-pct">100% · Drop</span>
+        </div>
+
+        <figcaption class="chemistry-readout" id="chem-note">
+          <strong id="chem-stage">Drop · 9:42</strong>
+          <span id="chem-desc">Cooling tray quench arrests caramelization; malic red-apple acidity and panela sweetness locked before second crack.</span>
+        </figcaption>
+      </figure>
+
+      <dl class="origin-strip" aria-label="Lot 214 specifications">
+        <div>
+          <dt>Producer &amp; Altitude</dt>
+          <dd id="spec-origin">1,850 m · Huila<small id="spec-farm">Finca El Puente · Familia Rojas</small></dd>
+        </div>
+        <div>
+          <dt>Process &amp; Varietal</dt>
+          <dd id="spec-process">Washed Caturra<small id="spec-ferment">36 hr concrete tank · raised parabolic beds</small></dd>
+        </div>
+        <div>
+          <dt>Roast &amp; Dev Window</dt>
+          <dd id="spec-roast">Light · 9:42<small id="spec-dev">1:30 post-crack · 15.5% DTR</small></dd>
+        </div>
+        <div>
+          <dt>In the Cup · Q-Score</dt>
+          <dd id="spec-cup">Panela, red apple<small id="spec-score">Pink pomelo finish · SCA 87.75</small></dd>
+        </div>
+      </dl>
     </section>
-    <figure>
-      <svg viewBox="0 0 540 370" role="img" aria-labelledby="curve-t curve-d">
-        <title id="curve-t">Roast curve for lot 214</title>
-        <desc id="curve-d">Bean temperature falls to a turning point near 1:30, climbs through yellowing at 4:30 and first crack at 8:50, and drops at 10:40 at 205 degrees Celsius. The dashed rate-of-rise line peaks after the turning point and declines steadily toward drop.</desc>
-        <g stroke="#3a2f22" stroke-width="1">
-          <line x1="48" x2="520" y1="44" y2="44"/><line x1="48" x2="520" y1="116" y2="116"/><line x1="48" x2="520" y1="188" y2="188"/><line x1="48" x2="520" y1="260" y2="260"/><line x1="48" x2="520" y1="324" y2="324"/>
-        </g>
-        <g font-family="IBM Plex Mono, monospace" font-size="11" fill="#b2a68e">
-          <text x="6" y="48">210°</text><text x="6" y="120">175°</text><text x="6" y="192">140°</text><text x="6" y="264">105°</text>
-          <text x="48" y="346">0:00</text><text x="200" y="346">4:30</text><text x="372" y="346">8:50</text><text x="486" y="346">10:40</text>
-        </g>
-        <path d="M128 164 C 210 192, 330 248, 514 304" fill="none" stroke="#b2a68e" stroke-width="2" stroke-dasharray="6 6"/>
-        <path d="M52 138 C 76 254, 102 288, 132 282 C 170 274, 192 258, 224 232 C 296 176, 354 132, 396 106 C 446 78, 484 64, 514 54" fill="none" stroke="#e9a23b" stroke-width="4"/>
-        <g fill="#efe6d6">
-          <rect x="218" y="226" width="12" height="12"/>
-          <rect x="390" y="100" width="12" height="12"/>
-          <rect x="508" y="48" width="12" height="12"/>
-        </g>
-        <g font-family="IBM Plex Mono, monospace" font-size="13" fill="#efe6d6">
-          <text x="230" y="266">yellowing 4:30</text>
-          <text x="380" y="92" text-anchor="end">first crack 8:50</text>
-          <text x="514" y="32" text-anchor="end">drop 10:40 · 205°C</text>
-          <text x="514" y="252" text-anchor="end" font-size="11" fill="#b2a68e">rate of rise (declining)</text>
-        </g>
-      </svg>
-      <figcaption>Bean temperature (amber) and declining rate of rise (dashed). Lot 214, 12 kg drum.</figcaption>
-    </figure>
-    <dl>
-      <div><dt>Process</dt><dd>Washed</dd></div>
-      <div><dt>Altitude</dt><dd>1,850 m</dd></div>
-      <div><dt>Roast</dt><dd>Light · 10:40</dd></div>
-      <div><dt>In the cup</dt><dd>Panela, red apple</dd></div>
-    </dl>
+
+    <!-- Section 2: Interactive Brew Recipe & Burr Grind Dialer -->
+    <section id="brew-dialer" class="dossier-section" aria-labelledby="brew-heading">
+      <div class="section-head">
+        <div>
+          <p class="section-kicker">Extraction Calibration · 7–21 Days Post-Roast</p>
+          <h2 class="section-title" id="brew-heading">Brew Recipe &amp; Burr Micron Dialer</h2>
+        </div>
+        <p class="section-sub">
+          High-altitude washed Caturra carries dense cellular walls. Select your brewer and dry dose to compute exact water mass, kettle temperature, burr gap microns, and pulse intervals.
+        </p>
+      </div>
+
+      <div class="brew-grid">
+        <div class="control-box">
+          <div>
+            <span class="scrubber-label" id="method-group-lbl">1. Select Brew Method</span>
+            <div class="method-tabs" role="group" aria-labelledby="method-group-lbl" style="margin-top: 8px;">
+              <button type="button" class="method-btn" data-method="v60" aria-pressed="true">
+                <strong>V60 Pour-Over</strong>
+                <span>1:16.5 ratio · 94°C · 620 μm</span>
+              </button>
+              <button type="button" class="method-btn" data-method="espresso" aria-pressed="false">
+                <strong>Espresso 1:2.2</strong>
+                <span>9 bar flat · 93°C · 265 μm</span>
+              </button>
+              <button type="button" class="method-btn" data-method="aeropress" aria-pressed="false">
+                <strong>AeroPress</strong>
+                <span>1:14.5 steep · 92°C · 540 μm</span>
+              </button>
+              <button type="button" class="method-btn" data-method="kalita" aria-pressed="false">
+                <strong>Kalita Wave</strong>
+                <span>1:16.0 flat-bed · 94°C · 700 μm</span>
+              </button>
+            </div>
+          </div>
+
+          <div>
+            <div class="dose-control-head">
+              <label for="dose-slider">2. Dry Coffee Dose (grams)</label>
+              <output for="dose-slider" class="dose-readout tabular" id="dose-output">18.0 g</output>
+            </div>
+            <input type="range" id="dose-slider" min="15" max="22" step="0.5" value="18">
+            <div class="dose-presets" role="group" aria-label="Quick dose presets">
+              <button type="button" class="dose-chip" data-dose="15" aria-pressed="false">15 g</button>
+              <button type="button" class="dose-chip" data-dose="16.5" aria-pressed="false">16.5 g</button>
+              <button type="button" class="dose-chip" data-dose="18" aria-pressed="true">18 g</button>
+              <button type="button" class="dose-chip" data-dose="20" aria-pressed="false">20 g</button>
+              <button type="button" class="dose-chip" data-dose="22" aria-pressed="false">22 g</button>
+            </div>
+          </div>
+
+          <div>
+            <span class="scrubber-label">Reference Grinder Landmarks</span>
+            <div class="burr-matrix" style="margin-top: 8px;">
+              <div class="burr-cell">
+                <span>Comandante C40</span>
+                <strong id="grinder-c40">22 clicks</strong>
+              </div>
+              <div class="burr-cell">
+                <span>Fellow Ode Gen 2</span>
+                <strong id="grinder-ode">Setting 4.2</strong>
+              </div>
+              <div class="burr-cell">
+                <span>Mahlkönig EK43</span>
+                <strong id="grinder-ek">Dial 7.8</strong>
+              </div>
+            </div>
+          </div>
+        </div>
+
+        <div class="pour-schedule-card" aria-live="polite">
+          <div class="recipe-summary-strip">
+            <div class="recipe-stat">
+              <span>Target Water</span>
+              <strong class="tabular" id="brew-water">297 g</strong>
+            </div>
+            <div class="recipe-stat">
+              <span>Kettle Temp</span>
+              <strong class="tabular" id="brew-temp">94°C / 201°F</strong>
+            </div>
+            <div class="recipe-stat">
+              <span>Burr Particle</span>
+              <strong class="tabular" id="brew-microns">620 μm</strong>
+            </div>
+            <div class="recipe-stat">
+              <span>Total Time</span>
+              <strong class="tabular" id="brew-time">2:55</strong>
+            </div>
+          </div>
+
+          <table class="pour-table">
+            <caption class="sr-only">Timed pour and extraction schedule</caption>
+            <thead>
+              <tr>
+                <th scope="col">Clock</th>
+                <th scope="col">Phase</th>
+                <th scope="col">Scale Target</th>
+                <th scope="col">Agitation &amp; Flow</th>
+              </tr>
+            </thead>
+            <tbody id="pour-tbody">
+              <tr>
+                <td class="tabular">0:00 – 0:45</td>
+                <td class="pour-stage-tag">Degassing Bloom</td>
+                <td class="tabular">54 g</td>
+                <td>Barely wet grounds; gentle 2-turn swirl at 0:10</td>
+              </tr>
+              <tr>
+                <td class="tabular">0:45 – 1:25</td>
+                <td class="pour-stage-tag">First Spiral</td>
+                <td class="tabular">165 g</td>
+                <td>Steady 5 g/s concentric pour to lift slurry thermal mass</td>
+              </tr>
+              <tr>
+                <td class="tabular">1:25 – 2:05</td>
+                <td class="pour-stage-tag">Sweetness Pulse</td>
+                <td class="tabular">240 g</td>
+                <td>Tighter center circle; keep water column 1.5 cm below rim</td>
+              </tr>
+              <tr>
+                <td class="tabular">2:05 – 2:55</td>
+                <td class="pour-stage-tag">Final Drawdown</td>
+                <td class="tabular">297 g</td>
+                <td>Center pour to weight, single north-south rao spin, flat bed</td>
+              </tr>
+            </tbody>
+          </table>
+        </div>
+      </div>
+    </section>
+
+    <!-- Section 3: Bag Allocation, Burr Preset & Dispatch Reservation -->
+    <section id="allocation" class="dossier-section" aria-labelledby="alloc-heading">
+      <div class="section-head">
+        <div>
+          <p class="section-kicker">Tuesday Drum Allocation · Direct Roastery Dispatch</p>
+          <h2 class="section-title" id="alloc-heading">Reserve Bag Allocation &amp; Cadence</h2>
+        </div>
+        <p class="section-sub">
+          Every pouch is flushed with food-grade nitrogen within 18 minutes of cooling-tray drop and stamped with batch time, drop temperature, and Q-grader sign-off.
+        </p>
+      </div>
+
+      <div class="allocation-grid">
+        <form class="alloc-form" id="reserve-form" novalidate>
+          <fieldset>
+            <legend>1. Select Weight Allocation</legend>
+            <div class="choice-grid">
+              <label class="choice-label" for="pack-250">
+                <span class="choice-top">
+                  <span class="choice-title">1 × 250 <span class="unit-case">g</span></span>
+                  <input type="radio" id="pack-250" name="pack" value="250" data-price="18" data-label="1 × 250 g Pouch" checked>
+                </span>
+                <span class="choice-price">$18</span>
+                <span class="choice-desc">~14 filter cups · Compostable valve pouch</span>
+              </label>
+
+              <label class="choice-label" for="pack-500">
+                <span class="choice-top">
+                  <span class="choice-title">2 × 250 <span class="unit-case">g</span></span>
+                  <input type="radio" id="pack-500" name="pack" value="500" data-price="34" data-label="2 × 250 g Twin Pack">
+                </span>
+                <span class="choice-price">$34</span>
+                <span class="choice-desc">Save $2 · Share or rest second pouch 14 days</span>
+              </label>
+
+              <label class="choice-label" for="pack-1000">
+                <span class="choice-top">
+                  <span class="choice-title">1 <span class="unit-case">kg</span> Tin</span>
+                  <input type="radio" id="pack-1000" name="pack" value="1000" data-price="62" data-label="1 kg Roaster Tin">
+                </span>
+                <span class="choice-price">$62</span>
+                <span class="choice-desc">Refillable steel valve tin · Free courier</span>
+              </label>
+            </div>
+          </fieldset>
+
+          <fieldset>
+            <legend>2. Whole Bean or EK43 Lab Grind</legend>
+            <div class="choice-grid two-up">
+              <label class="choice-label" for="grind-whole">
+                <span class="choice-top">
+                  <span class="choice-title">Whole Bean</span>
+                  <input type="radio" id="grind-whole" name="grind" value="Whole Bean" checked>
+                </span>
+                <span class="choice-desc">Recommended · Preserves volatile aromatics 6+ weeks</span>
+              </label>
+
+              <label class="choice-label" for="grind-v60">
+                <span class="choice-top">
+                  <span class="choice-title">Cone Filter · 620 <span class="unit-case">μm</span></span>
+                  <input type="radio" id="grind-v60" name="grind" value="Cone Filter (620 μm)">
+                </span>
+                <span class="choice-desc">Ground on seasoned 98 mm EK43 burrs before sealing</span>
+              </label>
+
+              <label class="choice-label" for="grind-flat">
+                <span class="choice-top">
+                  <span class="choice-title">Flat-Bed · 700 <span class="unit-case">μm</span></span>
+                  <input type="radio" id="grind-flat" name="grind" value="Flat-Bed Filter (700 μm)">
+                </span>
+                <span class="choice-desc">Calibrated for Kalita Wave, Origami &amp; batch brewers</span>
+              </label>
+
+              <label class="choice-label" for="grind-esp">
+                <span class="choice-top">
+                  <span class="choice-title">Espresso · 265 <span class="unit-case">μm</span></span>
+                  <input type="radio" id="grind-esp" name="grind" value="Espresso Fine (265 μm)">
+                </span>
+                <span class="choice-desc">Fine unimodal cut for 58 mm precision baskets</span>
+              </label>
+            </div>
+          </fieldset>
+
+          <fieldset>
+            <legend>3. Dispatch Cadence</legend>
+            <div class="choice-grid two-up">
+              <label class="choice-label" for="cadence-once">
+                <span class="choice-top">
+                  <span class="choice-title">One-Time Drop</span>
+                  <input type="radio" id="cadence-once" name="cadence" value="once" checked>
+                </span>
+                <span class="choice-desc">Single Tuesday roast allocation · Zero recurring billing</span>
+              </label>
+
+              <label class="choice-label" for="cadence-biweekly">
+                <span class="choice-top">
+                  <span class="choice-title">Bi-Weekly Rotation (−10%)</span>
+                  <input type="radio" id="cadence-biweekly" name="cadence" value="biweekly">
+                </span>
+                <span class="choice-desc">Every other Tuesday · Skip, swap lot, or cancel in one click</span>
+              </label>
+            </div>
+          </fieldset>
+
+          <div class="field-row">
+            <div class="field-group">
+              <label for="dispatch-zone">4. Courier Transit Zone</label>
+              <select id="dispatch-zone" class="select-input">
+                <option value="northeast" data-days="2" data-ship="4">Northeast &amp; Mid-Atlantic (2-day · Arrives Fri)</option>
+                <option value="midwest" data-days="2" data-ship="5">Midwest &amp; Southeast Air (2-day · Arrives Fri)</option>
+                <option value="west" data-days="3" data-ship="6">Mountain &amp; Pacific Coast (3-day · Arrives Sat)</option>
+                <option value="pickup" data-days="1" data-ship="0">Red Hook Roastery Counter Pickup (Wed 14:00 · $0)</option>
+              </select>
+            </div>
+
+            <div class="field-group">
+              <label for="patron-email">5. Email for Roast Log &amp; Tracking</label>
+              <input type="email" id="patron-email" class="text-input" autocomplete="email" placeholder="you@domain.com" aria-describedby="email-error" required>
+              <p class="field-error" id="email-error" hidden>Enter a valid email address (for example, name@domain.com) to receive your bag number.</p>
+            </div>
+          </div>
+        </form>
+
+        <aside class="dispatch-ledger" aria-labelledby="manifest-title">
+          <div class="ledger-heading">
+            <h3 id="manifest-title">Roast &amp; Dispatch Manifest</h3>
+            <span class="tabular batch-code" id="manifest-lot-tag">LOT 214 · POUCH #23/60</span>
+          </div>
+
+          <div class="timeline-steps">
+            <div class="step-box">
+              <span>Drum Roast</span>
+              <strong id="date-roast">Tue · 06:30</strong>
+            </div>
+            <div class="step-box">
+              <span>Courier Scan</span>
+              <strong id="date-ship">Wed · 09:15</strong>
+            </div>
+            <div class="step-box">
+              <span>On Counter</span>
+              <strong id="date-arrive">Fri · By 16:00</strong>
+            </div>
+          </div>
+
+          <div class="cost-lines" aria-live="polite">
+            <div class="cost-line">
+              <span id="summary-item">1 × 250 g Pouch · Whole Bean</span>
+              <span class="tabular" id="summary-base">$18.00</span>
+            </div>
+            <div class="cost-line">
+              <span id="summary-cadence">One-time Tuesday allocation</span>
+              <span class="tabular" id="summary-discount">$0.00</span>
+            </div>
+            <div class="cost-line">
+              <span id="summary-shipping-lbl">2-day carbon-accounted parcel</span>
+              <span class="tabular" id="summary-shipping">$4.00</span>
+            </div>
+            <div class="cost-line total">
+              <span>Total Due on Roast Day</span>
+              <span class="tabular" id="summary-total">$22.00</span>
+            </div>
+          </div>
+
+          <button type="submit" form="reserve-form" class="btn-amber" id="confirm-btn">
+            <span id="confirm-btn-label">Hold Allocation from Tuesday Batch</span>
+            <span class="tabular" id="confirm-btn-price">$22.00</span>
+          </button>
+
+          <div class="reservation-status" id="reservation-feedback" role="status" aria-live="polite" data-confirmed="false">
+            No card charged until green coffee enters the Loring S15 hopper Tuesday morning. Peak filter window opens 5 days post-roast.
+          </div>
+        </aside>
+      </div>
+    </section>
+
+    <!-- Section 4: Farm-Gate FOB Price Transparency & SCA Cupping Ledger -->
+    <section id="farm-gate" class="dossier-section" aria-labelledby="transparency-heading">
+      <div class="section-head">
+        <div>
+          <p class="section-kicker">Open-Book Sourcing · Harvest 2026 Mitaca Crop</p>
+          <h2 class="section-title" id="transparency-heading">Farm-Gate FOB &amp; Q-Grader Cupping Ledger</h2>
+        </div>
+        <p class="section-sub">
+          Specialty coffee economics remain opaque when roasters cite vague direct-trade claims without contracts. Every Halden release publishes green cost per pound alongside lab cupping scores.
+        </p>
+      </div>
+
+      <div class="specimen-notice" role="note">
+        <span><strong>Specimen Provenance Disclosure:</strong> Halden Roasters and Finca El Puente figures below are an illustrative fictional roastery dataset modeling transparent FOB accounting; zero fabricated customer testimonials are shown.</span>
+        <span class="tabular">EVIDENCE: CONTRACT SPECIMEN · ZERO REVIEWS</span>
+      </div>
+
+      <div class="transparency-grid">
+        <div class="fob-card">
+          <h3>Where Your $18.00 Goes (250 g Roasted Pouch)</h3>
+          <p class="note" style="margin-top: 4px;">
+            Farm-gate paid at <strong>$5.20 / lb</strong> parchment equivalent (<strong>$5.85 / lb FOB Buenaventura</strong>) — 2.7× the ICE C-market reference on contract date.
+          </p>
+
+          <div class="stacked-bar" role="img" aria-label="250 gram bag cost split: 25.8 percent farm-gate FOB, 28.6 percent roastery labor and QC, 18.1 percent moisture loss and compostable valve pouch, 7.8 percent green import freight, 19.7 percent roastery operating margin">
+            <span class="bar-seg-farm"></span>
+            <span class="bar-seg-roast"></span>
+            <span class="bar-seg-pack"></span>
+            <span class="bar-seg-freight"></span>
+            <span class="bar-seg-margin"></span>
+          </div>
+
+          <table class="fob-table">
+            <caption class="sr-only">Per-bag cost breakdown in US dollars</caption>
+            <thead>
+              <tr>
+                <th scope="col">Cost Component</th>
+                <th scope="col">Benchmark / Detail</th>
+                <th scope="col">Per 250 g</th>
+              </tr>
+            </thead>
+            <tbody>
+              <tr>
+                <td>Finca El Puente Farm-Gate &amp; Dry Mill FOB</td>
+                <td>$5.85 / lb green · 100% parchment premium to producer</td>
+                <td>$4.65</td>
+              </tr>
+              <tr>
+                <td>Roastery Labor, Loring QC &amp; Red Hook Lease</td>
+                <td>Roaster living wage, sample roasting &amp; cupping lab</td>
+                <td>$5.15</td>
+              </tr>
+              <tr>
+                <td>Roast Shrinkage (15.8%) &amp; Compostable Pouch</td>
+                <td>297 g green required per 250 g roasted + degassing valve</td>
+                <td>$3.25</td>
+              </tr>
+              <tr>
+                <td>GrainPro Sea Freight &amp; Port Warehousing</td>
+                <td>Buenaventura → Newark consolidated cold storage</td>
+                <td>$1.40</td>
+              </tr>
+              <tr>
+                <td>Net Roastery Margin</td>
+                <td>Reinvested into forward harvest pre-financing</td>
+                <td>$3.55</td>
+              </tr>
+            </tbody>
+          </table>
+        </div>
+
+        <div class="cupping-card">
+          <h3>SCA Protocol Lab Score · <span class="tabular" id="cupping-total">87.75</span> / 100</h3>
+          <p class="note" style="margin-top: 4px;">
+            Blind-cupped at 12 minutes, 20 minutes, and 32 minutes cooling using 8.25 g / 150 mL water at 93°C. Zero astringency or phenolic defects across 5 bowls.
+          </p>
+
+          <div class="score-list">
+            <div class="score-row">
+              <span>Fragrance / Aroma</span>
+              <div class="score-track"><div class="score-fill" style="width: 87.5%;"></div></div>
+              <span class="tabular">8.75</span>
+            </div>
+            <div class="score-row">
+              <span>Acidity (Malic)</span>
+              <div class="score-track"><div class="score-fill" style="width: 87.5%;"></div></div>
+              <span class="tabular">8.75</span>
+            </div>
+            <div class="score-row">
+              <span>Sweetness</span>
+              <div class="score-track"><div class="score-fill" style="width: 87.5%;"></div></div>
+              <span class="tabular">8.75</span>
+            </div>
+            <div class="score-row">
+              <span>Flavor Clarity</span>
+              <div class="score-track"><div class="score-fill" style="width: 85%;"></div></div>
+              <span class="tabular">8.50</span>
+            </div>
+            <div class="score-row">
+              <span>Aftertaste</span>
+              <div class="score-track"><div class="score-fill" style="width: 85%;"></div></div>
+              <span class="tabular">8.50</span>
+            </div>
+            <div class="score-row">
+              <span>Balance &amp; Tactile</span>
+              <div class="score-track"><div class="score-fill" style="width: 83.5%;"></div></div>
+              <span class="tabular">8.35</span>
+            </div>
+          </div>
+
+          <div class="water-spec">
+            <strong style="color: var(--ink);">Recommended Brew Water Chemistry:</strong><br>
+            Total Hardness 70–80 ppm GH (Mg²⁺ rich) · Buffer Alkalinity 28–35 ppm KH · pH 6.9 · Avoid unbuffered distilled water or municipal tap above 110 ppm KH, which flattens the red-apple malic snap.
+          </div>
+        </div>
+      </div>
+    </section>
   </main>
+
+  <footer class="site-footer">
+    <div>
+      <strong style="color: var(--ink); font-family: var(--display); font-size: 20px; letter-spacing: 0.05em;">HALDEN ROASTERS · PIER 41 RED HOOK</strong>
+      <p style="margin: 6px 0 0; max-width: 62ch;">
+        Roasted every Tuesday on a 15 kg Loring S15 Falcon recirculating convection drum. Wholesale café partners receive unbranded 2.2 kg nitrogen pails with full Cropster CSV roast telemetry.
+      </p>
+    </div>
+    <div class="footer-actions">
+      <button type="button" class="quiet-btn" id="print-dossier-btn">Print Roast Dossier</button>
+      <a class="quiet-btn" href="#this-week" style="text-decoration: none;">Back to Roast Curve ↑</a>
+    </div>
+  </footer>
+  <script>
+    (() => {
+      const prefersReducedMotion = window.matchMedia('(prefers-reduced-motion: reduce)');
+
+      const LOTS = {
+        '214': {
+          kicker: 'Lot 214 · Huila, Colombia · washed Caturra',
+          availability: 'LIVE · 38 / 60 BAGS LEFT',
+          bagsLeft: 38,
+          bagsTotal: 60,
+          tone: 'live',
+          ctaVerb: 'Reserve 250 g',
+          prices: { '250': 18, '500': 34, '1000': 62 },
+          lede: 'Grown at 1,850 m at Finca El Puente in Acevedo and dropped light at 206.5°C to keep raw panela, crisp red apple, and pink pomelo. Sixty numbered pouches from Tuesday’s 12 kg drum, then the lot closes.',
+          note: 'Roasts Tue 06:30 EST · Dispatches Wed in home-compostable valve kraft · Pause or cancel bi-weekly rotation in one click.',
+          batch: 'BATCH HR-214-04 · 12.0 KG GREEN · MOISTURE 10.8%',
+          dtr: 'DEV RATIO 15.5% · AGTRON 68 WHOLE / 81 GROUND',
+          durationSec: 582,
+          btPath: 'M 48 48 C 76 154, 98 182, 120 180 C 166 175, 222 134, 276 102 C 344 68, 404 54, 454 50 C 488 43, 514 39, 536 36',
+          rorPath: 'M 122 72 C 204 104, 344 156, 536 212',
+          phases: [
+            { name: 'Charge', sec: 0, bt: 198.0, ror: 0.0, air: 42, x: 48, btY: 48, rorY: 72, chem: 'Drum pre-soaked at 198°C; endothermic heat transfer begins as dense 1,850 m Caturra absorbs thermal energy.' },
+            { name: 'Turning Point', sec: 88, bt: 92.0, ror: 18.4, air: 48, x: 120, btY: 180, rorY: 72, chem: 'Probe equilibrium reached at 92°C; burner modulated to 74% gas to establish peak momentum before drying ends.' },
+            { name: 'Maillard', sec: 280, bt: 154.0, ror: 12.1, air: 62, x: 276, btY: 102, rorY: 126, chem: 'Chlorophyll shifts to straw-gold; reducing sugars and amino acids form panela and toasted-almond precursors.' },
+            { name: 'First Crack', sec: 492, bt: 196.0, ror: 6.8, air: 74, x: 454, btY: 50, rorY: 186, chem: 'Steam pressure fractures cell walls cleanly; airflow raised to 74 Pa to sweep chaff and prevent baked RoR crash.' },
+            { name: 'Drop', sec: 582, bt: 206.5, ror: 4.2, air: 78, x: 536, btY: 36, rorY: 212, chem: 'Cooling tray quench arrests caramelization; malic red-apple acidity and panela sweetness locked before second crack.' }
+          ],
+          specs: {
+            origin: '1,850 m · Huila',
+            farm: 'Finca El Puente · Familia Rojas',
+            process: 'Washed Caturra',
+            ferment: '36 hr concrete tank · raised parabolic beds',
+            roast: 'Light · 9:42',
+            dev: '1:30 post-crack · 15.5% DTR',
+            cup: 'Panela, red apple',
+            score: 'Pink pomelo finish · SCA 87.75',
+            scaTotal: '87.75'
+          }
+        },
+        '215': {
+          kicker: 'Lot 215 · Kirinyaga, Kenya · washed SL28 & SL34',
+          availability: 'NEXT TUE · 44 / 50 BAGS OPEN',
+          bagsLeft: 44,
+          bagsTotal: 50,
+          tone: 'live',
+          ctaVerb: 'Pre-book 250 g',
+          prices: { '250': 21, '500': 40, '1000': 74 },
+          lede: 'Double-washed with Kamweti river water in Kirinyaga and dropped briskly at 204.8°C to preserve blackcurrant, blood orange, and hibiscus tea. Fifty pouches scheduled for next Tuesday’s roast.',
+          note: 'Roasts Next Tue 06:30 EST · Dispatches Wed · High-density AA screen 18 microlot.',
+          batch: 'BATCH HR-215-01 · 10.5 KG GREEN · MOISTURE 11.2%',
+          dtr: 'DEV RATIO 14.8% · AGTRON 71 WHOLE / 84 GROUND',
+          durationSec: 566,
+          btPath: 'M 48 44 C 75 150, 96 178, 118 176 C 164 170, 220 128, 274 98 C 342 64, 404 52, 458 48 C 490 42, 516 39, 536 38',
+          rorPath: 'M 118 66 C 202 98, 344 152, 536 208',
+          phases: [
+            { name: 'Charge', sec: 0, bt: 202.0, ror: 0.0, air: 45, x: 48, btY: 44, rorY: 66, chem: 'Higher 202°C charge penetrates dense Kenyan SL28 screen-18 seeds cleanly from minute zero.' },
+            { name: 'Turning Point', sec: 84, bt: 94.5, ror: 19.2, air: 50, x: 118, btY: 176, rorY: 66, chem: 'High thermal soak lifts RoR to 19.2°C/m to power evenly through 11.2% green moisture.' },
+            { name: 'Maillard', sec: 270, bt: 156.0, ror: 12.6, air: 65, x: 274, btY: 98, rorY: 122, chem: 'Citric and phosphoric brightness protected with brisk Maillard progression and clean convective airflow.' },
+            { name: 'First Crack', sec: 482, bt: 195.5, ror: 7.1, air: 78, x: 458, btY: 48, rorY: 182, chem: 'Vigorous SL28 crack; gas stepped down to 28% so exothermic release glides without RoR flick.' },
+            { name: 'Drop', sec: 566, bt: 204.8, ror: 4.6, air: 82, x: 536, btY: 38, rorY: 208, chem: 'Tight 1:24 development preserves blackcurrant, ruby grapefruit, and crystalline cane finish.' }
+          ],
+          specs: {
+            origin: '1,920 m · Kirinyaga',
+            farm: 'Kii Wet Mill · Rungeto Coop',
+            process: 'Kenyan Double-Washed',
+            ferment: '48 hr dry ferment + 12 hr clean soak',
+            roast: 'Light · 9:26',
+            dev: '1:24 post-crack · 14.8% DTR',
+            cup: 'Blackcurrant, blood orange',
+            score: 'Hibiscus finish · SCA 88.50',
+            scaTotal: '88.50'
+          }
+        },
+        '211': {
+          kicker: 'Lot 211 · Sidama Chire, Ethiopia · natural 74158',
+          availability: 'ARCHIVE · 60 / 60 CLAIMED (WAITLIST)',
+          bagsLeft: 0,
+          bagsTotal: 60,
+          tone: 'archive',
+          ctaVerb: 'Join Next Roast List',
+          prices: { '250': 19, '500': 36, '1000': 66 },
+          lede: 'Sun-dried 21 days in whole cherry at 2,140 m in Chire and eased gently to 205.4°C for bergamot blossom, white peach, and wild honey. Archived telemetry kept public for subscribers dialing resting bags.',
+          note: 'Archived roast log · Enter email below to claim priority allocation if Finca return-sample tins release.',
+          batch: 'BATCH HR-211-06 · 12.0 KG GREEN · MOISTURE 10.4%',
+          dtr: 'DEV RATIO 16.1% · AGTRON 66 WHOLE / 79 GROUND',
+          durationSec: 595,
+          btPath: 'M 48 54 C 78 160, 100 186, 122 184 C 168 178, 224 138, 280 106 C 348 72, 406 56, 452 51 C 488 44, 514 40, 536 37',
+          rorPath: 'M 122 78 C 206 110, 346 160, 536 216',
+          phases: [
+            { name: 'Charge', sec: 0, bt: 192.0, ror: 0.0, air: 40, x: 48, btY: 54, rorY: 78, chem: 'Gentler 192°C charge prevents scorching sugar-dense natural-process fruit mucilage.' },
+            { name: 'Turning Point', sec: 92, bt: 89.5, ror: 16.8, air: 46, x: 122, btY: 184, rorY: 78, chem: 'Measured heat ramp protects delicate monoterpenes responsible for jasmine and bergamot aromatics.' },
+            { name: 'Maillard', sec: 290, bt: 152.0, ror: 11.4, air: 60, x: 280, btY: 106, rorY: 130, chem: 'Extended fruit-sugar browning builds silky white-peach nectar without fermenty harshness.' },
+            { name: 'First Crack', sec: 499, bt: 194.8, ror: 6.2, air: 75, x: 452, btY: 51, rorY: 190, chem: 'Soft, rolling crack across tiny JARC 74158 heirloom seeds; airflow cleared to 75 Pa.' },
+            { name: 'Drop', sec: 595, bt: 205.4, ror: 3.8, air: 80, x: 536, btY: 37, rorY: 216, chem: 'Dropped at 3.8°C/m for syrupy peach-tea body and lingering floral honey sweetness.' }
+          ],
+          specs: {
+            origin: '2,140 m · Sidama',
+            farm: 'Chire Highland Smallholders',
+            process: 'Raised-Bed Natural',
+            ferment: '21-day whole-cherry shade-net dry',
+            roast: 'Light · 9:55',
+            dev: '1:36 post-crack · 16.1% DTR',
+            cup: 'Bergamot, white peach',
+            score: 'Wild honey finish · SCA 88.25',
+            scaTotal: '88.25'
+          }
+        }
+      };
+
+      const BREW_METHODS = {
+        v60: {
+          ratio: 16.5,
+          tempC: 94,
+          tempF: 201,
+          baseMicrons: 620,
+          c40Base: 22,
+          odeBase: 4.2,
+          ekBase: 7.8,
+          baseTimeSec: 175,
+          stages: [
+            { clock: '0:00 – 0:45', name: 'Degassing Bloom', mult: 3.0, note: 'Barely wet grounds; gentle 2-turn swirl at 0:10' },
+            { clock: '0:45 – 1:25', name: 'First Spiral', mult: 9.15, note: 'Steady 5 g/s concentric pour to lift slurry thermal mass' },
+            { clock: '1:25 – 2:05', name: 'Sweetness Pulse', mult: 13.3, note: 'Tighter center circle; keep water column 1.5 cm below rim' },
+            { clock: '2:05 – end', name: 'Final Drawdown', mult: 16.5, note: 'Center pour to target weight, single north-south spin, flat bed' }
+          ]
+        },
+        espresso: {
+          ratio: 2.2,
+          tempC: 93,
+          tempF: 199,
+          baseMicrons: 265,
+          c40Base: 8,
+          odeBase: 'N/A (Filter)',
+          ekBase: 2.1,
+          baseTimeSec: 29,
+          stages: [
+            { clock: '0:00 – 0:06', name: 'Line Pre-Infusion', mult: 0.15, note: '2.5 bar gentle saturation until first amber drops bead across basket' },
+            { clock: '0:06 – 0:18', name: 'Peak 9-Bar Ramp', mult: 1.15, note: 'Hold flat 8.8–9.0 bar; syrupy tiger-striped panela heart extracts' },
+            { clock: '0:18 – 0:29', name: 'Declining Lever Tail', mult: 2.2, note: 'Taper pressure to 6 bar to prevent dry channel astringency' },
+            { clock: 'Post-Shot', name: 'Dilution / Bypass', mult: 2.2, note: 'Stir crema with spoon before sipping; optional +95 g 90°C water for Americano' }
+          ]
+        },
+        aeropress: {
+          ratio: 14.5,
+          tempC: 92,
+          tempF: 198,
+          baseMicrons: 540,
+          c40Base: 19,
+          odeBase: 3.1,
+          ekBase: 6.6,
+          baseTimeSec: 135,
+          stages: [
+            { clock: '0:00 – 0:15', name: 'Saturation Pour', mult: 14.5, note: 'Upright standard position with rinsed paper filter; pour full water weight' },
+            { clock: '0:15 – 0:25', name: 'Crust Paddle & Seal', mult: 14.5, note: '3 gentle back-and-forth paddle stirs; insert plunger 1 cm to hold vacuum' },
+            { clock: '1:30 – 1:35', name: 'Swirl & Settle', mult: 14.5, note: 'Level swirl so floating crust sinks evenly onto filter bed' },
+            { clock: '1:35 – 2:15', name: '40-Sec Gentle Press', mult: 14.5, note: 'Forearm weight only; stop immediately at first hiss for high clarity' }
+          ]
+        },
+        kalita: {
+          ratio: 16.0,
+          tempC: 94,
+          tempF: 201,
+          baseMicrons: 700,
+          c40Base: 25,
+          odeBase: 5.1,
+          ekBase: 8.6,
+          baseTimeSec: 190,
+          stages: [
+            { clock: '0:00 – 0:45', name: 'Flat-Bed Bloom', mult: 3.0, note: 'Spiral from center without flattening paper wave flutes' },
+            { clock: '0:45 – 1:25', name: 'Pulse 1 · Body', mult: 8.5, note: 'Pour quarter-sized center circles; let bed drain halfway' },
+            { clock: '1:25 – 2:05', name: 'Pulse 2 · Clarity', mult: 12.5, note: 'Maintain thermal stability; avoid pouring directly onto paper walls' },
+            { clock: '2:05 – end', name: 'Pulse 3 · Finish', mult: 16.0, note: 'Final center pulse to target weight; flat shiny coffee bed at drawdown' }
+          ]
+        }
+      };
+
+      let activeLotId = '214';
+      let activeMethod = 'v60';
+      let activeDose = 18;
+
+      const formatClock = (sec) => {
+        const s = Math.max(0, Math.round(sec));
+        const m = Math.floor(s / 60);
+        const rem = String(s % 60).padStart(2, '0');
+        return `${m}:${rem}`;
+      };
+
+      const lerp = (a, b, t) => a + (b - a) * t;
+
+      // Interpolate roast curve telemetry at arbitrary second
+      function sampleRoastAt(sec) {
+        const lot = LOTS[activeLotId];
+        const phases = lot.phases;
+        const clamped = Math.max(0, Math.min(lot.durationSec, sec));
+
+        let idx = 0;
+        for (let i = 0; i < phases.length - 1; i += 1) {
+          if (clamped >= phases[i].sec && clamped <= phases[i + 1].sec) {
+            idx = i;
+            break;
+          }
+        }
+        const p0 = phases[idx];
+        const p1 = phases[idx + 1] || phases[phases.length - 1];
+        const span = Math.max(1, p1.sec - p0.sec);
+        const t = Math.max(0, Math.min(1, (clamped - p0.sec) / span));
+
+        // Sample exact y on SVG path if available so dot rides stroke cleanly
+        const btPathEl = document.getElementById('bt-path');
+        const rorPathEl = document.getElementById('ror-path');
+        const targetX = lerp(p0.x, p1.x, t);
+
+        let btY = lerp(p0.btY, p1.btY, t);
+        if (btPathEl && typeof btPathEl.getTotalLength === 'function') {
+          const total = btPathEl.getTotalLength();
+          let lo = 0;
+          let hi = total;
+          for (let step = 0; step < 14; step += 1) {
+            const mid = (lo + hi) / 2;
+            const pt = btPathEl.getPointAtLength(mid);
+            if (pt.x < targetX) lo = mid;
+            else hi = mid;
+          }
+          btY = btPathEl.getPointAtLength((lo + hi) / 2).y;
+        }
+
+        let rorY = lerp(p0.rorY, p1.rorY, t);
+        if (rorPathEl && typeof rorPathEl.getTotalLength === 'function' && targetX >= phases[1].x) {
+          const totalR = rorPathEl.getTotalLength();
+          let lo = 0;
+          let hi = totalR;
+          for (let step = 0; step < 12; step += 1) {
+            const mid = (lo + hi) / 2;
+            const pt = rorPathEl.getPointAtLength(mid);
+            if (pt.x < targetX) lo = mid;
+            else hi = mid;
+          }
+          rorY = rorPathEl.getPointAtLength((lo + hi) / 2).y;
+        }
+
+        const nearestPhase = phases.reduce((best, p, pIdx) => (
+          Math.abs(p.sec - clamped) < Math.abs(best.p.sec - clamped) ? { p, pIdx } : best
+        ), { p: phases[0], pIdx: 0 });
+
+        const rorVal = clamped < phases[1].sec
+          ? lerp(-18.0, phases[1].ror, clamped / Math.max(1, phases[1].sec))
+          : lerp(p0.ror, p1.ror, t);
+
+        return {
+          sec: clamped,
+          bt: lerp(p0.bt, p1.bt, t),
+          ror: rorVal,
+          air: Math.round(lerp(p0.air, p1.air, t)),
+          x: targetX,
+          btY,
+          rorY,
+          phaseObj: t > 0.72 ? p1 : p0,
+          activeBtnIdx: Math.abs(nearestPhase.p.sec - clamped) <= 18 ? nearestPhase.pIdx : -1
+        };
+      }
+
+      function updateTelemetryUI(sec) {
+        const lot = LOTS[activeLotId];
+        const sample = sampleRoastAt(sec);
+
+        document.getElementById('kpi-time').textContent = formatClock(sample.sec);
+        document.getElementById('kpi-bt').textContent = `${sample.bt.toFixed(1)}°C`;
+        document.getElementById('kpi-ror').textContent = `${sample.ror.toFixed(1)}°C/m`;
+        document.getElementById('kpi-air').textContent = `${sample.air} Pa`;
+
+        const scrubLine = document.getElementById('scrub-line');
+        const btDot = document.getElementById('scrub-bt-dot');
+        const rorDot = document.getElementById('scrub-ror-dot');
+
+        scrubLine.setAttribute('x1', sample.x.toFixed(1));
+        scrubLine.setAttribute('x2', sample.x.toFixed(1));
+        btDot.setAttribute('cx', sample.x.toFixed(1));
+        btDot.setAttribute('cy', sample.btY.toFixed(1));
+
+        if (sample.sec >= lot.phases[1].sec) {
+          rorDot.setAttribute('opacity', '1');
+          rorDot.setAttribute('cx', sample.x.toFixed(1));
+          rorDot.setAttribute('cy', sample.rorY.toFixed(1));
+        } else {
+          rorDot.setAttribute('opacity', '0');
+        }
+
+        const pct = Math.round((sample.sec / lot.durationSec) * 100);
+        document.getElementById('scrubber-pct').textContent = `${pct}% · ${sample.phaseObj.name}`;
+        document.getElementById('chem-stage').textContent = `${sample.phaseObj.name} · ${formatClock(sample.sec)}`;
+        document.getElementById('chem-desc').textContent = sample.phaseObj.chem;
+
+        document.querySelectorAll('.phase-btn').forEach((btn, idx) => {
+          btn.setAttribute('aria-pressed', idx === sample.activeBtnIdx ? 'true' : 'false');
+        });
+      }
+
+      function applyLot(lotId) {
+        activeLotId = lotId;
+        const lot = LOTS[lotId];
+
+        document.querySelectorAll('.lot-pill').forEach((pill) => {
+          pill.setAttribute('aria-pressed', pill.dataset.lot === lotId ? 'true' : 'false');
+        });
+
+        document.getElementById('lot-kicker').textContent = lot.kicker;
+        const availEl = document.getElementById('lot-availability');
+        availEl.textContent = lot.availability;
+        availEl.dataset.tone = lot.tone;
+
+        document.getElementById('lot-lede').textContent = lot.lede;
+        document.getElementById('lot-dispatch-note').textContent = lot.note;
+
+        const ctaEl = document.getElementById('reserve');
+        ctaEl.innerHTML = `${lot.ctaVerb} <span id="cta-price">$${lot.prices['250']}</span>`;
+
+        document.getElementById('batch-code').textContent = lot.batch;
+        document.getElementById('dtr-badge').textContent = lot.dtr;
+        document.getElementById('bt-path').setAttribute('d', lot.btPath);
+        document.getElementById('ror-path').setAttribute('d', lot.rorPath);
+
+        // Update milestone buttons & SVG labels
+        const phaseBtns = document.querySelectorAll('.phase-btn');
+        lot.phases.forEach((p, idx) => {
+          if (phaseBtns[idx]) {
+            const tempTxt = Number.isInteger(p.bt) ? `${p.bt}°C` : `${p.bt.toFixed(1)}°C`;
+            phaseBtns[idx].innerHTML = `<strong>${p.name}</strong>${formatClock(p.sec)} · ${tempTxt}`;
+          }
+        });
+
+        document.getElementById('lbl-tp').textContent = `TP ${formatClock(lot.phases[1].sec)} · ${lot.phases[1].bt}°C`;
+        document.getElementById('lbl-yellow').textContent = `Maillard ${formatClock(lot.phases[2].sec)}`;
+        document.getElementById('lbl-fc').textContent = `first crack ${formatClock(lot.phases[3].sec)}`;
+        document.getElementById('lbl-drop').textContent = `drop ${formatClock(lot.phases[4].sec)} · ${lot.phases[4].bt}°C`;
+
+        // Update spec strip
+        document.getElementById('spec-origin').innerHTML = `${lot.specs.origin}<small id="spec-farm">${lot.specs.farm}</small>`;
+        document.getElementById('spec-process').innerHTML = `${lot.specs.process}<small id="spec-ferment">${lot.specs.ferment}</small>`;
+        document.getElementById('spec-roast').innerHTML = `${lot.specs.roast}<small id="spec-dev">${lot.specs.dev}</small>`;
+        document.getElementById('spec-cup').innerHTML = `${lot.specs.cup}<small id="spec-score">${lot.specs.score}</small>`;
+        document.getElementById('cupping-total').textContent = lot.specs.scaTotal;
+
+        // Update pack prices in allocation form
+        ['250', '500', '1000'].forEach((w) => {
+          const radio = document.getElementById(`pack-${w}`);
+          if (radio) {
+            radio.dataset.price = String(lot.prices[w]);
+            const card = radio.closest('.choice-label');
+            const priceSpan = card ? card.querySelector('.choice-price') : null;
+            if (priceSpan) priceSpan.textContent = `$${lot.prices[w]}`;
+          }
+        });
+
+        const pouchNum = lot.bagsLeft > 0 ? lot.bagsTotal - lot.bagsLeft + 1 : 60;
+        document.getElementById('manifest-lot-tag').textContent = lot.bagsLeft > 0
+          ? `LOT ${lotId} · POUCH #${pouchNum}/${lot.bagsTotal}`
+          : `LOT ${lotId} · WAITLIST`;
+
+        const scrubber = document.getElementById('roast-scrubber');
+        scrubber.max = String(lot.durationSec);
+        scrubber.value = String(lot.durationSec);
+        updateTelemetryUI(lot.durationSec);
+        updateOrderSummary();
+      }
+
+      // Brew Dialer Computation
+      function updateBrewRecipe() {
+        const cfg = BREW_METHODS[activeMethod];
+        const doseDelta = activeDose - 18;
+        const microns = Math.round(cfg.baseMicrons + doseDelta * (activeMethod === 'espresso' ? 4 : 14));
+        const totalWater = Math.round(activeDose * cfg.ratio);
+        const adjSec = Math.round(cfg.baseTimeSec + doseDelta * (activeMethod === 'espresso' ? 0.6 : 4));
+
+        document.getElementById('dose-output').textContent = `${activeDose.toFixed(1)} g`;
+        document.getElementById('brew-water').textContent = activeMethod === 'espresso'
+          ? `${totalWater} g yield`
+          : `${totalWater} g`;
+        document.getElementById('brew-temp').textContent = `${cfg.tempC}°C / ${cfg.tempF}°F`;
+        document.getElementById('brew-microns').textContent = `${microns} μm`;
+        document.getElementById('brew-time').textContent = activeMethod === 'espresso'
+          ? `0:${String(adjSec).padStart(2, '0')}`
+          : formatClock(adjSec);
+
+        const c40 = Math.max(6, Math.round(cfg.c40Base + doseDelta * (activeMethod === 'espresso' ? 0.4 : 0.6)));
+        document.getElementById('grinder-c40').textContent = `${c40} clicks`;
+        document.getElementById('grinder-ode').textContent = typeof cfg.odeBase === 'number'
+          ? `Setting ${(cfg.odeBase + doseDelta * 0.15).toFixed(1)}`
+          : cfg.odeBase;
+        document.getElementById('grinder-ek').textContent = `Dial ${(cfg.ekBase + doseDelta * 0.12).toFixed(1)}`;
+
+        const tbody = document.getElementById('pour-tbody');
+        tbody.innerHTML = cfg.stages.map((st, i) => {
+          const targetGrams = Math.round(activeDose * st.mult);
+          const clockTxt = i === cfg.stages.length - 1 && activeMethod !== 'espresso' && activeMethod !== 'aeropress'
+            ? st.clock.replace('end', formatClock(adjSec))
+            : st.clock;
+          const weightTxt = activeMethod === 'espresso' && i === 3
+            ? `${totalWater} g shot`
+            : `${targetGrams} g`;
+          return `<tr>
+            <td class="tabular">${clockTxt}</td>
+            <td class="pour-stage-tag">${st.name}</td>
+            <td class="tabular">${weightTxt}</td>
+            <td>${st.note}</td>
+          </tr>`;
+        }).join('');
+
+        document.querySelectorAll('.dose-chip').forEach((chip) => {
+          chip.setAttribute('aria-pressed', Number(chip.dataset.dose) === activeDose ? 'true' : 'false');
+        });
+      }
+
+      // Compute Upcoming Tuesday / Wednesday / Arrival Dates
+      function computeDispatchDates(transitDays) {
+        const now = new Date();
+        const day = now.getDay(); // 0 Sun .. 2 Tue
+        const daysUntilTue = ((2 - day + 7) % 7) || 7;
+        const roastDate = new Date(now);
+        roastDate.setDate(now.getDate() + daysUntilTue);
+
+        const shipDate = new Date(roastDate);
+        shipDate.setDate(roastDate.getDate() + 1);
+
+        const arriveDate = new Date(roastDate);
+        arriveDate.setDate(roastDate.getDate() + (transitDays === 1 ? 1 : 1 + transitDays));
+
+        const fmt = (d) => d.toLocaleDateString('en-US', { weekday: 'short', month: 'short', day: 'numeric' });
+        return {
+          roast: fmt(roastDate),
+          ship: fmt(shipDate),
+          arrive: transitDays === 1 ? `${fmt(shipDate)} · Pickup` : fmt(arriveDate)
+        };
+      }
+
+      function updateOrderSummary() {
+        const packInput = document.querySelector('input[name="pack"]:checked');
+        const grindInput = document.querySelector('input[name="grind"]:checked');
+        const cadenceInput = document.querySelector('input[name="cadence"]:checked');
+        const zoneSelect = document.getElementById('dispatch-zone');
+        const selectedOpt = zoneSelect.options[zoneSelect.selectedIndex];
+
+        const basePrice = Number(packInput.dataset.price);
+        const packLabel = packInput.dataset.label;
+        const grindLabel = grindInput.value;
+        const isBiweekly = cadenceInput.value === 'biweekly';
+        const discount = isBiweekly ? +(basePrice * 0.10).toFixed(2) : 0;
+
+        const transitDays = Number(selectedOpt.dataset.days);
+        const rawShip = Number(selectedOpt.dataset.ship);
+        const shipCost = packInput.value === '1000' ? 0 : rawShip;
+        const total = Math.max(0, basePrice - discount + shipCost);
+
+        const dates = computeDispatchDates(transitDays);
+        document.getElementById('date-roast').textContent = dates.roast;
+        document.getElementById('date-ship').textContent = dates.ship;
+        document.getElementById('date-arrive').textContent = dates.arrive;
+
+        document.getElementById('summary-item').textContent = `${packLabel} · ${grindLabel}`;
+        document.getElementById('summary-base').textContent = `$${basePrice.toFixed(2)}`;
+        document.getElementById('summary-cadence').textContent = isBiweekly
+          ? 'Bi-weekly rotation (−10% subscriber rate)'
+          : 'One-time Tuesday allocation';
+        document.getElementById('summary-discount').textContent = isBiweekly
+          ? `−$${discount.toFixed(2)}`
+          : '$0.00';
+        document.getElementById('summary-shipping-lbl').textContent = shipCost === 0
+          ? (transitDays === 1 ? 'Red Hook roastery pickup' : '1 kg tin complimentary courier')
+          : `${transitDays}-day carbon-accounted parcel`;
+        document.getElementById('summary-shipping').textContent = `$${shipCost.toFixed(2)}`;
+        document.getElementById('summary-total').textContent = `$${total.toFixed(2)}`;
+
+        const lot = LOTS[activeLotId];
+        document.getElementById('confirm-btn-label').textContent = lot.bagsLeft > 0
+          ? 'Hold Allocation from Tuesday Batch'
+          : 'Join Priority Waitlist (Zero Charge)';
+        document.getElementById('confirm-btn-price').textContent = `$${total.toFixed(2)}`;
+      }
+
+      // Wire Lot Switcher
+      document.querySelectorAll('.lot-pill').forEach((pill) => {
+        pill.addEventListener('click', () => applyLot(pill.dataset.lot));
+      });
+
+      // Wire Roast Curve Scrubber, Milestone Buttons & SVG Pointer Scrubbing
+      const scrubberEl = document.getElementById('roast-scrubber');
+      scrubberEl.addEventListener('input', (e) => {
+        updateTelemetryUI(Number(e.target.value));
+      });
+
+      document.querySelectorAll('.phase-btn').forEach((btn) => {
+        btn.addEventListener('click', () => {
+          const lot = LOTS[activeLotId];
+          const phase = lot.phases[Number(btn.dataset.phase)];
+          if (!phase) return;
+          scrubberEl.value = String(phase.sec);
+          updateTelemetryUI(phase.sec);
+        });
+      });
+
+      const svgEl = document.getElementById('roast-svg');
+      let draggingSvg = false;
+      const scrubFromPointer = (clientX) => {
+        const rect = svgEl.getBoundingClientRect();
+        if (!rect.width) return;
+        const viewX = ((clientX - rect.left) / rect.width) * 602;
+        const clampedX = Math.max(48, Math.min(536, viewX));
+        const ratio = (clampedX - 48) / (536 - 48);
+        const sec = Math.round(ratio * LOTS[activeLotId].durationSec);
+        scrubberEl.value = String(sec);
+        updateTelemetryUI(sec);
+      };
+
+      svgEl.addEventListener('pointerdown', (e) => {
+        draggingSvg = true;
+        scrubFromPointer(e.clientX);
+      });
+      window.addEventListener('pointermove', (e) => {
+        if (draggingSvg) scrubFromPointer(e.clientX);
+      });
+      window.addEventListener('pointerup', () => {
+        draggingSvg = false;
+      });
+      svgEl.addEventListener('mousemove', (e) => {
+        if (!draggingSvg && !prefersReducedMotion.matches) {
+          scrubFromPointer(e.clientX);
+        }
+      });
+
+      // Wire Brew Dialer
+      document.querySelectorAll('.method-btn').forEach((btn) => {
+        btn.addEventListener('click', () => {
+          activeMethod = btn.dataset.method;
+          document.querySelectorAll('.method-btn').forEach((b) => {
+            b.setAttribute('aria-pressed', b === btn ? 'true' : 'false');
+          });
+          updateBrewRecipe();
+        });
+      });
+
+      const doseSlider = document.getElementById('dose-slider');
+      doseSlider.addEventListener('input', (e) => {
+        activeDose = Number(e.target.value);
+        updateBrewRecipe();
+      });
+
+      document.querySelectorAll('.dose-chip').forEach((chip) => {
+        chip.addEventListener('click', () => {
+          activeDose = Number(chip.dataset.dose);
+          doseSlider.value = String(activeDose);
+          updateBrewRecipe();
+        });
+      });
+
+      // Wire Allocation Form
+      const reserveForm = document.getElementById('reserve-form');
+      const emailInput = document.getElementById('patron-email');
+      const emailError = document.getElementById('email-error');
+      const feedbackEl = document.getElementById('reservation-feedback');
+
+      reserveForm.addEventListener('change', updateOrderSummary);
+
+      emailInput.addEventListener('input', () => {
+        if (emailInput.getAttribute('aria-invalid') === 'true' && /^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(emailInput.value.trim())) {
+          emailInput.setAttribute('aria-invalid', 'false');
+          emailError.hidden = true;
+        }
+      });
+
+      reserveForm.addEventListener('submit', (e) => {
+        e.preventDefault();
+        const email = emailInput.value.trim();
+        if (!/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(email)) {
+          emailInput.setAttribute('aria-invalid', 'true');
+          emailError.hidden = false;
+          emailInput.focus();
+          return;
+        }
+        emailInput.setAttribute('aria-invalid', 'false');
+        emailError.hidden = true;
+
+        const lot = LOTS[activeLotId];
+        const packInput = document.querySelector('input[name="pack"]:checked');
+        const grindInput = document.querySelector('input[name="grind"]:checked');
+        const totalTxt = document.getElementById('summary-total').textContent;
+        const arriveTxt = document.getElementById('date-arrive').textContent;
+
+        if (lot.bagsLeft > 0) {
+          lot.bagsLeft = Math.max(0, lot.bagsLeft - 1);
+          document.getElementById('lot-availability').textContent = `LIVE · ${lot.bagsLeft} / ${lot.bagsTotal} BAGS LEFT`;
+        }
+
+        const bagIndex = lot.bagsTotal - lot.bagsLeft;
+        const token = `HR-${activeLotId}-${String(bagIndex).padStart(2, '0')}R`;
+        feedbackEl.dataset.confirmed = 'true';
+        const refStrong = document.createElement('strong');
+        refStrong.textContent = `Allocation Held · Ref ${token}: `;
+        const emailStrong = document.createElement('strong');
+        emailStrong.textContent = email;
+        const arriveStrong = document.createElement('strong');
+        arriveStrong.textContent = arriveTxt;
+        feedbackEl.replaceChildren(
+          refStrong,
+          document.createTextNode(`${packInput.dataset.label} (${grindInput.value}, ${totalTxt}) reserved for `),
+          emailStrong,
+          document.createTextNode('. Target counter arrival: '),
+          arriveStrong,
+          document.createTextNode('. Cropster roast-curve CSV dispatches Tuesday at drop.')
+        );
+      });
+
+      // Print Dossier action
+      document.getElementById('print-dossier-btn').addEventListener('click', () => {
+        window.print();
+      });
+
+      // Initial render
+      applyLot('214');
+      updateBrewRecipe();
+    })();
+  </script>
 </body>
 </html>

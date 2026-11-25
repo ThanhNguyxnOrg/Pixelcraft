@@ -23,9 +23,11 @@ The live site is deployed at https://thanhnguyxnorg.github.io/Pixelcraft/. [`.gi
 
 ## Architecture and craft choices
 
-The showcase combines an interactive sampled `PixelLogo` masthead, GSAP (`SplitText`, `ScrollTrigger`) and `motion` spring choreography, interactive `MotionDemos` studies, the **22-exhibit** Multi-Stack Proof Gallery (with `Mobile 390` / `Desktop 1440` live preview), Loop, Authority Order, Direction Receipt, QA Tooling, Searchable Skill Index, Floor, FAQ, Installer Builder, and a mobile bottom thumb-zone dock:
+The showcase combines an interactive sampled `PixelLogo` masthead, GSAP (`SplitText`, `ScrollTrigger`) and `motion` spring choreography, interactive `MotionDemos` studies, the **22-exhibit** Multi-Stack Proof Gallery (with `Mobile 390` / `Desktop 1440` live preview and URL deep-linking), Loop, Production Engineering Blueprint, Authority Order, Direction Receipt, QA Tooling, Searchable Skill Index, Floor, FAQ, Installer Builder, global `Ctrl/⌘+K` Command Palette, and a mobile bottom thumb-zone dock:
 
 - **Accessible choreography & WCAG 2.2.2 motion pause:** Every GSAP timeline, `motion` spring layout transition, and `PixelLogo` particle canvas honors `prefers-reduced-motion: reduce`, pauses automatically when scrolled off-screen or hidden, and stops immediately via the persistent `Pause page motion` control.
+- **Technical SEO, Schema.org & agent discovery:** `scripts/sync-repo-data.mjs` generates `public/sitemap.xml` (indexing the showcase + all 22 standalone exhibits), `public/robots.txt`, `public/llms.txt`, and `public/manifest.webmanifest`, while `index.html` and every exhibit include canonical URLs and `application/ld+json` structured data.
+- **Hardened server & zero-telemetry posture:** `scripts/serve.mjs` enforces `Content-Security-Policy`, `Permissions-Policy`, `Cross-Origin-Opener-Policy`, `X-Frame-Options`, `nosniff`, and immutable asset caching with zero cookies or third-party trackers.
 - **22 multi-stack proof exhibits:** Paired before/after HTML fixtures under `public/gallery/` span five ecosystems with direct `Open demo ↗` standalone views and inspectable Prompt & Code tabs:
   - **Mobile (`4`):** `swiftui` (SwiftUI Liquid Glass), `compose` (Jetpack Compose M3E + Wear OS), `flutter` (Flutter Impeller), `mobile` (SwiftUI Dynamic Type `AX3`)
   - **TUI & Desktop (`3`):** `kubetrace` (Rust Ratatui span waterfall), `tui` (Rust Ratatui `80×24 NO_COLOR=1`), `desktop` (Tauri v2 + Rust encrypted workspace)

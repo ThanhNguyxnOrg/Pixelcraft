@@ -218,3 +218,50 @@ test("public files are addressed through the deploy base, never the domain root"
       `${file}: wrap public paths in publicUrl() so they resolve under ${siteBase}`,
     );
 });
+
+test("technical SEO, Schema.org JSON-LD, font preloads, and discovery manifests ship in dist and all 22 exhibits", async () => {
+  const shell = await read("dist/index.html");
+  assert.match(shell, /<link\s+rel="canonical"\s+href="https:\/\//);
+  assert.match(
+    shell,
+    /<link\s+rel="preload"\s+as="font"\s+type="font\/woff2"/,
+    "dist/index.html must preload critical WOFF2 fonts",
+  );
+
+  const ldMatch = shell.match(
+    /<script\s+type="application\/ld\+json">([\s\S]*?)<\/script>/,
+  );
+  assert.ok(ldMatch, "dist/index.html missing Schema.org JSON-LD");
+  const ld = JSON.parse(ldMatch[1]);
+  assert.equal(ld["@context"], "https://schema.org");
+  assert.ok(Array.isArray(ld["@graph"]) && ld["@graph"].length >= 3);
+
+  const sitemap = await read("dist/sitemap.xml");
+  assert.match(sitemap, /<urlset\s+xmlns="http:\/\/www\.sitemaps\.org/);
+  const robots = await read("dist/robots.txt");
+  assert.match(robots, /Sitemap:\s+https:\/\/.+\/sitemap\.xml/);
+  const llms = await read("dist/llms.txt");
+  assert.match(llms, /^# Pixelcraft/m);
+  const manifest = JSON.parse(await read("dist/manifest.webmanifest"));
+  assert.equal(manifest.short_name, "Pixelcraft");
+
+  const gallery = JSON.parse(await read("src/generated/gallery.json"));
+  for (const id of Object.keys(gallery.items)) {
+    assert.ok(
+      sitemap.includes(`/gallery/${id}/after.html`),
+      `sitemap.xml missing exhibit ${id}`,
+    );
+    const html = await read(`public/gallery/${id}/after.html`);
+    assert.match(
+      html,
+      /name=["']description["']/i,
+      `${id}/after.html missing meta description`,
+    );
+    assert.match(
+      html,
+      /application\/ld\+json/i,
+      `${id}/after.html missing Schema.org JSON-LD`,
+    );
+    assert.match(html, /skip/i, `${id}/after.html missing keyboard skip link`);
+  }
+});

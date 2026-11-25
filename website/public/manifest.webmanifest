@@ -1,0 +1,17 @@
+{
+  "name": "Pixelcraft — Agent Skills for UI & UX Craft",
+  "short_name": "Pixelcraft",
+  "description": "Portable Agent Skills pack for distinctive UI and rigorous UX across frontend stacks",
+  "start_url": "./",
+  "scope": "./",
+  "display": "standalone",
+  "background_color": "#090d12",
+  "theme_color": "#090d12",
+  "icons": [
+    {
+      "src": "favicon.png",
+      "sizes": "64x64",
+      "type": "image/png"
+    }
+  ]
+}

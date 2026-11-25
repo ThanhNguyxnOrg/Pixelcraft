@@ -1,4 +1,4 @@
-import { useDeferredValue, useMemo, useState } from "react";
+import { useDeferredValue, useEffect, useMemo, useState } from "react";
 import {
   CATEGORIES,
   LANGUAGE_FILTERS,
@@ -6,6 +6,7 @@ import {
   SKILLS,
   type Category,
 } from "../data";
+import { onJump, readUrlParam, writeUrlParams } from "../lib/urlState";
 import { PixelIcon, SectionHead } from "./pixel";
 
 type Filter = Category | "All";
@@ -24,12 +25,27 @@ function leadSummary(purpose: string): string {
 }
 
 export function SkillIndex() {
-  const [query, setQuery] = useState("");
+  const [query, setQuery] = useState(() => readUrlParam("skill") ?? "");
   const [filter, setFilter] = useState<Filter>("All");
   const [lang, setLang] = useState<string>("All");
-  const [open, setOpen] = useState<string | null>(null);
+  const [open, setOpen] = useState<string | null>(() => {
+    const initial = readUrlParam("skill");
+    return initial && SKILLS.some((s) => s.name === initial) ? initial : null;
+  });
   const [showAllMobile, setShowAllMobile] = useState(false);
   const q = useDeferredValue(query.trim().toLowerCase());
+
+  useEffect(() => {
+    return onJump((detail) => {
+      if (detail.kind === "skill") {
+        setFilter("All");
+        setLang("All");
+        setQuery(detail.query);
+        setOpen(detail.query);
+        writeUrlParams({ skill: detail.query });
+      }
+    });
+  }, []);
 
   const activeLangTerms = useMemo(
     () =>

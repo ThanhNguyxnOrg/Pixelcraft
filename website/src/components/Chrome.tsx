@@ -11,12 +11,14 @@ import {
   type IconName,
 } from "./pixel";
 import { publicUrl } from "../lib/publicUrl";
+import { dispatchJump } from "../lib/urlState";
 import { useMediaPlayback } from "../lib/useMediaPlayback";
 
 const NAV: [string, string][] = [
   ["#film", "Demos"],
   ["#gallery", "Gallery"],
   ["#loop", "Loop"],
+  ["#blueprint", "Blueprint"],
   ["#tools", "Tools"],
   ["#skills", "Skills"],
   ["#floor", "Floor"],
@@ -169,10 +171,21 @@ export function Header() {
               })}
             </ul>
           </nav>
+          <button
+            type="button"
+            onClick={() => dispatchJump({ kind: "palette" })}
+            aria-label="Search exhibits, skills, and commands (Ctrl or Command + K)"
+            className="inline-flex min-h-10 shrink-0 items-center gap-1.5 rounded-full border border-line bg-white/6 px-2.5 font-mono text-[0.75rem] text-ink-muted transition-colors hover:bg-white/12 hover:text-ink max-xl:ms-auto sm:px-3 motion-reduce:transition-none"
+          >
+            <PixelIcon name="search" size={12} />
+            <span aria-hidden="true" className="hidden sm:inline">
+              ⌘K
+            </span>
+          </button>
           <a
             data-magnetic
             href={REPO_URL}
-            className="inline-flex min-h-10 items-center gap-2 rounded-full bg-action px-3.5 font-mono text-[0.8125rem] font-semibold text-on-action shadow-glow-action transition-[background-color,transform] duration-150 hover:bg-ink active:scale-[0.97] max-xl:ms-auto sm:px-5 motion-reduce:transition-none"
+            className="inline-flex min-h-10 shrink-0 items-center gap-1.5 rounded-full bg-action px-3 font-mono text-[0.8125rem] font-semibold text-on-action shadow-glow-action transition-[background-color,transform] duration-150 hover:bg-ink active:scale-[0.97] sm:gap-2 sm:px-5 motion-reduce:transition-none"
           >
             <PixelIcon name="star" size={12} />
             <span>GitHub</span>
@@ -182,15 +195,15 @@ export function Header() {
             type="button"
             aria-expanded={open}
             aria-controls="mobile-nav"
+            aria-label={
+              open ? "Close section navigation" : "Open section navigation"
+            }
             onClick={() => setOpen(!open)}
-            className="inline-flex min-h-10 items-center gap-2 rounded-full border border-line bg-white/8 px-3 font-mono text-[0.75rem] text-ink hover:bg-white/14 xl:hidden"
+            className="inline-flex min-h-10 shrink-0 items-center gap-2 rounded-full border border-line bg-white/8 px-2.5 font-mono text-[0.75rem] text-ink hover:bg-white/14 sm:px-3 xl:hidden"
           >
             <PixelIcon name={open ? "close" : "menu"} size={13} />
-            <span className="max-[359px]:sr-only">
+            <span aria-hidden="true" className="hidden min-[440px]:inline">
               {open ? "Close" : "Menu"}
-            </span>
-            <span className="min-[360px]:sr-only">
-              {open ? "Close menu" : "Open menu"}
             </span>
           </button>
         </div>
@@ -334,12 +347,32 @@ export function Footer() {
             <p className="mt-5 font-mono text-[0.8125rem] text-ink-faint">
               v{VERSION} · MIT License · © 2026 Pixelcraft contributors
             </p>
-            <div className="mt-5 flex flex-wrap items-center gap-3 text-[0.9375rem]">
+            <p className="mt-2 font-mono text-[0.75rem] text-ink-faint">
+              0 cookies · 0 analytics trackers · 100% self-hosted fonts &amp;
+              assets
+            </p>
+            <div className="mt-5 flex flex-wrap items-center gap-2.5 text-[0.9375rem]">
               <a
                 href={REPO_URL}
                 className="inline-flex min-h-10 items-center gap-2 rounded-full border border-line bg-panel px-4 font-mono text-[0.8125rem] text-ink transition-colors hover:border-action hover:text-action motion-reduce:transition-none"
               >
                 GitHub <PixelIcon name="external" size={10} />
+              </a>
+              <a
+                href={publicUrl("llms.txt")}
+                target="_blank"
+                rel="noreferrer"
+                className="inline-flex min-h-10 items-center gap-1.5 rounded-full border border-line bg-panel px-3.5 font-mono text-[0.75rem] text-ink-muted transition-colors hover:border-action hover:text-action motion-reduce:transition-none"
+              >
+                llms.txt <PixelIcon name="external" size={10} />
+              </a>
+              <a
+                href={publicUrl("sitemap.xml")}
+                target="_blank"
+                rel="noreferrer"
+                className="inline-flex min-h-10 items-center gap-1.5 rounded-full border border-line bg-panel px-3.5 font-mono text-[0.75rem] text-ink-muted transition-colors hover:border-action hover:text-action motion-reduce:transition-none"
+              >
+                Sitemap <PixelIcon name="external" size={10} />
               </a>
               <button
                 type="button"

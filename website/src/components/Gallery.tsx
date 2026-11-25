@@ -14,6 +14,7 @@ import {
   type ScanFinding,
 } from "../data";
 import galleryMeta from "../generated/gallery.json";
+import { onJump, readUrlParam, writeUrlParams } from "../lib/urlState";
 import { EvidenceStamp, PixelIcon, PixelLabel, Reveal } from "./pixel";
 import { Tabs } from "./Tabs";
 
@@ -21,6 +22,15 @@ type StageTab = "compare" | "after" | "before" | "live" | "code" | "notes";
 type LiveViewport = "desktop" | "mobile";
 type EcosystemFilter = "All" | Ecosystem;
 type ModeFilter = "All" | GalleryItem["mode"];
+
+const VALID_STAGE_TABS = new Set<StageTab>([
+  "compare",
+  "after",
+  "before",
+  "live",
+  "code",
+  "notes",
+]);
 
 const ECOSYSTEMS: EcosystemFilter[] = [
   "All",
@@ -64,7 +74,10 @@ function groupedFindings(findings: ScanFinding[]) {
 }
 
 function ExhibitWorkbench({ item }: { item: GalleryItem }) {
-  const [tab, setTab] = useState<StageTab>("compare");
+  const [tab, setTab] = useState<StageTab>(() => {
+    const raw = readUrlParam("view") as StageTab | null;
+    return raw && VALID_STAGE_TABS.has(raw) ? raw : "compare";
+  });
   const [liveSide, setLiveSide] = useState<"after" | "before">("after");
   const [liveViewport, setLiveViewport] = useState<LiveViewport>(() =>
     typeof window !== "undefined" && window.innerWidth < 640
@@ -77,6 +90,7 @@ function ExhibitWorkbench({ item }: { item: GalleryItem }) {
   );
   const [activeRule, setActiveRule] = useState<string | null>(null);
   const [copied, setCopied] = useState(false);
+  const [sharedLink, setSharedLink] = useState(false);
   const [scale, setScale] = useState(1);
   const [dragging, setDragging] = useState(false);
   const stageRef = useRef<HTMLDivElement>(null);
@@ -157,6 +171,26 @@ function ExhibitWorkbench({ item }: { item: GalleryItem }) {
     } catch {}
   };
 
+  const selectStageTab = (next: StageTab) => {
+    setTab(next);
+    writeUrlParams({
+      exhibit: item.id,
+      view: next === "compare" ? null : next,
+    });
+  };
+
+  const shareDeepLink = async () => {
+    writeUrlParams(
+      { exhibit: item.id, view: tab === "compare" ? null : tab },
+      "#gallery",
+    );
+    try {
+      await navigator.clipboard.writeText(window.location.href);
+      setSharedLink(true);
+      window.setTimeout(() => setSharedLink(false), 1600);
+    } catch {}
+  };
+
   const stageTabs: [StageTab, string, string][] = [
     ["compare", "Split", "Split"],
     ["after", "Crafted", "Crafted"],
@@ -183,7 +217,7 @@ function ExhibitWorkbench({ item }: { item: GalleryItem }) {
                   key={id}
                   type="button"
                   aria-pressed={active}
-                  onClick={() => setTab(id)}
+                  onClick={() => selectStageTab(id)}
                   className={`min-h-10 rounded-ctl px-2.5 font-mono text-[0.75rem] font-medium transition-colors duration-150 sm:px-3.5 sm:text-[0.8125rem] motion-reduce:transition-none ${
                     active
                       ? "bg-paper-ink text-paper"
@@ -297,14 +331,24 @@ function ExhibitWorkbench({ item }: { item: GalleryItem }) {
                   </span>
                 </div>
 
-                <a
-                  href={item.liveAfter}
-                  target="_blank"
-                  rel="noreferrer"
-                  className="inline-flex min-h-9 items-center gap-1.5 rounded-full border border-action bg-raised px-3 font-mono text-[0.75rem] font-semibold text-action transition-colors duration-150 hover:bg-action hover:text-on-action sm:px-3.5 motion-reduce:transition-none"
-                >
-                  Open demo <PixelIcon name="external" size={10} />
-                </a>
+                <div className="flex items-center gap-1.5">
+                  <button
+                    type="button"
+                    onClick={shareDeepLink}
+                    className="inline-flex min-h-9 items-center gap-1.5 rounded-full border border-line bg-panel px-3 font-mono text-[0.75rem] text-ink-muted transition-colors hover:border-action hover:text-action motion-reduce:transition-none"
+                  >
+                    <PixelIcon name={sharedLink ? "check" : "copy"} size={11} />
+                    <span>{sharedLink ? "Link copied" : "Share"}</span>
+                  </button>
+                  <a
+                    href={item.liveAfter}
+                    target="_blank"
+                    rel="noreferrer"
+                    className="inline-flex min-h-9 items-center gap-1.5 rounded-full border border-action bg-raised px-3 font-mono text-[0.75rem] font-semibold text-action transition-colors duration-150 hover:bg-action hover:text-on-action sm:px-3.5 motion-reduce:transition-none"
+                  >
+                    Open demo <PixelIcon name="external" size={10} />
+                  </a>
+                </div>
               </div>
 
               {tab === "live" && liveViewport === "mobile" ? (
@@ -755,9 +799,36 @@ function ExhibitWorkbench({ item }: { item: GalleryItem }) {
 export function Gallery() {
   const [ecoFilter, setEcoFilter] = useState<EcosystemFilter>("All");
   const [modeFilter, setModeFilter] = useState<ModeFilter>("All");
-  const [active, setActive] = useState(GALLERY[0].id);
+  const [active, setActive] = useState(() => {
+    const initial = readUrlParam("exhibit");
+    return initial && GALLERY.some((g) => g.id === initial)
+      ? initial
+      : GALLERY[0].id;
+  });
   const [showAllSheet, setShowAllSheet] = useState(false);
   const workbenchAnchor = useRef<HTMLDivElement>(null);
+
+  useEffect(() => {
+    return onJump((detail) => {
+      if (
+        detail.kind === "exhibit" &&
+        GALLERY.some((g) => g.id === detail.id)
+      ) {
+        setEcoFilter("All");
+        setModeFilter("All");
+        setActive(detail.id);
+        writeUrlParams({
+          exhibit: detail.id,
+          view: detail.view === "compare" ? null : detail.view,
+        });
+      }
+    });
+  }, []);
+
+  const pickActive = (nextId: string) => {
+    setActive(nextId);
+    writeUrlParams({ exhibit: nextId });
+  };
 
   const visibleItems = useMemo(
     () =>
@@ -784,11 +855,11 @@ export function Gallery() {
 
   const stepExhibit = (delta: number) => {
     const nextIdx = (activeIndex + delta + items.length) % items.length;
-    setActive(items[nextIdx].id);
+    pickActive(items[nextIdx].id);
   };
 
   const selectCard = (nextId: string) => {
-    setActive(nextId);
+    pickActive(nextId);
     workbenchAnchor.current?.scrollIntoView({
       behavior: "smooth",
       block: "nearest",
@@ -929,7 +1000,7 @@ export function Gallery() {
             <select
               id="mobile-exhibit-picker"
               value={activeId}
-              onChange={(e) => setActive(e.target.value)}
+              onChange={(e) => pickActive(e.target.value)}
               className="min-h-11 w-full rounded-ctl border border-paper-ink bg-paper-card px-3 font-mono text-[0.8125rem] font-semibold text-paper-ink"
             >
               {items.map((g, idx) => (
@@ -979,7 +1050,7 @@ export function Gallery() {
           <Tabs
             items={items}
             value={activeId}
-            onChange={setActive}
+            onChange={pickActive}
             label="Multi-stack gallery exhibits"
             listClassName="rail-scroll mb-6 hidden gap-2 pb-2 md:flex"
             tabClassName={(selected) =>

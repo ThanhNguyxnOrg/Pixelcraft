@@ -93,6 +93,10 @@
     min-width: 0;
   }
 
+  section[id] {
+    scroll-margin-top: 5.25rem;
+  }
+
   @media (max-width: 1279px) {
     body {
       padding-bottom: calc(4.5rem + env(safe-area-inset-bottom, 0px));

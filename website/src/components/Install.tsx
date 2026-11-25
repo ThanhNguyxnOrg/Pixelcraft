@@ -1,4 +1,4 @@
-import { useState } from "react";
+import { useEffect, useState } from "react";
 import {
   AGENTS,
   AGENT_TARGETS,
@@ -8,6 +8,7 @@ import {
   REQUIRED_SKILLS,
   SKILLS,
 } from "../data";
+import { onJump, readUrlParam, writeUrlParams } from "../lib/urlState";
 import { CopyCommand, PixelIcon, SectionHead } from "./pixel";
 import { Tabs } from "./Tabs";
 
@@ -41,7 +42,12 @@ const chip = (on: boolean) =>
   }`;
 
 function Builder() {
-  const [agents, setAgents] = useState<string[]>(["claude"]);
+  const [agents, setAgents] = useState<string[]>(() => {
+    const initial = readUrlParam("agent");
+    return initial && AGENT_TARGETS.some((t) => t.id === initial)
+      ? [initial]
+      : ["claude"];
+  });
   const [scope, setScope] = useState<"project" | "global">("project");
   const [mode, setMode] = useState<"all" | "pick">("all");
   const [picked, setPicked] = useState<string[]>([
@@ -51,6 +57,18 @@ function Builder() {
   const [dry, setDry] = useState(false);
   const [force, setForce] = useState(false);
   const [docsMcp, setDocsMcp] = useState(false);
+
+  useEffect(() => {
+    return onJump((detail) => {
+      if (
+        detail.kind === "agent" &&
+        AGENT_TARGETS.some((t) => t.id === detail.id)
+      ) {
+        setAgents([detail.id]);
+        writeUrlParams({ agent: detail.id });
+      }
+    });
+  }, []);
 
   const toggle = (list: string[], v: string) =>
     list.includes(v) ? list.filter((x) => x !== v) : [...list, v];

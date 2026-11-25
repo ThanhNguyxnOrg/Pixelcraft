@@ -4,6 +4,13 @@
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width, initial-scale=1">
 <title>Aomori Thermal · Twilight Coast Sanctuary (SvelteKit · Pixelcraft)</title>
+  <meta name="description" content="Aomori Thermal Sanctuary — SvelteKit 2 coastal ryokan and cedar onsen reservation ledger with transparent seasonal night rates and rail arrival planning." />
+  <link rel="canonical" href="https://thanhnguyxnorg.github.io/Pixelcraft/gallery/booking/after.html" />
+  <meta property="og:type" content="website" />
+  <meta property="og:title" content="Aomori Thermal · Twilight Coast Sanctuary (SvelteKit · Pixelcraft)" />
+  <meta property="og:description" content="Aomori Thermal Sanctuary — SvelteKit 2 coastal ryokan and cedar onsen reservation ledger with transparent seasonal night rates and rail arrival planning." />
+  <meta property="og:url" content="https://thanhnguyxnorg.github.io/Pixelcraft/gallery/booking/after.html" />
+  <script type="application/ld+json">{"@context":"https://schema.org","@type":"LodgingBusiness","name":"Aomori Thermal · Twilight Coast Sanctuary (SvelteKit · Pixelcraft)","description":"Aomori Thermal Sanctuary — SvelteKit 2 coastal ryokan and cedar onsen reservation ledger with transparent seasonal night rates and rail arrival planning.","url":"https://thanhnguyxnorg.github.io/Pixelcraft/gallery/booking/after.html","isPartOf":{"@type":"WebSite","name":"Pixelcraft Multi-Stack UI Gallery","url":"https://thanhnguyxnorg.github.io/Pixelcraft/"}}</script>
 <link rel="stylesheet" href="../../fonts/gallery.css">
 <style>
   :root {
@@ -1027,9 +1034,15 @@
       animation: none !important;
     }
   }
+
+  .pc-skip-link { position: fixed; left: 12px; top: -120px; z-index: 9999; padding: 10px 16px; border-radius: 8px; background: #111827; color: #f9fafb; font: 600 13px/1.2 system-ui, sans-serif; text-decoration: none; border: 2px solid #96f2c6; }
+  .pc-skip-link:focus-visible { top: 12px; outline: 3px solid #96f2c6; outline-offset: 2px; }
+
+  @media print { .pc-skip-link { display: none; } body { -webkit-print-color-adjust: exact; print-color-adjust: exact; } }
 </style>
 </head>
 <body>
+  <a class="pc-skip-link" href="#main-stage">Skip to main content</a>
   <header class="twilight-band">
     <svg class="twilight-art" viewBox="0 0 1440 420" preserveAspectRatio="xMidYMid slice" aria-hidden="true">
       <defs>
@@ -1285,7 +1298,7 @@
     </div>
   </header>
 
-  <main class="sanctuary-deck">
+  <main id="main-stage" class="sanctuary-deck">
     <section class="suites-column" aria-labelledby="suites-heading">
       <div class="suites-header">
         <h2 class="suites-title" id="suites-heading">Cliffside Suites</h2>

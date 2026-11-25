@@ -1,121 +1,2613 @@
 <!doctype html>
 <html lang="en">
 <head>
-<meta charset="utf-8">
-<meta name="viewport" content="width=device-width, initial-scale=1">
-<title>Railward · SwiftUI iOS Departures (with Pixelcraft)</title>
-<link rel="stylesheet" href="../../fonts/gallery.css">
-<style>
-  :root {
-    --stage-bg: #10161c; --stage-ink: #e8eef0; --stage-dim: #9ab0ba;
-    --ios-bg: #f2f3f5; --ios-card: #ffffff; --ios-ink: #11181c; --ios-sub: #4b5862; --ios-line: #d4dce0;
-    --ios-accent: #0b5fd6; --ios-on-accent: #ffffff;
-    --ok: #0e6b44; --ok-bg: #e2f5ec; --warn: #9a4d04; --warn-bg: #fef0dc; --bad: #b4233f; --bad-bg: #fce6eb;
-    --sans: "Public Sans", -apple-system, BlinkMacSystemFont, system-ui, sans-serif;
-    --mono: "IBM Plex Mono", ui-monospace, monospace;
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>Railward Transit — SwiftUI Dynamic Type &amp; ViewThatFits Studio (with Pixelcraft)</title>
+  <meta name="description" content="Interactive iOS SwiftUI commuter-rail departures studio comparing Standard (.large) and Dynamic Type AX3 vertical reflow via ViewThatFits, safeAreaInset thumb-zone ergonomics, and ActivityKit Lock Screen Live Activities.">
+  <meta property="og:type" content="website">
+  <meta property="og:title" content="Railward Transit — SwiftUI Dynamic Type AX3 Reflow Studio">
+  <meta property="og:description" content="Side-by-side iOS SwiftUI NavigationStack departures demonstrating zero-clipping ViewThatFits vertical reflow, >= 50pt safeAreaInset primary action, and Lock Screen Live Activity preview.">
+  <meta property="og:url" content="https://pixelcraft.dev/gallery/mobile/after.html">
+  <meta property="og:site_name" content="Pixelcraft Gallery">
+  <meta name="twitter:card" content="summary_large_image">
+  <meta name="twitter:title" content="Railward Transit — SwiftUI Dynamic Type AX3 Reflow Studio">
+  <meta name="twitter:description" content="Interactive SwiftUI accessibility workbench: live Dynamic Type scaling (.medium to AX3), ViewThatFits row restructuring, calling-points sheet, and Lock Screen Live Activity.">
+  <link rel="canonical" href="https://pixelcraft.dev/gallery/mobile/after.html">
+  <link rel="stylesheet" href="../../fonts/gallery.css">
+  <script type="application/ld+json">
+  {
+    "@context": "https://schema.org",
+    "@type": "MobileApplication",
+    "name": "Railward Transit",
+    "operatingSystem": "iOS 18+",
+    "applicationCategory": "TravelApplication",
+    "description": "Illustrative iOS SwiftUI commuter-rail departures client demonstrating NavigationStack, ViewThatFits Dynamic Type AX3 reflow, safeAreaInset thumb-zone actions, and ActivityKit Lock Screen Live Activities.",
+    "offers": {
+      "@type": "Offer",
+      "price": "0",
+      "priceCurrency": "GBP"
+    }
   }
-  * { box-sizing: border-box; }
-  body { margin: 0; background: var(--stage-bg); color: var(--stage-ink); font-family: var(--sans); min-height: 100vh; padding: 24px 36px; display: flex; flex-direction: column; gap: 18px; }
-  header.meta { display: flex; justify-content: space-between; align-items: baseline; font-family: var(--mono); font-size: 12px; color: var(--stage-dim); }
-  header.meta strong { color: var(--stage-ink); font-family: var(--sans); font-size: 15px; }
-  main.phones { flex: 1; display: grid; grid-template-columns: repeat(2, 390px); justify-content: center; gap: 52px; align-items: start; }
-  .col { display: flex; flex-direction: column; align-items: center; }
-  .phone { width: 390px; height: 790px; background: var(--ios-bg); color: var(--ios-ink); border-radius: 44px; border: 8px solid #1e2a34; overflow: hidden; display: flex; flex-direction: column; }
-  .status { padding: 14px 26px 6px; display: flex; justify-content: space-between; font-size: 13px; font-weight: 700; color: var(--ios-ink); }
-  .nav-bar { padding: 6px 20px 12px; border-bottom: 1px solid var(--ios-line); background: var(--ios-bg); }
-  .nav-sub { font-family: var(--mono); font-size: 11px; color: var(--ios-sub); margin: 0 0 2px; text-transform: uppercase; letter-spacing: .04em; }
-  .nav-bar h1 { font-size: 28px; line-height: 1.1; margin: 0; font-weight: 800; letter-spacing: -.02em; }
-  .list { flex: 1; padding: 14px 16px; display: flex; flex-direction: column; gap: 10px; overflow: hidden; }
-  .row { background: var(--ios-card); border: 1px solid var(--ios-line); border-radius: 14px; padding: 12px 14px; display: flex; justify-content: space-between; align-items: center; gap: 12px; }
-  .row-stack { flex-direction: column; align-items: stretch; gap: 8px; }
-  .route { font-size: 16px; font-weight: 700; margin: 0; }
-  .meta-line { font-family: var(--mono); font-size: 12.5px; color: var(--ios-sub); margin: 3px 0 0; font-variant-numeric: tabular-nums; }
-  .pill { display: inline-flex; align-items: center; gap: 5px; font-family: var(--mono); font-size: 12px; font-weight: 600; padding: 5px 10px; border-radius: 8px; white-space: nowrap; }
-  .pill.ok { background: var(--ok-bg); color: var(--ok); }
-  .pill.bad { background: var(--bad-bg); color: var(--bad); }
-  .pill.warn { background: var(--warn-bg); color: var(--warn); }
-  .ax3 .nav-bar h1 { font-size: 32px; }
-  .ax3 .route { font-size: 21px; line-height: 1.2; }
-  .ax3 .meta-line { font-size: 15px; }
-  .ax3 .pill { font-size: 14px; align-self: flex-start; }
-  .dock { padding: 12px 16px 28px; border-top: 1px solid var(--ios-line); background: var(--ios-card); }
-  .cta { width: 100%; min-height: 50px; border-radius: 14px; border: 0; background: var(--ios-accent); color: var(--ios-on-accent); font: 700 16px var(--sans); cursor: pointer; }
-  .cta:focus-visible { outline: 3px solid var(--ios-ink); outline-offset: 2px; }
-  .home-safe { width: 134px; height: 5px; border-radius: 99px; background: var(--ios-ink); opacity: .28; margin: 12px auto 0; }
-  .cap { margin: 10px 0 0; font-family: var(--mono); font-size: 12px; color: var(--stage-dim); text-align: center; }
-  @media (max-width: 900px) {
-    main.phones { grid-template-columns: 1fr; }
-    .phone { width: 100%; max-width: 390px; }
-  }
-</style>
+  </script>
+  <style>
+    :root {
+      /* Core Railward Transit palette tokens from specification */
+      --rw-grouped-light: #F5F5F7;
+      --rw-graphite-ink: #1C1C1E;
+      --rw-signal-blue: #0066CC;
+      --rw-signal-green: #248A3D;
+
+      /* Studio workbench surfaces */
+      --studio-canvas: #E7EAEE;
+      --studio-grid-line: rgba(28, 28, 30, 0.045);
+      --studio-bar: #F5F5F7;
+      --studio-panel: #FBFBFD;
+      --studio-subpanel: #F2F3F6;
+      --studio-sunken: #E4E7EC;
+      --studio-rule: #CFD5DE;
+      --studio-rule-strong: #9EA7B5;
+      --studio-ink: #1C1C1E;
+      --studio-ink-secondary: #434750;
+      --studio-ink-muted: #5A606C;
+      --studio-accent: #0066CC;
+      --studio-accent-hover: #0052A3;
+      --studio-accent-soft: #E6F0FA;
+      --studio-accent-border: #99C2EB;
+      --studio-green-ink: #16652A;
+      --studio-green-soft: #E5F5E9;
+      --studio-green-border: #96D3A6;
+      --studio-amber-ink: #7A3E00;
+      --studio-amber-soft: #FDF0DF;
+      --studio-amber-border: #E5B879;
+      --focus-ring: #0066CC;
+
+      /* Machined anodized titanium iPhone chassis tokens */
+      --chassis-rim-a: #7A818B;
+      --chassis-rim-b: #4B515A;
+      --chassis-rim-c: #A5ACB6;
+      --chassis-chamfer: rgba(255, 255, 255, 0.45);
+      --chassis-bezel: #0E1013;
+      --chassis-island: #050608;
+      --chassis-island-stroke: rgba(255, 255, 255, 0.15);
+      --chassis-shadow-a: rgba(16, 20, 26, 0.18);
+      --chassis-shadow-b: rgba(16, 20, 26, 0.09);
+
+      /* iOS Semantic Tokens — System Light default */
+      --ios-bg: #F5F5F7;
+      --ios-card: #FFFFFF;
+      --ios-elevated: #F8F9FB;
+      --ios-sunken: #E9EBF0;
+      --ios-ink: #1C1C1E;
+      --ios-secondary: #46484E;
+      --ios-muted: #5E616A;
+      --ios-separator: #D6DAE2;
+      --ios-border-width: 1px;
+      --ios-accent: #0066CC;
+      --ios-accent-hover: #0052A3;
+      --ios-accent-ink: #0055B3;
+      --ios-accent-soft: #E7F1FC;
+      --ios-accent-border: #9EC5EC;
+      --ios-on-accent: #FFFFFF;
+      --ios-dock-bg: rgba(255, 255, 255, 0.92);
+      --ios-home-bar: rgba(28, 28, 30, 0.30);
+
+      /* Semantic rail status tokens (dot/shape + explicit label) */
+      --status-ok-dot: #248A3D;
+      --status-ok-ink: #145A26;
+      --status-ok-bg: #E5F5E9;
+      --status-ok-border: #98D4A7;
+
+      --status-warn-ink: #7C3A00;
+      --status-warn-bg: #FEF1DF;
+      --status-warn-border: #E5B778;
+
+      --status-bad-ink: #9B1C28;
+      --status-bad-bg: #FDE8EB;
+      --status-bad-border: #E7A3AD;
+
+      /* Guide overlay tokens */
+      --guide-stroke: #B84A00;
+      --guide-fill: rgba(184, 74, 0, 0.10);
+      --guide-badge-bg: #FFF3E8;
+
+      /* Typography */
+      --font-display: "Archivo", -apple-system, BlinkMacSystemFont, sans-serif;
+      --font-sans: "Public Sans", -apple-system, BlinkMacSystemFont, sans-serif;
+      --font-mono: "IBM Plex Mono", ui-monospace, SFMono-Regular, monospace;
+
+      /* Dynamic Type scale factor on Device 02 (default AX3 = 1.62) */
+      --ax-route-size: 22px;
+      --ax-meta-size: 14.5px;
+      --ax-pill-size: 13.5px;
+      --ax-title-size: 30px;
+      --ax-kicker-size: 12px;
+      --ax-cta-size: 17.5px;
+      --ax-sheet-size: 14px;
+    }
+
+    /* iOS System Dark appearance */
+    [data-appearance="dark"] {
+      --ios-bg: #0B0C0E;
+      --ios-card: #1C1C1E;
+      --ios-elevated: #262629;
+      --ios-sunken: #131417;
+      --ios-ink: #F5F5F7;
+      --ios-secondary: #C7C7CC;
+      --ios-muted: #9E9EA6;
+      --ios-separator: #34353A;
+      --ios-border-width: 1px;
+      --ios-accent: #0A6ED1;
+      --ios-accent-hover: #187FE6;
+      --ios-accent-ink: #6EB6FF;
+      --ios-accent-soft: rgba(10, 110, 209, 0.22);
+      --ios-accent-border: rgba(110, 182, 255, 0.42);
+      --ios-on-accent: #FFFFFF;
+      --ios-dock-bg: rgba(28, 28, 30, 0.94);
+      --ios-home-bar: rgba(245, 245, 247, 0.34);
+
+      --status-ok-dot: #32D74B;
+      --status-ok-ink: #82E69B;
+      --status-ok-bg: #122D1A;
+      --status-ok-border: #248A3D;
+
+      --status-warn-ink: #FFD18B;
+      --status-warn-bg: #332009;
+      --status-warn-border: #B86B14;
+
+      --status-bad-ink: #FFA5AF;
+      --status-bad-bg: #361318;
+      --status-bad-border: #C73A4A;
+    }
+
+    /* iOS Increased Contrast (@Environment(\.colorSchemeContrast) == .increased) */
+    [data-appearance="contrast"] {
+      --ios-bg: #E6E8ED;
+      --ios-card: #FFFFFF;
+      --ios-elevated: #FFFFFF;
+      --ios-sunken: #DCDFE6;
+      --ios-ink: #000000;
+      --ios-secondary: #1C1C1E;
+      --ios-muted: #2C2C30;
+      --ios-separator: #1C1C1E;
+      --ios-border-width: 2px;
+      --ios-accent: #004494;
+      --ios-accent-hover: #00316B;
+      --ios-accent-ink: #003B82;
+      --ios-accent-soft: #DCEAFB;
+      --ios-accent-border: #004494;
+      --ios-on-accent: #FFFFFF;
+      --ios-dock-bg: #FFFFFF;
+      --ios-home-bar: #1C1C1E;
+
+      --status-ok-dot: #0F5C24;
+      --status-ok-ink: #0A471B;
+      --status-ok-bg: #E0F5E5;
+      --status-ok-border: #0F5C24;
+
+      --status-warn-ink: #592800;
+      --status-warn-bg: #FFF0D9;
+      --status-warn-border: #6E3300;
+
+      --status-bad-ink: #7A0B18;
+      --status-bad-bg: #FFE6E9;
+      --status-bad-border: #7A0B18;
+    }
+
+    /* Dynamic Type Steps on Device 02 */
+    [data-dt-step="medium"] {
+      --ax-route-size: 14.5px;
+      --ax-meta-size: 11.5px;
+      --ax-pill-size: 11px;
+      --ax-title-size: 24px;
+      --ax-kicker-size: 10px;
+      --ax-cta-size: 14.5px;
+      --ax-sheet-size: 11.5px;
+    }
+
+    [data-dt-step="large"] {
+      --ax-route-size: 16px;
+      --ax-meta-size: 12px;
+      --ax-pill-size: 11.5px;
+      --ax-title-size: 26px;
+      --ax-kicker-size: 10.5px;
+      --ax-cta-size: 15.5px;
+      --ax-sheet-size: 12px;
+    }
+
+    [data-dt-step="xxxlarge"] {
+      --ax-route-size: 18px;
+      --ax-meta-size: 13px;
+      --ax-pill-size: 12px;
+      --ax-title-size: 28px;
+      --ax-kicker-size: 11px;
+      --ax-cta-size: 16.5px;
+      --ax-sheet-size: 12.5px;
+    }
+
+    [data-dt-step="ax1"] {
+      --ax-route-size: 20px;
+      --ax-meta-size: 13.5px;
+      --ax-pill-size: 13px;
+      --ax-title-size: 29px;
+      --ax-kicker-size: 11.5px;
+      --ax-cta-size: 17px;
+      --ax-sheet-size: 13.5px;
+    }
+
+    [data-dt-step="ax3"] {
+      --ax-route-size: 22px;
+      --ax-meta-size: 14.5px;
+      --ax-pill-size: 13.5px;
+      --ax-title-size: 31px;
+      --ax-kicker-size: 12px;
+      --ax-cta-size: 17.5px;
+      --ax-sheet-size: 14px;
+    }
+
+    *,
+    *::before,
+    *::after {
+      box-sizing: border-box;
+    }
+
+    html,
+    body {
+      margin: 0;
+      padding: 0;
+      min-height: 100vh;
+      background-color: var(--studio-canvas);
+      background-image:
+        linear-gradient(to right, var(--studio-grid-line) 1px, transparent 1px),
+        linear-gradient(to bottom, var(--studio-grid-line) 1px, transparent 1px);
+      background-size: 32px 32px;
+      color: var(--studio-ink);
+      font-family: var(--font-sans);
+      -webkit-font-smoothing: antialiased;
+    }
+
+    button,
+    input,
+    select {
+      font: inherit;
+      color: inherit;
+    }
+
+    /* Accessible Skip Link */
+    .skip-link {
+      position: absolute;
+      top: -120px;
+      left: 16px;
+      z-index: 999;
+      padding: 10px 16px;
+      border-radius: 8px;
+      background: var(--studio-ink);
+      color: var(--studio-panel);
+      font-weight: 700;
+      font-size: 13px;
+      text-decoration: none;
+      border: 2px solid var(--studio-panel);
+    }
+
+    .skip-link:focus,
+    .skip-link:focus-visible {
+      top: 10px;
+      outline: 3px solid var(--focus-ring);
+      outline-offset: 2px;
+    }
+
+    /* Universal 3px Keyboard Focus Visibility */
+    a:focus-visible,
+    button:focus-visible,
+    input:focus-visible,
+    [tabindex]:focus-visible {
+      outline: 3px solid var(--focus-ring);
+      outline-offset: 2px;
+    }
+
+    [data-appearance="dark"] .ios-screen button:focus-visible {
+      outline: 3px solid var(--ios-accent-ink);
+      outline-offset: 2px;
+    }
+
+    .tabular {
+      font-variant-numeric: tabular-nums;
+    }
+
+    .sr-only {
+      position: absolute;
+      width: 1px;
+      height: 1px;
+      padding: 0;
+      margin: -1px;
+      overflow: hidden;
+      clip: rect(0, 0, 0, 0);
+      white-space: nowrap;
+      border: 0;
+    }
+
+    /* Top Studio Bar (48px single-row on 1440x900) */
+    .studio-topbar {
+      min-height: 48px;
+      padding: 6px 24px;
+      background: var(--studio-bar);
+      border-bottom: 1px solid var(--studio-rule);
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      gap: 12px;
+    }
+
+    .brand-cluster {
+      display: flex;
+      align-items: center;
+      gap: 9px;
+      min-width: 0;
+    }
+
+    .brand-badge-icon {
+      width: 26px;
+      height: 26px;
+      border-radius: 7px;
+      background: var(--studio-accent);
+      color: var(--ios-on-accent);
+      display: inline-flex;
+      align-items: center;
+      justify-content: center;
+      flex-shrink: 0;
+    }
+
+    .brand-titles {
+      display: flex;
+      align-items: center;
+      gap: 8px;
+      flex-wrap: nowrap;
+      min-width: 0;
+    }
+
+    .brand-name {
+      font-family: var(--font-display);
+      font-size: 14.5px;
+      font-weight: 800;
+      letter-spacing: 0.05em;
+      text-transform: uppercase;
+      color: var(--studio-ink);
+      white-space: nowrap;
+    }
+
+    .brand-stack-pill {
+      font-family: var(--font-mono);
+      font-size: 10.5px;
+      font-weight: 500;
+      padding: 2px 8px;
+      border-radius: 999px;
+      background: var(--studio-accent-soft);
+      border: 1px solid var(--studio-accent-border);
+      color: var(--studio-accent);
+      white-space: nowrap;
+    }
+
+    .fixture-pill {
+      font-family: var(--font-mono);
+      font-size: 10px;
+      padding: 2px 7px;
+      border-radius: 999px;
+      background: var(--studio-amber-soft);
+      border: 1px solid var(--studio-amber-border);
+      color: var(--studio-amber-ink);
+      white-space: nowrap;
+    }
+
+    .topbar-controls {
+      display: flex;
+      align-items: center;
+      gap: 10px;
+      flex-wrap: nowrap;
+    }
+
+    .control-cluster {
+      display: flex;
+      align-items: center;
+      gap: 6px;
+    }
+
+    .cluster-label {
+      font-family: var(--font-mono);
+      font-size: 10px;
+      font-weight: 500;
+      text-transform: uppercase;
+      letter-spacing: 0.05em;
+      color: var(--studio-ink-secondary);
+      white-space: nowrap;
+    }
+
+    .seg-bar {
+      display: inline-flex;
+      align-items: center;
+      padding: 2px;
+      gap: 2px;
+      background: var(--studio-sunken);
+      border: 1px solid var(--studio-rule);
+      border-radius: 8px;
+    }
+
+    .seg-btn {
+      appearance: none;
+      border: 1px solid transparent;
+      background: transparent;
+      color: var(--studio-ink-secondary);
+      font-family: var(--font-mono);
+      font-size: 10.5px;
+      font-weight: 500;
+      padding: 4px 7px;
+      min-height: 26px;
+      border-radius: 6px;
+      cursor: pointer;
+      white-space: nowrap;
+      transition: background-color 140ms ease, border-color 140ms ease, color 140ms ease;
+    }
+
+    .seg-btn:hover {
+      color: var(--studio-ink);
+    }
+
+    .seg-btn[aria-pressed="true"] {
+      background: var(--studio-panel);
+      color: var(--studio-ink);
+      border-color: var(--studio-rule-strong);
+      font-weight: 600;
+    }
+
+    /* Main 3-Column Studio Stage (1440x900 exact fit) */
+    .studio-stage {
+      max-width: 1440px;
+      margin: 0 auto;
+      padding: 10px 24px 10px;
+      display: grid;
+      grid-template-columns: 408px 408px minmax(0, 1fr);
+      gap: 18px;
+      align-items: start;
+    }
+
+    .device-column {
+      display: flex;
+      flex-direction: column;
+      gap: 5px;
+      min-width: 0;
+    }
+
+    .device-plate {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      gap: 6px;
+      padding: 0 6px;
+      min-height: 22px;
+    }
+
+    .plate-title {
+      font-family: var(--font-mono);
+      font-size: 10.5px;
+      font-weight: 600;
+      letter-spacing: 0.04em;
+      text-transform: uppercase;
+      color: var(--studio-ink);
+      white-space: nowrap;
+    }
+
+    .plate-trait {
+      font-family: var(--font-mono);
+      font-size: 10px;
+      font-weight: 500;
+      color: var(--studio-accent);
+      background: var(--studio-accent-soft);
+      border: 1px solid var(--studio-accent-border);
+      padding: 1px 7px;
+      border-radius: 999px;
+      white-space: nowrap;
+    }
+
+    /* Machined iOS Hardware Frame */
+    .ios-chassis {
+      position: relative;
+      width: 408px;
+      height: 772px;
+      border-radius: 48px;
+      padding: 4px;
+      background: linear-gradient(145deg, var(--chassis-rim-c) 0%, var(--chassis-rim-a) 48%, var(--chassis-rim-b) 100%);
+      box-shadow:
+        0 16px 30px var(--chassis-shadow-a),
+        0 4px 10px var(--chassis-shadow-b),
+        inset 0 1px 1px var(--chassis-chamfer);
+    }
+
+    .ios-chassis::before {
+      content: "";
+      position: absolute;
+      left: -2.5px;
+      top: 128px;
+      width: 2.5px;
+      height: 26px;
+      border-radius: 2px 0 0 2px;
+      background: var(--chassis-rim-b);
+      box-shadow: 0 42px 0 var(--chassis-rim-b), 0 88px 0 var(--chassis-rim-b);
+    }
+
+    .ios-chassis::after {
+      content: "";
+      position: absolute;
+      right: -2.5px;
+      top: 176px;
+      width: 2.5px;
+      height: 60px;
+      border-radius: 0 2px 2px 0;
+      background: var(--chassis-rim-b);
+    }
+
+    .oled-bezel {
+      width: 100%;
+      height: 100%;
+      border-radius: 44px;
+      padding: 8px;
+      background: var(--chassis-bezel);
+    }
+
+    .ios-screen {
+      container-type: inline-size;
+      position: relative;
+      width: 100%;
+      height: 100%;
+      border-radius: 36px;
+      background: var(--ios-bg);
+      color: var(--ios-ink);
+      display: flex;
+      flex-direction: column;
+      overflow: hidden;
+      transition: background-color 160ms ease, color 160ms ease;
+    }
+
+    /* iOS Status Bar + Dynamic Island */
+    .ios-statusbar {
+      height: 36px;
+      padding: 8px 20px 2px;
+      display: grid;
+      grid-template-columns: 1fr auto 1fr;
+      align-items: center;
+      gap: 6px;
+      flex-shrink: 0;
+    }
+
+    .status-clock {
+      font-size: 13px;
+      font-weight: 700;
+      letter-spacing: -0.01em;
+      color: var(--ios-ink);
+    }
+
+    .dynamic-island {
+      min-width: 108px;
+      max-width: 152px;
+      height: 24px;
+      padding: 0 9px;
+      border-radius: 999px;
+      background: var(--chassis-island);
+      border: 1px solid var(--chassis-island-stroke);
+      display: inline-flex;
+      align-items: center;
+      justify-content: space-between;
+      gap: 6px;
+      color: var(--rw-grouped-light);
+    }
+
+    .island-dot {
+      width: 7px;
+      height: 7px;
+      border-radius: 999px;
+      background: var(--rw-signal-green);
+      flex-shrink: 0;
+    }
+
+    .dynamic-island[data-pinned="true"] .island-dot {
+      background: #4DA3FF;
+    }
+
+    .island-readout {
+      font-family: var(--font-mono);
+      font-size: 9.5px;
+      font-weight: 500;
+      letter-spacing: 0.02em;
+      white-space: nowrap;
+      overflow: hidden;
+    }
+
+    .status-telemetry {
+      display: flex;
+      align-items: center;
+      justify-content: flex-end;
+      gap: 5px;
+      font-family: var(--font-mono);
+      font-size: 10.5px;
+      font-weight: 600;
+      color: var(--ios-ink);
+    }
+
+    /* In-Phone Live Activity Banner (expands when pinned) */
+    .phone-live-banner {
+      margin: 2px 12px 4px;
+      padding: 8px 11px;
+      border-radius: 14px;
+      background: var(--chassis-bezel);
+      color: var(--rw-grouped-light);
+      border: 1px solid rgba(255, 255, 255, 0.18);
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      gap: 8px;
+      flex-shrink: 0;
+    }
+
+    .phone-live-banner[hidden] {
+      display: none;
+    }
+
+    .live-banner-copy {
+      min-width: 0;
+    }
+
+    .live-banner-kicker {
+      display: block;
+      font-family: var(--font-mono);
+      font-size: 9.5px;
+      text-transform: uppercase;
+      letter-spacing: 0.05em;
+      color: #8CC4FF;
+    }
+
+    .live-banner-route {
+      display: block;
+      font-size: 12.5px;
+      font-weight: 700;
+      color: #FFFFFF;
+    }
+
+    .live-banner-pill {
+      font-family: var(--font-mono);
+      font-size: 10.5px;
+      font-weight: 600;
+      padding: 3px 8px;
+      border-radius: 8px;
+      background: rgba(255, 255, 255, 0.14);
+      color: #FFFFFF;
+      flex-shrink: 0;
+    }
+
+    /* SwiftUI NavigationStack Large Title Header */
+    .ios-nav-stack {
+      padding: 4px 16px 8px;
+      border-bottom: var(--ios-border-width) solid var(--ios-separator);
+      background: var(--ios-bg);
+      flex-shrink: 0;
+    }
+
+    .nav-top-line {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      gap: 6px;
+      flex-wrap: wrap;
+    }
+
+    .nav-station-kicker {
+      margin: 0;
+      font-family: var(--font-mono);
+      font-size: 10.5px;
+      font-weight: 500;
+      text-transform: uppercase;
+      letter-spacing: 0.04em;
+      color: var(--ios-secondary);
+    }
+
+    .phone-ax .nav-station-kicker {
+      font-size: var(--ax-kicker-size);
+    }
+
+    .nav-mode-chip {
+      font-family: var(--font-mono);
+      font-size: 10px;
+      font-weight: 500;
+      padding: 1px 6px;
+      border-radius: 6px;
+      background: var(--ios-accent-soft);
+      border: 1px solid var(--ios-accent-border);
+      color: var(--ios-accent-ink);
+    }
+
+    .nav-large-title {
+      margin: 2px 0 0;
+      font-family: var(--font-display);
+      font-size: 26px;
+      line-height: 1.08;
+      font-weight: 800;
+      letter-spacing: -0.02em;
+      color: var(--ios-ink);
+    }
+
+    .phone-ax .nav-large-title {
+      font-size: var(--ax-title-size);
+    }
+
+    /* Scrollable Departures + Calling Points Body */
+    .departures-scroll {
+      flex: 1;
+      min-height: 0;
+      overflow-y: auto;
+      padding: 10px 12px;
+      display: flex;
+      flex-direction: column;
+      gap: 8px;
+    }
+
+    .departures-list {
+      display: flex;
+      flex-direction: column;
+      gap: 7px;
+    }
+
+    /* Interactive SwiftUI Departure Row (ViewThatFits HStack vs VStack) */
+    .dep-row {
+      appearance: none;
+      width: 100%;
+      min-height: 54px;
+      text-align: left;
+      background: var(--ios-card);
+      border: var(--ios-border-width) solid var(--ios-separator);
+      border-radius: 14px;
+      padding: 9px 10px;
+      display: flex;
+      flex-direction: row;
+      align-items: center;
+      justify-content: space-between;
+      gap: 8px;
+      cursor: pointer;
+      position: relative;
+      transition: background-color 140ms ease, border-color 140ms ease;
+    }
+
+    .dep-row:hover {
+      background: var(--ios-elevated);
+    }
+
+    .dep-row[aria-pressed="true"] {
+      border-color: var(--ios-accent);
+      box-shadow: inset 0 0 0 1px var(--ios-accent);
+      background: var(--ios-card);
+    }
+
+    /* ViewThatFits(in: .horizontal) -> VStack fallback when AX scale or narrow container */
+    .dep-row[data-layout="vstack"] {
+      flex-direction: column;
+      align-items: flex-start;
+      justify-content: flex-start;
+      gap: 7px;
+      padding: 10px 13px;
+    }
+
+    .dep-primary {
+      min-width: 0;
+      flex: 1;
+    }
+
+    .dep-row[data-layout="vstack"] .dep-primary {
+      width: 100%;
+      flex: none;
+    }
+
+    .dep-title-line {
+      display: flex;
+      align-items: baseline;
+      gap: 6px;
+      flex-wrap: wrap;
+    }
+
+    .dep-time {
+      font-family: var(--font-mono);
+      font-size: 14px;
+      font-weight: 600;
+      color: var(--ios-accent-ink);
+      font-variant-numeric: tabular-nums;
+    }
+
+    .dep-destination {
+      font-size: 15px;
+      font-weight: 700;
+      line-height: 1.2;
+      color: var(--ios-ink);
+    }
+
+    .phone-ax .dep-time {
+      font-size: calc(var(--ax-route-size) * 0.86);
+    }
+
+    .phone-ax .dep-destination {
+      font-size: var(--ax-route-size);
+      line-height: 1.18;
+    }
+
+    .dep-submeta {
+      margin: 2px 0 0;
+      font-family: var(--font-mono);
+      font-size: 11px;
+      line-height: 1.3;
+      color: var(--ios-secondary);
+      font-variant-numeric: tabular-nums;
+    }
+
+    .phone-ax .dep-submeta {
+      font-size: var(--ax-meta-size);
+      margin-top: 3px;
+    }
+
+    /* Status Badges: Geometric Shape + Explicit Text (Never color alone) */
+    .status-pill {
+      display: inline-flex;
+      align-items: center;
+      gap: 4px;
+      font-family: var(--font-mono);
+      font-size: 10px;
+      font-weight: 600;
+      line-height: 1.22;
+      padding: 4px 6px;
+      border-radius: 8px;
+      border: var(--ios-border-width) solid transparent;
+      flex-shrink: 0;
+    }
+
+    .phone-ax .status-pill {
+      font-size: var(--ax-pill-size);
+      padding: 5px 10px;
+      white-space: normal;
+    }
+
+    .status-pill.ok {
+      background: var(--status-ok-bg);
+      color: var(--status-ok-ink);
+      border-color: var(--status-ok-border);
+    }
+
+    .status-pill.warn {
+      background: var(--status-warn-bg);
+      color: var(--status-warn-ink);
+      border-color: var(--status-warn-border);
+    }
+
+    .status-pill.bad {
+      background: var(--status-bad-bg);
+      color: var(--status-bad-ink);
+      border-color: var(--status-bad-border);
+    }
+
+    .status-dot-ok {
+      width: 8px;
+      height: 8px;
+      border-radius: 999px;
+      background: var(--status-ok-dot);
+      flex-shrink: 0;
+    }
+
+    /* Container fallback for narrow 320px screens so zero station names or pills ever clip */
+    @container (max-width: 336px) {
+      .dep-row {
+        flex-direction: column;
+        align-items: flex-start;
+        gap: 6px;
+      }
+
+      .status-pill {
+        white-space: normal;
+      }
+    }
+
+    /* Calling-Points & Boarding Accessibility Inset Sheet inside Phone */
+    .calling-sheet {
+      background: var(--ios-card);
+      border: var(--ios-border-width) solid var(--ios-separator);
+      border-radius: 14px;
+      padding: 9px 11px;
+      display: flex;
+      flex-direction: column;
+      gap: 6px;
+    }
+
+    .sheet-header-row {
+      display: flex;
+      align-items: baseline;
+      justify-content: space-between;
+      gap: 6px;
+      flex-wrap: wrap;
+    }
+
+    .sheet-kicker {
+      font-family: var(--font-mono);
+      font-size: 10px;
+      font-weight: 600;
+      text-transform: uppercase;
+      letter-spacing: 0.05em;
+      color: var(--ios-muted);
+    }
+
+    .phone-ax .sheet-kicker {
+      font-size: var(--ax-kicker-size);
+    }
+
+    .sheet-operator {
+      font-family: var(--font-mono);
+      font-size: 10.5px;
+      color: var(--ios-secondary);
+    }
+
+    .stops-inline {
+      margin: 0;
+      padding: 0;
+      list-style: none;
+      display: flex;
+      flex-wrap: wrap;
+      gap: 4px 8px;
+      font-family: var(--font-mono);
+      font-size: 11px;
+      line-height: 1.35;
+      color: var(--ios-ink);
+    }
+
+    .phone-ax .stops-inline {
+      font-size: var(--ax-sheet-size);
+      flex-direction: column;
+      gap: 3px;
+    }
+
+    .stops-inline li {
+      display: inline-flex;
+      align-items: baseline;
+      gap: 4px;
+    }
+
+    .stop-t {
+      color: var(--ios-accent-ink);
+      font-weight: 600;
+    }
+
+    .boarding-badges {
+      display: flex;
+      flex-wrap: wrap;
+      gap: 5px;
+      padding-top: 4px;
+      border-top: 1px solid var(--ios-separator);
+    }
+
+    .access-chip {
+      display: inline-flex;
+      align-items: center;
+      gap: 4px;
+      font-family: var(--font-mono);
+      font-size: 10.5px;
+      font-weight: 500;
+      padding: 3px 7px;
+      border-radius: 6px;
+      background: var(--ios-sunken);
+      color: var(--ios-ink);
+    }
+
+    .phone-ax .access-chip {
+      font-size: calc(var(--ax-sheet-size) * 0.94);
+    }
+
+    /* SwiftUI .safeAreaInset(edge: .bottom) Thumb-Zone Dock */
+    .safe-area-dock {
+      position: relative;
+      padding: 9px 14px 7px;
+      border-top: var(--ios-border-width) solid var(--ios-separator);
+      background: var(--ios-dock-bg);
+      flex-shrink: 0;
+    }
+
+    .pin-cta {
+      appearance: none;
+      width: 100%;
+      min-height: 52px;
+      padding: 10px 14px;
+      border-radius: 14px;
+      border: var(--ios-border-width) solid var(--ios-accent);
+      background: var(--ios-accent);
+      color: var(--ios-on-accent);
+      font-family: var(--font-sans);
+      font-size: 15px;
+      font-weight: 700;
+      line-height: 1.22;
+      display: inline-flex;
+      align-items: center;
+      justify-content: center;
+      gap: 8px;
+      text-align: center;
+      cursor: pointer;
+      transition: background-color 140ms ease, border-color 140ms ease;
+    }
+
+    .phone-ax .pin-cta {
+      font-size: var(--ax-cta-size);
+      min-height: 56px;
+    }
+
+    .pin-cta:hover {
+      background: var(--ios-accent-hover);
+    }
+
+    .pin-cta[aria-pressed="true"] {
+      background: var(--rw-signal-green);
+      border-color: var(--rw-signal-green);
+    }
+
+    [data-appearance="contrast"] .pin-cta[aria-pressed="true"] {
+      background: var(--status-ok-dot);
+      border-color: var(--ios-ink);
+    }
+
+    .safe-area-gap {
+      height: 14px;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+    }
+
+    .home-indicator {
+      width: 134px;
+      height: 5px;
+      margin: 0 auto;
+      border-radius: 999px;
+      background: var(--ios-home-bar);
+    }
+
+    /* Optional Ergonomics & Safe-Area Measurement Guides */
+    .guide-tag {
+      display: none;
+      font-family: var(--font-mono);
+      font-size: 9.5px;
+      font-weight: 600;
+      color: var(--guide-stroke);
+      background: var(--guide-badge-bg);
+      border: 1px dashed var(--guide-stroke);
+      padding: 1px 5px;
+      border-radius: 4px;
+    }
+
+    [data-guides="true"] .dep-row,
+    [data-guides="true"] .pin-cta {
+      outline: 1.5px dashed var(--guide-stroke);
+      outline-offset: -2px;
+    }
+
+    [data-guides="true"] .safe-area-gap {
+      background: var(--guide-fill);
+      border-top: 1px dashed var(--guide-stroke);
+      border-bottom: 1px dashed var(--guide-stroke);
+    }
+
+    [data-guides="true"] .guide-tag {
+      display: inline-block;
+    }
+
+    .device-caption {
+      margin: 0;
+      padding: 0 4px;
+      font-family: var(--font-mono);
+      font-size: 10.5px;
+      line-height: 1.3;
+      color: var(--studio-ink-secondary);
+    }
+
+    /* Column 3: SwiftUI Accessibility & Ergonomics Inspector */
+    .inspector-panel {
+      background: var(--studio-panel);
+      border: 1px solid var(--studio-rule);
+      border-radius: 20px;
+      padding: 12px 15px;
+      min-height: 816px;
+      display: flex;
+      flex-direction: column;
+      justify-content: space-between;
+      gap: 8px;
+      min-width: 0;
+    }
+
+    .inspector-header {
+      padding-bottom: 6px;
+      border-bottom: 1px solid var(--studio-rule);
+    }
+
+    .inspector-eyebrow {
+      margin: 0 0 2px;
+      font-family: var(--font-mono);
+      font-size: 10px;
+      font-weight: 600;
+      letter-spacing: 0.07em;
+      text-transform: uppercase;
+      color: var(--studio-accent);
+    }
+
+    .inspector-title {
+      margin: 0 0 3px;
+      font-family: var(--font-display);
+      font-size: 17.5px;
+      font-weight: 800;
+      letter-spacing: -0.015em;
+      color: var(--studio-ink);
+    }
+
+    .inspector-summary {
+      margin: 0;
+      font-size: 11.5px;
+      line-height: 1.35;
+      color: var(--studio-ink-secondary);
+    }
+
+    .inspector-card {
+      background: var(--studio-subpanel);
+      border: 1px solid var(--studio-rule);
+      border-radius: 12px;
+      padding: 8px 11px;
+      display: flex;
+      flex-direction: column;
+      gap: 6px;
+    }
+
+    .card-heading-row {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      gap: 8px;
+      flex-wrap: wrap;
+    }
+
+    .card-heading {
+      margin: 0;
+      font-family: var(--font-mono);
+      font-size: 10.5px;
+      font-weight: 600;
+      text-transform: uppercase;
+      letter-spacing: 0.05em;
+      color: var(--studio-ink);
+    }
+
+    .branch-pill {
+      font-family: var(--font-mono);
+      font-size: 10px;
+      font-weight: 600;
+      padding: 2px 7px;
+      border-radius: 999px;
+      background: var(--studio-green-soft);
+      border: 1px solid var(--studio-green-border);
+      color: var(--studio-green-ink);
+    }
+
+    /* Slider + Metrics */
+    .slider-row {
+      display: flex;
+      flex-direction: column;
+      gap: 3px;
+    }
+
+    .slider-label-line {
+      display: flex;
+      justify-content: space-between;
+      align-items: baseline;
+      gap: 8px;
+      font-size: 11.5px;
+      font-weight: 600;
+      color: var(--studio-ink);
+    }
+
+    .dt-slider {
+      width: 100%;
+      accent-color: var(--studio-accent);
+      height: 20px;
+      cursor: pointer;
+    }
+
+    .slider-ticks {
+      display: grid;
+      grid-template-columns: repeat(5, minmax(0, 1fr));
+      font-family: var(--font-mono);
+      font-size: 9.5px;
+      color: var(--studio-ink-muted);
+    }
+
+    .slider-ticks span:nth-child(2),
+    .slider-ticks span:nth-child(3),
+    .slider-ticks span:nth-child(4) {
+      text-align: center;
+    }
+
+    .slider-ticks span:last-child {
+      text-align: right;
+    }
+
+    .telemetry-grid {
+      display: grid;
+      grid-template-columns: repeat(3, minmax(0, 1fr));
+      gap: 6px;
+    }
+
+    .metric-box {
+      background: var(--studio-panel);
+      border: 1px solid var(--studio-rule);
+      border-radius: 8px;
+      padding: 5px 7px;
+    }
+
+    .metric-k {
+      display: block;
+      font-family: var(--font-mono);
+      font-size: 9px;
+      text-transform: uppercase;
+      letter-spacing: 0.04em;
+      color: var(--studio-ink-muted);
+    }
+
+    .metric-v {
+      display: block;
+      margin-top: 1px;
+      font-family: var(--font-mono);
+      font-size: 11px;
+      font-weight: 600;
+      color: var(--studio-ink);
+    }
+
+    .guide-toggle-row {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      gap: 8px;
+      padding-top: 4px;
+      border-top: 1px solid var(--studio-rule);
+    }
+
+    .guide-btn {
+      appearance: none;
+      background: var(--studio-panel);
+      border: 1px solid var(--studio-rule-strong);
+      border-radius: 7px;
+      padding: 4px 9px;
+      min-height: 28px;
+      font-family: var(--font-mono);
+      font-size: 10.5px;
+      font-weight: 600;
+      color: var(--studio-ink);
+      cursor: pointer;
+      transition: background-color 140ms ease, border-color 140ms ease;
+    }
+
+    .guide-btn[aria-pressed="true"] {
+      background: var(--guide-badge-bg);
+      border-color: var(--guide-stroke);
+      color: var(--guide-stroke);
+    }
+
+    /* 8-Coach Level Boarding & Bicycle Formation Strip */
+    .coach-strip {
+      display: grid;
+      grid-template-columns: repeat(8, minmax(0, 1fr));
+      gap: 4px;
+    }
+
+    .coach-cell {
+      background: var(--studio-panel);
+      border: 1px solid var(--studio-rule);
+      border-radius: 6px;
+      padding: 3px 2px;
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      gap: 1px;
+      font-family: var(--font-mono);
+      font-size: 9.5px;
+      color: var(--studio-ink-secondary);
+    }
+
+    .coach-cell.step-free {
+      background: var(--studio-accent-soft);
+      border-color: var(--studio-accent);
+      color: var(--studio-ink);
+      font-weight: 600;
+    }
+
+    .coach-tag {
+      font-size: 8px;
+      color: var(--studio-accent);
+    }
+
+    .inspector-meta-line {
+      margin: 0;
+      font-size: 11px;
+      line-height: 1.32;
+      color: var(--studio-ink-secondary);
+    }
+
+    /* Lock Screen ActivityKit Live Activity Preview Widget */
+    .lockscreen-widget {
+      background: #14171D;
+      color: #F5F5F7;
+      border-radius: 14px;
+      padding: 9px 11px;
+      border: 1px solid #2F3542;
+      display: flex;
+      flex-direction: column;
+      gap: 5px;
+    }
+
+    .lockscreen-widget[data-active="true"] {
+      border-color: #4DA3FF;
+      box-shadow: 0 0 0 1px #4DA3FF;
+    }
+
+    .ls-top {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      gap: 8px;
+      flex-wrap: wrap;
+    }
+
+    .ls-brand {
+      display: inline-flex;
+      align-items: center;
+      gap: 6px;
+      font-family: var(--font-mono);
+      font-size: 9.5px;
+      text-transform: uppercase;
+      letter-spacing: 0.06em;
+      color: #9EC8FF;
+    }
+
+    .ls-state-badge {
+      font-family: var(--font-mono);
+      font-size: 9.5px;
+      font-weight: 600;
+      padding: 2px 7px;
+      border-radius: 999px;
+      background: rgba(255, 255, 255, 0.12);
+      color: #E2E6EE;
+    }
+
+    .lockscreen-widget[data-active="true"] .ls-state-badge {
+      background: #145A26;
+      color: #A2F3B5;
+      border: 1px solid #32D74B;
+    }
+
+    .ls-main {
+      display: flex;
+      align-items: baseline;
+      justify-content: space-between;
+      gap: 10px;
+      flex-wrap: wrap;
+    }
+
+    .ls-route {
+      font-family: var(--font-display);
+      font-size: 15px;
+      font-weight: 700;
+      color: #FFFFFF;
+    }
+
+    .ls-plat {
+      font-family: var(--font-mono);
+      font-size: 11px;
+      font-weight: 600;
+      color: #8CC4FF;
+    }
+
+    .ls-progress-track {
+      height: 5px;
+      border-radius: 999px;
+      background: rgba(255, 255, 255, 0.14);
+      overflow: hidden;
+    }
+
+    .ls-progress-fill {
+      height: 100%;
+      width: 38%;
+      border-radius: 999px;
+      background: #4DA3FF;
+      transition: width 180ms ease;
+    }
+
+    .ls-foot {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      gap: 8px;
+      flex-wrap: wrap;
+      font-family: var(--font-mono);
+      font-size: 10px;
+      color: #C7CDD8;
+    }
+
+    /* SwiftUI Source Snippet & Palette Swatches */
+    .swift-snippet {
+      margin: 0;
+      padding: 6px 9px;
+      border-radius: 8px;
+      background: #181B20;
+      color: #E8ECF2;
+      font-family: var(--font-mono);
+      font-size: 10px;
+      line-height: 1.35;
+      overflow-x: auto;
+    }
+
+    .swift-kw {
+      color: #8CC4FF;
+    }
+
+    .swift-fn {
+      color: #9EE6B2;
+    }
+
+    .swatch-strip {
+      display: grid;
+      grid-template-columns: repeat(4, minmax(0, 1fr));
+      gap: 5px;
+    }
+
+    .swatch-item {
+      background: var(--studio-panel);
+      border: 1px solid var(--studio-rule);
+      border-radius: 7px;
+      padding: 4px 6px;
+      display: flex;
+      align-items: center;
+      gap: 5px;
+      min-width: 0;
+    }
+
+    .swatch-chip {
+      width: 13px;
+      height: 13px;
+      border-radius: 4px;
+      border: 1px solid rgba(28, 28, 30, 0.22);
+      flex-shrink: 0;
+    }
+
+    .swatch-code {
+      font-family: var(--font-mono);
+      font-size: 9.5px;
+      font-weight: 500;
+      color: var(--studio-ink);
+    }
+
+    .evidence-footer {
+      display: flex;
+      flex-wrap: wrap;
+      align-items: center;
+      justify-content: space-between;
+      gap: 5px;
+      padding-top: 5px;
+      border-top: 1px solid var(--studio-rule);
+      font-family: var(--font-mono);
+      font-size: 9.5px;
+      color: var(--studio-ink-muted);
+    }
+
+    .ev-badges {
+      display: flex;
+      flex-wrap: wrap;
+      gap: 4px;
+    }
+
+    .ev-tag {
+      padding: 1px 5px;
+      border-radius: 4px;
+      background: var(--studio-subpanel);
+      border: 1px solid var(--studio-rule);
+      color: var(--studio-ink-secondary);
+    }
+
+    /* Responsive Tablet & Mobile Reflow (0 horizontal overflow at 390px and 320px) */
+    @media (max-width: 1320px) {
+      .studio-topbar {
+        flex-wrap: wrap;
+      }
+
+      .brand-titles,
+      .topbar-controls {
+        flex-wrap: wrap;
+      }
+
+      .studio-stage {
+        grid-template-columns: repeat(2, minmax(0, 408px));
+        justify-content: center;
+      }
+
+      .inspector-panel {
+        grid-column: 1 / -1;
+        min-height: 0;
+      }
+    }
+
+    @media (max-width: 880px) {
+      html,
+      body {
+        overflow-x: clip;
+      }
+
+      .studio-topbar {
+        padding: 10px 14px;
+        flex-direction: column;
+        align-items: flex-start;
+      }
+
+      .brand-titles,
+      .brand-stack-pill,
+      .fixture-pill,
+      .plate-title,
+      .plate-trait,
+      .seg-btn {
+        white-space: normal;
+      }
+
+      .topbar-controls {
+        width: 100%;
+        justify-content: flex-start;
+        flex-wrap: wrap;
+      }
+
+      .control-cluster {
+        flex-wrap: wrap;
+      }
+
+      .seg-bar {
+        flex-wrap: wrap;
+      }
+
+      .studio-stage {
+        grid-template-columns: minmax(0, 1fr);
+        padding: 12px 12px 20px;
+        gap: 18px;
+      }
+
+      .device-column {
+        align-items: center;
+      }
+
+      .device-plate,
+      .device-caption {
+        width: 100%;
+        max-width: 408px;
+        flex-wrap: wrap;
+      }
+
+      .ios-chassis {
+        width: 100%;
+        max-width: 408px;
+        height: auto;
+        min-height: 680px;
+      }
+
+      .ios-chassis::before,
+      .ios-chassis::after {
+        display: none;
+      }
+
+      .departures-scroll {
+        max-height: none;
+        overflow-y: visible;
+      }
+
+      .oled-bezel,
+      .ios-screen {
+        height: auto;
+      }
+    }
+
+    @media (max-width: 440px) {
+      .studio-topbar {
+        padding: 10px;
+      }
+
+      .studio-stage {
+        padding: 10px 8px 18px;
+      }
+
+      .ios-chassis {
+        border-radius: 34px;
+        padding: 3px;
+        min-height: 0;
+      }
+
+      .oled-bezel {
+        border-radius: 31px;
+        padding: 5px;
+      }
+
+      .ios-screen {
+        border-radius: 26px;
+      }
+
+      .ios-statusbar {
+        padding: 8px 12px 2px;
+      }
+
+      .dynamic-island {
+        min-width: 78px;
+        max-width: 112px;
+        padding: 0 7px;
+      }
+
+      .inspector-panel {
+        padding: 12px;
+        border-radius: 16px;
+      }
+
+      .telemetry-grid {
+        grid-template-columns: 1fr;
+      }
+
+      .coach-strip {
+        grid-template-columns: repeat(4, minmax(0, 1fr));
+      }
+
+      .swatch-strip {
+        grid-template-columns: repeat(2, minmax(0, 1fr));
+      }
+
+      .swift-snippet {
+        white-space: pre-wrap;
+        word-break: break-word;
+      }
+    }
+
+    /* Reduced Motion Preference */
+    @media (prefers-reduced-motion: reduce) {
+      *,
+      *::before,
+      *::after {
+        animation-duration: 0.01ms !important;
+        animation-iteration-count: 1 !important;
+        transition-duration: 0.01ms !important;
+        scroll-behavior: auto !important;
+      }
+    }
+
+    /* Windows High Contrast / Forced Colors Support */
+    @media (forced-colors: active) {
+      .ios-chassis,
+      .ios-screen,
+      .dep-row,
+      .calling-sheet,
+      .status-pill,
+      .pin-cta,
+      .inspector-panel,
+      .inspector-card,
+      .lockscreen-widget,
+      .seg-btn {
+        forced-color-adjust: auto;
+        border: 1px solid CanvasText;
+      }
+
+      .dep-row[aria-pressed="true"],
+      .seg-btn[aria-pressed="true"],
+      .pin-cta {
+        border: 2px solid Highlight;
+      }
+    }
+
+    /* Print Stylesheet */
+    @media print {
+      html,
+      body {
+        background: #FFFFFF;
+        color: #000000;
+      }
+
+      .skip-link,
+      .topbar-controls,
+      .guide-toggle-row {
+        display: none;
+      }
+
+      .studio-stage {
+        display: grid;
+        grid-template-columns: 1fr 1fr;
+        gap: 16px;
+        padding: 8px 0;
+      }
+
+      .ios-chassis,
+      .inspector-panel,
+      .inspector-card {
+        box-shadow: none;
+        break-inside: avoid;
+      }
+
+      .ios-chassis {
+        width: 100%;
+        height: auto;
+        border: 2px solid #000000;
+        background: none;
+      }
+
+      .departures-scroll {
+        overflow: visible;
+      }
+    }
+  </style>
 </head>
-<body>
-  <header class="meta">
-    <strong>RAILWARD · SWIFTUI iOS (NAVIGATIONSTACK + VIEWTHATFITS)</strong>
-    <span>Standard vs Dynamic Type AX3 · ≥44pt targets · Safe-area inset respected · Illustrative fixture</span>
-  </header>
-  <main class="phones">
-    <section class="col" aria-label="Standard text size">
-      <div class="phone">
-        <div class="status"><span>9:41</span><span>5G · 82%</span></div>
-        <div class="nav-bar">
-          <p class="nav-sub">London St. Pancras · Live</p>
-          <h1>Departures</h1>
-        </div>
-        <div class="list">
-          <article class="row">
-            <div><p class="route">Brighton</p><p class="meta-line">14:48 · Platform 4 · Direct</p></div>
-            <span class="pill ok">● On time</span>
-          </article>
-          <article class="row">
-            <div><p class="route">Gatwick Airport</p><p class="meta-line">14:54 · Platform 2 · 3 stops</p></div>
-            <span class="pill bad">▲ +6 min</span>
-          </article>
-          <article class="row">
-            <div><p class="route">Cambridge North</p><p class="meta-line">15:02 · Platform 9 · Direct</p></div>
-            <span class="pill warn">◆ Plat. TBC</span>
-          </article>
-          <article class="row">
-            <div><p class="route">Bedford</p><p class="meta-line">15:10 · Platform 1 · 5 stops</p></div>
-            <span class="pill ok">● On time</span>
-          </article>
-        </div>
-        <div class="dock">
-          <button type="button" class="cta">Pin 14:48 Brighton to Lock Screen</button>
-          <div class="home-safe" aria-hidden="true"></div>
+<body data-appearance="light" data-dt-step="ax3" data-guides="false">
+  <a class="skip-link" href="#main-workbench">Skip to main content</a>
+
+  <header class="studio-topbar">
+    <div class="brand-cluster">
+      <span class="brand-badge-icon" aria-hidden="true">
+        <svg width="16" height="16" viewBox="0 0 16 16" fill="none">
+          <rect x="2.5" y="2" width="11" height="10" rx="2.5" stroke="currentColor" stroke-width="1.6"/>
+          <path d="M2.5 7H13.5M5.5 12L4 14.5M10.5 12L12 14.5" stroke="currentColor" stroke-width="1.6" stroke-linecap="round"/>
+          <circle cx="5.5" cy="9.6" r="0.9" fill="currentColor"/>
+          <circle cx="10.5" cy="9.6" r="0.9" fill="currentColor"/>
+        </svg>
+      </span>
+      <div class="brand-titles">
+        <span class="brand-name">Railward Transit</span>
+        <span class="brand-stack-pill">SwiftUI · NavigationStack · ViewThatFits</span>
+        <span class="fixture-pill">Illustrative fixture</span>
+      </div>
+    </div>
+
+    <div class="topbar-controls" role="region" aria-label="SwiftUI environment controls">
+      <div class="control-cluster">
+        <span class="cluster-label" id="dt-seg-label">Dynamic Type</span>
+        <div class="seg-bar" role="group" aria-labelledby="dt-seg-label">
+          <button type="button" class="seg-btn" data-dt-btn="medium" aria-pressed="false">.medium</button>
+          <button type="button" class="seg-btn" data-dt-btn="large" aria-pressed="false">.large</button>
+          <button type="button" class="seg-btn" data-dt-btn="xxxlarge" aria-pressed="false">.xxxLarge</button>
+          <button type="button" class="seg-btn" data-dt-btn="ax1" aria-pressed="false">AX1</button>
+          <button type="button" class="seg-btn" data-dt-btn="ax3" aria-pressed="true">AX3</button>
         </div>
       </div>
-      <p class="cap">Default Dynamic Type · 50pt thumb-zone CTA clearing home indicator</p>
+
+      <div class="control-cluster">
+        <span class="cluster-label" id="appearance-label">Appearance</span>
+        <div class="seg-bar" role="group" aria-labelledby="appearance-label">
+          <button type="button" class="seg-btn" data-theme-btn="light" aria-pressed="true">Light</button>
+          <button type="button" class="seg-btn" data-theme-btn="dark" aria-pressed="false">Dark</button>
+          <button type="button" class="seg-btn" data-theme-btn="contrast" aria-pressed="false">High Contrast</button>
+        </div>
+      </div>
+    </div>
+  </header>
+
+  <div id="live-announcer" class="sr-only" aria-live="polite" aria-atomic="true"></div>
+
+  <main id="main-workbench" class="studio-stage">
+    <!-- DEVICE 01: Standard (.large 1.0x) Baseline -->
+    <section class="device-column" aria-labelledby="dev1-heading">
+      <div class="device-plate">
+        <span class="plate-title" id="dev1-heading">Device 01 · Standard (.large 1.0×)</span>
+        <span class="plate-trait">HStack · Baseline</span>
+      </div>
+
+      <div class="ios-chassis">
+        <div class="oled-bezel">
+          <div class="ios-screen phone-std">
+            <div class="ios-statusbar">
+              <span class="status-clock tabular">9:41</span>
+              <div class="dynamic-island" id="island-std" data-pinned="false">
+                <span class="island-dot" aria-hidden="true"></span>
+                <span class="island-readout tabular" id="island-text-std">National Rail</span>
+              </div>
+              <div class="status-telemetry tabular" aria-label="5G cellular, 88 percent battery">
+                <span>5G</span>
+                <svg width="18" height="10" viewBox="0 0 18 10" fill="none" aria-hidden="true">
+                  <rect x="0.7" y="1" width="14.6" height="8" rx="2" stroke="currentColor" stroke-width="1.2"/>
+                  <rect x="2.2" y="2.5" width="10.5" height="5" rx="1" fill="currentColor"/>
+                  <path d="M16.5 3.3V6.7" stroke="currentColor" stroke-width="1.3" stroke-linecap="round"/>
+                </svg>
+              </div>
+            </div>
+
+            <div class="phone-live-banner" id="banner-std" hidden>
+              <div class="live-banner-copy">
+                <span class="live-banner-kicker">ActivityKit · Lock Screen Active</span>
+                <span class="live-banner-route tabular" id="banner-route-std">14:48 Brighton · Plat 4</span>
+              </div>
+              <span class="live-banner-pill tabular" id="banner-status-std">On time</span>
+            </div>
+
+            <div class="ios-nav-stack">
+              <div class="nav-top-line">
+                <p class="nav-station-kicker">London Blackfriars · Live</p>
+                <span class="nav-mode-chip">4 Services</span>
+              </div>
+              <h1 class="nav-large-title">Departures</h1>
+            </div>
+
+            <div class="departures-scroll">
+              <div class="departures-list" id="list-std" role="group" aria-label="Standard text departures">
+                <button type="button" class="dep-row" data-train-id="brighton" data-layout="hstack" aria-pressed="true">
+                  <div class="dep-primary">
+                    <div class="dep-title-line">
+                      <span class="dep-time">14:48</span>
+                      <span class="dep-destination">Brighton</span>
+                    </div>
+                    <p class="dep-submeta">Plat 4 · Direct · 5 stops (64m)</p>
+                  </div>
+                  <span class="status-pill ok"><span class="status-dot-ok" aria-hidden="true"></span>On time</span>
+                </button>
+
+                <button type="button" class="dep-row" data-train-id="gatwick" data-layout="hstack" aria-pressed="false">
+                  <div class="dep-primary">
+                    <div class="dep-title-line">
+                      <span class="dep-time">14:53</span>
+                      <span class="dep-destination">Gatwick Airport</span>
+                    </div>
+                    <p class="dep-submeta">Exp 14:56 · 2 stops · Express</p>
+                  </div>
+                  <span class="status-pill warn"><span aria-hidden="true">▲</span>Plat 4 · +3 min</span>
+                </button>
+
+                <button type="button" class="dep-row" data-train-id="cambridge" data-layout="hstack" aria-pressed="false">
+                  <div class="dep-primary">
+                    <div class="dep-title-line">
+                      <span class="dep-time">15:02</span>
+                      <span class="dep-destination">Cambridge</span>
+                    </div>
+                    <p class="dep-submeta">Plat 2 · Fast · 4 stops (56m)</p>
+                  </div>
+                  <span class="status-pill ok"><span class="status-dot-ok" aria-hidden="true"></span>On time</span>
+                </button>
+
+                <button type="button" class="dep-row" data-train-id="sevenoaks" data-layout="hstack" aria-pressed="false">
+                  <div class="dep-primary">
+                    <div class="dep-title-line">
+                      <span class="dep-time">15:11</span>
+                      <span class="dep-destination">Sevenoaks</span>
+                    </div>
+                    <p class="dep-submeta">Forecourt Stand G · Rail Bus</p>
+                  </div>
+                  <span class="status-pill bad"><span aria-hidden="true">■</span>Cancelled — Replacement Bus</span>
+                </button>
+              </div>
+
+              <div class="calling-sheet" aria-label="Selected train calling points">
+                <div class="sheet-header-row">
+                  <span class="sheet-kicker" id="sheet-title-std">Calling points · 14:48 Brighton</span>
+                  <span class="sheet-operator" id="sheet-op-std">Thameslink · 8 coaches</span>
+                </div>
+                <ol class="stops-inline tabular" id="stops-std">
+                  <li><span>E. Croydon</span><span class="stop-t">15:03</span></li>
+                  <li><span>Gatwick</span><span class="stop-t">15:19</span></li>
+                  <li><span>Haywards Hth</span><span class="stop-t">15:33</span></li>
+                  <li><span>Brighton</span><span class="stop-t">15:52</span></li>
+                </ol>
+                <div class="boarding-badges">
+                  <span class="access-chip" id="stepfree-std">Level boarding: Coach 4 &amp; 5 (0mm)</span>
+                  <span class="access-chip" id="bikes-std">Cycle bays: 3/4 free (Coach 4)</span>
+                </div>
+              </div>
+            </div>
+
+            <div class="safe-area-dock">
+              <button type="button" class="pin-cta" id="cta-std" aria-pressed="false">
+                <svg width="15" height="15" viewBox="0 0 16 16" fill="none" aria-hidden="true">
+                  <rect x="3" y="2" width="10" height="12" rx="2.2" stroke="currentColor" stroke-width="1.6"/>
+                  <path d="M5.5 5.5H10.5M5.5 8.5H8.5" stroke="currentColor" stroke-width="1.5" stroke-linecap="round"/>
+                </svg>
+                <span id="cta-label-std">Pin 14:48 Brighton to Lock Screen</span>
+              </button>
+              <div class="safe-area-gap">
+                <span class="guide-tag">safeAreaInset.bottom: 34pt · CTA &gt;= 50pt</span>
+              </div>
+              <div class="home-indicator" aria-hidden="true"></div>
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <p class="device-caption">Default (.large) · Horizontal HStack · 52pt CTA clears home indicator</p>
     </section>
 
-    <section class="col" aria-label="Dynamic Type AX3 reflow">
-      <div class="phone ax3">
-        <div class="status"><span>9:41</span><span>Dynamic Type AX3</span></div>
-        <div class="nav-bar">
-          <p class="nav-sub">St. Pancras · Live</p>
-          <h1>Departures</h1>
-        </div>
-        <div class="list">
-          <article class="row row-stack">
-            <div><p class="route">Brighton</p><p class="meta-line">14:48 · Platform 4</p></div>
-            <span class="pill ok">● On time</span>
-          </article>
-          <article class="row row-stack">
-            <div><p class="route">Gatwick Airport</p><p class="meta-line">14:54 · Platform 2</p></div>
-            <span class="pill bad">▲ +6 min delay</span>
-          </article>
-          <article class="row row-stack">
-            <div><p class="route">Cambridge North</p><p class="meta-line">15:02 · Platform 9</p></div>
-            <span class="pill warn">◆ Platform TBC</span>
-          </article>
-        </div>
-        <div class="dock">
-          <button type="button" class="cta">Pin 14:48 Brighton</button>
-          <div class="home-safe" aria-hidden="true"></div>
+    <!-- DEVICE 02: Live Dynamic Type Target (Defaults to AX3 Vertical Reflow) -->
+    <section class="device-column" aria-labelledby="dev2-heading">
+      <div class="device-plate">
+        <span class="plate-title" id="dev2-heading">Device 02 · <span id="dev2-scale-name">Dynamic Type AX3</span></span>
+        <span class="plate-trait" id="dev2-layout-badge">ViewThatFits → VStack</span>
+      </div>
+
+      <div class="ios-chassis">
+        <div class="oled-bezel">
+          <div class="ios-screen phone-ax" id="screen-ax">
+            <div class="ios-statusbar">
+              <span class="status-clock tabular">9:41</span>
+              <div class="dynamic-island" id="island-ax" data-pinned="false">
+                <span class="island-dot" aria-hidden="true"></span>
+                <span class="island-readout tabular" id="island-text-ax">Trait · AX3</span>
+              </div>
+              <div class="status-telemetry tabular">
+                <span id="status-trait-ax">AX3</span>
+              </div>
+            </div>
+
+            <div class="phone-live-banner" id="banner-ax" hidden>
+              <div class="live-banner-copy">
+                <span class="live-banner-kicker">Lock Screen Live Activity</span>
+                <span class="live-banner-route tabular" id="banner-route-ax">14:48 Brighton · Plat 4</span>
+              </div>
+              <span class="live-banner-pill tabular" id="banner-status-ax">On time</span>
+            </div>
+
+            <div class="ios-nav-stack">
+              <div class="nav-top-line">
+                <p class="nav-station-kicker">Blackfriars · Live</p>
+                <span class="nav-mode-chip" id="ax-zero-clip-chip">0 Clipped</span>
+              </div>
+              <h2 class="nav-large-title">Departures</h2>
+            </div>
+
+            <div class="departures-scroll">
+              <div class="departures-list" id="list-ax" role="group" aria-label="Dynamic Type scaled departures">
+                <button type="button" class="dep-row" data-train-id="brighton" data-layout="vstack" aria-pressed="true">
+                  <div class="dep-primary">
+                    <div class="dep-title-line">
+                      <span class="dep-time">14:48</span>
+                      <span class="dep-destination">Brighton</span>
+                    </div>
+                    <p class="dep-submeta">Platform 4 · Direct (5 stops)</p>
+                  </div>
+                  <span class="status-pill ok"><span class="status-dot-ok" aria-hidden="true"></span>On time</span>
+                </button>
+
+                <button type="button" class="dep-row" data-train-id="gatwick" data-layout="vstack" aria-pressed="false">
+                  <div class="dep-primary">
+                    <div class="dep-title-line">
+                      <span class="dep-time">14:53</span>
+                      <span class="dep-destination">Gatwick Airport</span>
+                    </div>
+                    <p class="dep-submeta">Expected 14:56 · Express</p>
+                  </div>
+                  <span class="status-pill warn"><span aria-hidden="true">▲</span>Plat 4 · +3 min</span>
+                </button>
+
+                <button type="button" class="dep-row" data-train-id="cambridge" data-layout="vstack" aria-pressed="false">
+                  <div class="dep-primary">
+                    <div class="dep-title-line">
+                      <span class="dep-time">15:02</span>
+                      <span class="dep-destination">Cambridge</span>
+                    </div>
+                    <p class="dep-submeta">Platform 2 · Fast (4 stops)</p>
+                  </div>
+                  <span class="status-pill ok"><span class="status-dot-ok" aria-hidden="true"></span>On time</span>
+                </button>
+
+                <button type="button" class="dep-row" data-train-id="sevenoaks" data-layout="vstack" aria-pressed="false">
+                  <div class="dep-primary">
+                    <div class="dep-title-line">
+                      <span class="dep-time">15:11</span>
+                      <span class="dep-destination">Sevenoaks</span>
+                    </div>
+                    <p class="dep-submeta">Forecourt Stand G · Rail Bus</p>
+                  </div>
+                  <span class="status-pill bad"><span aria-hidden="true">■</span>Cancelled — Replacement Bus</span>
+                </button>
+              </div>
+
+              <div class="calling-sheet" aria-label="Scaled calling points summary">
+                <div class="sheet-header-row">
+                  <span class="sheet-kicker" id="sheet-title-ax">14:48 Brighton · Stops</span>
+                </div>
+                <ol class="stops-inline tabular" id="stops-ax">
+                  <li><span>East Croydon</span><span class="stop-t">15:03</span></li>
+                  <li><span>Gatwick Airport</span><span class="stop-t">15:19</span></li>
+                  <li><span>Haywards Heath</span><span class="stop-t">15:33</span></li>
+                  <li><span>Brighton</span><span class="stop-t">15:52</span></li>
+                </ol>
+                <div class="boarding-badges">
+                  <span class="access-chip" id="stepfree-ax">Step-free: Coach 4 &amp; 5 (0mm)</span>
+                  <span class="access-chip" id="bikes-ax">Cycles: 3/4 free (Coach 4)</span>
+                </div>
+              </div>
+            </div>
+
+            <div class="safe-area-dock">
+              <button type="button" class="pin-cta" id="cta-ax" aria-pressed="false">
+                <span id="cta-label-ax">Pin 14:48 Brighton to Lock Screen</span>
+              </button>
+              <div class="safe-area-gap">
+                <span class="guide-tag">safeAreaInset.bottom: 34pt · CTA 56pt</span>
+              </div>
+              <div class="home-indicator" aria-hidden="true"></div>
+            </div>
+          </div>
         </div>
       </div>
-      <p class="cap">Dynamic Type AX3 · ViewThatFits switches row to vertical stack, zero clipping</p>
+
+      <p class="device-caption" id="dev2-caption">Dynamic Type AX3 · ViewThatFits switches row to vertical VStack, zero clipping</p>
     </section>
+
+    <!-- COLUMN 03: SwiftUI Accessibility & Ergonomics Inspector -->
+    <aside class="inspector-panel" aria-labelledby="inspector-heading">
+      <div class="inspector-header">
+        <p class="inspector-eyebrow">SwiftUI Accessibility &amp; Ergonomics Workbench</p>
+        <h2 class="inspector-title" id="inspector-heading">ViewThatFits &amp; Safe-Area Telemetry</h2>
+        <p class="inspector-summary">Scrub Dynamic Type from <code>.medium</code> to <code>AX3</code> or select any departure row to inspect horizontal-to-vertical layout restructuring, level-boarding coaches, and Lock Screen Live Activity state.</p>
+      </div>
+
+      <!-- Live Dynamic Type Scale Scrubbing Card -->
+      <section class="inspector-card" aria-labelledby="scale-card-heading">
+        <div class="card-heading-row">
+          <h3 class="card-heading" id="scale-card-heading">@Environment(\.dynamicTypeSize)</h3>
+          <span class="branch-pill" id="inspector-branch-pill">Active: VStack (vertical reflow)</span>
+        </div>
+
+        <div class="slider-row">
+          <div class="slider-label-line">
+            <label for="dt-slider">Right Device Type Scale</label>
+            <span class="tabular" id="dt-readout-val">accessibility3 (AX3 · 1.76×)</span>
+          </div>
+          <input type="range" id="dt-slider" class="dt-slider" min="0" max="4" step="1" value="4" aria-describedby="inspector-branch-pill">
+          <div class="slider-ticks" aria-hidden="true">
+            <span>.medium</span>
+            <span>.large</span>
+            <span>.xxxLarge</span>
+            <span>AX1</span>
+            <span>AX3</span>
+          </div>
+        </div>
+
+        <div class="telemetry-grid tabular">
+          <div class="metric-box">
+            <span class="metric-k">Route Font</span>
+            <span class="metric-v" id="metric-font">22pt Bold</span>
+          </div>
+          <div class="metric-box">
+            <span class="metric-k">Clipped Names</span>
+            <span class="metric-v">0 of 4 rows</span>
+          </div>
+          <div class="metric-box">
+            <span class="metric-k">Primary Target</span>
+            <span class="metric-v" id="metric-target">56pt (&gt;=50pt)</span>
+          </div>
+        </div>
+
+        <div class="guide-toggle-row">
+          <span class="inspector-meta-line">Overlay HIG 44pt &amp; <code>safeAreaInset</code> bounds</span>
+          <button type="button" class="guide-btn" id="guide-toggle-btn" aria-pressed="false">Show Guides</button>
+        </div>
+      </section>
+
+      <!-- Selected Service Formation & Step-Free Coach Schematic -->
+      <section class="inspector-card" aria-labelledby="formation-heading">
+        <div class="card-heading-row">
+          <h3 class="card-heading" id="formation-heading">Formation &amp; Level Boarding</h3>
+          <span class="brand-stack-pill tabular" id="inspector-train-tag">14:48 Brighton · Plat 4</span>
+        </div>
+
+        <div class="coach-strip tabular" id="inspector-coaches" role="list" aria-label="8-coach boarding and cycle layout">
+          <div class="coach-cell" role="listitem"><span>C1</span><span>Std</span></div>
+          <div class="coach-cell" role="listitem"><span>C2</span><span>Std</span></div>
+          <div class="coach-cell" role="listitem"><span>C3</span><span>WC</span></div>
+          <div class="coach-cell step-free" role="listitem"><span>C4</span><span class="coach-tag">0mm+Bike</span></div>
+          <div class="coach-cell step-free" role="listitem"><span>C5</span><span class="coach-tag">0mm</span></div>
+          <div class="coach-cell" role="listitem"><span>C6</span><span>Std</span></div>
+          <div class="coach-cell" role="listitem"><span>C7</span><span>Quiet</span></div>
+          <div class="coach-cell" role="listitem"><span>C8</span><span>Std</span></div>
+        </div>
+
+        <p class="inspector-meta-line" id="inspector-access-detail">
+          <strong>Step-free:</strong> Coach 4 &amp; 5 align level (0mm gap) with Platform 4 tactile boarding zone B · <strong>Cycles:</strong> 3 of 4 bays free in Coach 4.
+        </p>
+      </section>
+
+      <!-- Lock Screen ActivityKit Live Activity Preview -->
+      <section class="inspector-card" aria-labelledby="activity-heading">
+        <div class="card-heading-row">
+          <h3 class="card-heading" id="activity-heading">iOS Lock Screen Live Activity</h3>
+          <button type="button" class="guide-btn" id="inspector-pin-btn" aria-pressed="false">Pin to Lock Screen</button>
+        </div>
+
+        <div class="lockscreen-widget" id="lockscreen-card" data-active="false" aria-live="polite">
+          <div class="ls-top">
+            <span class="ls-brand">Railward · ActivityKit</span>
+            <span class="ls-state-badge" id="ls-badge">Ready · Tap CTA to pin</span>
+          </div>
+          <div class="ls-main">
+            <span class="ls-route tabular" id="ls-route">14:48 → Brighton</span>
+            <span class="ls-plat tabular" id="ls-plat">Plat 4 · On time</span>
+          </div>
+          <div class="ls-progress-track" aria-hidden="true">
+            <div class="ls-progress-fill" id="ls-progress"></div>
+          </div>
+          <div class="ls-foot tabular">
+            <span id="ls-coach">Board Coach 4–5 (0mm step-free)</span>
+            <span id="ls-eta">Arr 15:52</span>
+          </div>
+        </div>
+      </section>
+
+      <!-- SwiftUI Implementation & Core Token Ledger -->
+      <section class="inspector-card" aria-labelledby="code-heading">
+        <h3 class="card-heading" id="code-heading">SwiftUI Idiom &amp; Core Palette</h3>
+        <pre class="swift-snippet"><code><span class="swift-kw">ViewThatFits</span>(in: .horizontal) {
+  <span class="swift-fn">HStack</span>(spacing: 12) { routeInfo; <span class="swift-fn">Spacer</span>(); statusBadge }
+  <span class="swift-fn">VStack</span>(alignment: .leading, spacing: 8) { routeInfo; statusBadge }
+}
+.<span class="swift-fn">safeAreaInset</span>(edge: .bottom) { pinToLockScreenButton }</code></pre>
+
+        <div class="swatch-strip" aria-label="Core specification color tokens">
+          <div class="swatch-item">
+            <span class="swatch-chip" style="background: var(--rw-grouped-light);"></span>
+            <span class="swatch-code">#F5F5F7</span>
+          </div>
+          <div class="swatch-item">
+            <span class="swatch-chip" style="background: var(--rw-graphite-ink);"></span>
+            <span class="swatch-code">#1C1C1E</span>
+          </div>
+          <div class="swatch-item">
+            <span class="swatch-chip" style="background: var(--rw-signal-blue);"></span>
+            <span class="swatch-code">#0066CC</span>
+          </div>
+          <div class="swatch-item">
+            <span class="swatch-chip" style="background: var(--rw-signal-green);"></span>
+            <span class="swatch-code">#248A3D</span>
+          </div>
+        </div>
+
+        <div class="evidence-footer">
+          <div class="ev-badges">
+            <span class="ev-tag">rendered: web studio</span>
+            <span class="ev-tag">static: slop-scan 0</span>
+            <span class="ev-tag">not-checked: Xcode VoiceOver</span>
+          </div>
+          <span>Illustrative fixture</span>
+        </div>
+      </section>
+    </aside>
   </main>
+
+  <script>
+    (() => {
+      const TRAINS = {
+        brighton: {
+          time: "14:48",
+          destination: "Brighton",
+          operator: "Thameslink · 8 coaches",
+          platShort: "Plat 4 · On time",
+          bannerStatus: "On time",
+          eta: "Arr 15:52",
+          progress: "38%",
+          ctaLabel: "Pin 14:48 Brighton to Lock Screen",
+          pinnedLabel: "Pinned: 14:48 Brighton (Tap to Unpin)",
+          islandText: "14:48 BTN · P4",
+          stops: [
+            ["East Croydon", "E. Croydon", "15:03"],
+            ["Gatwick Airport", "Gatwick", "15:19"],
+            ["Haywards Heath", "Haywards Hth", "15:33"],
+            ["Brighton", "Brighton", "15:52"]
+          ],
+          stepFreeStd: "Level boarding: Coach 4 & 5 (0mm)",
+          stepFreeAx: "Step-free: Coach 4 & 5 (0mm)",
+          bikesStd: "Cycle bays: 3/4 free (Coach 4)",
+          bikesAx: "Cycles: 3/4 free (Coach 4)",
+          lsCoach: "Board Coach 4–5 (0mm step-free · 3 bike bays)",
+          accessDetail: "Step-free: Coach 4 & 5 align level (0mm gap) with Platform 4 tactile boarding zone B · Cycles: 3 of 4 bays free in Coach 4.",
+          coaches: [
+            { id: "C1", sub: "Std", sf: false },
+            { id: "C2", sub: "Std", sf: false },
+            { id: "C3", sub: "WC", sf: false },
+            { id: "C4", sub: "0mm+Bike", sf: true },
+            { id: "C5", sub: "0mm", sf: true },
+            { id: "C6", sub: "Std", sf: false },
+            { id: "C7", sub: "Quiet", sf: false },
+            { id: "C8", sub: "Std", sf: false }
+          ]
+        },
+        gatwick: {
+          time: "14:53",
+          destination: "Gatwick Airport",
+          operator: "Thameslink Express · 8 coaches",
+          platShort: "Plat 4 · +3 min",
+          bannerStatus: "+3 min",
+          eta: "Exp 15:28",
+          progress: "54%",
+          ctaLabel: "Pin 14:53 Gatwick Airport to Lock Screen",
+          pinnedLabel: "Pinned: 14:53 Gatwick Airport (Tap to Unpin)",
+          islandText: "14:53 LGW · +3m",
+          stops: [
+            ["London Bridge", "London Br", "15:02"],
+            ["East Croydon", "E. Croydon", "15:15"],
+            ["Gatwick Airport", "Gatwick", "15:28"]
+          ],
+          stepFreeStd: "Level boarding: Coach 4 & 5 (0mm)",
+          stepFreeAx: "Step-free: Coach 4 & 5 (0mm)",
+          bikesStd: "Cycle bays: 1/4 free (Coach 4)",
+          bikesAx: "Cycles: 1/4 free (Coach 4)",
+          lsCoach: "Board Coach 4–5 (0mm step-free · Luggage)",
+          accessDetail: "Step-free: Coach 4 & 5 provide 0mm level threshold and airport luggage racks · Cycles: 1 of 4 bays free in Coach 4.",
+          coaches: [
+            { id: "C1", sub: "Bags", sf: false },
+            { id: "C2", sub: "Std", sf: false },
+            { id: "C3", sub: "WC", sf: false },
+            { id: "C4", sub: "0mm+Bike", sf: true },
+            { id: "C5", sub: "0mm+Bags", sf: true },
+            { id: "C6", sub: "Std", sf: false },
+            { id: "C7", sub: "Quiet", sf: false },
+            { id: "C8", sub: "Std", sf: false }
+          ]
+        },
+        cambridge: {
+          time: "15:02",
+          destination: "Cambridge",
+          operator: "Great Northern · 8 coaches",
+          platShort: "Plat 2 · On time",
+          bannerStatus: "On time",
+          eta: "Arr 15:58",
+          progress: "24%",
+          ctaLabel: "Pin 15:02 Cambridge to Lock Screen",
+          pinnedLabel: "Pinned: 15:02 Cambridge (Tap to Unpin)",
+          islandText: "15:02 CBG · P2",
+          stops: [
+            ["St Pancras Intl", "St Pancras", "15:11"],
+            ["Finsbury Park", "Finsbury Pk", "15:18"],
+            ["Stevenage", "Stevenage", "15:36"],
+            ["Cambridge", "Cambridge", "15:58"]
+          ],
+          stepFreeStd: "Level boarding: Coach 3 & 4 (0mm)",
+          stepFreeAx: "Step-free: Coach 3 & 4 (0mm)",
+          bikesStd: "Cycle bays: 4/4 free (Coach 3)",
+          bikesAx: "Cycles: 4/4 free (Coach 3)",
+          lsCoach: "Board Coach 3–4 (0mm step-free · 4 bike bays)",
+          accessDetail: "Step-free: Coach 3 & 4 align level at Blackfriars & St Pancras; ramp assist ready at Stevenage · Cycles: 4 of 4 bays free in Coach 3.",
+          coaches: [
+            { id: "C1", sub: "Std", sf: false },
+            { id: "C2", sub: "Std", sf: false },
+            { id: "C3", sub: "0mm+Bike", sf: true },
+            { id: "C4", sub: "0mm+WC", sf: true },
+            { id: "C5", sub: "Std", sf: false },
+            { id: "C6", sub: "Std", sf: false },
+            { id: "C7", sub: "Quiet", sf: false },
+            { id: "C8", sub: "Std", sf: false }
+          ]
+        },
+        sevenoaks: {
+          time: "15:11",
+          destination: "Sevenoaks",
+          operator: "Southeastern · Replacement Bus",
+          platShort: "Stand G · Rail Bus",
+          bannerStatus: "Rail Bus",
+          eta: "Arr 16:32",
+          progress: "14%",
+          ctaLabel: "Pin 15:11 Sevenoaks to Lock Screen",
+          pinnedLabel: "Pinned: 15:11 Sevenoaks (Tap to Unpin)",
+          islandText: "15:11 SEV · Bus",
+          stops: [
+            ["Elephant & Castle", "Elephant & C", "15:26"],
+            ["Bromley South", "Bromley Sth", "15:54"],
+            ["Orpington", "Orpington", "16:10"],
+            ["Sevenoaks", "Sevenoaks", "16:32"]
+          ],
+          stepFreeStd: "Low-floor bus ramp: 1 wheelchair bay",
+          stepFreeAx: "Step-free: Low-floor bus ramp",
+          bikesStd: "Cycles: Folding bikes only on bus",
+          bikesAx: "Cycles: Folding bikes only",
+          lsCoach: "South Forecourt Stand G · Low-floor kneeling coach",
+          accessDetail: "Step-free: Low-floor accessible coach with deployable kerb ramp at South Forecourt Stand G · Cycles: Non-folding cycles restricted on replacement bus.",
+          coaches: [
+            { id: "BUS", sub: "Ramp+WC", sf: true },
+            { id: "D1", sub: "Lower", sf: true },
+            { id: "D2", sub: "Priority", sf: true },
+            { id: "U1", sub: "Upper", sf: false },
+            { id: "U2", sub: "Upper", sf: false },
+            { id: "U3", sub: "Upper", sf: false },
+            { id: "U4", sub: "Upper", sf: false },
+            { id: "BAG", sub: "Hold", sf: false }
+          ]
+        }
+      };
+
+      const DT_STEPS = [
+        {
+          key: "medium",
+          short: ".medium",
+          title: "Dynamic Type .medium",
+          readout: "medium (0.92×)",
+          layout: "hstack",
+          plateBadge: "ViewThatFits → HStack",
+          branchText: "Active: HStack (single-row fit)",
+          fontMetric: "14.5pt Bold",
+          targetMetric: "52pt (>=50pt)",
+          caption: "Dynamic Type .medium · Horizontal HStack fits comfortably on single line"
+        },
+        {
+          key: "large",
+          short: "Large",
+          title: "Dynamic Type .large",
+          readout: "large (Default · 1.00×)",
+          layout: "hstack",
+          plateBadge: "ViewThatFits → HStack",
+          branchText: "Active: HStack (single-row fit)",
+          fontMetric: "16pt Bold",
+          targetMetric: "52pt (>=50pt)",
+          caption: "Dynamic Type .large (Default) · Matches Device 01 horizontal HStack"
+        },
+        {
+          key: "xxxlarge",
+          short: "xxxL",
+          title: "Dynamic Type .xxxLarge",
+          readout: "xxxLarge (1.18×)",
+          layout: "hstack",
+          plateBadge: "ViewThatFits → HStack",
+          branchText: "Active: HStack (threshold fit)",
+          fontMetric: "18pt Bold",
+          targetMetric: "54pt (>=50pt)",
+          caption: "Dynamic Type .xxxLarge · Largest HStack fit before AX vertical restructuring"
+        },
+        {
+          key: "ax1",
+          short: "AX1",
+          title: "Dynamic Type AX1",
+          readout: "accessibility1 (AX1 · 1.44×)",
+          layout: "vstack",
+          plateBadge: "ViewThatFits → VStack",
+          branchText: "Active: VStack (vertical reflow)",
+          fontMetric: "20pt Bold",
+          targetMetric: "55pt (>=50pt)",
+          caption: "Dynamic Type AX1 · ViewThatFits crosses width threshold and flips to VStack"
+        },
+        {
+          key: "ax3",
+          short: "AX3",
+          title: "Dynamic Type AX3",
+          readout: "accessibility3 (AX3 · 1.76×)",
+          layout: "vstack",
+          plateBadge: "ViewThatFits → VStack",
+          branchText: "Active: VStack (vertical reflow)",
+          fontMetric: "22pt Bold",
+          targetMetric: "56pt (>=50pt)",
+          caption: "Dynamic Type AX3 · ViewThatFits switches row to vertical VStack, zero clipping"
+        }
+      ];
+
+      let selectedTrainId = "brighton";
+      let pinnedTrainId = null;
+      let currentDtIndex = 4;
+
+      const body = document.body;
+      const announcer = document.getElementById("live-announcer");
+      const dtSlider = document.getElementById("dt-slider");
+      const dtButtons = document.querySelectorAll("[data-dt-btn]");
+      const themeButtons = document.querySelectorAll("[data-theme-btn]");
+      const allTrainRows = document.querySelectorAll("[data-train-id]");
+      const axRows = document.querySelectorAll("#list-ax .dep-row");
+      const ctaStd = document.getElementById("cta-std");
+      const ctaAx = document.getElementById("cta-ax");
+      const inspectorPinBtn = document.getElementById("inspector-pin-btn");
+      const guideToggleBtn = document.getElementById("guide-toggle-btn");
+
+      function announce(message) {
+        if (announcer) {
+          announcer.textContent = message;
+        }
+      }
+
+      function renderStopsList(container, stops, useFullNames) {
+        container.replaceChildren();
+        stops.forEach((stop) => {
+          const li = document.createElement("li");
+          const nameSpan = document.createElement("span");
+          nameSpan.textContent = useFullNames ? stop[0] : stop[1];
+          const timeSpan = document.createElement("span");
+          timeSpan.className = "stop-t";
+          timeSpan.textContent = stop[2];
+          li.append(nameSpan, timeSpan);
+          container.appendChild(li);
+        });
+      }
+
+      function renderCoaches(coaches) {
+        const strip = document.getElementById("inspector-coaches");
+        strip.replaceChildren();
+        coaches.forEach((coach) => {
+          const cell = document.createElement("div");
+          cell.className = coach.sf ? "coach-cell step-free" : "coach-cell";
+          cell.setAttribute("role", "listitem");
+          const idSpan = document.createElement("span");
+          idSpan.textContent = coach.id;
+          const subSpan = document.createElement("span");
+          if (coach.sf) subSpan.className = "coach-tag";
+          subSpan.textContent = coach.sub;
+          cell.append(idSpan, subSpan);
+          strip.appendChild(cell);
+        });
+      }
+
+      function syncPinVisuals() {
+        const train = TRAINS[selectedTrainId];
+        const isCurrentPinned = pinnedTrainId === selectedTrainId;
+        const activePinnedTrain = pinnedTrainId ? TRAINS[pinnedTrainId] : null;
+        const step = DT_STEPS[currentDtIndex];
+
+        const ctaText = isCurrentPinned ? train.pinnedLabel : train.ctaLabel;
+        document.getElementById("cta-label-std").textContent = ctaText;
+        document.getElementById("cta-label-ax").textContent = ctaText;
+        ctaStd.setAttribute("aria-pressed", String(isCurrentPinned));
+        ctaAx.setAttribute("aria-pressed", String(isCurrentPinned));
+
+        inspectorPinBtn.setAttribute("aria-pressed", String(isCurrentPinned));
+        inspectorPinBtn.textContent = isCurrentPinned ? "Unpin Live Activity" : "Pin to Lock Screen";
+
+        const bannerStd = document.getElementById("banner-std");
+        const bannerAx = document.getElementById("banner-ax");
+        const islandStd = document.getElementById("island-std");
+        const islandAx = document.getElementById("island-ax");
+        const lsCard = document.getElementById("lockscreen-card");
+
+        if (activePinnedTrain) {
+          bannerStd.hidden = false;
+          bannerAx.hidden = false;
+          const bannerTitle = `${activePinnedTrain.time} ${activePinnedTrain.destination} · ${activePinnedTrain.platShort.split(" · ")[0]}`;
+          document.getElementById("banner-route-std").textContent = bannerTitle;
+          document.getElementById("banner-route-ax").textContent = bannerTitle;
+          document.getElementById("banner-status-std").textContent = activePinnedTrain.bannerStatus;
+          document.getElementById("banner-status-ax").textContent = activePinnedTrain.bannerStatus;
+
+          islandStd.setAttribute("data-pinned", "true");
+          islandAx.setAttribute("data-pinned", "true");
+          document.getElementById("island-text-std").textContent = activePinnedTrain.islandText;
+          document.getElementById("island-text-ax").textContent = activePinnedTrain.islandText;
+
+          lsCard.setAttribute("data-active", "true");
+          document.getElementById("ls-badge").textContent = "LIVE ON LOCK SCREEN";
+          document.getElementById("ls-route").textContent = `${activePinnedTrain.time} → ${activePinnedTrain.destination}`;
+          document.getElementById("ls-plat").textContent = activePinnedTrain.platShort;
+          document.getElementById("ls-progress").style.width = activePinnedTrain.progress;
+          document.getElementById("ls-coach").textContent = activePinnedTrain.lsCoach;
+          document.getElementById("ls-eta").textContent = activePinnedTrain.eta;
+        } else {
+          bannerStd.hidden = true;
+          bannerAx.hidden = true;
+          islandStd.setAttribute("data-pinned", "false");
+          islandAx.setAttribute("data-pinned", "false");
+          document.getElementById("island-text-std").textContent = "National Rail";
+          document.getElementById("island-text-ax").textContent = `Trait · ${step.short}`;
+
+          lsCard.setAttribute("data-active", "false");
+          document.getElementById("ls-badge").textContent = "Ready · Tap CTA to pin";
+          document.getElementById("ls-route").textContent = `${train.time} → ${train.destination}`;
+          document.getElementById("ls-plat").textContent = train.platShort;
+          document.getElementById("ls-progress").style.width = train.progress;
+          document.getElementById("ls-coach").textContent = train.lsCoach;
+          document.getElementById("ls-eta").textContent = train.eta;
+        }
+      }
+
+      function selectTrain(trainId, shouldAnnounce) {
+        if (!TRAINS[trainId]) return;
+        selectedTrainId = trainId;
+        const train = TRAINS[trainId];
+
+        allTrainRows.forEach((row) => {
+          row.setAttribute("aria-pressed", String(row.dataset.trainId === trainId));
+        });
+
+        document.getElementById("sheet-title-std").textContent = `Calling points · ${train.time} ${train.destination}`;
+        document.getElementById("sheet-op-std").textContent = train.operator;
+        document.getElementById("sheet-title-ax").textContent = `${train.time} ${train.destination} · Stops`;
+
+        renderStopsList(document.getElementById("stops-std"), train.stops, false);
+        renderStopsList(document.getElementById("stops-ax"), train.stops, true);
+
+        document.getElementById("stepfree-std").textContent = train.stepFreeStd;
+        document.getElementById("stepfree-ax").textContent = train.stepFreeAx;
+        document.getElementById("bikes-std").textContent = train.bikesStd;
+        document.getElementById("bikes-ax").textContent = train.bikesAx;
+
+        document.getElementById("inspector-train-tag").textContent = `${train.time} ${train.destination} · ${train.platShort.split(" · ")[0]}`;
+        document.getElementById("inspector-access-detail").textContent = train.accessDetail;
+        renderCoaches(train.coaches);
+
+        syncPinVisuals();
+
+        if (shouldAnnounce) {
+          announce(`Selected ${train.time} ${train.destination}, ${train.platShort}. ${train.stepFreeStd}.`);
+        }
+      }
+
+      function applyDynamicTypeStep(index, shouldAnnounce) {
+        const clamped = Math.max(0, Math.min(DT_STEPS.length - 1, index));
+        currentDtIndex = clamped;
+        const step = DT_STEPS[clamped];
+
+        body.setAttribute("data-dt-step", step.key);
+        dtSlider.value = String(clamped);
+
+        dtButtons.forEach((btn) => {
+          btn.setAttribute("aria-pressed", String(btn.dataset.dtBtn === step.key));
+        });
+
+        axRows.forEach((row) => {
+          row.setAttribute("data-layout", step.layout);
+        });
+
+        document.getElementById("dev2-scale-name").textContent = step.title;
+        document.getElementById("dev2-layout-badge").textContent = step.plateBadge;
+        document.getElementById("status-trait-ax").textContent = step.short;
+        document.getElementById("dt-readout-val").textContent = step.readout;
+        document.getElementById("inspector-branch-pill").textContent = step.branchText;
+        document.getElementById("metric-font").textContent = step.fontMetric;
+        document.getElementById("metric-target").textContent = step.targetMetric;
+        document.getElementById("dev2-caption").textContent = step.caption;
+
+        syncPinVisuals();
+
+        if (shouldAnnounce) {
+          announce(`Right device Dynamic Type set to ${step.readout}. ${step.branchText}.`);
+        }
+      }
+
+      function togglePinLiveActivity() {
+        const train = TRAINS[selectedTrainId];
+        if (pinnedTrainId === selectedTrainId) {
+          pinnedTrainId = null;
+          syncPinVisuals();
+          announce(`Unpinned ${train.time} ${train.destination} from Lock Screen Live Activity.`);
+        } else {
+          pinnedTrainId = selectedTrainId;
+          syncPinVisuals();
+          announce(`Pinned ${train.time} ${train.destination} (${train.platShort}) to iOS Lock Screen and Dynamic Island.`);
+        }
+      }
+
+      dtButtons.forEach((btn) => {
+        btn.addEventListener("click", () => {
+          const idx = DT_STEPS.findIndex((s) => s.key === btn.dataset.dtBtn);
+          if (idx >= 0) applyDynamicTypeStep(idx, true);
+        });
+      });
+
+      dtSlider.addEventListener("input", () => {
+        applyDynamicTypeStep(Number(dtSlider.value), true);
+      });
+
+      themeButtons.forEach((btn) => {
+        btn.addEventListener("click", () => {
+          const mode = btn.dataset.themeBtn;
+          body.setAttribute("data-appearance", mode);
+          themeButtons.forEach((b) => {
+            b.setAttribute("aria-pressed", String(b === btn));
+          });
+          const names = {
+            light: "iOS System Light",
+            dark: "iOS System Dark",
+            contrast: "iOS Increased Contrast"
+          };
+          announce(`Appearance switched to ${names[mode] || mode}.`);
+        });
+      });
+
+      allTrainRows.forEach((row) => {
+        row.addEventListener("click", () => {
+          selectTrain(row.dataset.trainId, true);
+        });
+      });
+
+      ctaStd.addEventListener("click", togglePinLiveActivity);
+      ctaAx.addEventListener("click", togglePinLiveActivity);
+      inspectorPinBtn.addEventListener("click", togglePinLiveActivity);
+
+      guideToggleBtn.addEventListener("click", () => {
+        const next = body.getAttribute("data-guides") !== "true";
+        body.setAttribute("data-guides", String(next));
+        guideToggleBtn.setAttribute("aria-pressed", String(next));
+        guideToggleBtn.textContent = next ? "Hide Guides" : "Show Guides";
+        announce(next ? "Safe-area and 44pt target guides shown." : "Safe-area guides hidden.");
+      });
+    })();
+  </script>
 </body>
 </html>

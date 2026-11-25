@@ -1183,12 +1183,12 @@ export class SolarisReaderBar extends LitElement {
     prompt:
       "Make a single-origin coffee drop page built around the lot's actual bean-temperature and declining rate-of-rise roast curve, with one concrete purchase action.",
     brief:
-      "Single-origin coffee drop page built around the actual roast curve rather than generic SaaS hero cards. Fictional brand.",
-    direction: "Roast-curve data sheet",
+      "Single-origin coffee drop storefront built around an interactive roast telemetry scrubber, brew recipe dialer, and farm-gate FOB price ledger. Fictional roastery.",
+    direction: "Roast-telemetry dossier & interactive drop storefront",
     decisions: [
-      "Replaces the purple gradient + 3-card SaaS template with the lot's bean-temperature and declining rate-of-rise curve.",
-      "Condensed display, quiet body, tabular mono specs — full <dl> strip fits cleanly inside 1440×900 with responsive mobile reflow.",
-      "One concrete action ('Reserve 250 g $18') replaces competing 'Get started / Learn more' buttons.",
+      "Replaces the purple gradient + 3-card SaaS template with the lot's interactive bean-temperature and declining rate-of-rise (RoR) curve.",
+      "Includes live roast-phase scrubbing, V60/Espresso/AeroPress grind & water dialer, bag allocation drawer, and farm-gate FOB transparency.",
+      "One concrete action ('Reserve 250 g $18') leads above the fold, fitting cleanly inside 1440×900 with responsive 320px–1440px mobile reflow.",
     ],
     skills: [
       "pixelcraft-direction",
@@ -1201,7 +1201,7 @@ export class SolarisReaderBar extends LitElement {
       "Every curve annotation sits clear of strokes and matches the declining rate-of-rise description.",
     ],
     limits: [
-      "Captured at 1440 × 900; mobile @media rules are authored in after.html (open live HTML to resize).",
+      "Interactive HTML/CSS/JS storefront specimen; fictional roastery and illustrative farm-gate FOB telemetry.",
     ],
     codeDiff: {
       language: "HTML / CSS",
@@ -1234,12 +1234,12 @@ export class SolarisReaderBar extends LitElement {
     prompt:
       "Design an interactive clinic appointment time picker and confirmation form with persistent labels, paste-friendly email fields, and linked error recovery.",
     brief:
-      "Interactive appointment time picker and email confirmation with live error recovery. Fictional clinic and patient.",
-    direction: "Clinical form with live booking summary",
+      "WCAG 2.2 AA patient intake, clinician triage, transparent NHS/insurer/self-pay fee estimator, and live error-recovery portal. Fictional clinic and patient.",
+    direction: "Asymmetric clinical intake & live fee/booking dossier",
     decisions: [
-      "Persistent <label> on every field, two valid <fieldset>/<legend> groups, and <main> landmark.",
-      "Unavailable slots strike only the time (not the 'Full' label) and communicate state without color alone.",
-      "Live interactive validation preserves entered input, links summary errors to #email2, and lets users paste emails.",
+      "Persistent <label> on every field, single-<legend> <fieldset> triage groups, and interactive multi-day clinician slot matrix.",
+      "Unavailable slots strike only the time (not the 'Full' label) and pair shape + text + contrast so meaning never relies on color alone.",
+      "Preserves entered input, links summary errors directly to #email2 with paste enabled, and generates an RFC 5545 .ics + printable appointment pass.",
     ],
     skills: [
       "pixelcraft-ux",
@@ -1249,10 +1249,10 @@ export class SolarisReaderBar extends LitElement {
     ],
     judgment: [
       "Default dumps 9 unlabeled placeholder inputs, blocks paste on confirm-email, and hides focus outlines.",
-      "Open the live Pixelcraft HTML to switch days, pick slots, fix the typo, and submit.",
+      "Open the live Pixelcraft HTML to switch clinicians, days, coverage pathways, fix the email typo, and download an .ics pass.",
     ],
     limits: [
-      "Live client-side validation runs in after.html; manual VoiceOver/NVDA pass remains not-checked.",
+      "Live client-side validation and .ics pass run in after.html; manual VoiceOver/NVDA pass remains not-checked.",
     ],
     codeDiff: {
       language: "HTML / JS",
@@ -1287,12 +1287,12 @@ export class SolarisReaderBar extends LitElement {
     prompt:
       "Build a national electricity demand control-room board with one primary GW readout, exact linear SVG scales, direct line labels, and regions ranked thinnest margin first.",
     brief:
-      "Control-room view of national electricity demand and regional spare margin. Illustrative telemetry values.",
-    direction: "Single readout, linear direct-labeled chart, ranked table",
+      "Interactive national electricity dispatch control room with scenario switching, 48-period settlement scrubbing, generation mix ledger, and ranked spare margins. Illustrative telemetry.",
+    direction: "Linear direct-labeled dispatch deck & regional margin board",
     decisions: [
-      "Exact linear Y-scale (14 px/GW) and linear 24-hour X-axis: 38.4 GW sits accurately below 40 GW, peak 44.2 GW below 45 GW.",
-      "Direct line labels remove legend eye-travel; a vertical delta marker shows the exact 2.3 GW gap below forecast.",
-      "Both tables use semantic <thead>/<th scope='col'>, tabular-nums, and symbol + word + color status indicators.",
+      "Exact linear Y-scale and 48 half-hour settlement scrubber: 38.4 GW sits proportionally below 40 GW, peak 44.2 GW below 45 GW.",
+      "Direct line labels eliminate legend eye-travel; scenario tabs test Normal Dispatch, Cold Snap Peak, and HVDC Interconnector Trip.",
+      "Generation mix and regional margin tables use semantic <th scope='col'>, tabular-nums, and hatched pattern + symbol + word status badges.",
     ],
     skills: [
       "pixelcraft-dataviz",
@@ -1305,7 +1305,7 @@ export class SolarisReaderBar extends LitElement {
       "Static scanning alone misses distorted chart scales — dataviz verification checks coordinate math directly.",
     ],
     limits: [
-      "Values are illustrative; production apps should pair Observable Plot, ECharts, or uPlot for live streams.",
+      "Illustrative grid telemetry; production control rooms pair uPlot, ECharts, or streaming WebSocket feeds.",
     ],
     codeDiff: {
       language: "SVG / HTML",
@@ -1334,12 +1334,12 @@ export class SolarisReaderBar extends LitElement {
     prompt:
       "Design a Rust Ratatui production rollout monitor showing 120×36 color layout alongside 80×24 NO_COLOR=1 monochrome parity with explicit keyboard teardown.",
     brief:
-      "Production rollout monitor showing 120×36 color layout alongside 80×24 NO_COLOR=1 monochrome parity. Illustrative fixture.",
-    direction: "Health-sorted multi-pane cell grid with explicit key legend",
+      "Interactive Rust Ratatui rollout studio pairing 120×36 ANSI color with 80×24 NO_COLOR=1 monochrome parity, canary traffic gates, and staged rollback. Illustrative fixture.",
+    direction: "Keyboard-first dual-pane cell grid with NO_COLOR=1 verifier",
     decisions: [
-      "Replaces decorative ASCII art and raw ANSI log overflow with stable panes sorted failing-service first.",
-      "Every state pairs text tokens ([ERR], [WRN], [OK]) and selection markers (>) so NO_COLOR=1 and TERM=dumb retain 100% meaning.",
-      "Persistent footer documents every keyboard action (↑/↓, Tab, r Rollback, l Logs, q Quit with clean terminal teardown).",
+      "Synchronizes keyboard (↑/↓, j/k, r Rollback, n NO_COLOR=1) and pointer selection across both 120×36 color and 80×24 monochrome terminals.",
+      "Every state pairs bracketed tokens ([ERR], [WRN], [OK]) and selection markers (>) so NO_COLOR=1 and TERM=dumb retain 100% meaning.",
+      "Includes interactive canary traffic split controls, staged rollback confirmation, and a check-tui.mjs 80-column compliance ledger.",
     ],
     skills: [
       "pixelcraft-tui",
@@ -1352,7 +1352,7 @@ export class SolarisReaderBar extends LitElement {
       "Pixelcraft's check-tui.mjs validates NO_COLOR=1 cleanliness and 80-column overflow deterministically.",
     ],
     limits: [
-      "HTML exhibit illustrates the exact Ratatui cell geometry for browser inspection; native TestBackend + insta tests verify Rust builds.",
+      "Interactive browser simulation of Ratatui cell geometry; native TestBackend + insta tests verify Rust builds.",
     ],
     codeDiff: {
       language: "Rust (Ratatui 0.29)",
@@ -1390,12 +1390,13 @@ let table = Table::new(rows, [
     prompt:
       "Render live iOS rail departures in SwiftUI side-by-side at Standard text and Dynamic Type AX3 using ViewThatFits and safeAreaInset.",
     brief:
-      "Live rail departures rendered side-by-side at Standard text and Dynamic Type AX3 with safe-area ergonomics. Illustrative fixture.",
-    direction: "Native NavigationStack with ViewThatFits AX3 reflow",
+      "Interactive twin-iPhone SwiftUI commuter rail studio morphing live across Dynamic Type scales (.medium to AX3) with ActivityKit Lock Screen pinning. Illustrative fixture.",
+    direction:
+      "Twin-device NavigationStack with live ViewThatFits AX3 reflow & inspector",
     decisions: [
-      "Replaces transplanted web gradient cards and 26pt pill buttons with native iOS semantic surfaces and >= 44pt targets.",
-      "ViewThatFits switches rows from horizontal HStack to vertical VStack at Dynamic Type AX3 — zero station-name clipping.",
-      "Bottom primary action clears the home indicator via safeAreaInset and pairs status dots with text labels.",
+      "Live Dynamic Type segmented control + slider morphs the second device from HStack (.medium–.xxxLarge) to VStack (AX1–AX3) with zero station-name clipping.",
+      "Tapping any departure updates calling points, 8-coach step-free boarding schematic, bicycle bays, and Lock Screen Live Activity preview.",
+      "Bottom primary action clears the home indicator via safeAreaInset (>= 50pt target) and supports Light, Dark, and High Contrast modes.",
     ],
     skills: [
       "pixelcraft-mobile",
@@ -1408,7 +1409,7 @@ let table = Table::new(rows, [
       "Platform conventions outrank web hero shapes under Pixelcraft's authority order.",
     ],
     limits: [
-      "Rendered as an HTML iOS frame comparison for browser showcase; physical Xcode Simulator / VoiceOver audit remains not-checked.",
+      "Interactive HTML iOS studio simulation; physical Xcode Simulator / VoiceOver rotor audit remains not-checked.",
     ],
     codeDiff: {
       language: "Swift (SwiftUI)",
@@ -1444,12 +1445,13 @@ ViewThatFits(in: .horizontal) {
     prompt:
       "Design an A4 statement of account in Typst paired with its Outlook-safe MJML and plaintext transactional email notification.",
     brief:
-      "A4 statement of account paired with its dark-mode and plaintext transactional email notification. Illustrative fixture.",
-    direction: "Physical-unit Typst sheet + Outlook-safe MJML receipt",
+      "Dual-surface Typst A4 statement studio (with 18 mm margin guides & PDF/UA tag inspector) paired with a 4-mode Outlook-safe MJML & Plaintext email workbench. Illustrative fixture.",
+    direction:
+      "Physical-unit Typst A4 sheet + multi-client MJML & Plaintext workbench",
     decisions: [
-      "Replaces browser window.print() mid-table splits with explicit A4 physical margins (18 mm), repeating table headers, and unbreakable totals.",
-      "Replaces broken Flexbox email with table-backed MJML (< 20 KB, well under Gmail's 102 KB clip threshold) that survives dark mode and images-off.",
-      "Ships exact plaintext MIME companion preserving amount, due date, and PDF link order.",
+      "Interactive Typst controls toggle 18 mm physical margin guides, PDF/UA /StructTreeRoot tag overlays, and multi-row page-break stress testing.",
+      "Email workbench switches live across Apple Mail Light, Dark Mode, Images Blocked, and multipart/alternative Plaintext (.txt) under a 20 KB budget.",
+      "Dedicated @media print rules output the clean physical A4 statement without studio chrome.",
     ],
     skills: [
       "pixelcraft-document",
@@ -1462,7 +1464,7 @@ ViewThatFits(in: .horizontal) {
       "Pixelcraft verifies output with check-pdf.mjs (PDF/UA markers & embedded fonts) and check-email.mjs (102 KB + Outlook CSS).",
     ],
     limits: [
-      "Displayed as browser-rendered A4 & email client frames; real Classic Outlook Windows and veraPDF runs remain not-checked.",
+      "Browser-rendered A4 & multi-client email studio; real Classic Outlook Windows and veraPDF runs remain not-checked.",
     ],
     codeDiff: {
       language: "Typst + MJML",

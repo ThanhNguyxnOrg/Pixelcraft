@@ -1,0 +1,68 @@
+# Pixelcraft (v0.1.0)
+
+> Portable, open-source Agent Skills pack (MIT) for distinctive, evidence-verified UI and rigorous UX across web, native mobile, desktop, TUI, data apps, email, documents, spatial, and game interfaces.
+
+- Canonical showcase: https://thanhnguyxnorg.github.io/Pixelcraft/
+- Repository: https://github.com/ThanhNguyxnOrg/Pixelcraft
+- Package: `@thanhnguyxn/pixelcraft`
+- Install (all skills): `npx skills add ThanhNguyxnOrg/Pixelcraft` or `npm i -g @thanhnguyxn/pixelcraft && pixelcraft add all --agent <host>`
+- Supported coding agents (14): claude, codex, agents, devin, cursor, gemini, copilot, windsurf, opencode, kiro, cline, roo, droid, antigravity
+- Verification metrics: 26 skills, 247 framework references, 9 zero-dependency Node QA scripts, 19 DTCG token export targets, 66 offline eval fixtures, 22 multi-stack proof exhibits.
+
+## Core Loop & Authority Order
+1. Explicit user brief outranks everything.
+2. Existing project tokens, conventions, and locks outrank Pixelcraft taste.
+3. Platform conventions, legal duties, and the WCAG 2.2 AA accessibility floor outrank stylistic ambition.
+4. Pixelcraft workflow: Plan & Grill-Me -> Frame -> Brainstorm & Diverge -> Specify -> Build -> Verify & Critique -> Report (with `rendered`, `static`, `model-judgment`, `not-checked`, or `waived` evidence labels).
+
+## Skills (26)
+- **pixelcraft** (Core): Orchestrates distinctive, evidence-verified UI work across any frontend stack.
+- **pixelcraft-plan** (Core): Plans greenfield and brownfield UI work, runs Socratic Grill-Me discovery interviews for ambiguous or greenfield briefs, selects platforms and technology stacks while rejecting lazy defaults, maps complex capabilities to purpose-built libraries, checks dependency freshness and lockfile reproducibility, records architecture decisions (ADR), and produces the .pixelcraft/plan.md consumed by later Pixelcraft skills.
+- **pixelcraft-direction** (Core): Generates distinctive visual direction without template collapse.
+- **pixelcraft-craft** (System): Applies high-craft visual design decisions across platforms.
+- **pixelcraft-tokens** (System): Creates, resolves, and exports cross-platform design tokens in the W3C Design Tokens Community Group (DTCG) 2025.10 format and DTCG Resolver specification. [Scripts: export-tokens.mjs]
+- **pixelcraft-ux** (System): Designs rigorous user experience before and during implementation across any frontend stack.
+- **pixelcraft-patterns** (System): Applies surface-independent product UX patterns without collapsing into generic templates.
+- **pixelcraft-dataviz** (System): Designs and verifies truthful, legible, accessible data visualization across any stack.
+- **pixelcraft-accessibility** (System): Applies and verifies the accessibility floor across platforms.
+- **pixelcraft-brandkit** (System): Creates premium brand-kit and identity-board image generation briefs for brand kits, logo systems, brand guidelines, moodboards, identity decks, visual-world presentations, launch identities, logo concepts, palette/type systems, and implementation-ready brand direction.
+- **pixelcraft-web** (Platforms): Translates Pixelcraft direction, tokens, UX, and floor requirements into idiomatic web UI across HTML/CSS, React, Next.js, Vue, Nuxt, SvelteKit, SolidStart, Angular, Astro, Qwik, Preact, Fresh, Hono, htmx, Alpine, Lit, Rails/Hotwire, Laravel/Livewire/Filament/Inertia, Symfony UX, WordPress, Django/FastAPI/FastHTML, Phoenix LiveView, Blazor, Go templ/Gomponents, Rust Leptos/Dioxus, Kotlin, Java, Dart Jaspr, Elm, ClojureScript, F#, and Scala.
+- **pixelcraft-mobile** (Platforms): Translates Pixelcraft direction, tokens, UX, and floor requirements into idiomatic mobile UI across SwiftUI (incl.
+- **pixelcraft-data-apps** (Platforms): Translates Pixelcraft direction, tokens, UX, and floor requirements into data applications, AI/ML demos, dashboards, notebooks, BI reports, and internal tools in any language.
+- **pixelcraft-desktop** (Platforms): Translates Pixelcraft direction, tokens, UX, and floor requirements into desktop applications across Tauri, Electron, Electrobun, Qt 6/PySide6/PyQt6/QML, WinUI 3/WPF, AppKit, SwiftUI macOS, GTK4/libadwaita, Avalonia, Rust GUI (GPUI, Dioxus, Iced, libcosmic, Vizia, Slint, egui, AccessKit), JavaFX/Swing, C++/C/Zig GUI (JUCE, GTKmm, FLTK, wxWidgets, Dear ImGui, Nuklear, Ultralight), Go GUI (Wails v3, Fyne, Gio), and Uno Platform.
+- **pixelcraft-tui** (Platforms): Translates Pixelcraft direction, tokens, UX, and floor requirements into terminal user interfaces across Textual, Rich, Ink, Bubble Tea v2/Lip Gloss, Ratatui, Terminal.Gui, Spectre.Console, prompt_toolkit, OpenTUI, FTXUI, and Clack/CLI prompts.
+- **pixelcraft-extensions** (Platforms): Designs and verifies host-constrained extension and plugin interfaces.
+- **pixelcraft-game-ui** (Platforms): Translates Pixelcraft direction, tokens, UX, and floor requirements into game interfaces across Unity UI Toolkit, Unity uGUI/TextMeshPro, Godot Control/UI (GDScript/C#), Unreal UMG/CommonUI/MVVM, Bevy, LÖVE2D, MonoGame, Phaser/PixiJS/Kaplay, Ebitengine, Macroquad, Flame, Pygame/Arcade, NoesisGUI/RmlUi/Gameface/Dear ImGui, and Raylib/SDL3/Defold/Cocos.
+- **pixelcraft-spatial** (Platforms): Designs and verifies embodied spatial, XR, VR, and AR interfaces across visionOS 26, Android XR (Jetpack XR / Compose for XR), Meta Horizon OS / Meta Spatial SDK, WebXR (@react-three/xr, Wonderland Engine, Needle Engine), Unity XR Interaction Toolkit, and Unreal OpenXR.
+- **pixelcraft-constrained** (Platforms): Designs and verifies interfaces for constrained or nonstandard surfaces: TV/console/10-foot UI (Roku/BrightScript, Fire TV/Vega OS, tvOS, Compose for TV, webOS/Tizen), D-pad spatial focus, watchOS/Compose for Wear OS, e-ink displays, POS/ISA-101 HMI/kiosks, embedded MCU UI (LVGL, Slint MCU, TouchGFX, Qt for MCUs, embedded-graphics), automotive CarPlay/Android Auto/AAOS, and Realtime Voice AI/WebRTC voice agents/Siri App Intents/Alexa+.
+- **pixelcraft-email** (Channels): Translates Pixelcraft direction, tokens, UX, and floor requirements into email that survives real clients.
+- **pixelcraft-document** (Channels): Designs and verifies paginated documents, print output, reports, invoices, CVs, Office exports, and slide decks across web and document tooling.
+- **pixelcraft-media** (Channels): Designs and verifies social cards, Open Graph/Twitter images, YouTube thumbnails, repository banners, SVG posters, video frames, and motion graphics for external platforms.
+- **pixelcraft-chat-ui** (Channels): Designs and verifies conversational interfaces across two tracks—(A) host-constrained messaging platforms and mini apps (Slack Block Kit/AI Assistants, Discord Components V2/Activities, Telegram Bots/Mini Apps, Zalo Mini Apps/ZNS, WhatsApp Interactive Messages/Flows, Microsoft Teams Adaptive Cards/AI Library, LINE LIFF/Flex Messages, WeChat Mini Program) and (B) app-owned AI and agentic chat workspaces (Vercel AI SDK UI, assistant-ui, CopilotKit v2, AG-UI, MCP Apps/MCP-UI, OpenAI Apps SDK, Google A2UI, LangGraph useStream, streaming traces, branching, split artifacts, and approval gates).
+- **pixelcraft-review** (Verify): Audits, critiques, and polishes UI with evidence-backed findings. [Scripts: slop-scan.mjs]
+- **pixelcraft-visual-qa** (Verify): Verifies interfaces through rendered evidence using a render → screenshot → self-critique → fix loop and finish gate. [Scripts: check-contrast.mjs, check-email.mjs, check-pdf.mjs, check-tui.mjs, finish-gate.mjs, shoot.mjs, style-inventory.mjs]
+- **pixelcraft-handoff** (Verify): Translates approved designs, Figma MCP context, Code Connect bindings, Dev Mode specs, Penpot files, screenshots, mockups, and motion handoff prototypes into faithful implementation without losing existing architecture.
+
+## Standalone Multi-Stack Proof Exhibits (22)
+- https://thanhnguyxnorg.github.io/Pixelcraft/gallery/booking/after.html
+- https://thanhnguyxnorg.github.io/Pixelcraft/gallery/clinic/after.html
+- https://thanhnguyxnorg.github.io/Pixelcraft/gallery/coffee/after.html
+- https://thanhnguyxnorg.github.io/Pixelcraft/gallery/compose/after.html
+- https://thanhnguyxnorg.github.io/Pixelcraft/gallery/dashboard/after.html
+- https://thanhnguyxnorg.github.io/Pixelcraft/gallery/desktop/after.html
+- https://thanhnguyxnorg.github.io/Pixelcraft/gallery/document/after.html
+- https://thanhnguyxnorg.github.io/Pixelcraft/gallery/email/after.html
+- https://thanhnguyxnorg.github.io/Pixelcraft/gallery/flutter/after.html
+- https://thanhnguyxnorg.github.io/Pixelcraft/gallery/gamehud/after.html
+- https://thanhnguyxnorg.github.io/Pixelcraft/gallery/grid/after.html
+- https://thanhnguyxnorg.github.io/Pixelcraft/gallery/kubetrace/after.html
+- https://thanhnguyxnorg.github.io/Pixelcraft/gallery/learning/after.html
+- https://thanhnguyxnorg.github.io/Pixelcraft/gallery/liveview/after.html
+- https://thanhnguyxnorg.github.io/Pixelcraft/gallery/magazine/after.html
+- https://thanhnguyxnorg.github.io/Pixelcraft/gallery/mobile/after.html
+- https://thanhnguyxnorg.github.io/Pixelcraft/gallery/proposal/after.html
+- https://thanhnguyxnorg.github.io/Pixelcraft/gallery/python/after.html
+- https://thanhnguyxnorg.github.io/Pixelcraft/gallery/saas/after.html
+- https://thanhnguyxnorg.github.io/Pixelcraft/gallery/store/after.html
+- https://thanhnguyxnorg.github.io/Pixelcraft/gallery/swiftui/after.html
+- https://thanhnguyxnorg.github.io/Pixelcraft/gallery/tui/after.html

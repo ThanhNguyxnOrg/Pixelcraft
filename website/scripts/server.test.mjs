@@ -39,10 +39,22 @@ test("production server supports static assets, seekable media, gzip, HEAD and t
   });
   const page = await fetch(address);
   assert.equal(page.status, 200);
+  assert.equal(page.headers.get("x-content-type-options"), "nosniff");
+  assert.equal(page.headers.get("x-frame-options"), "SAMEORIGIN");
+  assert.equal(page.headers.get("cross-origin-opener-policy"), "same-origin");
+  assert.match(
+    page.headers.get("content-security-policy") ?? "",
+    /default-src 'self'.*frame-ancestors 'self'/,
+  );
+  assert.match(
+    page.headers.get("permissions-policy") ?? "",
+    /camera=\(\).*microphone=\(\)/,
+  );
   assert.match(await page.text(), /<title>Test/);
-  assert.equal(
-    (await fetch(address, { method: "HEAD" })).headers.get("content-type"),
-    "text/html; charset=utf-8",
+  assert.match(
+    (await fetch(address, { method: "HEAD" })).headers.get("content-type") ??
+      "",
+    /^text\/html;\s*charset=utf-8$/,
   );
   const head = await fetch(address, { method: "HEAD" });
   assert.equal(await head.text(), "");

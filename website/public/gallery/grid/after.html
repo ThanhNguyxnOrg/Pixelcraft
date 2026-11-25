@@ -1,109 +1,3088 @@
 <!doctype html>
 <html lang="en">
 <head>
-<meta charset="utf-8">
-<meta name="viewport" content="width=device-width, initial-scale=1">
-<title>Northgrid · System demand (with Pixelcraft)</title>
-<link rel="stylesheet" href="../../fonts/gallery.css">
-<style>
-  :root {
-    --bg: #0b1114; --panel: #11191d; --rule: #22303a; --ink: #e8eef0; --ink-2: #9ab0ba;
-    --demand: #5ec8f2; --forecast: #9ab0ba; --peak: #f2b84b; --ok: #6fd3a3; --warn: #f2b84b; --bad: #ff7a70;
-    --sans: Archivo, system-ui, sans-serif; --mono: "IBM Plex Mono", ui-monospace, monospace;
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>Northgrid Demand · National Electricity Control Room &amp; Dispatch Board</title>
+  <meta name="description" content="Northgrid Demand national electricity transmission control-room board: 38.4 GW live metered demand, exact linear 24-hour SVG telemetry, generation carbon ledger, and regional spare-margin dispatch.">
+  <meta property="og:type" content="website">
+  <meta property="og:title" content="Northgrid Demand · National Electricity Control Room &amp; Dispatch Board">
+  <meta property="og:description" content="Control-room view of national electricity demand (38.4 GW, −2.3 GW vs forecast), exact linear SVG scales, generation carbon intensity, and regional spare margin.">
+  <meta property="og:url" content="https://thanhnguyxnorg.github.io/Pixelcraft/gallery/grid/after.html">
+  <meta property="og:site_name" content="Northgrid System Operator · Pixelcraft">
+  <link rel="canonical" href="https://thanhnguyxnorg.github.io/Pixelcraft/gallery/grid/after.html">
+  <link rel="stylesheet" href="../../fonts/gallery.css">
+  <script type="application/ld+json">
+  {
+    "@context": "https://schema.org",
+    "@graph": [
+      {
+        "@type": "WebApplication",
+        "name": "Northgrid Demand — National Electricity Control Room & Dispatch Board",
+        "applicationCategory": "UtilitiesApplication",
+        "operatingSystem": "All",
+        "url": "https://thanhnguyxnorg.github.io/Pixelcraft/gallery/grid/after.html",
+        "description": "Interactive national transmission electricity telemetry board with exact linear SVG coordinate scaling, 48 half-hour settlement scrubbing, generation carbon intensity ledger, and regional spare-margin substation diagnostics. Illustrative telemetry values."
+      },
+      {
+        "@type": "Dataset",
+        "name": "Northgrid Illustrative 24-Hour Transmission Dispatch Telemetry",
+        "description": "Illustrative 48-period half-hourly national electricity demand, day-ahead forecast, firm generation capacity, carbon intensity, and regional spare margin across three grid operating scenarios.",
+        "temporalCoverage": "2026-10-14T00:00:00+01:00/2026-10-15T00:00:00+01:00",
+        "isAccessibleForFree": true,
+        "variableMeasured": [
+          "National Transmission Demand (GW)",
+          "Day-Ahead Forecast Demand (GW)",
+          "Synchronized Grid Frequency (Hz)",
+          "Regional Spare Capacity Margin (%)",
+          "Generation Carbon Intensity (gCO2/kWh)",
+          "Imbalance & Day-Ahead Spot Price (GBP/MWh)"
+        ]
+      }
+    ]
   }
-  * { box-sizing: border-box; }
-  body { margin: 0; background: var(--bg); color: var(--ink); font-family: var(--sans); }
-  header { display: flex; justify-content: space-between; align-items: center; padding: 18px 40px; border-bottom: 1px solid var(--rule); font-family: var(--mono); font-size: 13px; color: var(--ink-2); gap: 16px; }
-  header b { color: var(--ink); font-family: var(--sans); font-size: 16px; font-weight: 700; letter-spacing: .02em; }
-  main { display: grid; grid-template-columns: 1.5fr 1fr; gap: 0; min-height: calc(100vh - 56px); }
-  .lead { padding: 32px 40px 24px; border-inline-end: 1px solid var(--rule); }
-  .eyebrow { font-family: var(--mono); font-size: 13px; color: var(--ink-2); margin: 0; }
-  .read { display: flex; align-items: baseline; gap: 18px; margin: 10px 0 4px; }
-  .read b { font-size: clamp(64px, 7.6vw, 108px); line-height: .9; font-weight: 800; font-stretch: 112%; letter-spacing: -.03em; font-variant-numeric: tabular-nums; }
-  .read span { font-size: 28px; color: var(--ink-2); }
-  .delta { font-size: 18px; margin: 0 0 18px; color: var(--ok); font-weight: 600; }
-  svg { width: 100%; height: auto; display: block; }
-  .cap { font-family: var(--mono); font-size: 12px; color: var(--ink-2); margin: 10px 0 0; }
-  .side { padding: 32px 40px; }
-  h2 { font: 500 13px var(--mono); color: var(--ink-2); margin: 0 0 14px; }
-  table { width: 100%; border-collapse: collapse; font-variant-numeric: tabular-nums; }
-  th { text-align: start; font: 500 12px var(--mono); color: var(--ink-2); padding: 0 0 8px; border-bottom: 1px solid var(--rule); }
-  td { padding: 13px 0; border-bottom: 1px solid var(--rule); font-size: 15px; }
-  table.regions th:not(:first-child), table.regions td:not(:first-child) { text-align: end; }
-  table.regions td:first-child { font-weight: 600; }
-  table.events th:last-child, table.events td:last-child { text-align: end; font-family: var(--mono); }
-  table.events td:first-child { width: 68px; font-family: var(--mono); font-weight: 600; color: var(--ink); }
-  table.events td:nth-child(2) { text-align: start; color: var(--ink-2); }
-  .st { font: 500 12px var(--mono); }
-  .st.ok { color: var(--ok); } .st.warn { color: var(--warn); } .st.bad { color: var(--bad); }
-  .note { font-family: var(--mono); font-size: 12px; color: var(--ink-2); margin-top: 22px; line-height: 1.6; }
-  @media (max-width: 960px) {
-    header { padding: 16px 20px; flex-direction: column; align-items: flex-start; }
-    main { grid-template-columns: 1fr; }
-    .lead { border-inline-end: 0; border-bottom: 1px solid var(--rule); padding: 24px 20px; }
-    .side { padding: 24px 20px; }
-  }
-</style>
+  </script>
+  <style>
+    :root {
+      --bg: #0b1114;
+      --surface: #0f171c;
+      --surface-alt: #141f26;
+      --well: #070c0f;
+      --rule: #22303a;
+      --rule-strong: #354a58;
+      --ink: #e8eef0;
+      --ink-2: #9ab0ba;
+      --ink-dim: #7b939f;
+      --demand: #5ec8f2;
+      --demand-tint: rgba(94, 200, 242, 0.13);
+      --forecast: #9ab0ba;
+      --peak: #f2b84b;
+      --peak-tint: rgba(242, 184, 75, 0.13);
+      --ok: #6fd3a3;
+      --ok-tint: rgba(111, 211, 163, 0.13);
+      --warn: #f2b84b;
+      --warn-tint: rgba(242, 184, 75, 0.14);
+      --bad: #ff7a70;
+      --bad-tint: rgba(255, 122, 112, 0.15);
+      --nuclear: #c2d1d8;
+      --hydro: #38a3d8;
+      --gas: #e59a54;
+      --hvdc: #8ad6c0;
+      --row-hover: rgba(232, 238, 240, 0.04);
+      --row-active: rgba(94, 200, 242, 0.10);
+      --display: "Archivo", system-ui, -apple-system, sans-serif;
+      --sans: "Public Sans", system-ui, -apple-system, sans-serif;
+      --mono: "IBM Plex Mono", ui-monospace, SFMono-Regular, Menlo, Consolas, monospace;
+    }
+
+    *, *::before, *::after {
+      box-sizing: border-box;
+    }
+
+    html {
+      background-color: var(--bg);
+      color: var(--ink);
+      font-size: 16px;
+      -webkit-text-size-adjust: 100%;
+    }
+
+    body {
+      margin: 0;
+      background-color: var(--bg);
+      color: var(--ink);
+      font-family: var(--sans);
+      font-size: 0.9375rem;
+      line-height: 1.45;
+      font-variant-numeric: tabular-nums;
+      overflow-x: hidden;
+      -webkit-font-smoothing: antialiased;
+    }
+
+    .skip-link {
+      position: absolute;
+      left: 12px;
+      top: -60px;
+      z-index: 100;
+      padding: 8px 14px;
+      background-color: var(--demand);
+      color: var(--well);
+      font-family: var(--mono);
+      font-size: 0.8125rem;
+      font-weight: 500;
+      text-decoration: none;
+      border: 2px solid var(--ink);
+    }
+
+    .skip-link:focus,
+    .skip-link:focus-visible {
+      top: 10px;
+    }
+
+    :focus-visible {
+      outline: 3px solid var(--demand);
+      outline-offset: 2px;
+    }
+
+    .sr-only {
+      position: absolute;
+      width: 1px;
+      height: 1px;
+      padding: 0;
+      margin: -1px;
+      overflow: hidden;
+      clip: rect(0, 0, 0, 0);
+      white-space: nowrap;
+      border: 0;
+    }
+
+    /* Top Control-Room Dispatch Header */
+    .dispatch-header {
+      display: flex;
+      flex-wrap: wrap;
+      justify-content: space-between;
+      align-items: center;
+      gap: 10px 20px;
+      padding: 11px 28px;
+      background-color: var(--surface);
+      border-bottom: 1px solid var(--rule);
+      font-family: var(--mono);
+      font-size: 0.78125rem;
+      color: var(--ink-2);
+    }
+
+    .station-identity {
+      display: flex;
+      align-items: center;
+      gap: 12px;
+      min-width: 0;
+      flex-wrap: wrap;
+    }
+
+    .station-mark {
+      width: 24px;
+      height: 24px;
+      flex-shrink: 0;
+      display: inline-flex;
+      align-items: center;
+      justify-content: center;
+      background-color: var(--well);
+      border: 1px solid var(--rule-strong);
+    }
+
+    .station-title {
+      margin: 0;
+      font-family: var(--display);
+      font-size: 0.96875rem;
+      font-weight: 800;
+      letter-spacing: 0.03em;
+      color: var(--ink);
+      text-transform: uppercase;
+    }
+
+    .bus-code {
+      padding: 2px 7px;
+      background-color: var(--well);
+      border: 1px solid var(--rule);
+      color: var(--ink-2);
+      font-size: 0.71875rem;
+    }
+
+    .header-telemetry {
+      display: flex;
+      flex-wrap: wrap;
+      align-items: center;
+      gap: 8px 16px;
+      min-width: 0;
+    }
+
+    .freq-pill {
+      display: inline-flex;
+      align-items: center;
+      gap: 7px;
+      padding: 3px 9px;
+      background-color: var(--well);
+      border: 1px solid var(--rule-strong);
+      color: var(--ink);
+      font-weight: 500;
+    }
+
+    .freq-pill[data-band="ok"] {
+      border-color: var(--ok);
+    }
+
+    .freq-pill[data-band="warn"] {
+      border-color: var(--warn);
+    }
+
+    .freq-pill[data-band="bad"] {
+      border-color: var(--bad);
+    }
+
+    .disclaimer-tag {
+      padding: 2px 8px;
+      background-color: var(--well);
+      border: 1px solid var(--rule);
+      color: var(--ink-2);
+      font-size: 0.71875rem;
+    }
+
+    /* Scenario & 48-Settlement Scrubber Command Strip */
+    .command-bar {
+      display: grid;
+      grid-template-columns: auto 1fr;
+      align-items: center;
+      gap: 12px 24px;
+      padding: 9px 28px;
+      background-color: var(--well);
+      border-bottom: 1px solid var(--rule);
+    }
+
+    .scenario-group {
+      display: flex;
+      flex-wrap: wrap;
+      align-items: center;
+      gap: 6px;
+      min-width: 0;
+    }
+
+    .control-label {
+      font-family: var(--mono);
+      font-size: 0.71875rem;
+      color: var(--ink-2);
+      text-transform: uppercase;
+      letter-spacing: 0.04em;
+      margin-inline-end: 4px;
+    }
+
+    .scenario-btn {
+      appearance: none;
+      background-color: var(--surface);
+      color: var(--ink-2);
+      border: 1px solid var(--rule);
+      padding: 6px 11px;
+      font-family: var(--mono);
+      font-size: 0.75rem;
+      font-weight: 500;
+      line-height: 1.2;
+      cursor: pointer;
+      transition: background-color 120ms ease, border-color 120ms ease, color 120ms ease;
+    }
+
+    .scenario-btn:hover {
+      background-color: var(--surface-alt);
+      color: var(--ink);
+      border-color: var(--rule-strong);
+    }
+
+    .scenario-btn[aria-pressed="true"] {
+      background-color: var(--demand-tint);
+      color: var(--ink);
+      border-color: var(--demand);
+    }
+
+    .scrubber-cluster {
+      display: flex;
+      flex-wrap: wrap;
+      align-items: center;
+      justify-content: flex-end;
+      gap: 8px 12px;
+      min-width: 0;
+    }
+
+    .scrubber-controls {
+      display: flex;
+      align-items: center;
+      gap: 6px;
+      flex: 1 1 240px;
+      max-width: 430px;
+      min-width: 0;
+    }
+
+    .step-btn {
+      appearance: none;
+      background-color: var(--surface);
+      color: var(--ink);
+      border: 1px solid var(--rule);
+      padding: 4px 8px;
+      font-family: var(--mono);
+      font-size: 0.75rem;
+      line-height: 1.2;
+      cursor: pointer;
+      flex-shrink: 0;
+      transition: background-color 120ms ease, border-color 120ms ease;
+    }
+
+    .step-btn:hover {
+      background-color: var(--surface-alt);
+      border-color: var(--rule-strong);
+    }
+
+    .sp-range {
+      flex: 1 1 auto;
+      min-width: 90px;
+      width: 100%;
+      accent-color: var(--demand);
+      cursor: pointer;
+      margin: 0;
+    }
+
+    .scrubber-readout {
+      font-family: var(--mono);
+      font-size: 0.75rem;
+      color: var(--ink);
+      background-color: var(--surface);
+      border: 1px solid var(--rule);
+      padding: 4px 9px;
+      white-space: nowrap;
+    }
+
+    /* Primary Command Deck (Fits cleanly within 1440x900 above the fold) */
+    .deck-grid {
+      display: grid;
+      grid-template-columns: minmax(0, 1.46fr) minmax(0, 1fr);
+      border-bottom: 1px solid var(--rule);
+    }
+
+    .lead-pane {
+      padding: 20px 28px 18px;
+      border-inline-end: 1px solid var(--rule);
+      min-width: 0;
+    }
+
+    .eyebrow-row {
+      display: flex;
+      flex-wrap: wrap;
+      justify-content: space-between;
+      align-items: baseline;
+      gap: 8px 16px;
+      margin-bottom: 6px;
+    }
+
+    .eyebrow {
+      font-family: var(--mono);
+      font-size: 0.78125rem;
+      color: var(--ink-2);
+      text-transform: uppercase;
+      letter-spacing: 0.04em;
+      margin: 0;
+    }
+
+    .mode-badge {
+      font-family: var(--mono);
+      font-size: 0.71875rem;
+      padding: 2px 7px;
+      border: 1px solid var(--rule-strong);
+      background-color: var(--surface);
+      color: var(--demand);
+    }
+
+    .readout-strip {
+      display: flex;
+      flex-wrap: wrap;
+      align-items: flex-end;
+      justify-content: space-between;
+      gap: 12px 24px;
+      margin-bottom: 8px;
+    }
+
+    .primary-figure-wrap {
+      min-width: 0;
+    }
+
+    .read {
+      display: flex;
+      align-items: baseline;
+      gap: 12px;
+      margin: 2px 0 4px;
+    }
+
+    .read b {
+      font-family: var(--display);
+      font-size: clamp(2.85rem, 5.6vw, 4.75rem);
+      line-height: 0.92;
+      font-weight: 800;
+      font-stretch: 112%;
+      letter-spacing: -0.03em;
+      font-variant-numeric: tabular-nums;
+      color: var(--ink);
+    }
+
+    .read span {
+      font-family: var(--display);
+      font-size: clamp(1.35rem, 2vw, 1.75rem);
+      font-weight: 600;
+      color: var(--ink-2);
+    }
+
+    .delta {
+      font-size: 0.96875rem;
+      margin: 0;
+      font-weight: 600;
+      color: var(--ok);
+    }
+
+    .delta[data-tone="warn"] {
+      color: var(--warn);
+    }
+
+    .delta[data-tone="bad"] {
+      color: var(--bad);
+    }
+
+    .inline-ledger {
+      display: grid;
+      grid-template-columns: repeat(4, minmax(0, auto));
+      gap: 0;
+      border: 1px solid var(--rule);
+      background-color: var(--surface);
+      min-width: 0;
+    }
+
+    .ledger-cell {
+      padding: 7px 12px;
+      border-inline-end: 1px solid var(--rule);
+      min-width: 0;
+    }
+
+    .ledger-cell:last-child {
+      border-inline-end: 0;
+    }
+
+    .ledger-k {
+      display: block;
+      font-family: var(--mono);
+      font-size: 0.6875rem;
+      color: var(--ink-2);
+      text-transform: uppercase;
+      letter-spacing: 0.03em;
+    }
+
+    .ledger-v {
+      display: block;
+      font-family: var(--mono);
+      font-size: 0.875rem;
+      font-weight: 500;
+      color: var(--ink);
+      margin-top: 2px;
+      white-space: nowrap;
+    }
+
+    .ledger-sub {
+      display: block;
+      font-family: var(--mono);
+      font-size: 0.6875rem;
+      color: var(--ink-dim);
+      margin-top: 1px;
+      white-space: nowrap;
+    }
+
+    /* Linear 24-Hour SVG Telemetry Chart */
+    .chart-frame {
+      margin-top: 10px;
+      background-color: var(--well);
+      border: 1px solid var(--rule);
+      padding: 10px 12px 8px;
+    }
+
+    .chart-meta-bar {
+      display: flex;
+      flex-wrap: wrap;
+      justify-content: space-between;
+      align-items: center;
+      gap: 6px 14px;
+      margin-bottom: 4px;
+      font-family: var(--mono);
+      font-size: 0.71875rem;
+      color: var(--ink-2);
+    }
+
+    .demand-svg {
+      width: 100%;
+      height: auto;
+      display: block;
+      cursor: crosshair;
+      touch-action: pan-y;
+    }
+
+    .svg-grid-line {
+      stroke: var(--rule);
+      stroke-width: 1;
+    }
+
+    .svg-axis-label {
+      font-family: var(--mono);
+      font-size: 11px;
+      fill: var(--ink-2);
+    }
+
+    .svg-cap-line {
+      fill: none;
+      stroke: var(--ok);
+      stroke-width: 1.5;
+      stroke-dasharray: 8 4 2 4;
+    }
+
+    .svg-forecast-line {
+      fill: none;
+      stroke: var(--forecast);
+      stroke-width: 2;
+      stroke-dasharray: 5 5;
+    }
+
+    .svg-projected-line {
+      fill: none;
+      stroke: var(--demand);
+      stroke-width: 2;
+      stroke-dasharray: 2 4;
+      opacity: 0.75;
+    }
+
+    .svg-actual-line {
+      fill: none;
+      stroke: var(--demand);
+      stroke-width: 3.75;
+    }
+
+    .svg-delta-line {
+      stroke: var(--ok);
+      stroke-width: 1.75;
+      stroke-dasharray: 2 2;
+    }
+
+    .svg-delta-line[data-tone="warn"] {
+      stroke: var(--warn);
+    }
+
+    .svg-delta-line[data-tone="bad"] {
+      stroke: var(--bad);
+    }
+
+    .svg-now-marker {
+      fill: var(--demand);
+      stroke: var(--well);
+      stroke-width: 1.5;
+    }
+
+    .svg-peak-marker {
+      fill: var(--peak);
+      stroke: var(--well);
+      stroke-width: 1.5;
+    }
+
+    .svg-label-demand,
+    .svg-label-forecast,
+    .svg-label-peak,
+    .svg-label-cap {
+      paint-order: stroke;
+      stroke: var(--well);
+      stroke-width: 4px;
+      stroke-linejoin: round;
+    }
+
+    .svg-label-demand {
+      font-family: var(--mono);
+      font-size: 11.5px;
+      font-weight: 500;
+      fill: var(--demand);
+    }
+
+    .svg-label-forecast {
+      font-family: var(--mono);
+      font-size: 11.5px;
+      fill: var(--forecast);
+    }
+
+    .svg-label-peak {
+      font-family: var(--mono);
+      font-size: 11.5px;
+      font-weight: 500;
+      fill: var(--peak);
+    }
+
+    .svg-label-cap {
+      font-family: var(--mono);
+      font-size: 11px;
+      fill: var(--ok);
+    }
+
+    .svg-scrub-guide {
+      stroke: var(--ink);
+      stroke-width: 1;
+      stroke-dasharray: 3 3;
+      opacity: 0.85;
+    }
+
+    .svg-scrub-box {
+      fill: var(--surface-alt);
+      stroke: var(--rule-strong);
+      stroke-width: 1;
+    }
+
+    .svg-scrub-text {
+      font-family: var(--mono);
+      font-size: 10.5px;
+      fill: var(--ink);
+    }
+
+    .cap {
+      font-family: var(--mono);
+      font-size: 0.75rem;
+      color: var(--ink-2);
+      margin: 8px 0 0;
+      line-height: 1.45;
+    }
+
+    /* Right Column: Ranked Regional Spare Margin & Next 6 Hours */
+    .side-pane {
+      padding: 20px 28px 18px;
+      min-width: 0;
+      display: flex;
+      flex-direction: column;
+      justify-content: space-between;
+    }
+
+    .section-head {
+      display: flex;
+      flex-wrap: wrap;
+      justify-content: space-between;
+      align-items: center;
+      gap: 8px 12px;
+      margin-bottom: 10px;
+    }
+
+    .section-heading {
+      font-family: var(--mono);
+      font-size: 0.78125rem;
+      font-weight: 500;
+      color: var(--ink-2);
+      text-transform: uppercase;
+      letter-spacing: 0.04em;
+      margin: 0;
+    }
+
+    .region-toolbar {
+      display: flex;
+      flex-wrap: wrap;
+      align-items: center;
+      gap: 6px;
+    }
+
+    .filter-btn {
+      appearance: none;
+      background-color: var(--surface);
+      color: var(--ink-2);
+      border: 1px solid var(--rule);
+      padding: 3px 8px;
+      font-family: var(--mono);
+      font-size: 0.71875rem;
+      cursor: pointer;
+      transition: background-color 120ms ease, border-color 120ms ease, color 120ms ease;
+    }
+
+    .filter-btn:hover {
+      color: var(--ink);
+      border-color: var(--rule-strong);
+    }
+
+    .filter-btn[aria-pressed="true"] {
+      background-color: var(--surface-alt);
+      color: var(--ink);
+      border-color: var(--demand);
+    }
+
+    .sort-select {
+      background-color: var(--surface);
+      color: var(--ink);
+      border: 1px solid var(--rule);
+      padding: 3px 7px;
+      font-family: var(--mono);
+      font-size: 0.71875rem;
+      cursor: pointer;
+    }
+
+    table {
+      width: 100%;
+      border-collapse: collapse;
+      font-variant-numeric: tabular-nums;
+    }
+
+    th {
+      text-align: start;
+      font-family: var(--mono);
+      font-size: 0.71875rem;
+      font-weight: 500;
+      color: var(--ink-2);
+      padding: 0 6px 7px;
+      border-bottom: 1px solid var(--rule-strong);
+      white-space: nowrap;
+    }
+
+    th:first-child,
+    td:first-child {
+      padding-inline-start: 4px;
+    }
+
+    th:last-child,
+    td:last-child {
+      padding-inline-end: 4px;
+    }
+
+    td {
+      padding: 9px 6px;
+      border-bottom: 1px solid var(--rule);
+      font-size: 0.875rem;
+      vertical-align: middle;
+    }
+
+    table.regions th:not(:first-child),
+    table.regions td:not(:first-child) {
+      text-align: end;
+    }
+
+    table.regions tbody tr {
+      cursor: pointer;
+      transition: background-color 120ms ease;
+    }
+
+    table.regions tbody tr:hover {
+      background-color: var(--row-hover);
+    }
+
+    table.regions tbody tr[data-selected="true"] {
+      background-color: var(--row-active);
+    }
+
+    .region-pick-btn {
+      appearance: none;
+      background: none;
+      border: 0;
+      padding: 0;
+      color: var(--ink);
+      font-family: var(--sans);
+      font-size: 0.875rem;
+      font-weight: 600;
+      text-align: start;
+      cursor: pointer;
+      display: inline-flex;
+      align-items: center;
+      gap: 6px;
+    }
+
+    .region-pick-btn::before {
+      content: "▸";
+      font-family: var(--mono);
+      font-size: 0.75rem;
+      color: var(--ink-dim);
+    }
+
+    tr[data-selected="true"] .region-pick-btn::before {
+      color: var(--demand);
+    }
+
+    .margin-cell {
+      font-family: var(--mono);
+      font-weight: 500;
+    }
+
+    .st {
+      font-family: var(--mono);
+      font-size: 0.75rem;
+      font-weight: 500;
+      padding: 2px 6px;
+      display: inline-block;
+      border: 1px solid transparent;
+      white-space: nowrap;
+    }
+
+    .st.ok {
+      color: var(--ok);
+      background-color: var(--ok-tint);
+      border-color: var(--ok);
+    }
+
+    .st.warn {
+      color: var(--warn);
+      background-color: var(--warn-tint);
+      border-color: var(--warn);
+    }
+
+    .st.bad {
+      color: var(--bad);
+      background-color: var(--bad-tint);
+      border-color: var(--bad);
+    }
+
+    .quick-zone-callout {
+      margin-top: 10px;
+      padding: 8px 10px;
+      background-color: var(--surface);
+      border: 1px solid var(--rule);
+      display: flex;
+      flex-wrap: wrap;
+      justify-content: space-between;
+      align-items: center;
+      gap: 6px 12px;
+      font-family: var(--mono);
+      font-size: 0.71875rem;
+      color: var(--ink-2);
+    }
+
+    .quick-zone-callout strong {
+      color: var(--ink);
+      font-weight: 500;
+    }
+
+    .jump-link {
+      color: var(--demand);
+      text-decoration: underline;
+      text-underline-offset: 3px;
+    }
+
+    .events-block {
+      margin-top: 16px;
+    }
+
+    table.events th:last-child,
+    table.events td:last-child {
+      text-align: end;
+      font-family: var(--mono);
+      white-space: nowrap;
+    }
+
+    table.events td:first-child {
+      width: 62px;
+      font-family: var(--mono);
+      font-weight: 500;
+      color: var(--ink);
+      white-space: nowrap;
+    }
+
+    table.events td:nth-child(2) {
+      color: var(--ink-2);
+    }
+
+    .note {
+      font-family: var(--mono);
+      font-size: 0.71875rem;
+      color: var(--ink-2);
+      margin: 10px 0 0;
+      line-height: 1.5;
+    }
+
+    /* Below-the-Fold Operational Depth Modules */
+    .ops-module {
+      padding: 26px 28px;
+      border-bottom: 1px solid var(--rule);
+    }
+
+    .module-header {
+      display: flex;
+      flex-wrap: wrap;
+      justify-content: space-between;
+      align-items: flex-end;
+      gap: 10px 24px;
+      margin-bottom: 16px;
+    }
+
+    .module-title {
+      font-family: var(--display);
+      font-size: 1.1875rem;
+      font-weight: 800;
+      letter-spacing: 0.01em;
+      color: var(--ink);
+      margin: 3px 0 0;
+    }
+
+    .module-kpis {
+      display: flex;
+      flex-wrap: wrap;
+      gap: 16px;
+      font-family: var(--mono);
+      font-size: 0.78125rem;
+      color: var(--ink-2);
+    }
+
+    .module-kpis strong {
+      color: var(--ink);
+      font-weight: 500;
+    }
+
+    /* Generation Mix Stacked Bar + Hatch Patterns */
+    .mix-bar-wrap {
+      background-color: var(--well);
+      border: 1px solid var(--rule);
+      padding: 12px 14px 10px;
+      margin-bottom: 14px;
+    }
+
+    .mix-svg {
+      width: 100%;
+      height: auto;
+      display: block;
+    }
+
+    .table-scroll {
+      width: 100%;
+      max-width: 100%;
+      overflow-x: auto;
+      border: 1px solid var(--rule);
+      background-color: var(--surface);
+    }
+
+    .mix-table th,
+    .mix-table td,
+    .audit-table th,
+    .audit-table td,
+    .sp-table th,
+    .sp-table td {
+      padding: 9px 12px;
+    }
+
+    .mix-table th:nth-child(n+2):nth-child(-n+6),
+    .mix-table td:nth-child(n+2):nth-child(-n+6) {
+      text-align: end;
+      font-family: var(--mono);
+    }
+
+    .mix-table tfoot td {
+      border-top: 1px solid var(--rule-strong);
+      border-bottom: 0;
+      font-weight: 600;
+      background-color: var(--well);
+    }
+
+    .fuel-cell {
+      display: inline-flex;
+      align-items: center;
+      gap: 9px;
+      font-weight: 600;
+      white-space: nowrap;
+    }
+
+    .swatch-svg {
+      width: 22px;
+      height: 14px;
+      flex-shrink: 0;
+      border: 1px solid var(--rule-strong);
+      background-color: var(--well);
+    }
+
+    .fuel-code {
+      font-family: var(--mono);
+      font-size: 0.71875rem;
+      color: var(--ink-2);
+      font-weight: 400;
+    }
+
+    .share-bar-inline {
+      display: inline-flex;
+      align-items: center;
+      justify-content: flex-end;
+      gap: 8px;
+      min-width: 112px;
+    }
+
+    .share-track {
+      width: 56px;
+      height: 7px;
+      background-color: var(--well);
+      border: 1px solid var(--rule);
+      display: inline-block;
+      position: relative;
+    }
+
+    .share-fill {
+      display: block;
+      height: 100%;
+      background-color: var(--demand);
+    }
+
+    /* Regional Substation & Dispatch Events Split */
+    .inspector-grid {
+      display: grid;
+      grid-template-columns: minmax(0, 1.08fr) minmax(0, 1.22fr);
+      gap: 20px;
+    }
+
+    .substation-box,
+    .eventlog-box {
+      background-color: var(--surface);
+      border: 1px solid var(--rule);
+      padding: 16px 18px;
+      min-width: 0;
+    }
+
+    .zone-tabs {
+      display: flex;
+      flex-wrap: wrap;
+      gap: 6px;
+      margin-bottom: 14px;
+    }
+
+    .zone-tab {
+      appearance: none;
+      background-color: var(--well);
+      color: var(--ink-2);
+      border: 1px solid var(--rule);
+      padding: 5px 10px;
+      font-family: var(--mono);
+      font-size: 0.75rem;
+      cursor: pointer;
+      transition: background-color 120ms ease, border-color 120ms ease, color 120ms ease;
+    }
+
+    .zone-tab:hover {
+      color: var(--ink);
+      border-color: var(--rule-strong);
+    }
+
+    .zone-tab[aria-selected="true"] {
+      background-color: var(--demand-tint);
+      color: var(--ink);
+      border-color: var(--demand);
+    }
+
+    .substation-meta {
+      display: grid;
+      grid-template-columns: repeat(3, minmax(0, 1fr));
+      gap: 8px;
+      margin-bottom: 14px;
+    }
+
+    .sub-stat {
+      background-color: var(--well);
+      border: 1px solid var(--rule);
+      padding: 8px 10px;
+      min-width: 0;
+    }
+
+    .sub-stat-k {
+      display: block;
+      font-family: var(--mono);
+      font-size: 0.6875rem;
+      color: var(--ink-2);
+      text-transform: uppercase;
+    }
+
+    .sub-stat-v {
+      display: block;
+      font-family: var(--mono);
+      font-size: 0.9375rem;
+      font-weight: 500;
+      color: var(--ink);
+      margin-top: 2px;
+    }
+
+    .sgt-table th:not(:first-child),
+    .sgt-table td:not(:first-child) {
+      text-align: end;
+      font-family: var(--mono);
+    }
+
+    .sgt-bar-wrap {
+      display: inline-flex;
+      align-items: center;
+      gap: 7px;
+    }
+
+    .sgt-track {
+      width: 54px;
+      height: 7px;
+      background-color: var(--well);
+      border: 1px solid var(--rule);
+      display: inline-block;
+    }
+
+    .sgt-fill {
+      display: block;
+      height: 100%;
+      background-color: var(--ok);
+    }
+
+    .sgt-fill[data-level="warn"] {
+      background-color: var(--warn);
+    }
+
+    .sgt-fill[data-level="bad"] {
+      background-color: var(--bad);
+    }
+
+    .reserve-list {
+      margin: 14px 0 0;
+      padding: 12px 0 0;
+      border-top: 1px solid var(--rule);
+      display: grid;
+      grid-template-columns: repeat(3, minmax(0, 1fr));
+      gap: 8px;
+      list-style: none;
+    }
+
+    .reserve-item {
+      background-color: var(--well);
+      border: 1px solid var(--rule);
+      padding: 8px 10px;
+      font-family: var(--mono);
+      font-size: 0.71875rem;
+    }
+
+    .reserve-item strong {
+      display: block;
+      color: var(--ink);
+      font-size: 0.8125rem;
+      margin-top: 2px;
+    }
+
+    .audit-table td:first-child {
+      font-family: var(--mono);
+      white-space: nowrap;
+      color: var(--ink);
+      font-weight: 500;
+    }
+
+    .audit-table td:nth-child(2) {
+      font-family: var(--mono);
+      font-size: 0.78125rem;
+      color: var(--ink-2);
+      white-space: nowrap;
+    }
+
+    .audit-table th:nth-child(4),
+    .audit-table td:nth-child(4),
+    .audit-table th:nth-child(5),
+    .audit-table td:nth-child(5) {
+      text-align: end;
+      font-family: var(--mono);
+      white-space: nowrap;
+    }
+
+    /* 48-Settlement Period Accessible Table Disclosure & Footer */
+    .sp-disclosure {
+      margin-top: 16px;
+      background-color: var(--surface);
+      border: 1px solid var(--rule);
+    }
+
+    .sp-disclosure summary {
+      padding: 10px 14px;
+      font-family: var(--mono);
+      font-size: 0.78125rem;
+      color: var(--ink);
+      cursor: pointer;
+      user-select: none;
+    }
+
+    .sp-table th:not(:first-child),
+    .sp-table td:not(:first-child) {
+      text-align: end;
+      font-family: var(--mono);
+    }
+
+    .sp-table td:first-child {
+      font-family: var(--mono);
+      white-space: nowrap;
+    }
+
+    .dispatch-footer {
+      padding: 16px 28px 24px;
+      display: flex;
+      flex-wrap: wrap;
+      justify-content: space-between;
+      align-items: center;
+      gap: 10px 24px;
+      font-family: var(--mono);
+      font-size: 0.75rem;
+      color: var(--ink-2);
+      background-color: var(--well);
+    }
+
+    /* Responsive Breakpoints (verified down to 320px width) */
+    @media (max-width: 1120px) {
+      .command-bar {
+        grid-template-columns: 1fr;
+      }
+      .scrubber-cluster {
+        justify-content: flex-start;
+      }
+      .deck-grid {
+        grid-template-columns: 1fr;
+      }
+      .lead-pane {
+        border-inline-end: 0;
+        border-bottom: 1px solid var(--rule);
+      }
+      .inspector-grid {
+        grid-template-columns: 1fr;
+      }
+    }
+
+    @media (max-width: 720px) {
+      .dispatch-header,
+      .command-bar,
+      .lead-pane,
+      .side-pane,
+      .ops-module,
+      .dispatch-footer {
+        padding-inline: 14px;
+      }
+      .inline-ledger {
+        grid-template-columns: repeat(2, minmax(0, 1fr));
+        width: 100%;
+      }
+      .ledger-cell:nth-child(2) {
+        border-inline-end: 0;
+      }
+      .ledger-cell:nth-child(1),
+      .ledger-cell:nth-child(2) {
+        border-bottom: 1px solid var(--rule);
+      }
+      .substation-meta,
+      .reserve-list {
+        grid-template-columns: 1fr;
+      }
+      .scrubber-readout {
+        white-space: normal;
+        width: 100%;
+      }
+      .scenario-btn {
+        width: 100%;
+        text-align: start;
+      }
+    }
+
+    @media (max-width: 420px) {
+      .dispatch-header,
+      .command-bar,
+      .lead-pane,
+      .side-pane,
+      .ops-module,
+      .dispatch-footer {
+        padding-inline: 10px;
+      }
+      .inline-ledger {
+        grid-template-columns: 1fr;
+      }
+      .ledger-cell {
+        border-inline-end: 0;
+        border-bottom: 1px solid var(--rule);
+      }
+      .ledger-cell:last-child {
+        border-bottom: 0;
+      }
+      table.regions th:nth-child(3),
+      table.regions td:nth-child(3) {
+        display: none;
+      }
+      th, td {
+        padding-inline: 4px;
+        font-size: 0.8125rem;
+      }
+      .st {
+        padding: 2px 4px;
+        font-size: 0.6875rem;
+      }
+    }
+
+    @media (prefers-reduced-motion: reduce) {
+      *, *::before, *::after {
+        animation-duration: 0.01ms !important;
+        animation-iteration-count: 1 !important;
+        transition-duration: 0.01ms !important;
+        scroll-behavior: auto !important;
+      }
+    }
+
+    @media (forced-colors: active) {
+      .dispatch-header,
+      .command-bar,
+      .chart-frame,
+      .inline-ledger,
+      .substation-box,
+      .eventlog-box,
+      .mix-bar-wrap,
+      .table-scroll,
+      .st {
+        border: 1px solid CanvasText;
+      }
+      .scenario-btn[aria-pressed="true"],
+      .filter-btn[aria-pressed="true"],
+      .zone-tab[aria-selected="true"],
+      table.regions tbody tr[data-selected="true"] {
+        outline: 2px solid Highlight;
+        outline-offset: -2px;
+      }
+      .svg-actual-line {
+        stroke: Highlight;
+      }
+      .svg-forecast-line,
+      .svg-cap-line {
+        stroke: CanvasText;
+      }
+    }
+
+    @media print {
+      :root {
+        --bg: #ffffff;
+        --surface: #f7f9fa;
+        --surface-alt: #eef2f5;
+        --well: #ffffff;
+        --rule: #b8c4cc;
+        --rule-strong: #526573;
+        --ink: #0b1114;
+        --ink-2: #334652;
+        --ink-dim: #4a5e6b;
+        --demand: #005a8c;
+        --forecast: #4a5e6b;
+        --peak: #8a4b00;
+        --ok: #0e6245;
+        --warn: #8a4b00;
+        --bad: #a61b1b;
+      }
+      body {
+        background: var(--bg);
+        color: var(--ink);
+      }
+      .skip-link,
+      .command-bar {
+        display: none;
+      }
+      .deck-grid,
+      .inspector-grid {
+        grid-template-columns: 1fr;
+      }
+      .ops-module,
+      .substation-box,
+      .eventlog-box,
+      table {
+        break-inside: avoid;
+      }
+    }
+  </style>
 </head>
 <body>
-  <header><b>NORTHGRID · SYSTEM DEMAND</b><span>Illustrative data · Tue 14 Oct · 14:40 local</span></header>
-  <main>
-    <section class="lead" aria-labelledby="now">
-      <p class="eyebrow" id="now">Demand right now</p>
-      <div class="read"><b>38.4</b><span>GW</span></div>
-      <p class="delta">2.3 GW under forecast. Evening peak expected 18:10.</p>
-      <!-- Linear scale: Y 30..45 GW => y = 250 - (gw - 30) * 14 (45=>40, 40=>110, 35=>180, 30=>250).
-           X 00:00..24:00 => x = 44 + hours * 23.33 (00=>44, 06=>184, 12=>324, 14:40=>386, 18:10=>468, 24=>604). -->
-      <svg viewBox="0 0 640 316" role="img" aria-labelledby="c-t c-d">
-        <title id="c-t">Demand against forecast over 24 hours</title>
-        <desc id="c-d">Actual demand rises from 29.8 gigawatts at 00:00 to 38.4 gigawatts at 14:40, 2.3 gigawatts below the 40.7 gigawatt forecast. Forecast peaks at 44.2 gigawatts at 18:10 before easing to 36.5 gigawatts by 24:00.</desc>
-        <g stroke="#22303a" stroke-width="1">
-          <line x1="44" x2="604" y1="40" y2="40"/><line x1="44" x2="604" y1="110" y2="110"/><line x1="44" x2="604" y1="180" y2="180"/><line x1="44" x2="604" y1="250" y2="250"/>
-        </g>
-        <g font-family="IBM Plex Mono, monospace" font-size="11" fill="#9ab0ba">
-          <text x="6" y="44">45</text><text x="6" y="114">40</text><text x="6" y="184">35</text><text x="6" y="254">30</text>
-          <text x="44" y="280">00:00</text><text x="168" y="280">06:00</text><text x="308" y="280">12:00</text><text x="448" y="280">18:00</text><text x="576" y="280">24:00</text>
-        </g>
-        <!-- Forecast: 00:00=30.0(250), 06:00=32.4(216), 12:00=38.2(135), 14:40=40.7(100), 18:10=44.2(51), 24:00=36.5(159) -->
-        <path d="M44 250 C 96 244, 140 232, 184 216 C 242 194, 282 162, 324 135 C 348 120, 368 110, 386 100 C 420 82, 446 58, 468 51 C 504 42, 548 104, 604 159" fill="none" stroke="#9ab0ba" stroke-width="2" stroke-dasharray="5 5"/>
-        <!-- Actual: 00:00=29.8(253), 06:00=31.8(225), 12:00=36.4(160), 14:40=38.4(132) -->
-        <path d="M44 253 C 96 248, 140 238, 184 225 C 242 206, 284 182, 324 160 C 348 148, 368 140, 386 132" fill="none" stroke="#5ec8f2" stroke-width="4"/>
-        <!-- Vertical guide at 14:40 showing exact 2.3 GW delta -->
-        <line x1="386" y1="100" x2="386" y2="132" stroke="#6fd3a3" stroke-width="1.5" stroke-dasharray="2 2"/>
-        <rect x="380" y="126" width="12" height="12" fill="#5ec8f2"/>
-        <rect x="462" y="45" width="12" height="12" fill="#f2b84b"/>
-        <g font-family="IBM Plex Mono, monospace" font-size="12">
-          <text x="402" y="148" fill="#5ec8f2">now 38.4 GW</text>
-          <text x="468" y="24" text-anchor="middle" fill="#f2b84b">forecast peak 44.2 GW · 18:10</text>
-          <text x="174" y="190" fill="#9ab0ba">forecast</text>
-          <text x="206" y="242" fill="#5ec8f2">actual</text>
-        </g>
-      </svg>
-      <p class="cap">Gigawatts, 24 hours (linear scale). Solid is actual, dashed is forecast. Direct labels; no legend.</p>
+  <a class="skip-link" href="#main-content">Skip to main content</a>
+  <div id="live-announcer" class="sr-only" aria-live="polite" aria-atomic="true"></div>
+
+  <header class="dispatch-header">
+    <div class="station-identity">
+      <span class="station-mark" aria-hidden="true">
+        <svg width="16" height="16" viewBox="0 0 16 16" fill="none">
+          <path d="M2 12H14M2 4H14M5 4V12M11 4V12" stroke="var(--demand)" stroke-width="1.5"/>
+          <rect x="3.5" y="6.5" width="3" height="3" fill="var(--ok)"/>
+          <rect x="9.5" y="6.5" width="3" height="3" fill="var(--peak)"/>
+        </svg>
+      </span>
+      <h1 class="station-title">Northgrid · System Demand</h1>
+      <span class="bus-code">NG-SO · GB 400 kV SYNC</span>
+    </div>
+    <div class="header-telemetry">
+      <span class="freq-pill" id="hdr-freq-pill" data-band="ok">
+        <span id="hdr-freq-sym">●</span>
+        <span id="hdr-freq-val">49.984 Hz</span>
+        <span style="color: var(--ink-2)">±0.20 Hz band</span>
+      </span>
+      <span id="hdr-timestamp">Tue 14 Oct · 14:40 BST · SP 30</span>
+      <span class="disclaimer-tag">Illustrative telemetry values</span>
+    </div>
+  </header>
+
+  <section class="command-bar" aria-label="Grid scenario and settlement period controls">
+    <div class="scenario-group" role="group" aria-label="Operating scenario presets">
+      <span class="control-label">Scenario</span>
+      <button type="button" class="scenario-btn" data-scenario="normal" aria-pressed="true">Normal Autumn Dispatch · 38.4 GW</button>
+      <button type="button" class="scenario-btn" data-scenario="coldsnap" aria-pressed="false">Cold Snap Evening Peak · 46.8 GW</button>
+      <button type="button" class="scenario-btn" data-scenario="hvdctrip" aria-pressed="false">HVDC North Sea Trip · −1.4 GW</button>
+    </div>
+
+    <div class="scrubber-cluster">
+      <div class="scrubber-controls">
+        <label class="control-label" for="sp-scrubber">Period</label>
+        <button type="button" class="step-btn" id="sp-prev" aria-label="Previous 30-minute settlement period">−30m</button>
+        <input type="range" class="sp-range" id="sp-scrubber" min="0" max="47" step="1" value="29" aria-describedby="scrubber-readout">
+        <button type="button" class="step-btn" id="sp-next" aria-label="Next 30-minute settlement period">+30m</button>
+        <button type="button" class="step-btn" id="sp-reset">Live</button>
+      </div>
+      <output class="scrubber-readout" id="scrubber-readout" for="sp-scrubber">
+        SP 30 (14:30–15:00) · 38.4 GW · Forecast 40.7 GW · Reserve +24.0% · £74.20/MWh
+      </output>
+    </div>
+  </section>
+
+  <main id="main-content">
+    <!-- Top 1440x900 Control-Room Command Deck -->
+    <div class="deck-grid">
+      <section class="lead-pane" aria-labelledby="now-heading">
+        <div class="eyebrow-row">
+          <p class="eyebrow" id="now-heading">National transmission demand · <span id="eyebrow-clock">Live metered 14:40 BST (SP 30)</span></p>
+          <span class="mode-badge" id="telemetry-mode-badge">LIVE TELEMETRY LOCKED</span>
+        </div>
+
+        <div class="readout-strip">
+          <div class="primary-figure-wrap">
+            <div class="read"><b id="primary-gw">38.4</b><span>GW</span></div>
+            <p class="delta" id="primary-delta" data-tone="ok">−2.3 GW vs forecast (40.7 GW). Evening peak 44.2 GW expected 18:10.</p>
+          </div>
+
+          <div class="inline-ledger" role="group" aria-label="Secondary national telemetry">
+            <div class="ledger-cell">
+              <span class="ledger-k">Frequency</span>
+              <span class="ledger-v" id="kpi-freq">49.984 Hz</span>
+              <span class="ledger-sub" id="kpi-rocof">RoCoF −0.012 Hz/s</span>
+            </div>
+            <div class="ledger-cell">
+              <span class="ledger-k">Firm Cap</span>
+              <span class="ledger-v" id="kpi-cap">47.6 GW</span>
+              <span class="ledger-sub" id="kpi-reserve">+24.0% (+9.2 GW)</span>
+            </div>
+            <div class="ledger-cell">
+              <span class="ledger-k">Spot Price</span>
+              <span class="ledger-v" id="kpi-price">£74.20/MWh</span>
+              <span class="ledger-sub" id="kpi-market">APX Day-Ahead</span>
+            </div>
+            <div class="ledger-cell">
+              <span class="ledger-k">Intensity</span>
+              <span class="ledger-v" id="kpi-carbon">121 gCO2/kWh</span>
+              <span class="ledger-sub" id="kpi-lowc">64.8% low-carbon</span>
+            </div>
+          </div>
+        </div>
+
+        <div class="chart-frame">
+          <div class="chart-meta-bar">
+            <span>24h Linear Scale · Domain 25–50 GW (10 px/GW, non-zero dispatch baseline)</span>
+            <span id="chart-coord-proof">y(38.4) = 144 px · y(40.7) = 121 px · Δ = 23 px (−2.3 GW)</span>
+          </div>
+
+          <!-- Exact Linear Scale:
+               Y 25..50 GW => y(gw) = 278 - (gw - 25) * 10
+                 50 GW => 28, 47.6 GW => 52, 45 GW => 78, 44.2 GW => 86, 40.7 GW => 121, 40 GW => 128, 38.4 GW => 144, 35 GW => 178, 30 GW => 228, 25 GW => 278
+               X 00:00..24:00 => x(hours) = 52 + hours * 24
+                 00:00 => 52, 06:00 => 196, 12:00 => 340, 14:40 => 404, 18:00 => 484, 18:10 => 488, 24:00 => 628 -->
+          <svg class="demand-svg" id="demand-svg" viewBox="0 0 680 304" role="img" aria-labelledby="c-t c-d">
+            <title id="c-t">National electricity demand, day-ahead forecast, and firm capacity over 24 hours</title>
+            <desc id="c-d">Metered demand rises from 29.8 gigawatts at 00:00 to 38.4 gigawatts at 14:40, 2.3 gigawatts below the 40.7 gigawatt day-ahead forecast. Forecast peaks at 44.2 gigawatts at 18:10 beneath 47.6 gigawatts synchronized firm capacity before easing to 36.5 gigawatts at 24:00.</desc>
+
+            <g class="svg-grid-line">
+              <line x1="52" x2="628" y1="28" y2="28"/>
+              <line x1="52" x2="628" y1="78" y2="78"/>
+              <line x1="52" x2="628" y1="128" y2="128"/>
+              <line x1="52" x2="628" y1="178" y2="178"/>
+              <line x1="52" x2="628" y1="228" y2="228"/>
+              <line x1="52" x2="628" y1="278" y2="278"/>
+            </g>
+
+            <g class="svg-axis-label">
+              <text x="6" y="32">50 GW</text>
+              <text x="6" y="82">45 GW</text>
+              <text x="6" y="132">40 GW</text>
+              <text x="6" y="182">35 GW</text>
+              <text x="6" y="232">30 GW</text>
+              <text x="6" y="282">25 GW</text>
+              <text x="52" y="298">00:00</text>
+              <text x="180" y="298">06:00</text>
+              <text x="324" y="298">12:00</text>
+              <text x="468" y="298">18:00</text>
+              <text x="596" y="298">24:00</text>
+            </g>
+
+            <!-- Synchronized Firm Capacity Line (47.6 GW => y = 52) -->
+            <path id="svg-cap-path" class="svg-cap-line" d="M52 52 L628 52"/>
+
+            <!-- Day-Ahead Forecast Path (00:00=30.0->228, 06:00=32.4->204, 12:00=38.2->146, 14:40=40.7->121, 18:10=44.2->86, 24:00=36.5->163) -->
+            <path id="svg-forecast-path" class="svg-forecast-line" d="M52 228 L64 231 L76 235 L88 238 L100 241 L112 243 L124 244 L136 242 L148 238 L160 231 L172 223 L184 214 L196 204 L208 192 L220 180 L232 170 L244 162 L256 156 L268 152 L280 150 L292 149 L304 148 L316 147 L328 147 L340 146 L352 142 L364 138 L376 133 L388 128 L400 123 L404 121 L412 117 L424 112 L436 106 L448 100 L460 94 L472 89 L484 87 L488 86 L496 88 L508 93 L520 100 L532 109 L544 118 L556 127 L568 136 L580 144 L592 151 L604 156 L616 160 L628 163"/>
+
+            <!-- Post-cutoff Outturn Projection Path -->
+            <path id="svg-projected-path" class="svg-projected-line" d="M404 144 L412 139 L424 133 L436 126 L448 118 L460 110 L472 103 L484 98 L488 97 L496 99 L508 104 L520 111 L532 119 L544 128 L556 136 L568 144 L580 151 L592 157 L604 162 L616 166 L628 169"/>
+
+            <!-- Metered Actual Demand Path up to 14:40 (00:00=29.8->230, 06:00=31.8->210, 12:00=36.4->164, 14:40=38.4->144) -->
+            <path id="svg-actual-path" class="svg-actual-line" d="M52 230 L64 233 L76 237 L88 240 L100 242 L112 244 L124 245 L136 244 L148 240 L160 234 L172 227 L184 219 L196 210 L208 199 L220 189 L232 181 L244 175 L256 171 L268 168 L280 167 L292 166 L304 166 L316 165 L328 165 L340 164 L352 161 L364 158 L376 154 L388 150 L400 146 L404 144"/>
+
+            <!-- Exact Vertical Delta Guide at Active Period (14:40: y1=121 Forecast 40.7 GW to y2=144 Actual 38.4 GW => 23 px = 2.3 GW) -->
+            <g id="svg-delta-group">
+              <line id="svg-delta-line" class="svg-delta-line" data-tone="ok" x1="404" y1="121" x2="404" y2="144"/>
+              <line id="svg-delta-cap-top" class="svg-delta-line" data-tone="ok" x1="400" y1="121" x2="408" y2="121"/>
+              <line id="svg-delta-cap-bot" class="svg-delta-line" data-tone="ok" x1="400" y1="144" x2="408" y2="144"/>
+            </g>
+
+            <!-- Interactive Scrubber Crosshair -->
+            <g id="svg-scrub-group" style="display: none;">
+              <line id="svg-scrub-line" class="svg-scrub-guide" x1="400" y1="28" x2="400" y2="278"/>
+              <circle id="svg-scrub-dot" cx="400" cy="146" r="4.5" fill="var(--ink)" stroke="var(--well)" stroke-width="1.5"/>
+              <rect id="svg-scrub-rect" class="svg-scrub-box" x="290" y="32" width="188" height="36"/>
+              <text id="svg-scrub-t1" class="svg-scrub-text" x="297" y="47">SP 30 · 14:30 · 38.4 GW</text>
+              <text id="svg-scrub-t2" class="svg-scrub-text" x="297" y="61">Fcst 40.7 GW · £74.20/MWh</text>
+            </g>
+
+            <!-- Direct Markers & Direct Line Labels (No Legend Eye-Travel) -->
+            <rect id="svg-now-rect" class="svg-now-marker" x="398.5" y="138.5" width="11" height="11"/>
+            <rect id="svg-peak-rect" class="svg-peak-marker" x="482.5" y="80.5" width="11" height="11"/>
+
+            <g id="svg-direct-labels">
+              <text id="svg-lbl-cap" class="svg-label-cap" x="58" y="46">firm capacity 47.6 GW</text>
+              <text id="svg-lbl-forecast" class="svg-label-forecast" x="236" y="136">day-ahead forecast</text>
+              <text id="svg-lbl-actual" class="svg-label-demand" x="236" y="194">metered actual</text>
+              <text id="svg-lbl-now" class="svg-label-demand" x="438" y="166" text-anchor="middle">now 38.4 GW (−2.3 GW)</text>
+              <text id="svg-lbl-peak" class="svg-label-peak" x="488" y="73" text-anchor="middle">forecast peak 44.2 GW · 18:10</text>
+            </g>
+          </svg>
+        </div>
+
+        <p class="cap">
+          Linear coordinates: <code>y(gw) = 278 − (gw − 25) × 10</code>, <code>x(h) = 52 + h × 24</code>. Solid cyan is metered demand; dashed slate is day-ahead forecast; dotted cyan is post-cutoff outturn; dash-dot green is firm capacity. Click or drag chart to scrub settlement periods.
+        </p>
+      </section>
+
+      <section class="side-pane" aria-labelledby="reg-heading">
+        <div>
+          <div class="section-head">
+            <h2 class="section-heading" id="reg-heading">Regions · Ranked Thinnest Margin First</h2>
+            <div class="region-toolbar">
+              <div role="group" aria-label="Filter regions by spare margin status">
+                <button type="button" class="filter-btn" data-reg-filter="all" aria-pressed="true">All (5)</button>
+                <button type="button" class="filter-btn" data-reg-filter="alert" aria-pressed="false">Tight / Watch</button>
+              </div>
+              <label class="sr-only" for="region-sort">Sort regional table</label>
+              <select class="sort-select" id="region-sort">
+                <option value="margin-asc" selected>Margin: Thinnest ↑</option>
+                <option value="load-desc">Load: Highest ↓</option>
+                <option value="name-asc">Region: A–Z</option>
+              </select>
+            </div>
+          </div>
+
+          <table class="regions" aria-describedby="regions-note">
+            <thead>
+              <tr>
+                <th scope="col">Region</th>
+                <th scope="col">Load GW</th>
+                <th scope="col">Cap GW</th>
+                <th scope="col">Margin</th>
+                <th scope="col">Status</th>
+              </tr>
+            </thead>
+            <tbody id="regions-tbody">
+              <tr data-region="south-coast" data-selected="true">
+                <th scope="row"><button type="button" class="region-pick-btn" data-pick-region="south-coast" aria-pressed="true">South coast</button></th>
+                <td>6.8</td>
+                <td>7.0</td>
+                <td class="margin-cell">3%</td>
+                <td><span class="st bad">▲ Tight</span></td>
+              </tr>
+              <tr data-region="midlands" data-selected="false">
+                <th scope="row"><button type="button" class="region-pick-btn" data-pick-region="midlands" aria-pressed="false">Midlands</button></th>
+                <td>9.1</td>
+                <td>9.8</td>
+                <td class="margin-cell">8%</td>
+                <td><span class="st warn">◆ Watch</span></td>
+              </tr>
+              <tr data-region="north-east" data-selected="false">
+                <th scope="row"><button type="button" class="region-pick-btn" data-pick-region="north-east" aria-pressed="false">North east</button></th>
+                <td>5.2</td>
+                <td>5.9</td>
+                <td class="margin-cell">14%</td>
+                <td><span class="st ok">● Normal</span></td>
+              </tr>
+              <tr data-region="london" data-selected="false">
+                <th scope="row"><button type="button" class="region-pick-btn" data-pick-region="london" aria-pressed="false">London</button></th>
+                <td>11.0</td>
+                <td>12.8</td>
+                <td class="margin-cell">16%</td>
+                <td><span class="st ok">● Normal</span></td>
+              </tr>
+              <tr data-region="scotland" data-selected="false">
+                <th scope="row"><button type="button" class="region-pick-btn" data-pick-region="scotland" aria-pressed="false">Scotland</button></th>
+                <td>6.3</td>
+                <td>8.3</td>
+                <td class="margin-cell">31%</td>
+                <td><span class="st ok">● Normal</span></td>
+              </tr>
+            </tbody>
+          </table>
+
+          <div class="quick-zone-callout" id="quick-zone-callout">
+            <span>Active substation: <strong id="quick-zone-name">South coast · Lovedean 400 kV</strong> · SGT peak <strong id="quick-zone-sgt">94%</strong> · Resp <strong id="quick-zone-resp">0.45 s</strong></span>
+            <a class="jump-link" href="#regional-inspector">Substation telemetry ↓</a>
+          </div>
+        </div>
+
+        <div class="events-block">
+          <h2 class="section-heading" style="margin-bottom: 8px;" id="next-events-heading">Next 6 Hours · Scheduled Dispatch</h2>
+          <table class="events" aria-labelledby="next-events-heading">
+            <thead>
+              <tr>
+                <th scope="col">Time</th>
+                <th scope="col">Event</th>
+                <th scope="col">Delta</th>
+              </tr>
+            </thead>
+            <tbody id="next-events-tbody">
+              <tr>
+                <td>16:30</td>
+                <td>IFA2 + ElecLink HVDC import ramp</td>
+                <td>+1.2 GW</td>
+              </tr>
+              <tr>
+                <td>18:10</td>
+                <td>Evening lighting &amp; traction forecast peak</td>
+                <td>44.2 GW</td>
+              </tr>
+              <tr>
+                <td>21:00</td>
+                <td>Dogger Bank offshore wind ramp-down</td>
+                <td>−2.1 GW</td>
+              </tr>
+            </tbody>
+          </table>
+          <p class="note" id="regions-note">
+            Status uses symbol + word + color (▲ Tight, ◆ Watch, ● Normal). Margin is spare firm capacity over metered regional load; regional loads sum to 38.4 GW national demand. Illustrative telemetry values.
+          </p>
+        </div>
+      </section>
+    </div>
+
+    <!-- Module 1: Generation Mix & Carbon Intensity Ledger -->
+    <section class="ops-module" id="generation-ledger" aria-labelledby="mix-title">
+      <div class="module-header">
+        <div>
+          <p class="eyebrow">Fuel corridor composition · Zero-baseline linear proportion &amp; monochrome-safe hatch encoding</p>
+          <h2 class="module-title" id="mix-title">Generation Mix &amp; Carbon Intensity Ledger</h2>
+        </div>
+        <div class="module-kpis">
+          <span>Total Metered Output: <strong id="mix-total-mw">38,400 MW (38.4 GW)</strong></span>
+          <span>Grid Intensity: <strong id="mix-carbon-intensity">121 gCO2/kWh</strong></span>
+          <span>Low-Carbon Share: <strong id="mix-lowc-share">64.8%</strong></span>
+        </div>
+      </div>
+
+      <div class="mix-bar-wrap">
+        <svg class="mix-svg" id="mix-svg" viewBox="0 0 1000 78" role="img" aria-labelledby="mix-svg-title mix-svg-desc">
+          <title id="mix-svg-title">Proportional horizontal stacked generation mix bar</title>
+          <desc id="mix-svg-desc">Offshore wind supplies 14,280 megawatts (37.2%), nuclear 6,720 megawatts (17.5%), hydro and pumped storage 3,880 megawatts (10.1%), CCGT gas 9,640 megawatts (25.1%), and HVDC interconnectors 3,880 megawatts (10.1%), using distinct geometric hatches and text labels.</desc>
+          <defs>
+            <pattern id="pat-wind" width="10" height="10" patternUnits="userSpaceOnUse">
+              <rect width="10" height="10" fill="var(--well)"/>
+              <path d="M-2,2 L2,-2 M0,10 L10,0 M8,12 L12,8" stroke="var(--demand)" stroke-width="1.8"/>
+            </pattern>
+            <pattern id="pat-nuclear" width="8" height="8" patternUnits="userSpaceOnUse">
+              <rect width="8" height="8" fill="var(--well)"/>
+              <path d="M0,4 H8 M4,0 V8" stroke="var(--nuclear)" stroke-width="1.4"/>
+            </pattern>
+            <pattern id="pat-hydro" width="10" height="8" patternUnits="userSpaceOnUse">
+              <rect width="10" height="8" fill="var(--well)"/>
+              <path d="M0,2 H10 M0,6 H10" stroke="var(--hydro)" stroke-width="1.6"/>
+            </pattern>
+            <pattern id="pat-gas" width="8" height="8" patternUnits="userSpaceOnUse">
+              <rect width="8" height="8" fill="var(--well)"/>
+              <path d="M-2,6 L2,10 M0,0 L8,8 M6,-2 L10,2" stroke="var(--gas)" stroke-width="1.8"/>
+            </pattern>
+            <pattern id="pat-hvdc" width="8" height="8" patternUnits="userSpaceOnUse">
+              <rect width="8" height="8" fill="var(--well)"/>
+              <path d="M2,0 V8" stroke="var(--hvdc)" stroke-width="1.6"/>
+              <circle cx="6" cy="4" r="1.2" fill="var(--hvdc)"/>
+            </pattern>
+          </defs>
+
+          <!-- Linear 0..1000 px segments for 38,400 MW:
+               Wind: 371.9 px (0..371.9)
+               Nuclear: 175.0 px (371.9..546.9)
+               Hydro: 101.0 px (546.9..647.9)
+               Gas: 251.0 px (647.9..899.0)
+               HVDC: 101.0 px (899.0..1000) -->
+          <g id="mix-bar-rects">
+            <rect x="0" y="20" width="371.9" height="34" fill="url(#pat-wind)" stroke="var(--ink)" stroke-width="1"/>
+            <rect x="371.9" y="20" width="175.0" height="34" fill="url(#pat-nuclear)" stroke="var(--ink)" stroke-width="1"/>
+            <rect x="546.9" y="20" width="101.0" height="34" fill="url(#pat-hydro)" stroke="var(--ink)" stroke-width="1"/>
+            <rect x="647.9" y="20" width="251.0" height="34" fill="url(#pat-gas)" stroke="var(--ink)" stroke-width="1"/>
+            <rect x="899.0" y="20" width="101.0" height="34" fill="url(#pat-hvdc)" stroke="var(--ink)" stroke-width="1"/>
+          </g>
+
+          <g id="mix-bar-labels" font-family="IBM Plex Mono, monospace" font-size="11" fill="var(--ink)">
+            <text x="6" y="14">[WND] Offshore Wind · 37.2%</text>
+            <text x="376" y="14">[NUC] Nuclear · 17.5%</text>
+            <text x="550" y="14">[HYD] 10.1%</text>
+            <text x="653" y="14">[GAS] CCGT Gas · 25.1%</text>
+            <text x="903" y="14">[INT] 10.1%</text>
+
+            <text x="6" y="70" fill="var(--ink-2)">14,280 MW · 12 g/kWh</text>
+            <text x="376" y="70" fill="var(--ink-2)">6,720 MW · 11 g</text>
+            <text x="550" y="70" fill="var(--ink-2)">3,880 MW</text>
+            <text x="653" y="70" fill="var(--ink-2)">9,640 MW · 394 g/kWh</text>
+            <text x="903" y="70" fill="var(--ink-2)">3,880 MW</text>
+          </g>
+        </svg>
+      </div>
+
+      <div class="table-scroll" role="region" aria-labelledby="mix-title" tabindex="0">
+        <table class="mix-table">
+          <thead>
+            <tr>
+              <th scope="col">Generation Corridor</th>
+              <th scope="col">Metered MW</th>
+              <th scope="col">Share %</th>
+              <th scope="col">Headroom MW</th>
+              <th scope="col">Intensity (gCO2/kWh)</th>
+              <th scope="col">Emissions (tCO2/h)</th>
+              <th scope="col">Dispatch Posture</th>
+            </tr>
+          </thead>
+          <tbody id="mix-tbody">
+            <tr>
+              <th scope="row">
+                <span class="fuel-cell">
+                  <svg class="swatch-svg" aria-hidden="true"><rect width="22" height="14" fill="url(#pat-wind)"/></svg>
+                  <span>Offshore Wind <span class="fuel-code">[WND]</span></span>
+                </span>
+              </th>
+              <td>14,280</td>
+              <td>
+                <span class="share-bar-inline">
+                  <span class="share-track" aria-hidden="true"><span class="share-fill" style="width: 37.2%"></span></span>
+                  <span>37.2%</span>
+                </span>
+              </td>
+              <td>+1,920</td>
+              <td>12</td>
+              <td>171</td>
+              <td><span class="st ok">● Zero-marginal merit</span></td>
+            </tr>
+            <tr>
+              <th scope="row">
+                <span class="fuel-cell">
+                  <svg class="swatch-svg" aria-hidden="true"><rect width="22" height="14" fill="url(#pat-nuclear)"/></svg>
+                  <span>Nuclear <span class="fuel-code">[NUC]</span></span>
+                </span>
+              </th>
+              <td>6,720</td>
+              <td>
+                <span class="share-bar-inline">
+                  <span class="share-track" aria-hidden="true"><span class="share-fill" style="width: 17.5%"></span></span>
+                  <span>17.5%</span>
+                </span>
+              </td>
+              <td>+180</td>
+              <td>11</td>
+              <td>74</td>
+              <td><span class="st ok">● Must-run baseload</span></td>
+            </tr>
+            <tr>
+              <th scope="row">
+                <span class="fuel-cell">
+                  <svg class="swatch-svg" aria-hidden="true"><rect width="22" height="14" fill="url(#pat-hydro)"/></svg>
+                  <span>Hydro &amp; Pumped Storage <span class="fuel-code">[HYD]</span></span>
+                </span>
+              </th>
+              <td>3,880</td>
+              <td>
+                <span class="share-bar-inline">
+                  <span class="share-track" aria-hidden="true"><span class="share-fill" style="width: 10.1%"></span></span>
+                  <span>10.1%</span>
+                </span>
+              </td>
+              <td>+1,640</td>
+              <td>18</td>
+              <td>70</td>
+              <td><span class="st ok">● Fast frequency armed</span></td>
+            </tr>
+            <tr>
+              <th scope="row">
+                <span class="fuel-cell">
+                  <svg class="swatch-svg" aria-hidden="true"><rect width="22" height="14" fill="url(#pat-gas)"/></svg>
+                  <span>CCGT Gas <span class="fuel-code">[GAS]</span></span>
+                </span>
+              </th>
+              <td>9,640</td>
+              <td>
+                <span class="share-bar-inline">
+                  <span class="share-track" aria-hidden="true"><span class="share-fill" style="width: 25.1%"></span></span>
+                  <span>25.1%</span>
+                </span>
+              </td>
+              <td>+4,560</td>
+              <td>394</td>
+              <td>3,798</td>
+              <td><span class="st warn">◆ Marginal price-setter</span></td>
+            </tr>
+            <tr>
+              <th scope="row">
+                <span class="fuel-cell">
+                  <svg class="swatch-svg" aria-hidden="true"><rect width="22" height="14" fill="url(#pat-hvdc)"/></svg>
+                  <span>HVDC Interconnectors <span class="fuel-code">[INT]</span></span>
+                </span>
+              </th>
+              <td>3,880</td>
+              <td>
+                <span class="share-bar-inline">
+                  <span class="share-track" aria-hidden="true"><span class="share-fill" style="width: 10.1%"></span></span>
+                  <span>10.1%</span>
+                </span>
+              </td>
+              <td>+900</td>
+              <td>142</td>
+              <td>551</td>
+              <td><span class="st ok">● Net import (IFA/NSL)</span></td>
+            </tr>
+          </tbody>
+          <tfoot id="mix-tfoot">
+            <tr>
+              <th scope="row">National Transmission Total</th>
+              <td>38,400</td>
+              <td>100.0%</td>
+              <td>+9,200</td>
+              <td>121 (weighted)</td>
+              <td>4,664</td>
+              <td>47,600 MW Sync Cap</td>
+            </tr>
+          </tfoot>
+        </table>
+      </div>
     </section>
-    <section class="side" aria-labelledby="reg">
-      <h2 id="reg">REGIONS · SORTED BY MARGIN, THINNEST FIRST</h2>
-      <table class="regions">
-        <thead><tr><th scope="col">Region</th><th scope="col">Load GW</th><th scope="col">Margin</th><th scope="col">Status</th></tr></thead>
-        <tbody>
-          <tr><td>South coast</td><td>6.8</td><td>3%</td><td class="st bad">▲ Tight</td></tr>
-          <tr><td>Midlands</td><td>9.1</td><td>8%</td><td class="st warn">◆ Watch</td></tr>
-          <tr><td>North east</td><td>5.2</td><td>14%</td><td class="st ok">● Normal</td></tr>
-          <tr><td>London</td><td>11.0</td><td>16%</td><td class="st ok">● Normal</td></tr>
-          <tr><td>Scotland</td><td>6.3</td><td>31%</td><td class="st ok">● Normal</td></tr>
-        </tbody>
-      </table>
-      <h2 style="margin-top:34px">NEXT 6 HOURS</h2>
-      <table class="events">
-        <thead><tr><th scope="col">Time</th><th scope="col">Event</th><th scope="col">Delta</th></tr></thead>
-        <tbody>
-          <tr><td>16:30</td><td>Interconnector import</td><td>+1.2 GW</td></tr>
-          <tr><td>18:10</td><td>Forecast peak</td><td>44.2 GW</td></tr>
-          <tr><td>21:00</td><td>Wind ramp-down</td><td>−2.1 GW</td></tr>
-        </tbody>
-      </table>
-      <p class="note">Status uses a symbol and a word as well as colour. Margin is spare capacity over current load. Values are illustrative.</p>
+
+    <!-- Module 2: Regional Substation Diagnostics & Control-Room Dispatch Event Log -->
+    <section class="ops-module" id="regional-inspector" aria-labelledby="inspector-title">
+      <div class="module-header">
+        <div>
+          <p class="eyebrow">400 kV Supergrid transformer loading, spinning reserve readiness &amp; switching log</p>
+          <h2 class="module-title" id="inspector-title">Regional Spare Margin &amp; Dispatch Event Diagnostics</h2>
+        </div>
+        <div class="module-kpis">
+          <span>Selected Zone: <strong id="insp-header-zone">South coast (▲ Tight · 3% margin)</strong></span>
+          <span>N−1 Thermal Contingency: <strong id="insp-header-n1">Compliant (94% peak SGT)</strong></span>
+        </div>
+      </div>
+
+      <div class="zone-tabs" role="tablist" aria-label="Select transmission region for substation diagnostics">
+        <button type="button" class="zone-tab" role="tab" data-zone-tab="south-coast" aria-selected="true">South coast · 3% ▲</button>
+        <button type="button" class="zone-tab" role="tab" data-zone-tab="midlands" aria-selected="false">Midlands · 8% ◆</button>
+        <button type="button" class="zone-tab" role="tab" data-zone-tab="north-east" aria-selected="false">North east · 14% ●</button>
+        <button type="button" class="zone-tab" role="tab" data-zone-tab="london" aria-selected="false">London · 16% ●</button>
+        <button type="button" class="zone-tab" role="tab" data-zone-tab="scotland" aria-selected="false">Scotland · 31% ●</button>
+      </div>
+
+      <div class="inspector-grid">
+        <div class="substation-box" aria-labelledby="sub-heading">
+          <div class="section-head">
+            <h3 class="section-heading" id="sub-heading">Lovedean / Fawley 400 kV Supergrid Substation (SGT-SC04)</h3>
+            <span class="st bad" id="sub-status-badge">▲ Tight · 3% Spare</span>
+          </div>
+
+          <div class="substation-meta">
+            <div class="sub-stat">
+              <span class="sub-stat-k">Busbar Voltage</span>
+              <span class="sub-stat-v" id="sub-kv">398.4 kV (−0.4%)</span>
+            </div>
+            <div class="sub-stat">
+              <span class="sub-stat-k">Spinning Resp</span>
+              <span class="sub-stat-v" id="sub-resp">0.45 s DC-Low</span>
+            </div>
+            <div class="sub-stat">
+              <span class="sub-stat-k">Reactive Margin</span>
+              <span class="sub-stat-v" id="sub-mvar">+142 MVAr ind.</span>
+            </div>
+          </div>
+
+          <div class="table-scroll" role="region" aria-label="Supergrid transformer load table" tabindex="0">
+            <table class="sgt-table">
+              <thead>
+                <tr>
+                  <th scope="col">Transformer</th>
+                  <th scope="col">Load / Rating</th>
+                  <th scope="col">Utilization</th>
+                  <th scope="col">Oil °C</th>
+                  <th scope="col">Cooling</th>
+                </tr>
+              </thead>
+              <tbody id="sgt-tbody">
+                <tr>
+                  <th scope="row">SGT-1A (400/132 kV)</th>
+                  <td>942 / 1000 MVA</td>
+                  <td>
+                    <span class="sgt-bar-wrap">
+                      <span class="sgt-track" aria-hidden="true"><span class="sgt-fill" data-level="bad" style="width: 94%"></span></span>
+                      <span>94%</span>
+                    </span>
+                  </td>
+                  <td>76°C</td>
+                  <td>ODAF Forced</td>
+                </tr>
+                <tr>
+                  <th scope="row">SGT-2B (400/132 kV)</th>
+                  <td>886 / 1000 MVA</td>
+                  <td>
+                    <span class="sgt-bar-wrap">
+                      <span class="sgt-track" aria-hidden="true"><span class="sgt-fill" data-level="warn" style="width: 89%"></span></span>
+                      <span>89%</span>
+                    </span>
+                  </td>
+                  <td>71°C</td>
+                  <td>ONAF Stage 2</td>
+                </tr>
+                <tr>
+                  <th scope="row">SGT-3C (400/275 kV)</th>
+                  <td>790 / 1000 MVA</td>
+                  <td>
+                    <span class="sgt-bar-wrap">
+                      <span class="sgt-track" aria-hidden="true"><span class="sgt-fill" data-level="ok" style="width: 79%"></span></span>
+                      <span>79%</span>
+                    </span>
+                  </td>
+                  <td>64°C</td>
+                  <td>ONAF Stage 1</td>
+                </tr>
+              </tbody>
+            </table>
+          </div>
+
+          <ul class="reserve-list" id="reserve-list" aria-label="Regional spinning and frequency reserve tiers">
+            <li class="reserve-item">
+              <span style="color: var(--ink-2)">Dynamic Containment</span>
+              <strong>220 MW @ 0.45 s</strong>
+              <span style="color: var(--ink-dim)">Minety / Fawley BESS</span>
+            </li>
+            <li class="reserve-item">
+              <span style="color: var(--ink-2)">Primary Spinning</span>
+              <strong>180 MW @ 10.0 s</strong>
+              <span style="color: var(--ink-dim)">Marchwood CCGT Gov.</span>
+            </li>
+            <li class="reserve-item">
+              <span style="color: var(--ink-2)">Fast Tertiary Start</span>
+              <strong>310 MW @ 6.5 min</strong>
+              <span style="color: var(--ink-dim)">Chickerell OCGT Sync</span>
+            </li>
+          </ul>
+        </div>
+
+        <div class="eventlog-box" aria-labelledby="log-heading">
+          <div class="section-head">
+            <h3 class="section-heading" id="log-heading">Control-Room Dispatch &amp; Switching Log</h3>
+            <div class="region-toolbar" role="group" aria-label="Filter dispatch event log">
+              <button type="button" class="filter-btn" data-log-scope="all" aria-pressed="true">All Zones</button>
+              <button type="button" class="filter-btn" data-log-scope="selected" aria-pressed="false">Selected Region Only</button>
+            </div>
+          </div>
+
+          <div class="table-scroll" role="region" aria-labelledby="log-heading" tabindex="0">
+            <table class="audit-table">
+              <thead>
+                <tr>
+                  <th scope="col">Time</th>
+                  <th scope="col">Zone</th>
+                  <th scope="col">Switching / Dispatch Action</th>
+                  <th scope="col">Impact</th>
+                  <th scope="col">Posture</th>
+                </tr>
+              </thead>
+              <tbody id="audit-tbody">
+                <tr>
+                  <td>14:36</td>
+                  <td>South coast</td>
+                  <td>Lovedean SGT-1A ODAF oil pumps armed; IFA2 tap +2 voltage support</td>
+                  <td>+85 MVAr</td>
+                  <td><span class="st bad">▲ Tight</span></td>
+                </tr>
+                <tr>
+                  <td>14:22</td>
+                  <td>Midlands</td>
+                  <td>Ratcliffe 400 kV shunt reactor switched out ahead of evening ramp</td>
+                  <td>+1.8 kV</td>
+                  <td><span class="st warn">◆ Watch</span></td>
+                </tr>
+                <tr>
+                  <td>13:55</td>
+                  <td>South coast</td>
+                  <td>ElecLink Folkestone converter scheduled +200 MW afternoon block</td>
+                  <td>+0.20 GW</td>
+                  <td><span class="st bad">▲ Tight</span></td>
+                </tr>
+                <tr>
+                  <td>13:18</td>
+                  <td>Scotland</td>
+                  <td>Seagreen + Moray East wind export uncongested via B6 boundary</td>
+                  <td>+0.65 GW</td>
+                  <td><span class="st ok">● Normal</span></td>
+                </tr>
+                <tr>
+                  <td>12:40</td>
+                  <td>North east</td>
+                  <td>NSL Blyth bipole holding steady base import from Kvilldal hydro</td>
+                  <td>+1.40 GW</td>
+                  <td><span class="st ok">● Normal</span></td>
+                </tr>
+                <tr>
+                  <td>11:50</td>
+                  <td>London</td>
+                  <td>St Johns Wood 400 kV cable tunnel cooling nominal; embedded PV +0.4 GW</td>
+                  <td>−0.40 GW</td>
+                  <td><span class="st ok">● Normal</span></td>
+                </tr>
+              </tbody>
+            </table>
+          </div>
+        </div>
+      </div>
+
+      <details class="sp-disclosure">
+        <summary>Accessible 48-Period Half-Hour Settlement Ledger (00:00–23:30) — Full Tabular Data Equivalent</summary>
+        <div class="table-scroll" role="region" aria-label="48 half-hour settlement periods table" tabindex="0">
+          <table class="sp-table">
+            <thead>
+              <tr>
+                <th scope="col">Period</th>
+                <th scope="col">Window</th>
+                <th scope="col">Telemetry State</th>
+                <th scope="col">Demand GW</th>
+                <th scope="col">Forecast GW</th>
+                <th scope="col">Delta GW</th>
+                <th scope="col">Reserve %</th>
+                <th scope="col">Spot £/MWh</th>
+              </tr>
+            </thead>
+            <tbody id="sp-ledger-tbody">
+              <tr>
+                <td>SP 01</td>
+                <td>00:00–00:30</td>
+                <td>Metered</td>
+                <td>29.8</td>
+                <td>30.0</td>
+                <td>−0.2</td>
+                <td>+59.7%</td>
+                <td>£54.10</td>
+              </tr>
+              <tr>
+                <td>SP 13</td>
+                <td>06:00–06:30</td>
+                <td>Metered</td>
+                <td>31.8</td>
+                <td>32.4</td>
+                <td>−0.6</td>
+                <td>+49.7%</td>
+                <td>£63.80</td>
+              </tr>
+              <tr>
+                <td>SP 25</td>
+                <td>12:00–12:30</td>
+                <td>Metered</td>
+                <td>36.4</td>
+                <td>38.2</td>
+                <td>−1.8</td>
+                <td>+30.8%</td>
+                <td>£71.40</td>
+              </tr>
+              <tr>
+                <td>SP 30</td>
+                <td>14:30–15:00</td>
+                <td>Live (14:40)</td>
+                <td>38.4</td>
+                <td>40.7</td>
+                <td>−2.3</td>
+                <td>+24.0%</td>
+                <td>£74.20</td>
+              </tr>
+              <tr>
+                <td>SP 37</td>
+                <td>18:00–18:30</td>
+                <td>Forecast Peak</td>
+                <td>43.1</td>
+                <td>44.2</td>
+                <td>−1.1</td>
+                <td>+10.4%</td>
+                <td>£108.60</td>
+              </tr>
+              <tr>
+                <td>SP 48</td>
+                <td>23:30–24:00</td>
+                <td>Projected</td>
+                <td>35.9</td>
+                <td>36.5</td>
+                <td>−0.6</td>
+                <td>+32.6%</td>
+                <td>£61.20</td>
+              </tr>
+            </tbody>
+          </table>
+        </div>
+      </details>
     </section>
   </main>
+
+  <footer class="dispatch-footer">
+    <span>NORTHGRID TRANSMISSION DISPATCH · Illustrative telemetry values for control-room interface verification</span>
+    <span>Linear SVG scale: y(gw) = 278 − (gw − 25) × 10 · Zero external network dependencies</span>
+  </footer>
+
+  <script>
+    (function () {
+      "use strict";
+
+      function yCoord(gw) {
+        return +(278 - (gw - 25) * 10).toFixed(1);
+      }
+
+      function xFromHours(h) {
+        return +(52 + h * 24).toFixed(1);
+      }
+
+      function pad2(n) {
+        return n < 10 ? "0" + n : String(n);
+      }
+
+      function formatWindow(idx) {
+        var startMin = idx * 30;
+        var endMin = startMin + 30;
+        var sh = Math.floor(startMin / 60);
+        var sm = startMin % 60;
+        var eh = Math.floor(endMin / 60);
+        var em = endMin % 60;
+        return pad2(sh) + ":" + pad2(sm) + "–" + pad2(eh) + ":" + pad2(em);
+      }
+
+      function buildCurve(anchors) {
+        var out = new Array(49);
+        for (var k = 0; k < anchors.length - 1; k++) {
+          var a = anchors[k];
+          var b = anchors[k + 1];
+          for (var i = a[0]; i <= b[0]; i++) {
+            var t = b[0] === a[0] ? 0 : (i - a[0]) / (b[0] - a[0]);
+            var smooth = t * t * (3 - 2 * t);
+            out[i] = +(a[1] + (b[1] - a[1]) * smooth).toFixed(1);
+          }
+        }
+        return out;
+      }
+
+      var SCENARIOS = {
+        normal: {
+          label: "Normal Autumn Dispatch · 38.4 GW",
+          timestamp: "Tue 14 Oct · 14:40 BST · SP 30",
+          liveClockLabel: "Live metered 14:40 BST (SP 30)",
+          liveSpIndex: 29,
+          liveExactHours: 14 + 40 / 60,
+          liveActualGw: 38.4,
+          liveForecastGw: 40.7,
+          peakHours: 18 + 10 / 60,
+          peakSpIndex: 36,
+          peakGw: 44.2,
+          peakLabel: "forecast peak 44.2 GW · 18:10",
+          firmCapGw: 47.6,
+          freqHz: "49.984 Hz",
+          freqBand: "ok",
+          freqSym: "●",
+          rocof: "RoCoF −0.012 Hz/s",
+          marketLabel: "APX Day-Ahead",
+          deltaSummary: "−2.3 GW vs forecast (40.7 GW). Evening peak 44.2 GW expected 18:10.",
+          deltaTone: "ok",
+          nowChartText: "now 38.4 GW (−2.3 GW)",
+          nowTextX: 438,
+          nowTextY: 166,
+          fcstLblX: 236,
+          fcstLblY: 136,
+          actLblX: 236,
+          actLblY: 194,
+          peakTextY: 73,
+          forecastAnchors: [
+            [0, 30.0], [6, 28.4], [12, 32.4], [18, 36.8], [24, 38.2],
+            [29, 40.5], [30, 40.9], [36, 44.1], [37, 44.2], [42, 40.2], [48, 36.5]
+          ],
+          actualAnchors: [
+            [0, 29.8], [6, 28.3], [12, 31.8], [18, 35.3], [24, 36.4],
+            [29, 38.2], [30, 38.6], [36, 43.0], [37, 43.1], [42, 39.4], [48, 35.9]
+          ],
+          priceBase: 54,
+          pricePeak: 109,
+          mix: [
+            { id: "wind", name: "Offshore Wind", code: "WND", pat: "pat-wind", mw: 14280, head: 1920, gco2: 12, posture: "● Zero-marginal merit", tone: "ok", lowc: true },
+            { id: "nuclear", name: "Nuclear", code: "NUC", pat: "pat-nuclear", mw: 6720, head: 180, gco2: 11, posture: "● Must-run baseload", tone: "ok", lowc: true },
+            { id: "hydro", name: "Hydro & Pumped Storage", code: "HYD", pat: "pat-hydro", mw: 3880, head: 1640, gco2: 18, posture: "● Fast frequency armed", tone: "ok", lowc: true },
+            { id: "gas", name: "CCGT Gas", code: "GAS", pat: "pat-gas", mw: 9640, head: 4560, gco2: 394, posture: "◆ Marginal price-setter", tone: "warn", lowc: false },
+            { id: "hvdc", name: "HVDC Interconnectors", code: "INT", pat: "pat-hvdc", mw: 3880, head: 900, gco2: 142, posture: "● Net import (IFA/NSL)", tone: "ok", lowc: false }
+          ],
+          regions: [
+            {
+              key: "south-coast", name: "South coast", load: 6.8, cap: 7.0, margin: 3, tone: "bad", status: "▲ Tight",
+              substation: "Lovedean / Fawley 400 kV Supergrid Substation (SGT-SC04)",
+              kv: "398.4 kV (−0.4%)", resp: "0.45 s DC-Low", mvar: "+142 MVAr ind.", n1: "Compliant (94% peak SGT)",
+              sgts: [
+                { id: "SGT-1A (400/132 kV)", mva: 942, rated: 1000, temp: 76, cool: "ODAF Forced", level: "bad" },
+                { id: "SGT-2B (400/132 kV)", mva: 886, rated: 1000, temp: 71, cool: "ONAF Stage 2", level: "warn" },
+                { id: "SGT-3C (400/275 kV)", mva: 790, rated: 1000, temp: 64, cool: "ONAF Stage 1", level: "ok" }
+              ],
+              reserves: [
+                { tier: "Dynamic Containment", val: "220 MW @ 0.45 s", site: "Minety / Fawley BESS" },
+                { tier: "Primary Spinning", val: "180 MW @ 10.0 s", site: "Marchwood CCGT Gov." },
+                { tier: "Fast Tertiary Start", val: "310 MW @ 6.5 min", site: "Chickerell OCGT Sync" }
+              ]
+            },
+            {
+              key: "midlands", name: "Midlands", load: 9.1, cap: 9.8, margin: 8, tone: "warn", status: "◆ Watch",
+              substation: "Ratcliffe / Walpole 400 kV Supergrid Node (SGT-MD02)",
+              kv: "400.8 kV (+0.2%)", resp: "0.50 s DC-Low", mvar: "+210 MVAr ind.", n1: "Compliant (86% peak SGT)",
+              sgts: [
+                { id: "SGT-1M (400/275 kV)", mva: 860, rated: 1000, temp: 69, cool: "ONAF Stage 2", level: "warn" },
+                { id: "SGT-2M (400/132 kV)", mva: 815, rated: 1000, temp: 65, cool: "ONAF Stage 1", level: "warn" },
+                { id: "SGT-3M (400/132 kV)", mva: 730, rated: 1000, temp: 59, cool: "ONAN Natural", level: "ok" }
+              ],
+              reserves: [
+                { tier: "Dynamic Containment", val: "190 MW @ 0.50 s", site: "Bustleholm BESS" },
+                { tier: "Primary Spinning", val: "260 MW @ 10.0 s", site: "West Burton B CCGT" },
+                { tier: "Fast Tertiary Start", val: "340 MW @ 7.0 min", site: "Nechells OCGT Block" }
+              ]
+            },
+            {
+              key: "north-east", name: "North east", load: 5.2, cap: 5.9, margin: 14, tone: "ok", status: "● Normal",
+              substation: "Blyth / Lackenby 400 kV HVDC Landing Bus (SGT-NE01)",
+              kv: "401.6 kV (+0.4%)", resp: "0.40 s DC-Low", mvar: "+265 MVAr ind.", n1: "Compliant (74% peak SGT)",
+              sgts: [
+                { id: "SGT-1N (400/275 kV)", mva: 742, rated: 1000, temp: 58, cool: "ONAF Stage 1", level: "ok" },
+                { id: "SGT-2N (400/132 kV)", mva: 685, rated: 1000, temp: 55, cool: "ONAN Natural", level: "ok" },
+                { id: "SGT-3N (400/132 kV)", mva: 620, rated: 1000, temp: 52, cool: "ONAN Natural", level: "ok" }
+              ],
+              reserves: [
+                { tier: "Dynamic Containment", val: "240 MW @ 0.40 s", site: "Pillswood BESS" },
+                { tier: "Primary Spinning", val: "170 MW @ 10.0 s", site: "Hartlepool / Teesside" },
+                { tier: "Fast Tertiary Start", val: "220 MW @ 5.5 min", site: "Brigg Peaking Gas" }
+              ]
+            },
+            {
+              key: "london", name: "London", load: 11.0, cap: 12.8, margin: 16, tone: "ok", status: "● Normal",
+              substation: "St Johns Wood / Hurst 400 kV Cable Ring (SGT-LN09)",
+              kv: "400.2 kV (+0.1%)", resp: "0.45 s DC-Low", mvar: "+295 MVAr ind.", n1: "Compliant (78% peak SGT)",
+              sgts: [
+                { id: "SGT-1L (400/275 kV)", mva: 780, rated: 1000, temp: 62, cool: "ONAF Stage 1", level: "ok" },
+                { id: "SGT-2L (400/132 kV)", mva: 745, rated: 1000, temp: 60, cool: "ONAF Stage 1", level: "ok" },
+                { id: "SGT-3L (400/132 kV)", mva: 702, rated: 1000, temp: 57, cool: "ONAN Natural", level: "ok" }
+              ],
+              reserves: [
+                { tier: "Dynamic Containment", val: "280 MW @ 0.45 s", site: "Thurrock / Tilbury BESS" },
+                { tier: "Primary Spinning", val: "240 MW @ 10.0 s", site: "Grain CCGT Module 4" },
+                { tier: "Fast Tertiary Start", val: "390 MW @ 6.0 min", site: "Taylors Lane OCGT" }
+              ]
+            },
+            {
+              key: "scotland", name: "Scotland", load: 6.3, cap: 8.3, margin: 31, tone: "ok", status: "● Normal",
+              substation: "Torness / Denny 400 kV B6 North-South Corridor (SGT-SC01)",
+              kv: "403.1 kV (+0.8%)", resp: "0.35 s Sync-Hydro", mvar: "+340 MVAr ind.", n1: "Compliant (66% peak SGT)",
+              sgts: [
+                { id: "SGT-1S (400/275 kV)", mva: 660, rated: 1000, temp: 53, cool: "ONAN Natural", level: "ok" },
+                { id: "SGT-2S (400/275 kV)", mva: 615, rated: 1000, temp: 50, cool: "ONAN Natural", level: "ok" },
+                { id: "SGT-3S (400/132 kV)", mva: 540, rated: 1000, temp: 47, cool: "ONAN Natural", level: "ok" }
+              ],
+              reserves: [
+                { tier: "Dynamic Containment", val: "210 MW @ 0.35 s", site: "Blackhillock BESS + Sync" },
+                { tier: "Pumped Hydro Spin", val: "440 MW @ 12.0 s", site: "Cruachan / Foyers Reversible" },
+                { tier: "Fast Tertiary Start", val: "320 MW @ 4.0 min", site: "Sloy / Tummel Cascade" }
+              ]
+            }
+          ],
+          nextEvents: [
+            { time: "16:30", event: "IFA2 + ElecLink HVDC import ramp", delta: "+1.2 GW" },
+            { time: "18:10", event: "Evening lighting & traction forecast peak", delta: "44.2 GW" },
+            { time: "21:00", event: "Dogger Bank offshore wind ramp-down", delta: "−2.1 GW" }
+          ],
+          auditLog: [
+            { time: "14:36", key: "south-coast", zone: "South coast", action: "Lovedean SGT-1A ODAF oil pumps armed; IFA2 tap +2 voltage support", impact: "+85 MVAr", tone: "bad", status: "▲ Tight" },
+            { time: "14:22", key: "midlands", zone: "Midlands", action: "Ratcliffe 400 kV shunt reactor switched out ahead of evening ramp", impact: "+1.8 kV", tone: "warn", status: "◆ Watch" },
+            { time: "13:55", key: "south-coast", zone: "South coast", action: "ElecLink Folkestone converter scheduled +200 MW afternoon block", impact: "+0.20 GW", tone: "bad", status: "▲ Tight" },
+            { time: "13:18", key: "scotland", zone: "Scotland", action: "Seagreen + Moray East wind export uncongested via B6 boundary", impact: "+0.65 GW", tone: "ok", status: "● Normal" },
+            { time: "12:40", key: "north-east", zone: "North east", action: "NSL Blyth bipole holding steady base import from Kvilldal hydro", impact: "+1.40 GW", tone: "ok", status: "● Normal" },
+            { time: "11:50", key: "london", zone: "London", action: "St Johns Wood 400 kV cable tunnel cooling nominal; embedded PV +0.4 GW", impact: "−0.40 GW", tone: "ok", status: "● Normal" }
+          ]
+        },
+
+        coldsnap: {
+          label: "Cold Snap Evening Peak · 46.8 GW",
+          timestamp: "Thu 18 Jan · 18:10 GMT · SP 37",
+          liveClockLabel: "Live peak 18:10 GMT (SP 37)",
+          liveSpIndex: 36,
+          liveExactHours: 18 + 10 / 60,
+          liveActualGw: 46.8,
+          liveForecastGw: 45.1,
+          peakHours: 18 + 10 / 60,
+          peakSpIndex: 36,
+          peakGw: 46.8,
+          peakLabel: "active cold-snap peak 46.8 GW · 18:10",
+          firmCapGw: 49.2,
+          freqHz: "49.892 Hz",
+          freqBand: "warn",
+          freqSym: "◆",
+          rocof: "RoCoF −0.038 Hz/s",
+          marketLabel: "BM Cash-Out",
+          deltaSummary: "+1.7 GW above forecast (45.1 GW). −3°C heating surge across urban zones.",
+          deltaTone: "warn",
+          nowChartText: "now +1.7 GW vs 45.1 GW fcst",
+          nowTextX: 472,
+          nowTextY: 108,
+          fcstLblX: 236,
+          fcstLblY: 128,
+          actLblX: 236,
+          actLblY: 78,
+          peakTextY: 48,
+          forecastAnchors: [
+            [0, 33.4], [6, 31.8], [12, 37.2], [18, 41.6], [24, 42.4],
+            [30, 43.2], [36, 45.0], [37, 45.1], [42, 41.8], [48, 37.8]
+          ],
+          actualAnchors: [
+            [0, 33.8], [6, 32.2], [12, 38.0], [18, 42.5], [24, 43.5],
+            [30, 44.4], [36, 46.7], [37, 46.8], [42, 43.0], [48, 38.6]
+          ],
+          priceBase: 98,
+          pricePeak: 188,
+          mix: [
+            { id: "wind", name: "Offshore Wind", code: "WND", pat: "pat-wind", mw: 6420, head: 240, gco2: 12, posture: "◆ Blocking-high wind lull", tone: "warn", lowc: true },
+            { id: "nuclear", name: "Nuclear", code: "NUC", pat: "pat-nuclear", mw: 6840, head: 60, gco2: 11, posture: "● Max baseload output", tone: "ok", lowc: true },
+            { id: "hydro", name: "Hydro & Pumped Storage", code: "HYD", pat: "pat-hydro", mw: 5620, head: 480, gco2: 18, posture: "▲ Peak shaving discharge", tone: "bad", lowc: true },
+            { id: "gas", name: "CCGT Gas", code: "GAS", pat: "pat-gas", mw: 23120, head: 1420, gco2: 394, posture: "▲ Full thermal fleet + OCGT", tone: "bad", lowc: false },
+            { id: "hvdc", name: "HVDC Interconnectors", code: "INT", pat: "pat-hvdc", mw: 4800, head: 200, gco2: 142, posture: "● Max import ceiling", tone: "ok", lowc: false }
+          ],
+          regions: [
+            {
+              key: "london", name: "London", load: 13.6, cap: 13.9, margin: 2, tone: "bad", status: "▲ Tight",
+              substation: "St Johns Wood / West Weybridge 400 kV Ring (SGT-LN09)",
+              kv: "396.8 kV (−0.8%)", resp: "0.40 s DC-Low", mvar: "+84 MVAr ind.", n1: "Tight (97% peak SGT)",
+              sgts: [
+                { id: "SGT-1L (400/275 kV)", mva: 972, rated: 1000, temp: 81, cool: "ODAF Max", level: "bad" },
+                { id: "SGT-2L (400/132 kV)", mva: 938, rated: 1000, temp: 78, cool: "ODAF Forced", level: "bad" },
+                { id: "SGT-3L (400/132 kV)", mva: 890, rated: 1000, temp: 73, cool: "ONAF Stage 2", level: "warn" }
+              ],
+              reserves: [
+                { tier: "Dynamic Containment", val: "310 MW @ 0.40 s", site: "Thurrock BESS Discharging" },
+                { tier: "Primary Spinning", val: "140 MW @ 10.0 s", site: "Grain CCGT Headroom" },
+                { tier: "Fast Tertiary Start", val: "190 MW @ 4.5 min", site: "Taylors Lane OCGT Hot" }
+              ]
+            },
+            {
+              key: "south-coast", name: "South coast", load: 8.3, cap: 8.5, margin: 2, tone: "bad", status: "▲ Tight",
+              substation: "Lovedean / Ninfield 400 kV Coastal Bus (SGT-SC04)",
+              kv: "397.2 kV (−0.7%)", resp: "0.45 s DC-Low", mvar: "+92 MVAr ind.", n1: "Tight (96% peak SGT)",
+              sgts: [
+                { id: "SGT-1A (400/132 kV)", mva: 960, rated: 1000, temp: 80, cool: "ODAF Max", level: "bad" },
+                { id: "SGT-2B (400/132 kV)", mva: 924, rated: 1000, temp: 76, cool: "ODAF Forced", level: "bad" },
+                { id: "SGT-3C (400/275 kV)", mva: 865, rated: 1000, temp: 70, cool: "ONAF Stage 2", level: "warn" }
+              ],
+              reserves: [
+                { tier: "Dynamic Containment", val: "220 MW @ 0.45 s", site: "Minety BESS Armed" },
+                { tier: "Primary Spinning", val: "120 MW @ 10.0 s", site: "Marchwood CCGT" },
+                { tier: "Fast Tertiary Start", val: "160 MW @ 5.0 min", site: "Fawley Peaking Units" }
+              ]
+            },
+            {
+              key: "midlands", name: "Midlands", load: 11.2, cap: 11.8, margin: 5, tone: "warn", status: "◆ Watch",
+              substation: "Drakelow / Hams Hall 400 kV Hub (SGT-MD02)",
+              kv: "398.9 kV (−0.3%)", resp: "0.50 s DC-Low", mvar: "+150 MVAr ind.", n1: "Compliant (91% peak SGT)",
+              sgts: [
+                { id: "SGT-1M (400/275 kV)", mva: 912, rated: 1000, temp: 74, cool: "ODAF Forced", level: "bad" },
+                { id: "SGT-2M (400/132 kV)", mva: 874, rated: 1000, temp: 70, cool: "ONAF Stage 2", level: "warn" },
+                { id: "SGT-3M (400/132 kV)", mva: 830, rated: 1000, temp: 67, cool: "ONAF Stage 2", level: "warn" }
+              ],
+              reserves: [
+                { tier: "Dynamic Containment", val: "200 MW @ 0.50 s", site: "Bustleholm BESS" },
+                { tier: "Primary Spinning", val: "210 MW @ 10.0 s", site: "Staythorpe CCGT" },
+                { tier: "Fast Tertiary Start", val: "250 MW @ 6.0 min", site: "Coventry OCGT" }
+              ]
+            },
+            {
+              key: "north-east", name: "North east", load: 6.3, cap: 6.9, margin: 9, tone: "warn", status: "◆ Watch",
+              substation: "Norton / Blyth 400 kV Corridor (SGT-NE01)",
+              kv: "399.6 kV (−0.1%)", resp: "0.40 s DC-Low", mvar: "+190 MVAr ind.", n1: "Compliant (84% peak SGT)",
+              sgts: [
+                { id: "SGT-1N (400/275 kV)", mva: 842, rated: 1000, temp: 68, cool: "ONAF Stage 2", level: "warn" },
+                { id: "SGT-2N (400/132 kV)", mva: 795, rated: 1000, temp: 64, cool: "ONAF Stage 1", level: "ok" },
+                { id: "SGT-3N (400/132 kV)", mva: 750, rated: 1000, temp: 61, cool: "ONAF Stage 1", level: "ok" }
+              ],
+              reserves: [
+                { tier: "Dynamic Containment", val: "240 MW @ 0.40 s", site: "Pillswood BESS" },
+                { tier: "Primary Spinning", val: "160 MW @ 10.0 s", site: "Keadby 2 CCGT" },
+                { tier: "Fast Tertiary Start", val: "180 MW @ 5.5 min", site: "Wilton GT" }
+              ]
+            },
+            {
+              key: "scotland", name: "Scotland", load: 7.4, cap: 8.9, margin: 20, tone: "ok", status: "● Normal",
+              substation: "Strathaven / Torness 400 kV Bus (SGT-SC01)",
+              kv: "401.4 kV (+0.4%)", resp: "0.35 s Sync-Hydro", mvar: "+275 MVAr ind.", n1: "Compliant (74% peak SGT)",
+              sgts: [
+                { id: "SGT-1S (400/275 kV)", mva: 740, rated: 1000, temp: 59, cool: "ONAF Stage 1", level: "ok" },
+                { id: "SGT-2S (400/275 kV)", mva: 705, rated: 1000, temp: 56, cool: "ONAN Natural", level: "ok" },
+                { id: "SGT-3S (400/132 kV)", mva: 640, rated: 1000, temp: 53, cool: "ONAN Natural", level: "ok" }
+              ],
+              reserves: [
+                { tier: "Dynamic Containment", val: "210 MW @ 0.35 s", site: "Blackhillock Sync" },
+                { tier: "Pumped Hydro Spin", val: "380 MW @ 12.0 s", site: "Cruachan Headroom" },
+                { tier: "Fast Tertiary Start", val: "290 MW @ 4.0 min", site: "Peterhead Warm Block" }
+              ]
+            }
+          ],
+          nextEvents: [
+            { time: "18:30", event: "Demand Flexibility Service domestic turn-down", delta: "−0.8 GW" },
+            { time: "19:30", event: "Dinorwig pumped-hydro 4-unit peak taper", delta: "−1.3 GW" },
+            { time: "22:00", event: "Overnight EV tariff valley & reservoir pump-back", delta: "−5.4 GW" }
+          ],
+          auditLog: [
+            { time: "18:08", key: "london", zone: "London", action: "St Johns Wood SGT-1L ODAF stage-3 cooling active; DFS turn-down armed", impact: "−320 MW", tone: "bad", status: "▲ Tight" },
+            { time: "18:02", key: "south-coast", zone: "South coast", action: "IFA1 + IFA2 + ElecLink locked at maximum winter import transfer", impact: "+3.00 GW", tone: "bad", status: "▲ Tight" },
+            { time: "17:44", key: "midlands", zone: "Midlands", action: "BM instruction issued: West Burton + Staythorpe warm OCGT synchronized", impact: "+0.85 GW", tone: "warn", status: "◆ Watch" },
+            { time: "17:15", key: "scotland", zone: "Scotland", action: "Cruachan reversible units 1–4 dispatched to full generating gate", impact: "+0.44 GW", tone: "ok", status: "● Normal" },
+            { time: "16:50", key: "north-east", zone: "North east", action: "Viking + NSL HVDC corridors stepped to maximum winter schedule", impact: "+2.80 GW", tone: "warn", status: "◆ Watch" }
+          ]
+        },
+
+        hvdctrip: {
+          label: "HVDC North Sea Trip · −1.4 GW",
+          timestamp: "Tue 14 Oct · 11:42 BST · SP 24",
+          liveClockLabel: "Contingency 11:42 BST (SP 24 · NSL Trip)",
+          liveSpIndex: 23,
+          liveExactHours: 11 + 42 / 60,
+          liveActualGw: 39.6,
+          liveForecastGw: 39.2,
+          peakHours: 18 + 10 / 60,
+          peakSpIndex: 36,
+          peakGw: 44.6,
+          peakLabel: "post-trip peak 44.6 GW · 18:10 (cap 45.0)",
+          firmCapGw: 45.0,
+          freqHz: "49.764 Hz",
+          freqBand: "bad",
+          freqSym: "▲",
+          rocof: "RoCoF +0.045 Hz/s (arrested)",
+          marketLabel: "Imbalance Spike",
+          deltaSummary: "NSL Blyth −1.4 GW bipole trip at 11:41. Frequency nadir 49.71 Hz arrested via DC-Low.",
+          deltaTone: "bad",
+          nowChartText: "trip 39.6 GW (NSL −1.4 GW)",
+          nowTextX: 333,
+          nowTextY: 115,
+          fcstLblX: 430,
+          fcstLblY: 136,
+          actLblX: 184,
+          actLblY: 214,
+          peakTextY: 66,
+          forecastAnchors: [
+            [0, 30.2], [6, 28.8], [12, 33.0], [18, 37.4], [23, 39.1], [24, 39.4],
+            [30, 41.2], [36, 44.5], [37, 44.6], [42, 40.6], [48, 36.8]
+          ],
+          actualAnchors: [
+            [0, 30.0], [6, 28.6], [12, 32.9], [18, 37.6], [23, 39.5], [24, 39.8],
+            [30, 41.5], [36, 44.3], [37, 44.4], [42, 40.4], [48, 36.6]
+          ],
+          priceBase: 68,
+          pricePeak: 242,
+          mix: [
+            { id: "wind", name: "Offshore Wind", code: "WND", pat: "pat-wind", mw: 13600, head: 980, gco2: 12, posture: "● Uncurtailed export", tone: "ok", lowc: true },
+            { id: "nuclear", name: "Nuclear", code: "NUC", pat: "pat-nuclear", mw: 6720, head: 120, gco2: 11, posture: "● Steady baseload", tone: "ok", lowc: true },
+            { id: "hydro", name: "Hydro & Pumped Storage", code: "HYD", pat: "pat-hydro", mw: 5140, head: 620, gco2: 18, posture: "▲ Dinorwig +1.26 GW arrest", tone: "bad", lowc: true },
+            { id: "gas", name: "CCGT Gas", code: "GAS", pat: "pat-gas", mw: 11660, head: 3180, gco2: 394, posture: "▲ Governor ramp + BM sync", tone: "warn", lowc: false },
+            { id: "hvdc", name: "HVDC Interconnectors", code: "INT", pat: "pat-hvdc", mw: 2480, head: 500, gco2: 142, posture: "▲ NSL −1,400 MW tripped", tone: "bad", lowc: false }
+          ],
+          regions: [
+            {
+              key: "north-east", name: "North east", load: 5.8, cap: 5.9, margin: 2, tone: "bad", status: "▲ Tight",
+              substation: "Blyth 400 kV HVDC Converter Station (SGT-NE01 · FAULTED)",
+              kv: "395.6 kV (−1.1%)", resp: "0.38 s DC-Low FIRED", mvar: "+62 MVAr ind.", n1: "Contingency Active (96% SGT)",
+              sgts: [
+                { id: "SGT-1N (400/275 kV)", mva: 964, rated: 1000, temp: 79, cool: "ODAF Max", level: "bad" },
+                { id: "SGT-2N (400/132 kV)", mva: 918, rated: 1000, temp: 75, cool: "ODAF Forced", level: "bad" },
+                { id: "SGT-3N (400/132 kV)", mva: 845, rated: 1000, temp: 68, cool: "ONAF Stage 2", level: "warn" }
+              ],
+              reserves: [
+                { tier: "Dynamic Containment", val: "240 MW DELIVERING", site: "Pillswood + Lakeside BESS" },
+                { tier: "Primary Spinning", val: "310 MW RAMPING", site: "Keadby 2 + Saltend CCGT" },
+                { tier: "Fast Tertiary Start", val: "420 MW SYNCING", site: "Spalding OCGT Replacement" }
+              ]
+            },
+            {
+              key: "south-coast", name: "South coast", load: 7.0, cap: 7.3, margin: 4, tone: "bad", status: "▲ Tight",
+              substation: "Lovedean / Sellindge 400 kV HVDC Tie (SGT-SC04)",
+              kv: "398.0 kV (−0.5%)", resp: "0.45 s DC-Low FIRED", mvar: "+118 MVAr ind.", n1: "Tight (93% peak SGT)",
+              sgts: [
+                { id: "SGT-1A (400/132 kV)", mva: 932, rated: 1000, temp: 75, cool: "ODAF Forced", level: "bad" },
+                { id: "SGT-2B (400/132 kV)", mva: 880, rated: 1000, temp: 71, cool: "ONAF Stage 2", level: "warn" },
+                { id: "SGT-3C (400/275 kV)", mva: 805, rated: 1000, temp: 65, cool: "ONAF Stage 1", level: "ok" }
+              ],
+              reserves: [
+                { tier: "Dynamic Containment", val: "220 MW DELIVERING", site: "Minety BESS Full Step" },
+                { tier: "HVDC Emergency Step", val: "+250 MW @ 15.0 s", site: "IFA1 Sellindge Headroom" },
+                { tier: "Fast Tertiary Start", val: "310 MW @ 6.0 min", site: "Chickerell OCGT Armed" }
+              ]
+            },
+            {
+              key: "midlands", name: "Midlands", load: 9.4, cap: 10.1, margin: 7, tone: "warn", status: "◆ Watch",
+              substation: "Ratcliffe / Cottam 400 kV Bus (SGT-MD02)",
+              kv: "399.1 kV (−0.2%)", resp: "0.50 s DC-Low", mvar: "+178 MVAr ind.", n1: "Compliant (88% peak SGT)",
+              sgts: [
+                { id: "SGT-1M (400/275 kV)", mva: 882, rated: 1000, temp: 71, cool: "ONAF Stage 2", level: "warn" },
+                { id: "SGT-2M (400/132 kV)", mva: 830, rated: 1000, temp: 67, cool: "ONAF Stage 1", level: "warn" },
+                { id: "SGT-3M (400/132 kV)", mva: 760, rated: 1000, temp: 61, cool: "ONAF Stage 1", level: "ok" }
+              ],
+              reserves: [
+                { tier: "Dynamic Containment", val: "190 MW DELIVERING", site: "Bustleholm BESS" },
+                { tier: "Primary Spinning", val: "280 MW RAMPING", site: "Carrington + Staythorpe" },
+                { tier: "Fast Tertiary Start", val: "340 MW @ 7.0 min", site: "Nechells OCGT" }
+              ]
+            },
+            {
+              key: "london", name: "London", load: 11.2, cap: 12.8, margin: 14, tone: "ok", status: "● Normal",
+              substation: "St Johns Wood / Tilbury 400 kV Ring (SGT-LN09)",
+              kv: "399.8 kV (0.0%)", resp: "0.45 s DC-Low", mvar: "+260 MVAr ind.", n1: "Compliant (80% peak SGT)",
+              sgts: [
+                { id: "SGT-1L (400/275 kV)", mva: 804, rated: 1000, temp: 64, cool: "ONAF Stage 1", level: "warn" },
+                { id: "SGT-2L (400/132 kV)", mva: 760, rated: 1000, temp: 61, cool: "ONAF Stage 1", level: "ok" },
+                { id: "SGT-3L (400/132 kV)", mva: 715, rated: 1000, temp: 58, cool: "ONAN Natural", level: "ok" }
+              ],
+              reserves: [
+                { tier: "Dynamic Containment", val: "220 MW DELIVERING", site: "Thurrock BESS" },
+                { tier: "Primary Spinning", val: "240 MW @ 10.0 s", site: "Grain CCGT" },
+                { tier: "Fast Tertiary Start", val: "390 MW @ 6.0 min", site: "Taylors Lane OCGT" }
+              ]
+            },
+            {
+              key: "scotland", name: "Scotland", load: 6.2, cap: 8.3, margin: 34, tone: "ok", status: "● Normal",
+              substation: "Torness / Eccles 400 kV B6 Southbound Tie (SGT-SC01)",
+              kv: "402.0 kV (+0.5%)", resp: "0.35 s Sync-Hydro", mvar: "+310 MVAr ind.", n1: "Compliant (72% B6 transfer)",
+              sgts: [
+                { id: "SGT-1S (400/275 kV)", mva: 720, rated: 1000, temp: 57, cool: "ONAF Stage 1", level: "ok" },
+                { id: "SGT-2S (400/275 kV)", mva: 675, rated: 1000, temp: 54, cool: "ONAN Natural", level: "ok" },
+                { id: "SGT-3S (400/132 kV)", mva: 590, rated: 1000, temp: 49, cool: "ONAN Natural", level: "ok" }
+              ],
+              reserves: [
+                { tier: "Dynamic Containment", val: "210 MW DELIVERING", site: "Blackhillock Sync" },
+                { tier: "Pumped Hydro Spin", val: "440 MW RAMPING", site: "Cruachan + Foyers Southbound" },
+                { tier: "B6 Transfer Step", val: "+580 MW @ 30 s", site: "Eastern HVDC Western Link" }
+              ]
+            }
+          ],
+          nextEvents: [
+            { time: "11:55", event: "Spalding + Keadby warm CCGT replacement sync", delta: "+0.9 GW" },
+            { time: "14:00", event: "IFA1 + BritNed emergency headroom import block", delta: "+0.5 GW" },
+            { time: "18:10", event: "Post-contingency evening peak (tight 0.4 GW cap margin)", delta: "44.6 GW" }
+          ],
+          auditLog: [
+            { time: "11:41:52", key: "north-east", zone: "North east", action: "Dinorwig units 1–3 + BESS DC-Low arrested frequency nadir at 49.710 Hz", impact: "+1.14 GW", tone: "bad", status: "▲ Tight" },
+            { time: "11:41:14", key: "north-east", zone: "North east", action: "TRIP ALARM: NSL Blyth 400 kV bipole valve hall protection operated", impact: "−1.40 GW", tone: "bad", status: "▲ Tight" },
+            { time: "11:42:05", key: "south-coast", zone: "South coast", action: "IFA1 Sellindge automatic frequency-droop step triggered (+250 MW)", impact: "+0.25 GW", tone: "bad", status: "▲ Tight" },
+            { time: "11:42:18", key: "scotland", zone: "Scotland", action: "B6 boundary transfer raised +480 MW southbound to compensate Blyth", impact: "+0.48 GW", tone: "ok", status: "● Normal" },
+            { time: "11:42:30", key: "midlands", zone: "Midlands", action: "BM BOA fast-start instruction sent to Staythorpe & Spalding units", impact: "+0.62 GW", tone: "warn", status: "◆ Watch" }
+          ]
+        }
+      };
+
+      // Precompute 49-point curves and 48-period spot prices per scenario
+      Object.keys(SCENARIOS).forEach(function (key) {
+        var sc = SCENARIOS[key];
+        sc.forecastSeries = buildCurve(sc.forecastAnchors);
+        sc.actualSeries = buildCurve(sc.actualAnchors);
+        sc.prices = new Array(48);
+        var minF = 999;
+        var maxF = 0;
+        for (var i = 0; i < 48; i++) {
+          if (sc.forecastSeries[i] < minF) minF = sc.forecastSeries[i];
+          if (sc.forecastSeries[i] > maxF) maxF = sc.forecastSeries[i];
+        }
+        for (var j = 0; j < 48; j++) {
+          var norm = maxF === minF ? 0.5 : (sc.forecastSeries[j] - minF) / (maxF - minF);
+          sc.prices[j] = +(sc.priceBase + Math.pow(norm, 1.35) * (sc.pricePeak - sc.priceBase)).toFixed(2);
+        }
+        if (key === "normal") sc.prices[29] = 74.20;
+        if (key === "coldsnap") sc.prices[36] = 186.50;
+        if (key === "hvdctrip") sc.prices[23] = 242.00;
+      });
+
+      var state = {
+        scenarioKey: "normal",
+        spIndex: 29,
+        scrubActive: false,
+        selectedRegionKey: "south-coast",
+        regionFilter: "all",
+        regionSort: "margin-asc",
+        logScope: "all"
+      };
+
+      function announce(msg) {
+        var el = document.getElementById("live-announcer");
+        if (el) el.textContent = msg;
+      }
+
+      function escapeHtml(str) {
+        return String(str)
+          .replace(/&/g, "&amp;")
+          .replace(/</g, "&lt;")
+          .replace(/>/g, "&gt;")
+          .replace(/"/g, "&quot;");
+      }
+
+      function seriesToPath(arr, startIdx, endIdx, exactEndH, exactEndGw) {
+        var parts = [];
+        for (var i = startIdx; i <= endIdx; i++) {
+          var x = xFromHours(i * 0.5);
+          var y = yCoord(arr[i]);
+          parts.push((parts.length === 0 ? "M" : "L") + x + " " + y);
+        }
+        if (exactEndH !== null && exactEndGw !== null) {
+          parts.push("L" + xFromHours(exactEndH) + " " + yCoord(exactEndGw));
+        }
+        return parts.join(" ");
+      }
+
+      function renderAll() {
+        var sc = SCENARIOS[state.scenarioKey];
+        var isLivePeriod = !state.scrubActive && state.spIndex === sc.liveSpIndex;
+
+        var activeDemandGw = isLivePeriod ? sc.liveActualGw : sc.actualSeries[state.spIndex];
+        var activeForecastGw = isLivePeriod ? sc.liveForecastGw : sc.forecastSeries[state.spIndex];
+        var deltaGw = +(activeDemandGw - activeForecastGw).toFixed(1);
+        var deltaStr = (deltaGw > 0 ? "+" : deltaGw < 0 ? "−" : "") + Math.abs(deltaGw).toFixed(1);
+        var reserveGw = +(sc.firmCapGw - activeDemandGw).toFixed(1);
+        var reservePct = +((reserveGw / activeDemandGw) * 100).toFixed(1);
+        var spotPrice = sc.prices[state.spIndex];
+
+        // Header
+        var freqPill = document.getElementById("hdr-freq-pill");
+        freqPill.setAttribute("data-band", sc.freqBand);
+        document.getElementById("hdr-freq-sym").textContent = sc.freqSym;
+        document.getElementById("hdr-freq-val").textContent = sc.freqHz;
+        document.getElementById("hdr-timestamp").textContent = sc.timestamp;
+
+        // Scenario buttons
+        var scenBtns = document.querySelectorAll(".scenario-btn");
+        scenBtns.forEach(function (btn) {
+          btn.setAttribute("aria-pressed", String(btn.getAttribute("data-scenario") === state.scenarioKey));
+        });
+
+        // Scrubber
+        var scrubber = document.getElementById("sp-scrubber");
+        scrubber.value = String(state.spIndex);
+        var spNum = pad2(state.spIndex + 1);
+        var winText = formatWindow(state.spIndex);
+        var periodTag = state.spIndex <= sc.liveSpIndex ? "Metered" : "Projected";
+        document.getElementById("scrubber-readout").textContent =
+          "SP " + spNum + " (" + winText + ") · " + activeDemandGw.toFixed(1) + " GW · Forecast " +
+          activeForecastGw.toFixed(1) + " GW · Reserve " + (reservePct >= 0 ? "+" : "") + reservePct.toFixed(1) +
+          "% · £" + spotPrice.toFixed(2) + "/MWh";
+
+        // Primary Readout & Ledger
+        var eyebrowClock = document.getElementById("eyebrow-clock");
+        var modeBadge = document.getElementById("telemetry-mode-badge");
+        if (isLivePeriod) {
+          eyebrowClock.textContent = sc.liveClockLabel;
+          modeBadge.textContent = "LIVE TELEMETRY LOCKED";
+        } else {
+          eyebrowClock.textContent = "Inspecting SP " + spNum + " (" + winText + " · " + periodTag + ")";
+          modeBadge.textContent = "SCRUBBER INSPECT · SP " + spNum;
+        }
+
+        document.getElementById("primary-gw").textContent = activeDemandGw.toFixed(1);
+        var deltaEl = document.getElementById("primary-delta");
+        if (isLivePeriod) {
+          deltaEl.textContent = sc.deltaSummary;
+          deltaEl.setAttribute("data-tone", sc.deltaTone);
+        } else {
+          var tone = Math.abs(deltaGw) >= 1.5 && deltaGw > 0 ? "warn" : (reservePct < 6 ? "bad" : "ok");
+          deltaEl.textContent = deltaStr + " GW vs day-ahead forecast (" + activeForecastGw.toFixed(1) +
+            " GW) in SP " + spNum + " (" + periodTag.toLowerCase() + ").";
+          deltaEl.setAttribute("data-tone", tone);
+        }
+
+        // Compute weighted carbon intensity
+        var scaleFactor = activeDemandGw / sc.liveActualGw;
+        var totalMw = Math.round(activeDemandGw * 1000);
+        var weightedEmissions = 0;
+        var lowcMw = 0;
+        var scaledMix = sc.mix.map(function (m) {
+          var mw = Math.round(m.mw * scaleFactor);
+          return { ref: m, mw: mw };
+        });
+        var sumScaled = scaledMix.reduce(function (acc, item) { return acc + item.mw; }, 0);
+        if (scaledMix.length > 0) {
+          scaledMix[3].mw += (totalMw - sumScaled);
+        }
+        scaledMix.forEach(function (item) {
+          weightedEmissions += (item.mw / 1000) * item.ref.gco2;
+          if (item.ref.lowc) lowcMw += item.mw;
+        });
+        var carbonG = Math.round(weightedEmissions / activeDemandGw);
+        var lowcPct = ((lowcMw / totalMw) * 100).toFixed(1);
+
+        document.getElementById("kpi-freq").textContent = sc.freqHz;
+        document.getElementById("kpi-rocof").textContent = sc.rocof;
+        document.getElementById("kpi-cap").textContent = sc.firmCapGw.toFixed(1) + " GW";
+        document.getElementById("kpi-reserve").textContent =
+          (reservePct >= 0 ? "+" : "") + reservePct.toFixed(1) + "% (" + (reserveGw >= 0 ? "+" : "") + reserveGw.toFixed(1) + " GW)";
+        document.getElementById("kpi-price").textContent = "£" + spotPrice.toFixed(2) + "/MWh";
+        document.getElementById("kpi-market").textContent = sc.marketLabel;
+        document.getElementById("kpi-carbon").textContent = carbonG + " gCO2/kWh";
+        document.getElementById("kpi-lowc").textContent = lowcPct + "% low-carbon";
+
+        // SVG Chart Update (strictly linear y(gw) = 278 - (gw - 25) * 10)
+        var capY = yCoord(sc.firmCapGw);
+        document.getElementById("svg-cap-path").setAttribute("d", "M52 " + capY + " L628 " + capY);
+        document.getElementById("svg-lbl-cap").setAttribute("y", String(Math.max(18, capY - 6)));
+        document.getElementById("svg-lbl-cap").textContent = "firm capacity " + sc.firmCapGw.toFixed(1) + " GW";
+
+        // Forecast full 24h path
+        var fcstPts = [];
+        for (var fi = 0; fi <= 48; fi++) {
+          fcstPts.push((fi === 0 ? "M" : "L") + xFromHours(fi * 0.5) + " " + yCoord(sc.forecastSeries[fi]));
+          if (fi === sc.liveSpIndex) {
+            fcstPts.push("L" + xFromHours(sc.liveExactHours) + " " + yCoord(sc.liveForecastGw));
+          }
+          if (fi === sc.peakSpIndex && sc.peakExactInserted !== true) {
+            fcstPts.push("L" + xFromHours(sc.peakHours) + " " + yCoord(state.scenarioKey === "coldsnap" ? sc.liveForecastGw : sc.peakGw));
+          }
+        }
+        document.getElementById("svg-forecast-path").setAttribute("d", fcstPts.join(" "));
+
+        // Actual up to liveExactHours
+        var actPath = seriesToPath(sc.actualSeries, 0, sc.liveSpIndex, sc.liveExactHours, sc.liveActualGw);
+        document.getElementById("svg-actual-path").setAttribute("d", actPath);
+
+        // Projected from liveExactHours to 24:00
+        var projParts = ["M" + xFromHours(sc.liveExactHours) + " " + yCoord(sc.liveActualGw)];
+        for (var pi = sc.liveSpIndex + 1; pi <= 48; pi++) {
+          projParts.push("L" + xFromHours(pi * 0.5) + " " + yCoord(sc.actualSeries[pi]));
+        }
+        document.getElementById("svg-projected-path").setAttribute("d", projParts.join(" "));
+
+        // Live Marker & Exact Vertical Delta
+        var nowX = xFromHours(sc.liveExactHours);
+        var nowY = yCoord(sc.liveActualGw);
+        var fcstNowY = yCoord(sc.liveForecastGw);
+        var dLine = document.getElementById("svg-delta-line");
+        var dTop = document.getElementById("svg-delta-cap-top");
+        var dBot = document.getElementById("svg-delta-cap-bot");
+        [dLine, dTop, dBot].forEach(function (el) { el.setAttribute("data-tone", sc.deltaTone); });
+        dLine.setAttribute("x1", String(nowX));
+        dLine.setAttribute("x2", String(nowX));
+        dLine.setAttribute("y1", String(Math.min(nowY, fcstNowY)));
+        dLine.setAttribute("y2", String(Math.max(nowY, fcstNowY)));
+        dTop.setAttribute("x1", String(nowX - 4));
+        dTop.setAttribute("x2", String(nowX + 4));
+        dTop.setAttribute("y1", String(Math.min(nowY, fcstNowY)));
+        dTop.setAttribute("y2", String(Math.min(nowY, fcstNowY)));
+        dBot.setAttribute("x1", String(nowX - 4));
+        dBot.setAttribute("x2", String(nowX + 4));
+        dBot.setAttribute("y1", String(Math.max(nowY, fcstNowY)));
+        dBot.setAttribute("y2", String(Math.max(nowY, fcstNowY)));
+
+        var nowRect = document.getElementById("svg-now-rect");
+        nowRect.setAttribute("x", String(nowX - 5.5));
+        nowRect.setAttribute("y", String(nowY - 5.5));
+
+        var peakX = xFromHours(sc.peakHours);
+        var peakY = yCoord(sc.peakGw);
+        var peakRect = document.getElementById("svg-peak-rect");
+        peakRect.setAttribute("x", String(peakX - 5.5));
+        peakRect.setAttribute("y", String(peakY - 5.5));
+
+        var lblNow = document.getElementById("svg-lbl-now");
+        lblNow.setAttribute("x", String(sc.nowTextX));
+        lblNow.setAttribute("y", String(sc.nowTextY));
+        lblNow.setAttribute("text-anchor", "middle");
+        lblNow.textContent = sc.nowChartText;
+
+        var lblPeak = document.getElementById("svg-lbl-peak");
+        lblPeak.setAttribute("x", String(peakX));
+        lblPeak.setAttribute("y", String(sc.peakTextY));
+        lblPeak.textContent = sc.peakLabel;
+
+        var lblFcst = document.getElementById("svg-lbl-forecast");
+        lblFcst.setAttribute("x", String(sc.fcstLblX));
+        lblFcst.setAttribute("y", String(sc.fcstLblY));
+        var lblAct = document.getElementById("svg-lbl-actual");
+        lblAct.setAttribute("x", String(sc.actLblX));
+        lblAct.setAttribute("y", String(sc.actLblY));
+
+        var pxGap = Math.abs(nowY - fcstNowY).toFixed(0);
+        var liveGapGw = (sc.liveActualGw - sc.liveForecastGw).toFixed(1);
+        document.getElementById("chart-coord-proof").textContent =
+          "y(" + sc.liveActualGw.toFixed(1) + ") = " + nowY + " px · y(" + sc.liveForecastGw.toFixed(1) +
+          ") = " + fcstNowY + " px · Δ = " + pxGap + " px (" + (liveGapGw > 0 ? "+" : "") + liveGapGw + " GW)";
+
+        // Scrubber Crosshair
+        var scrubGroup = document.getElementById("svg-scrub-group");
+        if (state.scrubActive) {
+          scrubGroup.style.display = "";
+          var sx = xFromHours(state.spIndex * 0.5);
+          var sy = yCoord(activeDemandGw);
+          document.getElementById("svg-scrub-line").setAttribute("x1", String(sx));
+          document.getElementById("svg-scrub-line").setAttribute("x2", String(sx));
+          document.getElementById("svg-scrub-dot").setAttribute("cx", String(sx));
+          document.getElementById("svg-scrub-dot").setAttribute("cy", String(sy));
+          var boxX = Math.min(484, Math.max(56, sx - 94));
+          document.getElementById("svg-scrub-rect").setAttribute("x", String(boxX));
+          document.getElementById("svg-scrub-t1").setAttribute("x", String(boxX + 7));
+          document.getElementById("svg-scrub-t2").setAttribute("x", String(boxX + 7));
+          document.getElementById("svg-scrub-t1").textContent =
+            "SP " + spNum + " · " + winText.slice(0, 5) + " · " + activeDemandGw.toFixed(1) + " GW";
+          document.getElementById("svg-scrub-t2").textContent =
+            "Fcst " + activeForecastGw.toFixed(1) + " GW · £" + spotPrice.toFixed(2) + "/MWh";
+        } else {
+          scrubGroup.style.display = "none";
+        }
+
+        // Regional Table (filtered & sorted)
+        var regionsList = sc.regions.slice();
+        if (state.regionFilter === "alert") {
+          regionsList = regionsList.filter(function (r) { return r.tone === "bad" || r.tone === "warn"; });
+        }
+        regionsList.sort(function (a, b) {
+          if (state.regionSort === "load-desc") return b.load - a.load;
+          if (state.regionSort === "name-asc") return a.name.localeCompare(b.name);
+          if (a.margin !== b.margin) return a.margin - b.margin;
+          return b.load - a.load;
+        });
+
+        // Ensure selectedRegionKey exists
+        var activeRegObj = sc.regions.find(function (r) { return r.key === state.selectedRegionKey; }) || sc.regions[0];
+        state.selectedRegionKey = activeRegObj.key;
+
+        var regHtml = regionsList.map(function (r) {
+          var sel = r.key === state.selectedRegionKey;
+          var scaledLoad = +(r.load * scaleFactor).toFixed(1);
+          return '<tr data-region="' + r.key + '" data-selected="' + sel + '">' +
+            '<th scope="row"><button type="button" class="region-pick-btn" data-pick-region="' + r.key + '" aria-pressed="' + sel + '">' + escapeHtml(r.name) + '</button></th>' +
+            '<td>' + scaledLoad.toFixed(1) + '</td>' +
+            '<td>' + r.cap.toFixed(1) + '</td>' +
+            '<td class="margin-cell">' + r.margin + '%</td>' +
+            '<td><span class="st ' + r.tone + '">' + escapeHtml(r.status) + '</span></td>' +
+            '</tr>';
+        }).join("");
+        document.getElementById("regions-tbody").innerHTML = regHtml;
+
+        document.querySelectorAll("[data-reg-filter]").forEach(function (btn) {
+          btn.setAttribute("aria-pressed", String(btn.getAttribute("data-reg-filter") === state.regionFilter));
+        });
+
+        // Quick Zone Callout
+        var peakSgtPct = Math.round((activeRegObj.sgts[0].mva / activeRegObj.sgts[0].rated) * 100);
+        var shortNode = activeRegObj.substation.split("/")[0].trim();
+        if (shortNode.indexOf("400 kV") < 0) shortNode += " 400 kV";
+        document.getElementById("quick-zone-name").textContent = activeRegObj.name + " · " + shortNode;
+        document.getElementById("quick-zone-sgt").textContent = peakSgtPct + "%";
+        document.getElementById("quick-zone-resp").textContent = activeRegObj.resp.split(" ")[0] + " s";
+
+        // Next 6 Hours Events
+        document.getElementById("next-events-tbody").innerHTML = sc.nextEvents.map(function (ev) {
+          return "<tr><td>" + escapeHtml(ev.time) + "</td><td>" + escapeHtml(ev.event) + "</td><td>" + escapeHtml(ev.delta) + "</td></tr>";
+        }).join("");
+        document.getElementById("regions-note").textContent =
+          "Status uses symbol + word + color (▲ Tight, ◆ Watch, ● Normal). Margin is spare firm capacity over metered regional load; regional loads sum to " +
+          activeDemandGw.toFixed(1) + " GW national demand. Illustrative telemetry values.";
+
+        // Generation Mix Stacked Bar & Table
+        document.getElementById("mix-total-mw").textContent = totalMw.toLocaleString("en-GB") + " MW (" + activeDemandGw.toFixed(1) + " GW)";
+        document.getElementById("mix-carbon-intensity").textContent = carbonG + " gCO2/kWh";
+        document.getElementById("mix-lowc-share").textContent = lowcPct + "%";
+
+        var cursorX = 0;
+        var rectSvg = "";
+        var lblSvg = "";
+        var totalHeadroom = 0;
+        var totalTco2 = 0;
+        var mixRowsHtml = "";
+
+        scaledMix.forEach(function (item) {
+          var share = (item.mw / totalMw) * 100;
+          var w = +(share * 10).toFixed(1);
+          rectSvg += '<rect x="' + cursorX.toFixed(1) + '" y="20" width="' + Math.max(0, w).toFixed(1) + '" height="34" fill="url(#' + item.ref.pat + ')" stroke="var(--ink)" stroke-width="1"/>';
+          if (w >= 72) {
+            var shortTop = w >= 150 ? "[" + item.ref.code + "] " + item.ref.name.split("&")[0].trim() + " · " + share.toFixed(1) + "%" : "[" + item.ref.code + "] " + share.toFixed(1) + "%";
+            var shortBot = w >= 150 ? item.mw.toLocaleString("en-GB") + " MW · " + item.ref.gco2 + " g/kWh" : item.mw.toLocaleString("en-GB") + " MW";
+            lblSvg += '<text x="' + (cursorX + 5).toFixed(1) + '" y="14">' + escapeHtml(shortTop) + '</text>';
+            lblSvg += '<text x="' + (cursorX + 5).toFixed(1) + '" y="70" fill="var(--ink-2)">' + escapeHtml(shortBot) + '</text>';
+          }
+          cursorX += w;
+
+          var tco2 = Math.round((item.mw / 1000) * item.ref.gco2);
+          totalHeadroom += item.ref.head;
+          totalTco2 += tco2;
+
+          mixRowsHtml += '<tr>' +
+            '<th scope="row"><span class="fuel-cell"><svg class="swatch-svg" aria-hidden="true"><rect width="22" height="14" fill="url(#' + item.ref.pat + ')"/></svg>' +
+            '<span>' + escapeHtml(item.ref.name) + ' <span class="fuel-code">[' + item.ref.code + ']</span></span></span></th>' +
+            '<td>' + item.mw.toLocaleString("en-GB") + '</td>' +
+            '<td><span class="share-bar-inline"><span class="share-track" aria-hidden="true"><span class="share-fill" style="width:' + share.toFixed(1) + '%"></span></span><span>' + share.toFixed(1) + '%</span></span></td>' +
+            '<td>+' + item.ref.head.toLocaleString("en-GB") + '</td>' +
+            '<td>' + item.ref.gco2 + '</td>' +
+            '<td>' + tco2.toLocaleString("en-GB") + '</td>' +
+            '<td><span class="st ' + item.ref.tone + '">' + escapeHtml(item.ref.posture) + '</span></td>' +
+            '</tr>';
+        });
+
+        document.getElementById("mix-bar-rects").innerHTML = rectSvg;
+        document.getElementById("mix-bar-labels").innerHTML = lblSvg;
+        document.getElementById("mix-tbody").innerHTML = mixRowsHtml;
+        document.getElementById("mix-tfoot").innerHTML =
+          '<tr><th scope="row">National Transmission Total</th>' +
+          '<td>' + totalMw.toLocaleString("en-GB") + '</td>' +
+          '<td>100.0%</td>' +
+          '<td>+' + totalHeadroom.toLocaleString("en-GB") + '</td>' +
+          '<td>' + carbonG + ' (weighted)</td>' +
+          '<td>' + totalTco2.toLocaleString("en-GB") + '</td>' +
+          '<td>' + Math.round(sc.firmCapGw * 1000).toLocaleString("en-GB") + ' MW Sync Cap</td></tr>';
+
+        // Zone Tabs & Substation Inspector
+        var zoneTabsHtml = sc.regions.map(function (r) {
+          var sym = r.status.split(" ")[0];
+          var isSel = r.key === state.selectedRegionKey;
+          return '<button type="button" class="zone-tab" role="tab" data-zone-tab="' + r.key + '" aria-selected="' + isSel + '">' +
+            escapeHtml(r.name) + " · " + r.margin + "% " + sym + "</button>";
+        }).join("");
+        document.querySelector(".zone-tabs").innerHTML = zoneTabsHtml;
+
+        document.getElementById("insp-header-zone").textContent =
+          activeRegObj.name + " (" + activeRegObj.status + " · " + activeRegObj.margin + "% margin)";
+        document.getElementById("insp-header-n1").textContent = activeRegObj.n1;
+        document.getElementById("sub-heading").textContent = activeRegObj.substation;
+        var subBadge = document.getElementById("sub-status-badge");
+        subBadge.className = "st " + activeRegObj.tone;
+        subBadge.textContent = activeRegObj.status + " · " + activeRegObj.margin + "% Spare";
+        document.getElementById("sub-kv").textContent = activeRegObj.kv;
+        document.getElementById("sub-resp").textContent = activeRegObj.resp;
+        document.getElementById("sub-mvar").textContent = activeRegObj.mvar;
+
+        document.getElementById("sgt-tbody").innerHTML = activeRegObj.sgts.map(function (sgt) {
+          var util = Math.round((sgt.mva / sgt.rated) * 100);
+          return '<tr><th scope="row">' + escapeHtml(sgt.id) + '</th>' +
+            '<td>' + sgt.mva + ' / ' + sgt.rated + ' MVA</td>' +
+            '<td><span class="sgt-bar-wrap"><span class="sgt-track" aria-hidden="true"><span class="sgt-fill" data-level="' + sgt.level + '" style="width:' + util + '%"></span></span><span>' + util + '%</span></span></td>' +
+            '<td>' + sgt.temp + '°C</td>' +
+            '<td>' + escapeHtml(sgt.cool) + '</td></tr>';
+        }).join("");
+
+        document.getElementById("reserve-list").innerHTML = activeRegObj.reserves.map(function (res) {
+          return '<li class="reserve-item"><span style="color: var(--ink-2)">' + escapeHtml(res.tier) + '</span>' +
+            '<strong>' + escapeHtml(res.val) + '</strong>' +
+            '<span style="color: var(--ink-dim)">' + escapeHtml(res.site) + '</span></li>';
+        }).join("");
+
+        // Audit Log
+        document.querySelectorAll("[data-log-scope]").forEach(function (btn) {
+          btn.setAttribute("aria-pressed", String(btn.getAttribute("data-log-scope") === state.logScope));
+        });
+        var logs = state.logScope === "selected"
+          ? sc.auditLog.filter(function (l) { return l.key === state.selectedRegionKey; })
+          : sc.auditLog;
+        document.getElementById("audit-tbody").innerHTML = logs.map(function (l) {
+          return '<tr><td>' + escapeHtml(l.time) + '</td>' +
+            '<td>' + escapeHtml(l.zone) + '</td>' +
+            '<td>' + escapeHtml(l.action) + '</td>' +
+            '<td>' + escapeHtml(l.impact) + '</td>' +
+            '<td><span class="st ' + l.tone + '">' + escapeHtml(l.status) + '</span></td></tr>';
+        }).join("");
+
+        // 48-Settlement Period Full Accessible Table
+        var spRows = "";
+        for (var sp = 0; sp < 48; sp++) {
+          var dGw = sp === sc.liveSpIndex ? sc.liveActualGw : sc.actualSeries[sp];
+          var fGw = sp === sc.liveSpIndex ? sc.liveForecastGw : sc.forecastSeries[sp];
+          var gap = +(dGw - fGw).toFixed(1);
+          var gapTxt = (gap > 0 ? "+" : gap < 0 ? "−" : "") + Math.abs(gap).toFixed(1);
+          var resP = +(((sc.firmCapGw - dGw) / dGw) * 100).toFixed(1);
+          var stTxt = sp === sc.liveSpIndex ? "Live Telemetry" : (sp < sc.liveSpIndex ? "Metered" : (sp === sc.peakSpIndex ? "Forecast Peak" : "Projected"));
+          spRows += "<tr><td>SP " + pad2(sp + 1) + "</td><td>" + formatWindow(sp) + "</td><td>" + stTxt + "</td>" +
+            "<td>" + dGw.toFixed(1) + "</td><td>" + fGw.toFixed(1) + "</td><td>" + gapTxt + "</td>" +
+            "<td>" + (resP >= 0 ? "+" : "") + resP.toFixed(1) + "%</td><td>£" + sc.prices[sp].toFixed(2) + "</td></tr>";
+        }
+        document.getElementById("sp-ledger-tbody").innerHTML = spRows;
+      }
+
+      // Event Wiring
+      document.querySelectorAll(".scenario-btn").forEach(function (btn) {
+        btn.addEventListener("click", function () {
+          var key = btn.getAttribute("data-scenario");
+          if (!SCENARIOS[key]) return;
+          state.scenarioKey = key;
+          state.spIndex = SCENARIOS[key].liveSpIndex;
+          state.scrubActive = false;
+          state.selectedRegionKey = SCENARIOS[key].regions[0].key;
+          renderAll();
+          announce("Scenario switched to " + SCENARIOS[key].label + ". Primary demand " + SCENARIOS[key].liveActualGw.toFixed(1) + " gigawatts.");
+        });
+      });
+
+      var scrubberInput = document.getElementById("sp-scrubber");
+      scrubberInput.addEventListener("input", function () {
+        state.spIndex = Number(scrubberInput.value);
+        state.scrubActive = true;
+        renderAll();
+      });
+
+      document.getElementById("sp-prev").addEventListener("click", function () {
+        state.spIndex = Math.max(0, state.spIndex - 1);
+        state.scrubActive = true;
+        renderAll();
+      });
+
+      document.getElementById("sp-next").addEventListener("click", function () {
+        state.spIndex = Math.min(47, state.spIndex + 1);
+        state.scrubActive = true;
+        renderAll();
+      });
+
+      document.getElementById("sp-reset").addEventListener("click", function () {
+        var sc = SCENARIOS[state.scenarioKey];
+        state.spIndex = sc.liveSpIndex;
+        state.scrubActive = false;
+        renderAll();
+        announce("Returned to live telemetry period SP " + pad2(sc.liveSpIndex + 1) + ".");
+      });
+
+      // SVG Pointer Scrubbing
+      var svgEl = document.getElementById("demand-svg");
+      var draggingSvg = false;
+      function scrubFromPointer(evt) {
+        var rect = svgEl.getBoundingClientRect();
+        if (!rect.width) return;
+        var svgX = ((evt.clientX - rect.left) / rect.width) * 680;
+        var hours = (svgX - 52) / 24;
+        var idx = Math.max(0, Math.min(47, Math.round(hours * 2)));
+        state.spIndex = idx;
+        state.scrubActive = true;
+        renderAll();
+      }
+      svgEl.addEventListener("pointerdown", function (evt) {
+        draggingSvg = true;
+        scrubFromPointer(evt);
+      });
+      window.addEventListener("pointermove", function (evt) {
+        if (draggingSvg) scrubFromPointer(evt);
+      });
+      window.addEventListener("pointerup", function () {
+        draggingSvg = false;
+      });
+
+      // Regional Filter, Sort, and Row/Tab Selection
+      document.querySelectorAll("[data-reg-filter]").forEach(function (btn) {
+        btn.addEventListener("click", function () {
+          state.regionFilter = btn.getAttribute("data-reg-filter");
+          renderAll();
+        });
+      });
+
+      document.getElementById("region-sort").addEventListener("change", function (evt) {
+        state.regionSort = evt.target.value;
+        renderAll();
+      });
+
+      document.getElementById("regions-tbody").addEventListener("click", function (evt) {
+        var tr = evt.target.closest("tr[data-region]");
+        if (!tr) return;
+        state.selectedRegionKey = tr.getAttribute("data-region");
+        renderAll();
+        var sc = SCENARIOS[state.scenarioKey];
+        var r = sc.regions.find(function (item) { return item.key === state.selectedRegionKey; });
+        if (r) announce("Selected region " + r.name + ", spare margin " + r.margin + " percent, status " + r.status + ".");
+      });
+
+      document.querySelector(".zone-tabs").addEventListener("click", function (evt) {
+        var tab = evt.target.closest("[data-zone-tab]");
+        if (!tab) return;
+        state.selectedRegionKey = tab.getAttribute("data-zone-tab");
+        renderAll();
+      });
+
+      document.querySelectorAll("[data-log-scope]").forEach(function (btn) {
+        btn.addEventListener("click", function () {
+          state.logScope = btn.getAttribute("data-log-scope");
+          renderAll();
+        });
+      });
+
+      renderAll();
+    })();
+  </script>
 </body>
 </html>
