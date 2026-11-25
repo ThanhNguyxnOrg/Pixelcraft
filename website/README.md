@@ -1,6 +1,6 @@
 # Pixelcraft showcase
 
-Static showcase site for the Pixelcraft Agent Skills pack, built with React 19, Vite 7, and Tailwind CSS 4. Product version stays synced with the root [`package.json`](../package.json) (**0.1.0**). The root skill pack and its zero-dependency installer remain completely independent of this workspace.
+Static showcase site for the Pixelcraft Agent Skills pack, built with React 19, Vite 7, and Tailwind CSS 4. Product version stays synced with the root [`package.json`](../package.json). The root skill pack and its zero-dependency installer remain completely independent of this workspace.
 
 ## Run
 
