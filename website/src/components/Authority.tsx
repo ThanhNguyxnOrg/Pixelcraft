@@ -5,7 +5,7 @@ import { PixelIcon, PixelLabel, Reveal } from "./pixel";
 const HUE = [
   "var(--color-glow-cyan)",
   "var(--color-glow-blue)",
-  "var(--color-glow-violet)",
+  "var(--color-glow-orchid)",
   "var(--color-glow-magenta)",
   "var(--color-glow-orange)",
 ];

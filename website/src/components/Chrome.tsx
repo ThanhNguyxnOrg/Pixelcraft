@@ -174,6 +174,7 @@ function LoopBackdrop() {
 }
 
 export function Footer() {
+  const { paused, setPaused } = useMotionPause();
   return (
     <footer className="relative isolate overflow-hidden bg-void">
       <LoopBackdrop />
@@ -209,14 +210,27 @@ export function Footer() {
             <p className="mt-5 font-mono text-[0.8125rem] text-ink-faint">
               v{VERSION} · MIT License · © 2026 Pixelcraft contributors
             </p>
-            <p className="mt-5 flex flex-wrap gap-x-6 gap-y-2 text-[0.9375rem]">
+            <p className="mt-2 font-mono text-[0.75rem] text-ink-faint">
+              0 cookies · 0 third-party trackers · 100% self-hosted fonts &amp;
+              assets
+            </p>
+            <div className="mt-5 flex flex-wrap items-center gap-x-6 gap-y-2 text-[0.9375rem]">
               <a
                 href={REPO_URL}
-                className="inline-flex items-center gap-2 text-ink underline decoration-line-strong underline-offset-4 hover:decoration-action"
+                className="inline-flex min-h-8 items-center gap-2 py-1 text-ink underline decoration-line-strong underline-offset-4 hover:decoration-action"
               >
                 GitHub <PixelIcon name="external" size={10} />
               </a>
-            </p>
+              <button
+                type="button"
+                aria-pressed={paused}
+                onClick={() => setPaused(!paused)}
+                className="inline-flex min-h-8 items-center gap-2 py-1 font-mono text-[0.8125rem] text-ink-muted underline decoration-line-strong underline-offset-4 hover:text-ink hover:decoration-action"
+              >
+                <PixelIcon name={paused ? "play" : "pause"} size={10} />
+                {paused ? "Resume motion" : "Pause motion"}
+              </button>
+            </div>
           </div>
 
           <div className="lg:col-span-7 lg:col-start-6">
@@ -227,7 +241,8 @@ export function Footer() {
               <li className="flex flex-wrap items-baseline gap-3">
                 <EvidenceStamp label="rendered" />
                 <span>
-                  Gallery pages were captured in Chromium at 1440 × 900. Promo
+                  Main showcase and all 22 gallery exhibits verified in Chromium
+                  across 320 px, 390 × 844, 768 × 1024, and 1440 × 900. Promo
                   studies are authored illustrations, not live AI runs.
                 </span>
               </li>

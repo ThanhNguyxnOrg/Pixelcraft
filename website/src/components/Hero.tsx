@@ -99,14 +99,9 @@ export function Masthead() {
       mm.add(MOTION_OK, () => {
         const tl = gsap.timeline({
           defaults: { ease: "expo.out" },
-          delay: 0.15,
         });
-        tl.from('[data-stage="badge"]', { y: 16, opacity: 0, duration: 0.8 });
-        tl.from(
-          '[data-stage="avg"]',
-          { opacity: 0, y: 12, duration: 0.7 },
-          0.1,
-        );
+        tl.from('[data-stage="badge"]', { y: 12, duration: 0.6 });
+        tl.from('[data-stage="avg"]', { y: 10, duration: 0.55 }, 0.04);
         SplitText.create('[data-stage="claim"]', {
           type: "lines,words",
           mask: "lines",
@@ -115,21 +110,21 @@ export function Masthead() {
             gsap.from(self.words, {
               yPercent: 110,
               rotate: 2,
-              duration: 1,
-              stagger: 0.055,
-              delay: 0.25,
+              duration: 0.9,
+              stagger: 0.05,
+              delay: 0.08,
               ease: "expo.out",
             }),
         });
         tl.from(
           '[data-stage="rest"] > *',
-          { y: 28, opacity: 0, duration: 1, stagger: 0.08 },
-          0.75,
+          { y: 18, duration: 0.75, stagger: 0.06, clearProps: "transform" },
+          0.22,
         );
         tl.from(
           '[data-stage="stat"]',
-          { y: 30, opacity: 0, duration: 1, stagger: 0.07 },
-          0.95,
+          { y: 20, opacity: 0, duration: 0.8, stagger: 0.06 },
+          0.45,
         );
         // Counters run once with the entrance.
         gsap.utils.toArray<HTMLElement>('[data-stage="num"]').forEach((el) => {

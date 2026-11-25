@@ -206,7 +206,7 @@ function Builder() {
                     type="checkbox"
                     checked={v}
                     onChange={(e) => set(e.target.checked)}
-                    className="mt-1 size-4 accent-[var(--color-action)]"
+                    className="mt-0.5 size-6 shrink-0 cursor-pointer accent-[var(--color-action)]"
                   />
                   <span>
                     <code className="text-[0.875rem] text-ink">{flag}</code>

@@ -1,4 +1,4 @@
-import { readFileSync } from "node:fs";
+import { existsSync, readFileSync, writeFileSync } from "node:fs";
 import { resolve } from "node:path";
 import { defineConfig, type HtmlTagDescriptor, type Plugin } from "vite";
 import react from "@vitejs/plugin-react";
@@ -58,6 +58,17 @@ function injectRepoMetaAndFontPreloads(): Plugin {
         return { html: populated, tags };
       },
     },
+    closeBundle() {
+      const notFound = resolve(import.meta.dirname, "dist/404.html");
+      if (existsSync(notFound)) {
+        const raw = readFileSync(notFound, "utf8");
+        writeFileSync(
+          notFound,
+          raw.split('href="./').join(`href="${normalizedBase}`),
+          "utf8",
+        );
+      }
+    },
   };
 }
 
@@ -76,10 +87,11 @@ export default defineConfig({
           if (id.includes("node_modules/gsap") || id.includes("@gsap/react"))
             return "choreography";
           if (
-            id.includes("src/generated/") ||
             id.includes("src/galleryData.ts") ||
-            id.includes("src/data.ts")
+            id.includes("src/generated/gallery.json")
           )
+            return "gallery-evidence";
+          if (id.includes("src/generated/") || id.includes("src/data.ts"))
             return "showcase-data";
         },
       },
