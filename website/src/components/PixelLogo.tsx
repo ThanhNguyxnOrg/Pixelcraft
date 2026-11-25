@@ -73,26 +73,15 @@ function sample(img: HTMLImageElement): {
 
 /**
  * The hero signature. The real Pixelcraft mark, sampled into cells that start scattered in the
- * logo's average color, resolve core-outward, step aside for the pointer, and morph across the
- * four THESIS resolution steps (1px average -> 4px structure -> 16px divergence -> 512 detail).
+ * logo's average color, resolve core-outward, step aside for the pointer, and drift back toward the
+ * average as the hero scrolls away. Decorative: the logo also appears in the header.
  */
-export function PixelLogo({
-  className = "",
-  resolution = 512,
-}: {
-  className?: string;
-  resolution?: number;
-}) {
+export function PixelLogo({ className = "" }: { className?: string }) {
   const wrap = useRef<HTMLDivElement>(null);
   const canvasRef = useRef<HTMLCanvasElement>(null);
   const [model, setModel] = useState<ReturnType<typeof sample> | null>(null);
   const { paused } = useMotionPause();
   const [ready, setReady] = useState(false);
-  const drawRef = useRef<(() => void) | null>(null);
-  const resState = useRef({
-    chroma: 1,
-    coarse: 1,
-  });
 
   useEffect(() => {
     const img = new Image();
@@ -108,35 +97,6 @@ export function PixelLogo({
       img.onload = null;
     };
   }, []);
-
-  // Morph between 1px average, 4x4 structure, 16x16 divergence, and full 44x44 craft.
-  useEffect(() => {
-    const target =
-      resolution <= 1
-        ? { chroma: 0, coarse: 11 }
-        : resolution <= 4
-          ? { chroma: 0.28, coarse: 6 }
-          : resolution <= 16
-            ? { chroma: 0.82, coarse: 2.5 }
-            : { chroma: 1, coarse: 1 };
-    const reduce = paused || !window.matchMedia(MOTION_OK).matches;
-    if (reduce) {
-      resState.current.chroma = target.chroma;
-      resState.current.coarse = target.coarse;
-      drawRef.current?.();
-      return;
-    }
-    const tween = gsap.to(resState.current, {
-      chroma: target.chroma,
-      coarse: target.coarse,
-      duration: 0.65,
-      ease: "expo.out",
-      onUpdate: () => drawRef.current?.(),
-    });
-    return () => {
-      tween.kill();
-    };
-  }, [resolution, paused]);
 
   useGSAP(
     () => {
@@ -157,48 +117,36 @@ export function PixelLogo({
 
       const layout = () => {
         const r = wrap.current!.getBoundingClientRect();
-        dpr = Math.min(2, window.devicePixelRatio || 1);
+        // Cells have deliberately discrete edges: a retina-sized full-hero buffer
+        // adds fill cost, not useful detail. Keep one canvas and no live blur copy.
+        dpr = Math.min(1, window.devicePixelRatio || 1);
         W = r.width;
         H = r.height;
         canvas.width = Math.round(W * dpr);
         canvas.height = Math.round(H * dpr);
         const wide = W >= 1024;
+        // On narrow screens the mark sits in the first screenful, above the copy.
         const vh = Math.min(H, window.innerHeight);
         const size = wide
-          ? Math.min(W * 0.4, vh * 0.72)
-          : Math.min(W * 0.68, vh * 0.3);
+          ? Math.min(W * 0.4, vh * 0.74)
+          : Math.min(W * 0.7, vh * 0.32);
         step = size / G;
         ox = (wide ? W * 0.735 : W * 0.5) - size / 2;
-        oy = (wide ? Math.min(H, vh) * 0.49 : vh * 0.21) - size / 2;
+        oy = (wide ? Math.min(H, vh) * 0.52 : vh * 0.22) - size / 2;
       };
 
       const draw = () => {
         ctx.setTransform(dpr, 0, 0, dpr, 0, 0);
         ctx.clearRect(0, 0, W, H);
-        const coarse = resState.current.coarse;
-        const chroma = resState.current.chroma;
-        const s = step * (0.84 + (coarse - 1) * 0.08);
+        const s = step * 0.84;
         const t = state.time;
         for (const c of cells) {
           const p = easeCell(
             gsap.utils.clamp(0, 1, (state.assemble * 1.5 - c.delay) / 0.5),
           );
           const k = p * (1 - state.scatter * 0.9);
-          // Quantize cell coordinates toward coarser structural blocks when resolution < 512.
-          const qx =
-            coarse > 1.05
-              ? Math.floor(c.gx / coarse) * coarse + (coarse - 1) * 0.5
-              : c.gx;
-          const qy =
-            coarse > 1.05
-              ? Math.floor(c.gy / coarse) * coarse + (coarse - 1) * 0.5
-              : c.gy;
-          const blendQ = gsap.utils.clamp(0, 1, (coarse - 1) / 5);
-          const gx = c.gx + (qx - c.gx) * blendQ * 0.88;
-          const gy = c.gy + (qy - c.gy) * blendQ * 0.88;
-
-          const tx = ox + gx * step;
-          const ty = oy + gy * step;
+          const tx = ox + c.gx * step;
+          const ty = oy + c.gy * step;
           let x = ox + c.sx * step + (tx - (ox + c.sx * step)) * k;
           let y = oy + c.sy * step + (ty - (oy + c.sy * step)) * k;
           // Pointer repel, smoothed per cell so it feels like a field, not a jump.
@@ -223,18 +171,15 @@ export function PixelLogo({
           const sweep =
             Math.max(0, Math.sin(t * 0.9 - (c.gx + c.gy) * 0.09)) ** 14 *
             0.55 *
-            k *
-            chroma;
+            k;
           const light = (c.dim + (1 - c.dim) * k) * (1 + sweep);
-          const ck = k * chroma;
-          const r = (avg[0] + (c.r - avg[0]) * ck) * light;
-          const g = (avg[1] + (c.g - avg[1]) * ck) * light;
-          const b = (avg[2] + (c.b - avg[2]) * ck) * light;
+          const r = (avg[0] + (c.r - avg[0]) * k) * light;
+          const g = (avg[1] + (c.g - avg[1]) * k) * light;
+          const b = (avg[2] + (c.b - avg[2]) * k) * light;
           ctx.fillStyle = `rgb(${r | 0},${g | 0},${b | 0})`;
           ctx.fillRect(x, y, s, s);
         }
       };
-      drawRef.current = draw;
 
       const ro = new ResizeObserver(() => {
         layout();
@@ -252,9 +197,9 @@ export function PixelLogo({
         state.assemble = 0;
         gsap.to(state, {
           assemble: 1,
-          duration: 1.5,
+          duration: 2.1,
           ease: "power2.out",
-          delay: 0.05,
+          delay: 0.1,
         });
         gsap.to(state, {
           scatter: 1,
@@ -319,7 +264,6 @@ export function PixelLogo({
         },
       );
       return () => {
-        drawRef.current = null;
         ro.disconnect();
         mm.revert();
       };

@@ -4,10 +4,9 @@ import { gsap, MOTION_OK, ScrollTrigger, SplitText, useGSAP } from "./gsap";
  * Page-wide, attribute-driven motion. Content is visible by default; from-states are applied only
  * inside MOTION_OK, so static-view visitors see the finished page without animation.
  *   data-split     heading lines rise out of a mask
- *   data-reveal    block rises crisply, batched with its neighbours
+ *   data-reveal    block fades up, batched with its neighbours
  *   data-scramble  pixel label decodes once
  *   data-count     integer counts up once
- *   data-magnetic  subtle bounded cursor pull on fine pointers
  */
 export function useGlobalMotion(
   scope: React.RefObject<HTMLElement | null>,
@@ -25,32 +24,33 @@ export function useGlobalMotion(
             autoSplit: true,
             onSplit: (self) =>
               gsap.from(self.lines, {
-                yPercent: 105,
-                duration: 0.72,
+                yPercent: 110,
+                duration: 0.85,
                 ease: "expo.out",
-                stagger: 0.055,
-                scrollTrigger: { trigger: el, start: "top 90%", once: true },
+                stagger: 0.065,
+                scrollTrigger: { trigger: el, start: "top 88%", once: true },
               }),
           });
         });
 
         const reveals = gsap.utils.toArray<HTMLElement>("[data-reveal]");
         ScrollTrigger.batch(reveals, {
-          start: "top 95%",
+          start: "top 94%",
           once: true,
           onEnter: (batch) => {
+            // Own deferred reveals in this media context, not its useGSAP parent.
+            // Re-entering the parent here makes a cyclic context tree during cleanup.
             context.add(() => {
               gsap.fromTo(
                 batch,
-                { y: 18, opacity: 0 },
+                { y: 24, opacity: 0.2 },
                 {
                   y: 0,
                   opacity: 1,
-                  duration: 0.52,
+                  duration: 0.8,
                   ease: "power3.out",
-                  stagger: 0.04,
-                  overwrite: "auto",
-                  clearProps: "transform,opacity",
+                  stagger: 0.055,
+                  overwrite: true,
                 },
               );
             });
@@ -59,11 +59,11 @@ export function useGlobalMotion(
 
         gsap.utils.toArray<HTMLElement>("[data-scramble]").forEach((el) => {
           gsap.to(el, {
-            duration: 0.55,
+            duration: 0.65,
             scrambleText: {
               text: "{original}",
               chars: "▖▗▘▙▚▛▜▝▞▟",
-              speed: 0.6,
+              speed: 0.5,
             },
             scrollTrigger: { trigger: el, start: "top 92%", once: true },
           });
@@ -74,58 +74,23 @@ export function useGlobalMotion(
           const o = { v: 0 };
           gsap.to(o, {
             v: end,
-            duration: 0.85,
+            duration: 0.9,
             ease: "power3.out",
             onUpdate: () => {
               el.textContent = String(Math.round(o.v) || end);
             },
-            scrollTrigger: { trigger: el, start: "top 92%", once: true },
+            scrollTrigger: { trigger: el, start: "top 90%", once: true },
           });
         });
-
-        // Tactile magnetic pull on primary actions (fine pointers only, bounded to ±5px).
-        const cleanups: (() => void)[] = [];
-        if (window.matchMedia("(pointer: fine)").matches) {
-          gsap.utils.toArray<HTMLElement>("[data-magnetic]").forEach((el) => {
-            const xTo = gsap.quickTo(el, "x", {
-              duration: 0.35,
-              ease: "power3.out",
-            });
-            const yTo = gsap.quickTo(el, "y", {
-              duration: 0.35,
-              ease: "power3.out",
-            });
-            const onMove = (e: PointerEvent) => {
-              const r = el.getBoundingClientRect();
-              const dx = (e.clientX - (r.left + r.width / 2)) / (r.width / 2);
-              const dy = (e.clientY - (r.top + r.height / 2)) / (r.height / 2);
-              xTo(gsap.utils.clamp(-1, 1, dx) * 5);
-              yTo(gsap.utils.clamp(-1, 1, dy) * 3.5);
-            };
-            const onLeave = () => {
-              gsap.to(el, {
-                x: 0,
-                y: 0,
-                duration: 0.55,
-                ease: "elastic.out(1, 0.5)",
-                overwrite: "auto",
-              });
-            };
-            el.addEventListener("pointermove", onMove, { passive: true });
-            el.addEventListener("pointerleave", onLeave);
-            cleanups.push(() => {
-              el.removeEventListener("pointermove", onMove);
-              el.removeEventListener("pointerleave", onLeave);
-              gsap.set(el, { clearProps: "x,y" });
-            });
-          });
-        }
-        return () => cleanups.forEach((fn) => fn());
       });
 
       // Disclosures, filters and font reflow change section positions without a viewport resize.
       let refreshTimer = 0;
       const ro = new ResizeObserver(() => {
+        // Text wrapping and disclosures can resize on consecutive frames. Wait
+        // for layout to settle instead of measuring every trigger on each frame.
+        // Safe refresh defers until scrollEnd, so measurements cannot interrupt
+        // a long native smooth-anchor jump while the intervening text reveals.
         window.clearTimeout(refreshTimer);
         refreshTimer = window.setTimeout(
           () => ScrollTrigger.refresh(true),

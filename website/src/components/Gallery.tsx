@@ -14,10 +14,31 @@ import {
   type ScanFinding,
 } from "../galleryData";
 import galleryMeta from "../generated/gallery.json";
-import { useLocale } from "../lib/i18n";
-import { onJump, readUrlParam, writeUrlParams } from "../lib/urlState";
-import { EvidenceStamp, PixelIcon, PixelLabel, Reveal } from "./pixel";
+import { gsap, MOTION_OK, useGSAP } from "../lib/gsap";
+import { EvidenceStamp, PixelIcon, useMotionPause } from "./pixel";
 import { Tabs } from "./Tabs";
+
+function readParam(key: string): string | null {
+  if (typeof window === "undefined") return null;
+  try {
+    return new URLSearchParams(window.location.search).get(key);
+  } catch {
+    return null;
+  }
+}
+
+function writeParams(updates: Record<string, string | null>, hash?: string) {
+  if (typeof window === "undefined") return;
+  try {
+    const url = new URL(window.location.href);
+    for (const [k, v] of Object.entries(updates)) {
+      if (!v) url.searchParams.delete(k);
+      else url.searchParams.set(k, v);
+    }
+    if (hash) url.hash = hash;
+    window.history.replaceState(null, "", url.toString());
+  } catch {}
+}
 
 type StageTab = "compare" | "after" | "before" | "live" | "code" | "notes";
 type LiveViewport = "desktop" | "mobile";
@@ -76,7 +97,7 @@ function groupedFindings(findings: ScanFinding[]) {
 
 function ExhibitWorkbench({ item }: { item: GalleryItem }) {
   const [tab, setTab] = useState<StageTab>(() => {
-    const raw = readUrlParam("view") as StageTab | null;
+    const raw = readParam("view") as StageTab | null;
     return raw && VALID_STAGE_TABS.has(raw) ? raw : "compare";
   });
   const [liveSide, setLiveSide] = useState<"after" | "before">("after");
@@ -174,14 +195,14 @@ function ExhibitWorkbench({ item }: { item: GalleryItem }) {
 
   const selectStageTab = (next: StageTab) => {
     setTab(next);
-    writeUrlParams({
+    writeParams({
       exhibit: item.id,
       view: next === "compare" ? null : next,
     });
   };
 
   const shareDeepLink = async () => {
-    writeUrlParams(
+    writeParams(
       { exhibit: item.id, view: tab === "compare" ? null : tab },
       "#gallery",
     );
@@ -802,38 +823,48 @@ function ExhibitWorkbench({ item }: { item: GalleryItem }) {
 }
 
 export function Gallery() {
-  const { t } = useLocale();
   const [ecoFilter, setEcoFilter] = useState<EcosystemFilter>("All");
   const [modeFilter, setModeFilter] = useState<ModeFilter>("All");
   const [active, setActive] = useState(() => {
-    const initial = readUrlParam("exhibit");
+    const initial = readParam("exhibit");
     return initial && GALLERY.some((g) => g.id === initial)
       ? initial
       : GALLERY[0].id;
   });
   const [showAllSheet, setShowAllSheet] = useState(false);
+  const sheet = useRef<HTMLElement>(null);
   const workbenchAnchor = useRef<HTMLDivElement>(null);
+  const { paused } = useMotionPause();
 
-  useEffect(() => {
-    return onJump((detail) => {
-      if (
-        detail.kind === "exhibit" &&
-        GALLERY.some((g) => g.id === detail.id)
-      ) {
-        setEcoFilter("All");
-        setModeFilter("All");
-        setActive(detail.id);
-        writeUrlParams({
-          exhibit: detail.id,
-          view: detail.view === "compare" ? null : detail.view,
-        });
-      }
-    });
-  }, []);
+  useGSAP(
+    () => {
+      if (paused) return;
+      const mm = gsap.matchMedia();
+      mm.add(MOTION_OK, () => {
+        gsap.fromTo(
+          sheet.current,
+          { scale: 0.975, borderRadius: 56 },
+          {
+            scale: 1,
+            borderRadius: 32,
+            ease: "none",
+            scrollTrigger: {
+              trigger: sheet.current,
+              start: "top bottom",
+              end: "top 38%",
+              scrub: 0.5,
+            },
+          },
+        );
+      });
+      return () => mm.revert();
+    },
+    { scope: sheet, dependencies: [paused], revertOnUpdate: true },
+  );
 
   const pickActive = (nextId: string) => {
     setActive(nextId);
-    writeUrlParams({ exhibit: nextId });
+    writeParams({ exhibit: nextId });
   };
 
   const visibleItems = useMemo(
@@ -876,25 +907,36 @@ export function Gallery() {
 
   return (
     <section
+      ref={sheet}
       id="gallery"
       aria-labelledby="gallery-title"
-      className="mx-2 my-5 rounded-sheet bg-paper text-paper-ink sm:mx-4 sm:my-6"
+      className="relative z-10 mx-2 rounded-sheet will-change-transform bg-paper text-paper-ink shadow-[0_-30px_80px_-30px_rgba(3,240,237,0.25)] sm:mx-4"
     >
-      <div className="mx-auto max-w-[84rem] px-4 py-12 sm:px-8 sm:py-16 lg:py-24">
-        <div className="grid min-w-0 gap-4 lg:grid-cols-12 lg:items-end lg:gap-6">
-          <div className="min-w-0 lg:col-span-7">
-            <p className="font-mono text-[0.8125rem] font-semibold text-paper-ink-2">
-              {t.gallery.kicker(GALLERY.length)}
+      <div className="mx-auto max-w-[88rem] px-5 py-20 sm:px-8 lg:py-32">
+        <div className="grid min-w-0 gap-8 lg:grid-cols-12 lg:items-end">
+          <div className="min-w-0 lg:col-span-8">
+            <p className="flex items-center gap-2.5 font-pixel text-[0.75rem] tracking-[0.06em] text-paper-ink-2 uppercase">
+              <span
+                aria-hidden="true"
+                className="size-2 rounded-[3px] bg-paper-ink"
+              />
+              <span data-scramble>
+                Gallery · same brief, two agents · {GALLERY.length} surfaces
+              </span>
             </p>
             <h2
               id="gallery-title"
-              className="mt-2 max-w-[18ch] display-wide text-[clamp(1.85rem,4vw,3.4rem)] leading-[1.03] text-balance text-paper-ink"
+              data-split
+              className="mt-6 max-w-[16ch] display-wide text-[clamp(2.25rem,5.4vw,4.75rem)] leading-[0.95] text-balance text-paper-ink"
             >
-              {t.gallery.title(GALLERY.length)}
+              Same brief. A different instinct.
             </h2>
           </div>
-          <p className="max-w-[48ch] text-[0.98rem] leading-relaxed text-paper-ink-2 sm:text-[1rem] lg:col-span-5">
-            {t.gallery.lede}
+          <p className="max-w-[46ch] text-[1rem] leading-relaxed text-paper-ink-2 lg:col-span-4">
+            Compare default agent output against Pixelcraft across{" "}
+            {GALLERY.length} real surfaces spanning SwiftUI, Jetpack Compose,
+            Flutter, Rust Ratatui, Tauri v2, Python marimo, Elixir LiveView,
+            MJML email, Typst PDF, Godot 4.5 HUD, and modern web frameworks.
           </p>
         </div>
 

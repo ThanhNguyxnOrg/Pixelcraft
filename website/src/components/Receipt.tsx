@@ -1,5 +1,3 @@
-import { motion, useReducedMotion } from "motion/react";
-import { useState } from "react";
 import { THIS_PAGE_DIRECTIONS } from "../data";
 import { EvidenceStamp, PixelFrame, Reveal, SectionHead } from "./pixel";
 
@@ -35,19 +33,13 @@ function Meter({
 }
 
 export function Receipt() {
-  const [activeId, setActiveId] = useState<string>("D");
-  const reducedMotion = useReducedMotion();
-  const active =
-    THIS_PAGE_DIRECTIONS.find((d) => d.id === activeId) ??
-    THIS_PAGE_DIRECTIONS[3];
-
   return (
     <section
       id="receipt"
       aria-labelledby="receipt-title"
       className="relative overflow-x-clip"
     >
-      <div className="mx-auto max-w-[88rem] px-4 py-16 sm:px-8 sm:py-24 lg:py-32">
+      <div className="mx-auto max-w-[88rem] px-5 py-24 sm:px-8 lg:py-36">
         <SectionHead
           id="receipt-title"
           kicker="pixelcraft-direction · applied here"
@@ -55,120 +47,84 @@ export function Receipt() {
         >
           <p>
             Four directions were sampled, each with the probability a typical
-            model would choose it. Select any candidate to compare its default
-            prior against its 7-axis score.
+            model would choose it. The likeliest lost first. The winner had the
+            lowest prior and the highest evidence-weighted score.
           </p>
         </SectionHead>
 
-        <ol className="mt-12 grid min-w-0 gap-4 sm:mt-14 md:grid-cols-2 xl:grid-cols-4">
-          {THIS_PAGE_DIRECTIONS.map((d, i) => {
-            const focused = d.id === active.id;
-            return (
-              <li key={d.id} className="relative min-w-0">
-                {focused ? (
-                  <motion.div
-                    layoutId={reducedMotion ? undefined : "receipt-glow"}
-                    aria-hidden="true"
-                    transition={
-                      reducedMotion
-                        ? { duration: 0 }
-                        : { type: "spring", stiffness: 360, damping: 32 }
-                    }
-                    className="pointer-events-none absolute -inset-4 -z-10 opacity-55 blur-2xl"
-                    style={{
-                      background:
-                        "radial-gradient(closest-side, color-mix(in oklab, var(--color-glow-cyan) 42%, transparent), transparent)",
-                    }}
-                  />
-                ) : null}
-                <Reveal delay={i * 0.06} className="h-full">
-                  <button
-                    type="button"
-                    aria-pressed={focused}
-                    onClick={() => setActiveId(d.id)}
-                    className="block h-full w-full cursor-pointer text-start"
-                  >
-                    <PixelFrame
-                      lit={focused}
-                      className="h-full"
-                      innerClassName={`flex flex-col p-5 sm:p-6 transition-colors motion-reduce:transition-none ${focused ? "bg-raised" : "hover:bg-white/[0.03]"}`}
-                    >
-                      <p className="flex items-center justify-between font-pixel text-[0.75rem] uppercase">
-                        <span
-                          className={
-                            d.won || focused ? "text-action" : "text-ink-faint"
-                          }
-                        >
-                          Direction {d.id}
+        <ol className="mt-16 grid gap-4 md:grid-cols-2 xl:grid-cols-4">
+          {THIS_PAGE_DIRECTIONS.map((d, i) => (
+            <li key={d.id} className="relative">
+              {d.won ? (
+                <div
+                  aria-hidden="true"
+                  className="absolute -inset-6 -z-10 opacity-50 blur-2xl"
+                  style={{
+                    background:
+                      "radial-gradient(closest-side, color-mix(in oklab, var(--color-glow-cyan) 40%, transparent), transparent)",
+                  }}
+                />
+              ) : null}
+              <Reveal delay={i * 0.06} className="h-full">
+                <PixelFrame
+                  lit={d.won}
+                  className="h-full"
+                  innerClassName={`flex flex-col p-6 ${d.won ? "bg-raised" : ""}`}
+                >
+                  <p className="flex items-center justify-between font-pixel text-[0.75rem] uppercase">
+                    <span className={d.won ? "text-action" : "text-ink-faint"}>
+                      Direction {d.id}
+                    </span>
+                    <span className={d.won ? "text-action" : "text-ink-faint"}>
+                      {d.won ? "Selected" : "Rejected"}
+                    </span>
+                  </p>
+                  <h3 className="mt-6 display-wide text-[1.625rem] leading-[1.02]">
+                    {d.name}
+                  </h3>
+                  <dl className="mt-8 grid gap-5">
+                    <div>
+                      <dt className="flex justify-between font-mono text-[0.75rem] text-ink-faint">
+                        <span>p(conventional)</span>
+                        <span className="text-ink tabular">
+                          {d.p.toFixed(2)}
                         </span>
-                        <span
-                          className={d.won ? "text-action" : "text-ink-faint"}
-                        >
-                          {d.won ? "Selected" : "Rejected"}
+                      </dt>
+                      <dd className="mt-2">
+                        <Meter value={d.p} max={1} tone="faint" />
+                      </dd>
+                    </div>
+                    <div>
+                      <dt className="flex justify-between font-mono text-[0.75rem] text-ink-faint">
+                        <span>score</span>
+                        <span className="text-ink tabular">
+                          <span data-count={d.score}>{d.score}</span> /{" "}
+                          {MAX_SCORE}
                         </span>
-                      </p>
-                      <h3 className="mt-5 display-wide text-[1.5rem] leading-[1.04]">
-                        {d.name}
-                      </h3>
-                      <dl className="mt-7 grid gap-4">
-                        <div>
-                          <dt className="flex justify-between font-mono text-[0.75rem] text-ink-faint">
-                            <span>p(conventional)</span>
-                            <span className="text-ink tabular">
-                              {d.p.toFixed(2)}
-                            </span>
-                          </dt>
-                          <dd className="mt-2">
-                            <Meter value={d.p} max={1} tone="faint" />
-                          </dd>
-                        </div>
-                        <div>
-                          <dt className="flex justify-between font-mono text-[0.75rem] text-ink-faint">
-                            <span>score</span>
-                            <span className="text-ink tabular">
-                              <span data-count={d.score}>{d.score}</span> /{" "}
-                              {MAX_SCORE}
-                            </span>
-                          </dt>
-                          <dd className="mt-2">
-                            <Meter
-                              value={d.score}
-                              max={MAX_SCORE}
-                              tone={d.won || focused ? "action" : "muted"}
-                            />
-                          </dd>
-                        </div>
-                      </dl>
-                      <p className="mt-7 border-t border-line pt-4 text-[0.9375rem] leading-relaxed text-ink-muted">
-                        {d.verdict}
-                      </p>
-                    </PixelFrame>
-                  </button>
-                </Reveal>
-              </li>
-            );
-          })}
+                      </dt>
+                      <dd className="mt-2">
+                        <Meter
+                          value={d.score}
+                          max={MAX_SCORE}
+                          tone={d.won ? "action" : "muted"}
+                        />
+                      </dd>
+                    </div>
+                  </dl>
+                  <p className="mt-8 border-t border-line pt-5 text-[0.9375rem] leading-relaxed text-ink-muted">
+                    {d.verdict}
+                  </p>
+                </PixelFrame>
+              </Reveal>
+            </li>
+          ))}
         </ol>
 
-        <div className="surface mt-6 flex flex-wrap items-center justify-between gap-4 rounded-tile px-5 py-4 font-mono text-[0.8125rem]">
-          <span className="text-ink">
-            <span className="text-action">Direction {active.id}</span> ·{" "}
-            {active.name}
-          </span>
-          <span className="text-ink-muted tabular">
-            Model prior {(active.p * 100).toFixed(0)}% · Evidence score{" "}
-            {active.score}/{MAX_SCORE} ·{" "}
-            <strong className={active.won ? "text-action" : "text-p0"}>
-              {active.won ? "SHIPPED" : "DISCARDED"}
-            </strong>
-          </span>
-        </div>
-
-        <dl className="mt-14 grid gap-x-10 gap-y-8 border-t border-line pt-10 sm:grid-cols-2 lg:grid-cols-4">
+        <dl className="mt-16 grid gap-x-10 gap-y-8 border-t border-line pt-10 sm:grid-cols-2 lg:grid-cols-4">
           {[
             [
               "Signature",
-              "The real mark assembles from muted pixels and morphs across four resolution steps.",
+              "The real mark assembles from muted pixels. A slow light sweep keeps the identity alive.",
             ],
             [
               "Type",
@@ -176,11 +132,11 @@ export function Receipt() {
             ],
             [
               "Light",
-              "Petrol ink, pale mint, a touch of orchid. The gallery gets its own quiet light table.",
+              "Petrol ink, pale mint, a touch of iris. The gallery gets its own quiet light table.",
             ],
             [
               "Motion",
-              "Assembly, spring tab indicators, magnetic targets, and pauseable loops. No scroll hijacking.",
+              "Assembly, comparison, then a deliberate sequence. No 3D, click-to-reveal content, or scroll hijacking.",
             ],
           ].map(([k, v]) => (
             <div key={k}>
