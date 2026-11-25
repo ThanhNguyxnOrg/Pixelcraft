@@ -22,8 +22,8 @@ function Step({
 }) {
   return (
     <fieldset className="min-w-0 border-0 p-0">
-      <legend className="mb-3.5 flex items-center gap-2.5 font-mono text-[0.8125rem] text-ink">
-        <span className="grid size-6 place-items-center rounded-full bg-action font-bold text-on-action tabular">
+      <legend className="mb-3 flex items-center gap-2.5 font-mono text-[0.8125rem] font-semibold text-ink">
+        <span className="grid size-6 shrink-0 place-items-center rounded-full bg-action font-bold text-on-action tabular">
           {n}
         </span>
         {title}
@@ -34,10 +34,10 @@ function Step({
 }
 
 const chip = (on: boolean) =>
-  `inline-flex min-h-10 items-center gap-2 rounded-full border px-3.5 font-mono text-[0.8125rem] whitespace-nowrap transition-colors duration-150 motion-reduce:transition-none ${
+  `inline-flex min-h-10 items-center gap-2 rounded-full border px-3.5 font-mono text-[0.8125rem] font-medium whitespace-nowrap transition-colors duration-150 motion-reduce:transition-none ${
     on
       ? "border-action bg-action text-on-action"
-      : "border-line text-ink hover:border-action hover:bg-panel"
+      : "border-line bg-void text-ink hover:border-action hover:bg-panel"
   }`;
 
 function Builder() {
@@ -75,8 +75,8 @@ function Builder() {
 
   return (
     <div className="surface-lit overflow-hidden rounded-card">
-      <div className="grid lg:grid-cols-12">
-        <div className="grid gap-8 p-6 sm:p-8 lg:col-span-7">
+      <div className="grid min-w-0 lg:grid-cols-12">
+        <div className="grid min-w-0 gap-7 p-5 sm:gap-8 sm:p-8 lg:col-span-7">
           <Step n={1} title="Target agent hosts">
             <div className="flex flex-wrap gap-2">
               {AGENT_TARGETS.map((t) => (
@@ -97,7 +97,7 @@ function Builder() {
             <div
               role="group"
               aria-label="Scope"
-              className="inline-flex rounded-full border border-line bg-void/70 p-1"
+              className="grid grid-cols-1 gap-1 rounded-tile border border-line bg-void p-1 sm:inline-flex"
             >
               {(
                 [
@@ -110,7 +110,7 @@ function Builder() {
                   type="button"
                   aria-pressed={scope === v}
                   onClick={() => setScope(v)}
-                  className={`min-h-10 rounded-full px-4 font-mono text-[0.8125rem] transition-colors motion-reduce:transition-none ${
+                  className={`min-h-10 rounded-ctl px-4 font-mono text-[0.8125rem] font-medium transition-colors motion-reduce:transition-none ${
                     scope === v
                       ? "bg-action text-on-action"
                       : "text-ink hover:bg-panel"
@@ -126,7 +126,7 @@ function Builder() {
             <div
               role="group"
               aria-label="Skill selection"
-              className="inline-flex rounded-full border border-line bg-void/70 p-1"
+              className="inline-flex flex-wrap gap-1 rounded-tile border border-line bg-void p-1"
             >
               {(
                 [
@@ -139,7 +139,7 @@ function Builder() {
                   type="button"
                   aria-pressed={mode === v}
                   onClick={() => setMode(v)}
-                  className={`min-h-10 rounded-full px-4 font-mono text-[0.8125rem] transition-colors motion-reduce:transition-none ${
+                  className={`min-h-10 rounded-ctl px-4 font-mono text-[0.8125rem] font-medium transition-colors motion-reduce:transition-none ${
                     mode === v
                       ? "bg-action text-on-action"
                       : "text-ink hover:bg-panel"
@@ -150,9 +150,9 @@ function Builder() {
               ))}
             </div>
             {mode === "pick" ? (
-              <div className="mt-5 grid gap-4">
+              <div className="mt-5 grid min-w-0 gap-4">
                 {CATEGORIES.map((c) => (
-                  <div key={c.id}>
+                  <div key={c.id} className="min-w-0">
                     <p className="mb-2 font-mono text-[0.75rem] text-ink-faint">
                       {c.id}
                     </p>
@@ -169,10 +169,10 @@ function Builder() {
                             onClick={() => setPicked(toggle(picked, s.name))}
                             className={`inline-flex min-h-9 items-center gap-1.5 rounded-full border px-3 font-mono text-[0.75rem] transition-colors disabled:cursor-default motion-reduce:transition-none ${
                               locked
-                                ? "border-line bg-raised text-ink-muted"
+                                ? "border-line bg-panel text-ink-muted"
                                 : on
                                   ? "border-action bg-action text-on-action"
-                                  : "border-line text-ink hover:border-action hover:bg-panel"
+                                  : "border-line bg-void text-ink hover:border-action hover:bg-panel"
                             }`}
                           >
                             {on ? <PixelIcon name="check" size={10} /> : null}
@@ -192,7 +192,7 @@ function Builder() {
           </Step>
 
           <Step n={4} title="CLI flags">
-            <div className="grid gap-3 sm:grid-cols-3">
+            <div className="grid min-w-0 gap-3 sm:grid-cols-3">
               {(
                 [
                   [
@@ -205,29 +205,31 @@ function Builder() {
                     force,
                     setForce,
                     "--force",
-                    "Replace explicitly requested existing skill folders (auto-added core skills stay protected).",
+                    "Replace explicitly requested existing skill folders.",
                   ],
                   [
                     docsMcp,
                     setDocsMcp,
                     "--docs-mcp",
-                    "Print optional Context7 setup guidance without editing host configs.",
+                    "Print optional Context7 setup guidance.",
                   ],
                 ] as const
               ).map(([v, set, flag, hint]) => (
                 <label
                   key={flag}
-                  className="surface flex cursor-pointer items-start gap-2.5 rounded-tile p-3"
+                  className="surface flex min-h-12 min-w-0 cursor-pointer items-start gap-2.5 rounded-tile p-3"
                 >
                   <input
                     type="checkbox"
                     checked={v}
                     onChange={(e) => set(e.target.checked)}
-                    className="mt-1 size-4 accent-[var(--color-action)]"
+                    className="mt-0.5 size-6 shrink-0 accent-[var(--color-action)]"
                   />
-                  <span>
-                    <code className="text-[0.8125rem] text-ink">{flag}</code>
-                    <span className="mt-0.5 block text-[0.75rem] leading-snug text-ink-faint">
+                  <span className="min-w-0">
+                    <code className="text-[0.8125rem] font-semibold text-ink">
+                      {flag}
+                    </code>
+                    <span className="mt-0.5 block text-[0.75rem] leading-snug text-ink-muted">
                       {hint}
                     </span>
                   </span>
@@ -237,7 +239,7 @@ function Builder() {
           </Step>
         </div>
 
-        <div className="border-t border-line bg-void/85 p-6 sm:p-8 lg:col-span-5 lg:border-t-0 lg:border-s">
+        <div className="min-w-0 border-t border-line bg-void p-5 sm:p-8 lg:col-span-5 lg:border-t-0 lg:border-s">
           <p className="font-mono text-[0.8125rem] font-semibold text-action">
             Generated command
           </p>
@@ -259,18 +261,18 @@ function Builder() {
               : "Choose at least one agent to generate a command."}
           </p>
 
-          <p className="mt-7 font-mono text-[0.75rem] text-ink-faint">
+          <p className="mt-6 font-mono text-[0.75rem] font-medium text-ink-faint">
             Destination paths
           </p>
-          <ul className="mt-3 grid gap-2.5">
+          <ul className="mt-3 grid min-w-0 gap-2.5">
             {targets.length === 0 ? (
               <li className="text-[0.875rem] text-ink-faint">
                 Nothing selected.
               </li>
             ) : null}
             {targets.map((t) => (
-              <li key={t.id} className="surface rounded-tile px-4 py-3">
-                <p className="text-[0.875rem] font-medium text-ink">
+              <li key={t.id} className="surface min-w-0 rounded-tile px-4 py-3">
+                <p className="text-[0.875rem] font-semibold text-ink">
                   {t.label}
                 </p>
                 <code className="mt-1 block text-[0.75rem] break-all text-action">
@@ -306,7 +308,7 @@ export function Install() {
       aria-labelledby="install-title"
       className="border-b border-line bg-void"
     >
-      <div className="mx-auto max-w-[84rem] px-5 py-20 sm:px-8 lg:py-28">
+      <div className="mx-auto max-w-[84rem] px-4 py-16 sm:px-8 sm:py-20 lg:py-28">
         <SectionHead
           id="install-title"
           meta="Zero-dependency installers"
@@ -320,11 +322,11 @@ export function Install() {
           </p>
         </SectionHead>
 
-        <div className="mt-12">
+        <div className="mt-10 sm:mt-12">
           <Builder />
         </div>
 
-        <div className="mt-16 grid gap-10 lg:grid-cols-12">
+        <div className="mt-12 grid min-w-0 gap-8 sm:mt-16 sm:gap-10 lg:grid-cols-12">
           <div className="min-w-0 lg:col-span-8">
             <h3 className="mb-4 font-mono text-[0.8125rem] font-semibold text-ink">
               Other install methods
@@ -334,26 +336,26 @@ export function Install() {
               value={method}
               onChange={setMethod}
               label="Install method"
-              listClassName="flex flex-wrap gap-1.5"
+              listClassName="rail-scroll flex gap-1.5 pb-1 sm:flex-wrap sm:pb-0"
               tabClassName={(selected) =>
-                `min-h-10 rounded-full border px-3.5 font-mono text-[0.8125rem] transition-colors duration-150 motion-reduce:transition-none ${
+                `min-h-10 shrink-0 rounded-full border px-3.5 font-mono text-[0.8125rem] font-medium transition-colors duration-150 motion-reduce:transition-none ${
                   selected
                     ? "border-action bg-action text-on-action"
-                    : "border-line text-ink-muted hover:border-action hover:text-ink"
+                    : "border-line bg-panel text-ink-muted hover:border-action hover:text-ink"
                 }`
               }
               renderTab={(m) => m.label}
               renderPanel={(m) => (
-                <div className="pt-5">
+                <div className="pt-4 sm:pt-5">
                   <CopyCommand lines={m.lines} />
-                  <p className="mt-3 text-[0.9375rem] text-ink-muted">
+                  <p className="mt-3 text-[0.9375rem] leading-relaxed text-ink-muted">
                     {m.note}
                   </p>
                 </div>
               )}
             />
           </div>
-          <div className="lg:col-span-4">
+          <div className="min-w-0 lg:col-span-4">
             <h3 className="font-mono text-[0.8125rem] font-semibold text-ink">
               Documented agent hosts · {AGENTS.length}
             </h3>
@@ -361,7 +363,7 @@ export function Install() {
               {AGENTS.map((a) => (
                 <li
                   key={a}
-                  className="surface rounded-full px-3 py-1 font-mono text-[0.75rem] text-ink-muted"
+                  className="surface rounded-full px-3 py-1.5 font-mono text-[0.75rem] text-ink-muted"
                 >
                   {a}
                 </li>

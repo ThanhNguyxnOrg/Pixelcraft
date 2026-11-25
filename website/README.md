@@ -23,9 +23,9 @@ The live site is deployed at https://thanhnguyxnorg.github.io/Pixelcraft/. [`.gi
 
 ## Architecture and craft choices
 
-The showcase is structured as **7 focused, instant-render sections**—Hero, Multi-Stack Proof Gallery, Process & Authority Order, Searchable Skill Index, Tooling & QA CLIs, Interactive Installer Builder, and FAQ—without external animation runtimes (`motion` / `gsap`), autonomous background loops, or video payloads:
+The showcase combines an interactive sampled `PixelLogo` masthead, GSAP (`SplitText`, `ScrollTrigger`) and `motion` spring choreography, interactive `MotionDemos` studies, the **22-exhibit** Multi-Stack Proof Gallery (with `Mobile 390` / `Desktop 1440` live preview), Loop, Authority Order, Direction Receipt, QA Tooling, Searchable Skill Index, Floor, FAQ, Installer Builder, and a mobile bottom thumb-zone dock:
 
-- **Visible at frame 0:** Every section renders immediately in HTML/CSS with zero opacity-0 scroll-reveal traps and native browser scrolling.
+- **Accessible choreography & WCAG 2.2.2 motion pause:** Every GSAP timeline, `motion` spring layout transition, and `PixelLogo` particle canvas honors `prefers-reduced-motion: reduce`, pauses automatically when scrolled off-screen or hidden, and stops immediately via the persistent `Pause page motion` control.
 - **22 multi-stack proof exhibits:** Paired before/after HTML fixtures under `public/gallery/` span five ecosystems with direct `Open demo ↗` standalone views and inspectable Prompt & Code tabs:
   - **Mobile (`4`):** `swiftui` (SwiftUI Liquid Glass), `compose` (Jetpack Compose M3E + Wear OS), `flutter` (Flutter Impeller), `mobile` (SwiftUI Dynamic Type `AX3`)
   - **TUI & Desktop (`3`):** `kubetrace` (Rust Ratatui span waterfall), `tui` (Rust Ratatui `80×24 NO_COLOR=1`), `desktop` (Tauri v2 + Rust encrypted workspace)

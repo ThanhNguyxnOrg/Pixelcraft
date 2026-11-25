@@ -43,6 +43,9 @@ export default defineConfig({
       output: {
         manualChunks(id) {
           if (id.includes("node_modules/react")) return "vendor";
+          if (id.includes("node_modules/motion")) return "motion";
+          if (id.includes("node_modules/gsap") || id.includes("@gsap/react"))
+            return "choreography";
           if (id.includes("src/generated/") || id.includes("src/data.ts"))
             return "showcase-data";
         },

@@ -371,6 +371,7 @@ export type GalleryItem = {
   title: string;
   ecosystem: Ecosystem;
   stackShort: string;
+  stack?: string;
   stackLabel: string;
   mode: "Persuade" | "Operate" | "Communicate";
   palette: [string, string, string, string];
@@ -414,6 +415,7 @@ export const GALLERY: GalleryItem[] = [
     title: "Kestrel Treasury Vault",
     ecosystem: "Mobile",
     stackShort: "SwiftUI · Liquid Glass",
+    stack: "SwiftUI · Liquid Glass",
     stackLabel: "Swift · SwiftUI iOS 26",
     mode: "Operate",
     palette: ["#EBE7DF", "#14181F", "#0D5C46", "#A6782B"],
@@ -467,6 +469,7 @@ LabeledContent("Recipient IBAN") {
     title: "KubeTrace Multiplexer",
     ecosystem: "Desktop & TUI",
     stackShort: "TUI · Ratatui Trace",
+    stack: "TUI · Ratatui Trace",
     stackLabel: "Rust · Ratatui Span Waterfall",
     mode: "Operate",
     palette: ["#0A0D10", "#F5A623", "#38BDF8", "#34D399"],
@@ -513,6 +516,7 @@ let badge = match pod.health {
     title: "Veritas RAG Eval",
     ecosystem: "AI & Data",
     stackShort: "Python · marimo",
+    stack: "Python · marimo",
     stackLabel: "Python 3.12 · marimo Reactive DAG",
     mode: "Operate",
     palette: ["#F6F5EF", "#111827", "#0F766E", "#B45309"],
@@ -563,6 +567,7 @@ def evaluate_claims(pipeline, threshold):
     title: "Ampere EV & Solar",
     ecosystem: "Mobile",
     stackShort: "Flutter · Impeller",
+    stack: "Flutter · Impeller",
     stackLabel: "Dart · Flutter Adaptive Canvas",
     mode: "Operate",
     palette: ["#E4E2DC", "#191B1E", "#DF4722", "#197442"],
@@ -612,6 +617,7 @@ Semantics(
     title: "Folio Local Studio",
     ecosystem: "Desktop & TUI",
     stackShort: "Desktop · Tauri v2",
+    stack: "Desktop · Tauri v2",
     stackLabel: "Rust + Tauri v2 Local-First",
     mode: "Operate",
     palette: ["#DCE1E7", "#FCFBF8", "#17191C", "#2C3A8C"],
@@ -660,6 +666,7 @@ pub async fn query_backlinks(
     title: "MetroLine Pass & Watch",
     ecosystem: "Mobile",
     stackShort: "Compose · M3E + Wear",
+    stack: "Compose · M3E + Wear",
     stackLabel: "Kotlin · Jetpack Compose M3E",
     mode: "Operate",
     palette: ["#ECEEE7", "#111C16", "#17633B", "#C86D00"],
@@ -708,6 +715,7 @@ fun CarriageRow(car: Carriage, modifier: Modifier = Modifier) {
     title: "Osteria Ferro Floor Plan",
     ecosystem: "Web & SSR",
     stackShort: "Elixir · LiveView",
+    stack: "Elixir · LiveView",
     stackLabel: "Elixir · Phoenix LiveView SSR",
     mode: "Operate",
     palette: ["#F4EDE1", "#231B15", "#3B5334", "#B54826"],
@@ -755,6 +763,7 @@ end`,
     title: "Helvetic Air Gate Slip",
     ecosystem: "Channels & HUD",
     stackShort: "Email · MJML",
+    stack: "Email · MJML",
     stackLabel: "MJML · Dark Mode & Plaintext Email",
     mode: "Communicate",
     palette: ["#FFFFFF", "#0B1F3A", "#D92D20", "#157347"],
@@ -803,6 +812,7 @@ end`,
     title: "Atelier Nord Fee Dossier",
     ecosystem: "Channels & HUD",
     stackShort: "Print · Typst A4",
+    stack: "Print · Typst A4",
     stackLabel: "Typst 0.13 + @page Print CSS",
     mode: "Communicate",
     palette: ["#FDFCF9", "#141413", "#1E3A5F", "#57534E"],
@@ -847,6 +857,7 @@ end`,
     title: "AEGIS-07 Hangar HUD",
     ecosystem: "Channels & HUD",
     stackShort: "Game · Godot 4.5",
+    stack: "Game · Godot 4.5",
     stackLabel: "Godot 4.5 · Control & FocusTree",
     mode: "Operate",
     palette: ["#0B0F13", "#F59E0B", "#22D3EE", "#FB7185"],
@@ -892,6 +903,7 @@ mount_btn.focus_mode = Control.FOCUS_NONE`,
     title: "Keel Edge Console",
     ecosystem: "Web & SSR",
     stackShort: "Web · Next.js 15",
+    stack: "Web · Next.js 15",
     stackLabel: "Next.js 15 · App Router",
     mode: "Persuade",
     palette: ["#08090B", "#C8F53B", "#151921", "#E6EDF3"],
@@ -938,6 +950,7 @@ mount_btn.focus_mode = Control.FOCUS_NONE`,
     title: "SORI Audio Flagship",
     ecosystem: "Web & SSR",
     stackShort: "Web · Nuxt 4",
+    stack: "Web · Nuxt 4",
     stackLabel: "Vue 3.5 · Nuxt 4 Commerce",
     mode: "Persuade",
     palette: ["#1538D8", "#F9F9FB", "#111318", "#C8522A"],
@@ -982,6 +995,7 @@ const { data: plinth } = await useAsyncData(() => fetchPlinth(finish.value), { w
     title: "Aomori Thermal Stay",
     ecosystem: "Web & SSR",
     stackShort: "Web · SvelteKit 2",
+    stack: "Web · SvelteKit 2",
     stackLabel: "Svelte 5 Runes · SvelteKit 2",
     mode: "Operate",
     palette: ["#151D26", "#EDE6DA", "#C46D45", "#241C17"],
@@ -1028,6 +1042,7 @@ const { data: plinth } = await useAsyncData(() => fetchPlinth(finish.value), { w
     title: "Vektor Avionics Board",
     ecosystem: "AI & Data",
     stackShort: "Dataviz · SolidJS",
+    stack: "Dataviz · SolidJS",
     stackLabel: "SolidJS · Canvas Oscilloscope",
     mode: "Operate",
     palette: ["#070A0F", "#38BDF8", "#F59E0B", "#10B981"],
@@ -1073,6 +1088,7 @@ createEffect(() => {
     title: "Cadence Rhythm Lab",
     ecosystem: "Web & SSR",
     stackShort: "Web · Angular Signals",
+    stack: "Web · Angular Signals",
     stackLabel: "Angular 19 · Signals & Web Audio",
     mode: "Operate",
     palette: ["#F7F3E8", "#1847E8", "#F4B400", "#E03B24"],
@@ -1115,6 +1131,7 @@ readonly stepMs = computed(() => Math.round(60_000 / this.bpm() / 4));`,
     title: "SOLARIS Issue 09",
     ecosystem: "Web & SSR",
     stackShort: "Web · Lit Elements",
+    stack: "Web · Lit Elements",
     stackLabel: "Lit · Shadow DOM Web Components",
     mode: "Communicate",
     palette: ["#0B0B0D", "#C81E2B", "#FAF9F6", "#18181B"],
@@ -1159,6 +1176,7 @@ export class SolarisReaderBar extends LitElement {
     title: "Halden Roasters",
     ecosystem: "Web & SSR",
     stackShort: "Web · HTML/CSS",
+    stack: "Web · HTML/CSS",
     stackLabel: "HTML/CSS · Baseline 2026",
     mode: "Persuade",
     palette: ["#161311", "#D97724", "#F4EFE6", "#8C7B6B"],
@@ -1209,6 +1227,7 @@ export class SolarisReaderBar extends LitElement {
     title: "Marlow Clinic",
     ecosystem: "Web & SSR",
     stackShort: "Web · WCAG Form",
+    stack: "Web · WCAG Form",
     stackLabel: "Semantic HTML · WCAG 2.2 AA",
     mode: "Operate",
     palette: ["#F7F6F2", "#1B2A2F", "#1D6B52", "#B42318"],
@@ -1261,6 +1280,7 @@ export class SolarisReaderBar extends LitElement {
     title: "Northgrid Demand",
     ecosystem: "AI & Data",
     stackShort: "Dataviz · SVG",
+    stack: "Dataviz · SVG",
     stackLabel: "Dataviz · Linear Scales & Tables",
     mode: "Operate",
     palette: ["#F4F3EE", "#14181D", "#0F62FE", "#B45309"],
@@ -1307,6 +1327,7 @@ export class SolarisReaderBar extends LitElement {
     title: "Kestrel Deploy",
     ecosystem: "Desktop & TUI",
     stackShort: "TUI · Ratatui 80×24",
+    stack: "TUI · Ratatui 80×24",
     stackLabel: "Rust · Ratatui 0.29 NO_COLOR",
     mode: "Operate",
     palette: ["#0D1117", "#58A6FF", "#D29922", "#F85149"],
@@ -1362,6 +1383,7 @@ let table = Table::new(rows, [
     title: "Railward Transit",
     ecosystem: "Mobile",
     stackShort: "SwiftUI · Dynamic Type",
+    stack: "SwiftUI · Dynamic Type",
     stackLabel: "Swift · SwiftUI iOS (AX3 Reflow)",
     mode: "Operate",
     palette: ["#F5F5F7", "#1C1C1E", "#0066CC", "#248A3D"],
@@ -1415,6 +1437,7 @@ ViewThatFits(in: .horizontal) {
     title: "Northern Ledger",
     ecosystem: "Channels & HUD",
     stackShort: "Doc · Typst + MJML",
+    stack: "Doc · Typst + MJML",
     stackLabel: "Typst PDF/UA + MJML Statement",
     mode: "Communicate",
     palette: ["#FAF9F6", "#18181B", "#1D4ED8", "#475569"],
@@ -1819,4 +1842,87 @@ export const FAQ: { q: string; a: string }[] = [
     q: "What is the license?",
     a: `${repoMeta.license}. Current version: ${VERSION}.`,
   },
+];
+
+export const STACKS: string[] = repoMeta.stacks;
+
+export type Chapter = { res: number; title: string; body: string };
+
+export const THESIS: Chapter[] = [
+  {
+    res: 1,
+    title: "The average.",
+    body: "Models have seen the same landing pages thousands of times. Ask for a design and you get their mean: a centered hero, a gradient, three cards. At one pixel, every logo is this color.",
+  },
+  {
+    res: 4,
+    title: "Structure before style.",
+    body: "Pixelcraft plans before it paints. It maps the repository, scores the stack with a weighted matrix, and classifies every fact in the brief as observed, assumed, or unknown.",
+  },
+  {
+    res: 16,
+    title: "Then, divergence.",
+    body: "Three to five far-apart directions, each with the probability a typical model would pick it. They are scored against evidence, and the losers’ reasons are logged. The likely one often loses.",
+  },
+  {
+    res: 512,
+    title: "Detail you can verify.",
+    body: "The floor is applied while building, not after. Findings are labeled rendered, static, model-judgment, not-checked, or waived, so a page that compiles is never mistaken for one that was inspected.",
+  },
+];
+
+export type Finding = {
+  rule: string;
+  severity: "P0" | "P1" | "P2" | "P3";
+  target: string;
+  fix: string;
+};
+
+export const SPECIMEN_FINDINGS: Finding[] = [
+  {
+    rule: "outline-removed",
+    severity: "P0",
+    target: "CTA button",
+    fix: "Restore a visible :focus-visible outline.",
+  },
+  {
+    rule: "purple-blue-gradient",
+    severity: "P2",
+    target: "hero background",
+    fix: "Use color with a physical or symbolic basis.",
+  },
+  {
+    rule: "generic-copy",
+    severity: "P2",
+    target: "headline",
+    fix: "Make a subject-specific claim with evidence.",
+  },
+  {
+    rule: "emoji-as-icon",
+    severity: "P2",
+    target: "feature icons",
+    fix: "Use one coherent icon system, or text.",
+  },
+  {
+    rule: "centered-hero-two-ctas",
+    severity: "P3",
+    target: "hero layout",
+    fix: "Order hierarchy by the user’s decision.",
+  },
+  {
+    rule: "rounded-2xl-repetition",
+    severity: "P3",
+    target: "feature cards",
+    fix: "Derive radius from component semantics.",
+  },
+];
+
+export const SCAN_DISCLAIMER =
+  "A zero score means only that these known fingerprints were not detected; zero findings is not evidence of good design.";
+
+export const SHOOT_BREAKPOINTS = [
+  { w: 320, h: 568, label: "compact phone" },
+  { w: 390, h: 844, label: "phone" },
+  { w: 768, h: 1024, label: "tablet" },
+  { w: 1440, h: 900, label: "desktop" },
 ];

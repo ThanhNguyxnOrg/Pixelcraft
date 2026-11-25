@@ -10,11 +10,25 @@ import { PixelIcon, SectionHead } from "./pixel";
 
 type Filter = Category | "All";
 
+/** Extracts the concise lead capability sentence so collapsed rows scan cleanly instead of dumping raw YAML trigger lists. */
+function leadSummary(purpose: string): string {
+  const idx = purpose.search(/\s+(?:Use when|Use for|Triggers on)\b/i);
+  const head = idx > 0 ? purpose.slice(0, idx) : purpose;
+  if (head.length <= 160) return head;
+  const dot = head.indexOf(". ");
+  if (dot > 24 && dot <= 170) return head.slice(0, dot + 1);
+  const comma = head.lastIndexOf(",", 155);
+  if (comma > 60) return `${head.slice(0, comma)}.`;
+  const space = head.lastIndexOf(" ", 155);
+  return `${head.slice(0, space > 40 ? space : 152)}…`;
+}
+
 export function SkillIndex() {
   const [query, setQuery] = useState("");
   const [filter, setFilter] = useState<Filter>("All");
   const [lang, setLang] = useState<string>("All");
   const [open, setOpen] = useState<string | null>(null);
+  const [showAllMobile, setShowAllMobile] = useState(false);
   const q = useDeferredValue(query.trim().toLowerCase());
 
   const activeLangTerms = useMemo(
@@ -52,13 +66,15 @@ export function SkillIndex() {
     setLang("All");
   };
 
+  const isFiltered = Boolean(q) || filter !== "All" || lang !== "All";
+
   return (
     <section
       id="skills"
       aria-labelledby="skills-title"
       className="border-b border-line bg-void"
     >
-      <div className="mx-auto max-w-[84rem] px-5 py-20 sm:px-8 lg:py-28">
+      <div className="mx-auto max-w-[84rem] px-4 py-16 sm:px-8 sm:py-20 lg:py-28">
         <SectionHead
           id="skills-title"
           meta={`${SKILLS.length} skills · self-contained folders`}
@@ -71,11 +87,11 @@ export function SkillIndex() {
           </p>
         </SectionHead>
 
-        <div className="mt-12 grid gap-5 lg:grid-cols-12 lg:items-end">
-          <div className="lg:col-span-5">
+        <div className="mt-10 grid min-w-0 gap-5 sm:mt-12 lg:grid-cols-12 lg:items-end">
+          <div className="min-w-0 lg:col-span-5">
             <label
               htmlFor="skill-search"
-              className="font-mono text-[0.8125rem] text-ink-muted"
+              className="font-mono text-[0.8125rem] font-medium text-ink-muted"
             >
               Search skills, frameworks, or scripts
             </label>
@@ -83,17 +99,17 @@ export function SkillIndex() {
               <PixelIcon
                 name="search"
                 size={14}
-                className="ms-3.5 text-ink-faint"
+                className="ms-4 text-ink-faint"
               />
               <input
                 id="skill-search"
                 type="search"
                 value={query}
                 onChange={(e) => setQuery(e.target.value)}
-                placeholder="e.g. ratatui, swiftui, filament, typst, wcag"
+                placeholder="e.g. ratatui, swiftui, compose, typst, wcag"
                 autoComplete="off"
                 spellCheck={false}
-                className="min-h-11 w-full rounded-full bg-transparent px-3 font-mono text-[0.9375rem] text-ink placeholder:text-ink-faint focus-visible:outline-2 focus-visible:outline-offset-[-2px] focus-visible:outline-action"
+                className="min-h-11 w-full min-w-0 rounded-full bg-transparent px-3 font-mono text-[0.9375rem] text-ink placeholder:text-ink-faint focus-visible:outline-2 focus-visible:outline-offset-[-2px] focus-visible:outline-action"
               />
               {query ? (
                 <button
@@ -108,11 +124,11 @@ export function SkillIndex() {
             </div>
           </div>
 
-          <fieldset className="border-0 p-0 lg:col-span-7">
-            <legend className="mb-2 font-mono text-[0.75rem] text-ink-faint">
+          <fieldset className="min-w-0 border-0 p-0 lg:col-span-7">
+            <legend className="mb-2 font-mono text-[0.75rem] font-medium text-ink-faint">
               Filter by layer
             </legend>
-            <div className="flex flex-wrap gap-2">
+            <div className="rail-scroll flex items-center gap-2 pb-1 sm:flex-wrap sm:pb-0">
               {(["All", ...CATEGORIES.map((c) => c.id)] as Filter[]).map(
                 (c) => {
                   const selected = filter === c;
@@ -122,10 +138,10 @@ export function SkillIndex() {
                       type="button"
                       aria-pressed={selected}
                       onClick={() => setFilter(c)}
-                      className={`inline-flex min-h-10 items-center gap-2 rounded-full border px-3.5 font-mono text-[0.8125rem] transition-colors duration-150 motion-reduce:transition-none ${
+                      className={`inline-flex min-h-10 shrink-0 items-center gap-2 rounded-full border px-3.5 font-mono text-[0.8125rem] font-medium transition-colors duration-150 motion-reduce:transition-none ${
                         selected
                           ? "border-action bg-action text-on-action"
-                          : "border-line text-ink hover:border-action hover:bg-panel"
+                          : "border-line bg-panel text-ink hover:border-action"
                       }`}
                     >
                       {c}
@@ -142,11 +158,11 @@ export function SkillIndex() {
           </fieldset>
         </div>
 
-        <fieldset className="mt-5 border-0 p-0">
-          <legend className="mb-2 font-mono text-[0.75rem] text-ink-faint">
+        <fieldset className="mt-4 min-w-0 border-0 p-0 sm:mt-5">
+          <legend className="mb-2 font-mono text-[0.75rem] font-medium text-ink-faint">
             Filter by language ecosystem
           </legend>
-          <div className="flex flex-wrap gap-1.5">
+          <div className="rail-scroll flex items-center gap-1.5 pb-1 sm:flex-wrap sm:pb-0">
             {LANGUAGE_FILTERS.map((item) => {
               const selected = lang === item.id;
               return (
@@ -155,10 +171,10 @@ export function SkillIndex() {
                   type="button"
                   aria-pressed={selected}
                   onClick={() => setLang(item.id)}
-                  className={`min-h-9 rounded-full border px-3 font-mono text-[0.75rem] transition-colors duration-150 motion-reduce:transition-none ${
+                  className={`min-h-9 shrink-0 rounded-full border px-3 font-mono text-[0.75rem] font-medium transition-colors duration-150 motion-reduce:transition-none ${
                     selected
                       ? "border-action bg-raised text-action"
-                      : "border-line/80 text-ink-muted hover:border-action hover:text-ink"
+                      : "border-line bg-deep text-ink-muted hover:border-action hover:text-ink"
                   }`}
                 >
                   {item.label}
@@ -169,7 +185,7 @@ export function SkillIndex() {
         </fieldset>
 
         <p
-          className="mt-8 font-mono text-[0.8125rem] text-ink-faint tabular"
+          className="mt-7 font-mono text-[0.8125rem] text-ink-faint tabular"
           aria-live="polite"
         >
           {rows.length === SKILLS.length
@@ -181,30 +197,35 @@ export function SkillIndex() {
         </p>
 
         <ul className="mt-3 border-t border-line-strong">
-          {rows.map((s) => {
+          {rows.map((s, idx) => {
             const expanded = open === s.name;
             const panelId = `refs-${s.name}`;
+            const hiddenOnMobile =
+              !isFiltered && !showAllMobile && idx >= 8 && !expanded;
             return (
-              <li key={s.name} className="border-b border-line">
+              <li
+                key={s.name}
+                className={`${hiddenOnMobile ? "hidden sm:block" : "block"} border-b border-line`}
+              >
                 <button
                   type="button"
                   aria-expanded={expanded}
                   aria-controls={panelId}
                   onClick={() => setOpen(expanded ? null : s.name)}
-                  className="group grid w-full grid-cols-[1fr_auto] items-baseline gap-x-6 gap-y-2 rounded-tile py-4 text-start transition-colors hover:bg-panel/60 aria-expanded:bg-panel/70 sm:px-4 lg:grid-cols-[15rem_1fr_8rem_auto] motion-reduce:transition-none"
+                  className="group grid w-full min-w-0 grid-cols-[1fr_auto] items-center gap-x-4 gap-y-1.5 rounded-tile px-2 py-3.5 text-start transition-colors hover:bg-panel aria-expanded:bg-panel sm:px-4 sm:py-4 lg:grid-cols-[15.5rem_1fr_9rem_auto] lg:items-baseline lg:gap-x-6 motion-reduce:transition-none"
                 >
-                  <code className="text-[0.9375rem] font-medium text-ink group-hover:text-action">
+                  <code className="min-w-0 text-[0.9375rem] font-semibold break-words text-ink group-hover:text-action">
                     {s.name}
                   </code>
-                  <span className="row-start-2 text-[0.9375rem] leading-relaxed text-ink-muted lg:row-start-auto">
-                    {s.purpose}
+                  <span className="col-span-2 row-start-2 text-[0.9375rem] leading-relaxed text-ink-muted lg:col-span-1 lg:row-start-auto">
+                    {leadSummary(s.purpose)}
                   </span>
                   <span className="hidden font-mono text-[0.75rem] text-ink-faint tabular lg:block">
                     {s.references.length} refs
                     {s.scripts ? ` · ${s.scripts.length} scripts` : ""}
                   </span>
-                  <span className="col-start-2 row-start-1 flex items-center gap-2.5 font-mono text-[0.75rem] text-ink-faint lg:col-start-auto lg:row-start-auto">
-                    <span className="hidden uppercase xl:inline">
+                  <span className="col-start-2 row-start-1 flex items-center gap-2 font-mono text-[0.75rem] text-ink-faint lg:col-start-auto lg:row-start-auto">
+                    <span className="rounded-full border border-line bg-void px-2 py-0.5 text-[0.6875rem] uppercase">
                       {s.category}
                     </span>
                     <PixelIcon
@@ -217,17 +238,26 @@ export function SkillIndex() {
                 {expanded ? (
                   <div
                     id={panelId}
-                    className="grid gap-4 px-2 pb-5 sm:px-4 lg:grid-cols-[15rem_1fr]"
+                    className="grid min-w-0 gap-4 px-2 pt-1 pb-5 sm:px-4 lg:grid-cols-[15.5rem_1fr] lg:gap-6"
                   >
-                    <p className="font-mono text-[0.75rem] text-ink-faint">
-                      skills/{s.name}/
-                    </p>
                     <div>
+                      <p className="font-mono text-[0.75rem] text-action">
+                        skills/{s.name}/
+                      </p>
+                      <p className="mt-1 font-mono text-[0.75rem] text-ink-faint tabular">
+                        {s.references.length} references
+                        {s.scripts ? ` · ${s.scripts.length} CLI scripts` : ""}
+                      </p>
+                    </div>
+                    <div className="min-w-0">
+                      <p className="mb-3 text-[0.875rem] leading-relaxed text-ink-muted">
+                        {s.purpose}
+                      </p>
                       <ul className="flex flex-wrap gap-1.5">
                         {s.references.map((r) => (
                           <li key={r}>
                             <code
-                              className={`inline-block rounded-full border px-2.5 py-0.5 text-[0.75rem] ${
+                              className={`inline-block rounded-full border bg-void px-2.5 py-0.5 text-[0.75rem] ${
                                 q && r.toLowerCase().includes(q)
                                   ? "border-action text-action"
                                   : "border-line text-ink-muted"
@@ -239,7 +269,7 @@ export function SkillIndex() {
                         ))}
                         {s.scripts?.map((r) => (
                           <li key={r}>
-                            <code className="inline-block rounded-full border border-static px-2.5 py-0.5 text-[0.75rem] text-static">
+                            <code className="inline-block rounded-full border border-static bg-void px-2.5 py-0.5 text-[0.75rem] text-static">
                               scripts/{r}
                             </code>
                           </li>
@@ -247,7 +277,7 @@ export function SkillIndex() {
                       </ul>
                       <a
                         href={`${REPO_URL}/tree/main/skills/${s.name}`}
-                        className="mt-4 inline-flex items-center gap-1.5 font-mono text-[0.8125rem] text-ink underline decoration-line-strong underline-offset-4 hover:decoration-action"
+                        className="mt-4 inline-flex min-h-10 items-center gap-1.5 rounded-full border border-line-strong bg-panel px-4 font-mono text-[0.8125rem] font-medium text-ink transition-colors hover:border-action hover:text-action motion-reduce:transition-none"
                       >
                         Open SKILL.md for {s.name}
                         <PixelIcon name="external" size={10} />
@@ -259,6 +289,21 @@ export function SkillIndex() {
             );
           })}
         </ul>
+
+        {!isFiltered && rows.length > 8 ? (
+          <div className="mt-4 sm:hidden">
+            <button
+              type="button"
+              onClick={() => setShowAllMobile(!showAllMobile)}
+              className="surface flex min-h-12 w-full items-center justify-center gap-2 rounded-ctl px-4 font-mono text-[0.8125rem] font-semibold text-ink hover:border-action hover:text-action"
+            >
+              <PixelIcon name={showAllMobile ? "minus" : "plus"} size={12} />
+              {showAllMobile
+                ? "Show fewer skills"
+                : `Show all ${rows.length} skills (+${rows.length - 8} more)`}
+            </button>
+          </div>
+        ) : null}
 
         {rows.length === 0 ? (
           <div className="border-b border-line py-10">
@@ -274,7 +319,7 @@ export function SkillIndex() {
             <button
               type="button"
               onClick={clear}
-              className="surface mt-4 inline-flex min-h-11 items-center gap-2 rounded-full px-5 font-mono text-[0.8125rem] text-ink hover:border-action hover:text-action"
+              className="surface mt-4 inline-flex min-h-11 items-center gap-2 rounded-full px-5 font-mono text-[0.8125rem] font-medium text-ink hover:border-action hover:text-action"
             >
               <PixelIcon name="reset" size={12} />
               Clear search and filters

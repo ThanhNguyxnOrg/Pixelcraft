@@ -1,5 +1,22 @@
-import { useEffect, useRef, useState, type ReactNode } from "react";
+import {
+  createContext,
+  useContext,
+  useEffect,
+  useRef,
+  useState,
+  type ReactNode,
+} from "react";
 import type { EvidenceLabel } from "../data";
+
+/** Page-wide autonomous-motion switch, owned by the top pause control. */
+export const MotionPause = createContext<{
+  paused: boolean;
+  setPaused: (v: boolean) => void;
+}>({
+  paused: false,
+  setPaused: () => {},
+});
+export const useMotionPause = () => useContext(MotionPause);
 
 // 8×8 bitmaps. '#' is a lit pixel. One grid, one stroke logic, one metaphor system.
 const BITMAPS = {
@@ -33,6 +50,26 @@ const BITMAPS = {
     "....#...",
     "........",
   ],
+  chevronLeft: [
+    "....##..",
+    "...##...",
+    "..##....",
+    ".##.....",
+    ".##.....",
+    "..##....",
+    "...##...",
+    "....##..",
+  ],
+  chevronRight: [
+    "..##....",
+    "...##...",
+    "....##..",
+    ".....##.",
+    ".....##.",
+    "....##..",
+    "...##...",
+    "..##....",
+  ],
   external: [
     "..######",
     "......##",
@@ -51,6 +88,66 @@ const BITMAPS = {
     ".####...",
     ".....##.",
     "......##",
+    "........",
+  ],
+  menu: [
+    "........",
+    "########",
+    "........",
+    "########",
+    "........",
+    "########",
+    "........",
+    "........",
+  ],
+  grid: [
+    "###..###",
+    "###..###",
+    "###..###",
+    "........",
+    "........",
+    "###..###",
+    "###..###",
+    "###..###",
+  ],
+  loop: [
+    ".######.",
+    "#......#",
+    "#....###",
+    "........",
+    "###....#",
+    "#......#",
+    ".######.",
+    "........",
+  ],
+  terminal: [
+    "########",
+    "#......#",
+    "#.#....#",
+    "#..#...#",
+    "#.#..###",
+    "#......#",
+    "########",
+    "........",
+  ],
+  phone: [
+    "..####..",
+    ".#....#.",
+    ".#....#.",
+    ".#....#.",
+    ".#....#.",
+    ".#.##.#.",
+    "..####..",
+    "........",
+  ],
+  monitor: [
+    "########",
+    "#......#",
+    "#......#",
+    "#......#",
+    "########",
+    "...##...",
+    ".######.",
     "........",
   ],
   plus: [
@@ -83,6 +180,16 @@ const BITMAPS = {
     "##....##",
     "........",
   ],
+  scan: [
+    "###..###",
+    "#......#",
+    "#......#",
+    "########",
+    "........",
+    "#......#",
+    "#......#",
+    "###..###",
+  ],
   reset: [
     "..####..",
     ".#....#.",
@@ -93,6 +200,26 @@ const BITMAPS = {
     ".#...#.#",
     "..###...",
   ],
+  play: [
+    ".#......",
+    ".##.....",
+    ".###....",
+    ".####...",
+    ".####...",
+    ".###....",
+    ".##.....",
+    ".#......",
+  ],
+  pause: [
+    "........",
+    ".##..##.",
+    ".##..##.",
+    ".##..##.",
+    ".##..##.",
+    ".##..##.",
+    ".##..##.",
+    "........",
+  ],
   drag: [
     "........",
     "..#..#..",
@@ -102,6 +229,26 @@ const BITMAPS = {
     ".##..##.",
     "..#..#..",
     "........",
+  ],
+  chevron: [
+    "........",
+    "........",
+    "##....##",
+    ".##..##.",
+    "..####..",
+    "...##...",
+    "........",
+    "........",
+  ],
+  spark: [
+    "...##...",
+    "...##...",
+    "..####..",
+    "########",
+    "########",
+    "..####..",
+    "...##...",
+    "...##...",
   ],
   star: [
     "...##...",
@@ -228,11 +375,11 @@ const EVIDENCE_TEXT: Record<EvidenceLabel, string> = {
 };
 
 const EVIDENCE_PAPER: Record<EvidenceLabel, string> = {
-  rendered: "text-[#006865]",
-  static: "text-[#1655a4]",
-  "model-judgment": "text-[#5f3bc2]",
-  "not-checked": "text-[#8e4400]",
-  waived: "text-[#8e008b]",
+  rendered: "text-[#005a57]",
+  static: "text-[#124b94]",
+  "model-judgment": "text-[#512eb0]",
+  "not-checked": "text-[#7d3b00]",
+  waived: "text-[#7d007a]",
 };
 
 export function EvidenceStamp({
@@ -246,7 +393,7 @@ export function EvidenceStamp({
 }) {
   return (
     <span
-      className={`inline-flex items-center gap-1.5 rounded-full border border-current/70 px-2.5 py-1 font-mono text-[0.75rem] leading-none whitespace-nowrap ${tone === "paper" ? EVIDENCE_PAPER[label] : EVIDENCE_TEXT[label]} ${className}`}
+      className={`inline-flex items-center gap-1.5 rounded-full border border-current/70 px-2.5 py-1 font-mono text-[0.75rem] font-medium leading-none whitespace-nowrap ${tone === "paper" ? `${EVIDENCE_PAPER[label]} bg-paper-card` : EVIDENCE_TEXT[label]} ${className}`}
     >
       <PixelIcon name={label} size={10} />
       {label}
@@ -296,14 +443,14 @@ export function CopyCommand({
 
   return (
     <div
-      className={`flex flex-wrap items-stretch gap-2 rounded-tile p-1.5 ${featured ? "surface-lit" : "surface"}`}
+      className={`gborder flex min-w-0 flex-col items-stretch gap-2 rounded-tile p-1.5 sm:flex-row sm:items-center ${featured ? "surface-lit" : "surface"}`}
     >
-      <pre className="min-w-0 flex-[1_1_16rem] overflow-x-auto px-4 py-3 text-[0.875rem] leading-relaxed">
+      <pre className="min-w-0 flex-1 overflow-x-auto px-3.5 py-2.5 text-[0.875rem] leading-relaxed">
         <code ref={codeRef}>
           {lines.map((l) => (
             <span
               key={l}
-              className={`block ${wrap ? "whitespace-pre-wrap [overflow-wrap:anywhere]" : "whitespace-pre"}`}
+              className={`block ${wrap ? "whitespace-pre-wrap break-words" : "whitespace-pre"}`}
             >
               <span
                 aria-hidden="true"
@@ -319,10 +466,11 @@ export function CopyCommand({
       <button
         type="button"
         onClick={copy}
-        className={`ms-auto flex min-h-11 min-w-[6.5rem] shrink-0 items-center justify-center gap-2 self-center rounded-full px-5 py-2.5 font-mono text-[0.8125rem] font-medium transition-colors duration-150 motion-reduce:transition-none ${
+        data-magnetic
+        className={`flex min-h-11 shrink-0 items-center justify-center gap-2 rounded-ctl px-5 py-2.5 font-mono text-[0.8125rem] font-semibold transition-[background-color,transform,box-shadow] duration-150 active:scale-[0.97] sm:min-w-[6.75rem] sm:rounded-full motion-reduce:transition-none ${
           featured
-            ? "bg-action text-on-action hover:bg-ink"
-            : "border border-line bg-raised text-ink hover:border-action hover:text-action"
+            ? "bg-action text-on-action shadow-glow-action hover:bg-ink"
+            : "bg-white/10 text-ink hover:bg-white/16"
         }`}
       >
         <PixelIcon name={state === "copied" ? "check" : "copy"} size={12} />
@@ -343,33 +491,144 @@ export function CopyCommand({
   );
 }
 
+export function PixelLabel({
+  children,
+  tone = "action",
+}: {
+  children: ReactNode;
+  tone?: "action" | "faint";
+}) {
+  return (
+    <p
+      className={`flex items-center gap-2.5 font-pixel text-[0.75rem] tracking-[0.06em] uppercase ${tone === "action" ? "text-action" : "text-ink-faint"}`}
+    >
+      <span
+        aria-hidden="true"
+        className="size-2 rounded-[3px] bg-current shadow-[0_0_14px_currentColor]"
+      />
+      <span data-scramble>{children}</span>
+    </p>
+  );
+}
+
+/** Block reveal. The motion itself lives in useGlobalMotion (GSAP batch); this only marks the element. */
+export function Reveal({
+  children,
+  className = "",
+}: {
+  children: ReactNode;
+  delay?: number;
+  className?: string;
+}) {
+  return (
+    <div data-reveal className={className}>
+      {children}
+    </div>
+  );
+}
+
 export function SectionHead({
   id,
+  kicker,
   meta,
   title,
   children,
+  align = "split",
 }: {
   id: string;
-  meta: string;
+  kicker?: string;
+  meta?: string;
   title: string;
   children?: ReactNode;
+  align?: "split" | "stack";
 }) {
   return (
-    <div className="grid gap-6 lg:grid-cols-12 lg:items-end">
-      <div className="lg:col-span-8">
-        <p className="font-mono text-[0.8125rem] text-action">{meta}</p>
+    <div
+      className={
+        align === "split"
+          ? "grid min-w-0 gap-6 lg:grid-cols-12 lg:items-end lg:gap-8"
+          : "grid min-w-0 gap-6"
+      }
+    >
+      <div className={align === "split" ? "min-w-0 lg:col-span-8" : "min-w-0"}>
+        <PixelLabel>{kicker ?? meta}</PixelLabel>
         <h2
           id={id}
-          className="mt-3 max-w-[20ch] display-wide text-[clamp(2rem,4vw,3.5rem)] leading-[1.02] text-balance"
+          data-split
+          className="mt-5 max-w-[19ch] display-wide text-[clamp(2rem,4.4vw,4rem)] leading-[1.0] text-balance"
         >
           {title}
         </h2>
       </div>
       {children ? (
-        <div className="max-w-[46ch] text-[1.0625rem] leading-relaxed text-ink-muted lg:col-span-4 lg:pb-1">
-          {children}
-        </div>
+        <Reveal
+          className={
+            align === "split" ? "min-w-0 lg:col-span-4 lg:pb-2" : "min-w-0"
+          }
+        >
+          <div className="max-w-[46ch] text-[1rem] leading-relaxed text-ink-muted sm:text-[1.0625rem]">
+            {children}
+          </div>
+        </Reveal>
       ) : null}
     </div>
+  );
+}
+
+/** A rounded panel with a gradient hairline. `lit` tints it with the action color. */
+export function PixelFrame({
+  children,
+  className = "",
+  innerClassName = "",
+  lit = false,
+}: {
+  children: ReactNode;
+  className?: string;
+  innerClassName?: string;
+  lit?: boolean;
+}) {
+  return (
+    <div
+      className={`gborder rounded-card ${lit ? "surface-lit" : "surface"} ${className}`}
+    >
+      <div className={`h-full overflow-hidden rounded-card ${innerClassName}`}>
+        {children}
+      </div>
+    </div>
+  );
+}
+
+/** A tile whose highlight follows the pointer. Decorative only: nothing depends on hover. */
+export function SpotTile({
+  children,
+  className = "",
+  as: Tag = "div",
+}: {
+  children: ReactNode;
+  className?: string;
+  as?: "div" | "li";
+}) {
+  const onMove = (e: React.PointerEvent<HTMLElement>) => {
+    const r = e.currentTarget.getBoundingClientRect();
+    e.currentTarget.style.setProperty("--mx", `${e.clientX - r.left}px`);
+    e.currentTarget.style.setProperty("--my", `${e.clientY - r.top}px`);
+  };
+  return (
+    <Tag
+      data-reveal
+      onPointerMove={onMove}
+      className={`group/spot surface relative min-w-0 overflow-hidden ${className}`}
+      style={{ ["--mx" as string]: "50%", ["--my" as string]: "0%" }}
+    >
+      <span
+        aria-hidden="true"
+        className="pointer-events-none absolute inset-0 opacity-0 transition-opacity duration-300 group-hover/spot:opacity-100 motion-reduce:transition-none"
+        style={{
+          background:
+            "radial-gradient(360px circle at var(--mx) var(--my), color-mix(in oklab, var(--color-action) 16%, transparent), transparent 60%)",
+        }}
+      />
+      <div className="relative h-full min-w-0">{children}</div>
+    </Tag>
   );
 }
