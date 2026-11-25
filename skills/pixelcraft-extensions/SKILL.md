@@ -33,12 +33,12 @@ Use the host's smallest appropriate native surface: command or QuickPick for a q
 
 ## Hard rules
 
-- Never inject visible content into arbitrary host pages before establishing match scope, Shadow DOM isolation, and user intent.
-- Never use broad host permissions (`<all_urls>`, blanket egress) when `activeTab` or narrow scopes suffice.
-- Never hardcode light-only colors or ignore host high-contrast / dark mode tokens.
-- Never bypass CSP with `'unsafe-inline'` or remote scripts in webviews/popups, and never run third-party OAuth inside restricted Office/Shopify iframes.
-- Never use transient popup lifetime, ephemeral MV3 service-worker memory, or `null`-origin `localStorage` as durable storage.
-- Never fake native launcher/editor UI with unconstrained web overlays when the host provides structured components.
+- **Chrome Web Store MV3 #1 Rejection Gate — Zero Remotely Hosted Code (`RHC`)**: bundle 100% of executable JS/WASM inside the signed extension archive. Never load `<script src="https://...">`, `import("https://...")`, `eval()`, `new Function()`, or `chrome.scripting` execution of remote code strings (fetch declarative JSON data only).
+- **Ephemeral MV3 Service Workers & least-privilege scopes**: persist state in `chrome.storage.session` / `chrome.storage.local` and schedule work via `chrome.alarms` (never global RAM variables or `setInterval`); default to `activeTab` + contextual runtime `chrome.permissions.request()` instead of blanket `<all_urls>`.
+- **Shadow DOM CSS + keyboard event isolation**: wrap injected content-script UI in **Shadow DOM** with `px`-normalized reset styles (`rem` resolves against the host page's `<html>`!) **AND call `e.stopPropagation()` on `keydown`, `keyup`, and `keypress`** inside extension inputs (preserving `Escape` dismiss) so typing never triggers host-page shortcuts (GitHub `s`/`/`, YouTube `k`/`f`, Gmail `c`).
+- **Host startup budget (`< 50 ms`) & `"*"` activation ban**: **ban `"activationEvents": ["*"]`** in VS Code `package.json`—activate lazily on specific commands, languages, views, or custom editors, and never block JetBrains `EDT` or Obsidian mobile startup.
+- **Strict `OAuth 2.0 + PKCE (S256)` & OS `SecretStorage`**: authenticate public extension/plugin clients via **Authorization Code + PKCE (`S256`)** (`chrome.identity.launchWebAuthFlow`, `vscode.authentication`, `Office.context.ui.displayDialogAsync`, or Shopify Session JWTs) and store tokens in OS-encrypted **`context.secrets` (`SecretStorage`)** or `chrome.storage.session`—**never embed a `client_secret` inside distributed extension code**.
+- **Live host theme tokens**: consume `--vscode-*`, `--figma-color-*`, Obsidian `--background-primary`, Polaris/App Bridge, Fluent UI v9, Raycast, and Jewel tokens across Light, Dark, and High-Contrast modes.
 
 ## Anti-lazy-default & anti-slop guard
 
@@ -48,10 +48,8 @@ Use the host's smallest appropriate native surface: command or QuickPick for a q
 ## Pre-submit checklist
 
 - [ ] smallest appropriate native host surface chosen before falling back to Webview/iframe;
-- [ ] permissions minimized, explained at point of need, and denied/restricted-mode states designed;
-- [ ] host light, dark, and high-contrast themes plus font scaling respected live;
-- [ ] CSP/nonce, sandbox, `postMessage` schema, OAuth/session-token, and threading rules satisfied;
-- [ ] keyboard shortcuts, focus entry/exit, and dismissal match host conventions;
-- [ ] narrowest viewport width/height and panel collapse verified;
-- [ ] lifecycle interrupts (popup blur, worker sleep, panel reload, host switch) tested;
-- [ ] verification claims labeled honestly (`rendered`, `static`, `not-checked`) with target host versions.
+- [ ] **MV3 Zero RHC verified** (zero remote `<script>`, `eval`, `new Function`, or remote script injection), ephemeral worker state in `chrome.storage.*`/`chrome.alarms`, and `activeTab`/optional permissions scoped;
+- [ ] content-script UI isolated in **Shadow DOM** (`px`-safe reset) with **`keydown`/`keyup`/`keypress` `stopPropagation()`** shielding host-page shortcuts;
+- [ ] VS Code `package.json` contains **zero `"activationEvents": ["*"]`** (`< 50 ms` lazy activation) and JetBrains/IDE work stays off the UI/EDT thread;
+- [ ] auth uses **`OAuth 2.0 + PKCE (S256)`** + **`context.secrets` / session tokens** with **zero embedded `client_secret`**;
+- [ ] host light, dark, and high-contrast theme tokens, narrow `320 px` viewports, and focus restoration verified (`rendered` vs `static` vs `not-checked`).

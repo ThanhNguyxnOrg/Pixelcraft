@@ -94,17 +94,18 @@ export class QuickNotePicker extends SuggestModal<{ path: string; title: string 
 ## Notion and Linear integrations
 
 - **Notion**: Design around Link Previews (unfurl API), OAuth public integrations, and block/database sync. Handle the common empty state where a user installed the integration without sharing any pages/databases to it, respect API rate limits (~3 req/s average with `Retry-After` backoff), and surface sync errors clearly without overwriting user-edited blocks.
-- **Linear**: Use Linear's GraphQL API, OAuth2, Webhooks, and **Issue Attachments** (rich status cards linked to external PRs/incidents/deployments) rather than posting noisy duplicate comments on every webhook event. Handle workspace-scoped permissions and expired webhook/token states cleanly.
+- **Linear**: Use Linear's GraphQL API, OAuth2 (`PKCE S256` for public desktop/IDE clients), Webhooks, and **Issue Attachments** (rich status cards linked to external PRs/incidents/deployments) rather than posting noisy duplicate comments on every webhook event. Handle workspace-scoped permissions and expired webhook/token states cleanly.
+- **Credential storage across IDEs**: never ship an OAuth `client_secret` inside distributed JetBrains `.zip` or Obsidian community plugin bundles, and never write tokens to plaintext XML/JSON config files—store tokens in JetBrains **`PasswordSafe.instance`** or Obsidian `SecretStorage` / OS Keychain.
 
 ## Do/don't pairs
 
 | Do | Don't |
 |---|---|
-| Run JetBrains I/O & PSI reads in coroutines off the EDT | Perform network or disk reads directly inside Swing/EDT listeners |
+| Run JetBrains I/O & PSI reads in coroutines off the EDT and store tokens in `PasswordSafe` | Block the Swing/EDT thread or write OAuth tokens/client secrets into plaintext IDE XML |
 | Style Obsidian views with `--background-primary` / `--interactive-accent` and `requestUrl()` | Hardcode hex colors or import Node `fs` in a mobile-enabled Obsidian plugin |
 | Use Shopify App Bridge v4 `<ui-save-bar>` + `shopify.idToken()` Bearer JWTs | Rely on third-party session cookies inside the Shopify Admin iframe |
 | Default to Atlassian Forge UI Kit 2 (`@forge/react`) before Custom UI | Spin up heavy Custom UI iframes for simple Jira issue panels |
-| Surface Notion "no shared pages" and Linear attachment updates cleanly | Spam Linear issue comment feeds on every status poll |
+| Authenticate IDE/desktop plugins via **OAuth 2.0 + PKCE (`S256`)** and surface Notion/Linear scopes cleanly | Embed `client_secret` in client bundles or spam Linear issue comment feeds on every poll |
 
 ## Verification commands
 

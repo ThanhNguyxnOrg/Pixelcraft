@@ -76,11 +76,14 @@ Default output is one brand-kit overview image in a `3 × 3` grid, with `4:3` or
 
 Use `references/layouts.md` for `3×3`, `2×3`, `2×2`, `1×3`, `4×2`, custom layouts, panel rhythm, canvas adaptation, text/tagline/image/mockup/color rules, and finishing detail rules.
 
-### 5. Visual mode and palette
+### 5. Visual mode, Dual Screen <-> Print color master, and multi-target token export
 
-Select the mode in `references/visual-modes.md` based on strategy rather than fashion. Keep one dominant palette: base color, primary accent, optional secondary accent, and neutrals. Accents repeat across panels; no random rainbow; no default purple-blue AI glow unless it is genuinely right.
+Select the mode in `references/visual-modes.md` based on strategy rather than fashion. Keep one dominant palette: base color, primary accent, optional secondary accent, and neutrals. Accents repeat across panels; no random rainbow; no default purple-blue AI glow unless genuinely justified.
 
-After selection, use the `pixelcraft-tokens` skill by name when implementation handoff matters: express the chosen palette/type/spacing as DTCG tokens so the identity can become implementation input rather than only an image.
+For production handoff:
+- Define a **Dual Screen (`OKLCH` + `sRGB HEX` + `Display-P3`) <-> Print (`CMYK` + `Pantone`) color master table**—**never auto-convert vibrant RGB/P3 neons into muddy 4-plate CMYK** without hand-tuned ink formulas (`TAC <= 300%`, `C0 M0 Y0 K100` body black).
+- Author **dedicated small-size optical reductions (`16 px`, `24 px`, `32 px` favicon & app icon)** with simplified stroke/counter geometry rather than mechanically shrinking a complex hero lockup.
+- Use the `pixelcraft-tokens` skill to emit **multi-target DTCG `tokens.json` exports** (`CSS` / `Swift` / `Kotlin` / `Desktop`) and attach a **Commercial Font & Asset License Manifest** verifying Webfont pageviews, Mobile App embedding, Server PDF generation, and Desktop redistribution rights.
 
 ### 6. Prompt and generation
 
@@ -90,26 +93,25 @@ Use supplied references for rhythm, spacing, density, logo placement, image trea
 
 ### 7. QA before delivery
 
-Before presenting the result, perform the self-critique in `references/qa-checklist.md`. Check logo consistency across panels, sparse legible text, palette discipline, panel rhythm, no copied reference material, correct use of supplied assets, size/aspect honored or honestly reported, no tiny fake copy, no generic visual noise, and implementation usefulness.
+Before presenting the result, perform the self-critique in `references/qa-checklist.md`. Check logo consistency across panels, dedicated `16/24/32 px` optical reductions, Dual Screen <-> Print color specs, sparse legible text, panel rhythm, no copied reference material, correct use of supplied assets, size/aspect honesty, and commercial license manifest completeness.
 
 ## Hard rules
 
 - Never invent replacements for supplied logos, names, colors, typography, or assets.
 - Never generate long paragraphs, lorem ipsum, dense explanations, unreadable labels, fake tiny UI, or generic corporate slogans.
 - Never copy exact reference logos, names, compositions, slogans, or unique visual assets.
-- Never use generic lightning bolts, random animals, fake luxury crests, copied famous marks, clipart, meaningless sparkles, or inconsistent logo variants.
-- Enforce measurable grid geometry, single-mark consistency, contrast-verified palettes, and implementation-ready token mapping rather than taste adjectives.
+- Never auto-convert `sRGB`/`Display-P3` screen neons into muddy auto-profile `CMYK`, and never shrink a complex multi-line hero lockup directly into a `16 px` favicon without an optical reduction asset.
+- Enforce measurable grid geometry, single-mark consistency, contrast-verified palettes, multi-target DTCG `tokens.json` export (`CSS`/Swift/Kotlin/Desktop), and a complete **Commercial Font & Asset License Manifest** (Webfont, Mobile App, Server PDF, Desktop redistribution).
 - Report the actual output size/aspect ratio; never promise unsupported dimensions.
-- Treat generated imagery as draft material until provenance, licensing, small-size behavior, contrast pairs, clearspace/minimum size, and ownership/versioning are recorded.
 
 ## Pre-submit checklist
 
 - [ ] Missing intake items resolved one focused question at a time (with concrete options + recommendation); supplied brand assets preserved verbatim.
 - [ ] 2–3 genuinely different brand worlds diverged and scored before generation; losing worlds documented.
-- [ ] Identical mark proportions repeated across every panel; solid-black silhouette and 16/32/64 px small-size reductions verified or flagged `not-checked`.
-- [ ] One disciplined palette (base, neutrals, 1–2 repeating accents) with contrast-checked pairs ready for `pixelcraft-tokens` export.
-- [ ] Anti-slop check: zero generic sparkles/lightning bolts/fake crests, zero default purple-blue AI glow, zero lorem ipsum or tiny fake dashboard copy, and zero copied reference logos/compositions.
-- [ ] Actual output dimensions/aspect ratio, evidence label (`rendered`/`model-judgment`/`not-checked`), and provenance/licensing boundaries honestly reported.
+- [ ] Identical mark proportions across panels + **dedicated `16 px` / `24 px` / `32 px` small-size optical reduction** (simplified strokes/counters) verified or flagged `not-checked`.
+- [ ] **Dual Screen (`OKLCH` + `sRGB HEX` + `Display-P3`) <-> Print (`CMYK` + `Pantone`) color master table** + **multi-target DTCG `tokens.json` export** (`CSS`/Swift/Kotlin/Desktop via `pixelcraft-tokens`) prepared.
+- [ ] **Commercial Font & Asset License Manifest** explicitly records Webfont pageview, Mobile App binary embedding, Server PDF generation, and Desktop redistribution rights (plus C2PA/AI provenance).
+- [ ] Anti-slop check passed and actual output dimensions + evidence labels (`rendered`/`static`/`model-judgment`/`not-checked`) honestly reported.
 
 ## Reference routing
 
@@ -120,5 +122,5 @@ Before presenting the result, perform the self-critique in `references/qa-checkl
 - Read [references/visual-modes.md](references/visual-modes.md) when selecting the visual world.
 - Read [references/prompt-template.md](references/prompt-template.md) before prompting any image model.
 - Read [references/qa-checklist.md](references/qa-checklist.md) before delivering or selecting a generated result.
-- Read [references/asset-pipeline.md](references/asset-pipeline.md) when turning the identity into favicons, app icons, optimized SVG, font subsets, or production raster assets.
-- Read [references/brand-governance.md](references/brand-governance.md) before finalizing usage rules, asset naming/versioning, licensing/provenance records, clearspace, minimum sizes, or incorrect-use guidance.
+- Read [references/asset-pipeline.md](references/asset-pipeline.md) when turning the identity into optical `16/24/32 px` favicons, app icons, optimized SVG, multi-target DTCG tokens, or font subsets.
+- Read [references/brand-governance.md](references/brand-governance.md) before finalizing Dual Screen/Print color masters, the Commercial Font & Asset License Manifest, clearspace, minimum sizes, or incorrect-use guidance.

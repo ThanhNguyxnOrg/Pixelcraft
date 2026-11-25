@@ -64,7 +64,7 @@ try {
 - **Native editable objects**: prefer `slide.addText(...)`, `slide.addTable(...)` (supports auto-paging across slides), and native `slide.addChart(...)` over rasterizing entire slides as PNG screenshots.
 - **RTL localization**: set `pres.rtlMode = true` for Arabic/Hebrew/Persian decks and verify text alignment, chart axis direction, and slide-number anchor positions in PowerPoint/Impress.
 - **Canonical Export API (v3/v4)**: use `await pres.writeFile({ fileName: 'deck.pptx' })` for direct file downloads/writes, or `await pres.write({ outputType: 'nodebuffer' })` in Node.js services (supported `outputType` values: `'nodebuffer' | 'stream' | 'blob' | 'base64' | 'arraybuffer' | 'uint8array'`). Do not pass deprecated string-only arguments to `writeFile` or call removed v2 streaming methods.
-- **Font availability**: PowerPoint substitutes missing fonts on recipients' machines—stick to widely available fonts or embed fonts explicitly when brand typography is mandatory, and inspect the exported `.pptx` in PowerPoint / Keynote / LibreOffice Impress at 100% scale.
+- **Font availability & scale floor**: PowerPoint substitutes missing fonts on recipients' machines—use cross-OS safe fonts (`Arial`, `Segoe UI`, `Calibri`, `Aptos`) or embed licensed subsetted fonts explicitly; enforce **`>= 24pt` body text for room projection** (`>= 18pt` only for dense read-alone leave-behind decks), pixel-snap `16:9` raster assets so the `.pptx` stays **`< 25–30 MB`** (email-safe), and verify **`PPTX <-> PDF` visual parity** at 100% scale.
 
 ```ts
 import PptxGenJS from 'pptxgenjs';
@@ -76,11 +76,11 @@ pres.rtlMode = false; // Set true for RTL locales (ar, he, fa)
 pres.defineSlideMaster({
   title: 'REPORT_MASTER',
   background: { color: 'FFFFFF' },
-  slideNumber: { x: 9.2, y: 5.2, fontSize: 10, color: '555555' },
+  slideNumber: { x: 9.2, y: 5.2, fontSize: 12, color: '555555' },
 });
 
 const slide = pres.addSlide({ masterName: 'REPORT_MASTER' });
-slide.addText('Quarterly Operations Review', { x: 0.6, y: 0.4, w: 8.8, fontSize: 24, bold: true });
+slide.addText('Quarterly Operations Review', { x: 0.6, y: 0.4, w: 8.8, fontSize: 28, bold: true });
 slide.addChart(
   pres.ChartType.bar,
   [{ name: 'Uptime %', labels: ['Q1', 'Q2', 'Q3', 'Q4'], values: [99.8, 99.9, 99.95, 99.98] }],
@@ -100,12 +100,15 @@ const buffer = (await pres.write({ outputType: 'nodebuffer' })) as Buffer;
 | Scale backing canvas by `devicePixelRatio` with `transform: [dpr, 0, 0, dpr, 0, 0]` | Render 1× logical canvas pixels onto Retina screens, producing blurry text |
 | Pair `new TextLayer({ textContentSource, container, viewport }).render()` with `--scale-factor` / `--total-scale-factor` | Ship an image-only PDF canvas or misaligned text overlay that breaks copy/search/a11y |
 | Cancel in-flight `renderTask` and `textLayer` on zoom/page change and ignore `RenderingCancelledException` | Race concurrent `page.render()` calls onto the same `<canvas>` |
-| Use `pres.write({ outputType: 'nodebuffer' })` (or `'stream' \| 'blob'`) and native `addText`/`addTable`/`addChart` | Paste full-slide PNG screenshots, hardcode footers on every slide, or ignore `rtlMode` for RTL locales |
+| Define `defineSlideMaster`, keep body `>= 24pt` (`>= 18pt` leave-behind), budget `.pptx` `< 25–30 MB`, and use native `addText`/`addTable`/`addChart` | Export flattened PNG-per-slide screenshots as `.pptx`, shrink text to `11pt`, or ship `90 MB` uncompressed hero bitmaps |
 
 ## Verification commands
 
 ```sh
 npm run build
+# Headless PPTX <-> PDF visual parity render (when LibreOffice + Poppler are installed)
+soffice --headless --convert-to pdf q4-review.pptx
+pdftoppm -png -r 150 q4-review.pdf slide-proof
 ```
 
-Verify PDF.js worker bundling (`static`), test HiDPI canvas + `TextLayer` selection alignment + zoom cancellation in a real browser (`rendered`), and open exported `.pptx` files in PowerPoint / Keynote / LibreOffice Impress to confirm chart legibility, RTL layout (when enabled), and zero text clipping or font substitution (`rendered`).
+Verify PDF.js worker bundling and `.pptx` byte size `< 25–30 MB` (`static`), test HiDPI canvas + `TextLayer` selection alignment + zoom cancellation in a real browser (`rendered`), and compare exported `.pptx` against its rendered `.pdf` slides in PowerPoint / Keynote / LibreOffice Impress to confirm `PPTX <-> PDF` parity, chart legibility, RTL layout (when enabled), and zero text clipping or font substitution (`rendered`).

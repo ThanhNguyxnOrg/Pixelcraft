@@ -7,12 +7,12 @@ Slides are performance aids viewed at distance. They are not dense reports paste
 | Concern | Practical rule |
 |---|---|
 | idea density | one claim/idea per slide; split sequences instead of shrinking everything |
-| type scale | as a starting floor for projection, body text around 24–32pt/px-equivalent or larger, important content 36–60+, titles larger; validate at authored resolution and viewing distance |
-| safe area | keep essential content inside roughly the central 90–95% of the frame; projector cropping, bezels, captions, and platform UI obscure edges |
-| contrast | high contrast for projection; avoid thin light-gray type and subtle gradients behind text |
-| motion | transitions only when they explain sequence/object constancy; provide reduced/static export behavior |
-| content ownership | every chart/image/code fragment must be legible and necessary; speaker notes are not a license to hide required detail |
-| accessibility | preserve reading order, alt text/data equivalents for visuals, color-independent meaning, and keyboard navigation where interactive |
+| type scale | **`>= 24pt` body floor for live room projection** (`>= 36–60pt` key claims/titles); step down to **`>= 18pt` strictly for dense read-alone leave-behind decks**—never drop below `18pt` for body or axis labels |
+| master slides | define reusable **Master Slide** layouts (`Title`, `Section`, `1-Col`, `2-Col Evidence`, `Stat/Quote`) for consistent margins, grid anchors, running footers, and slide numbers instead of nudging text boxes manually per slide |
+| safe area & frame | author `16:9` (`1920×1080` or `10" × 5.625"`) with pixel-snapped assets inside the central `90–95%` safe zone; keep total `.pptx`/`.pdf` deck size **`< 25–30 MB`** so email attachments and corporate upload portals never reject the file |
+| contrast & fonts | high contrast for washed-out venue projectors (`>= 7:1` preferred); embed licensed subsetted fonts or restrict editable `.pptx` decks to universal cross-OS fonts (`Aptos`/`Calibri`/`Arial`/`Segoe UI`) so line breaks never shift on the presenter laptop |
+| motion | transitions only when they explain sequence/object constancy; export both presenter build and flattened-step static handout PDF |
+| parity & accessibility | verify **`PPTX <-> PDF` visual parity** (convert `.pptx` via PowerPoint/LibreOffice to PDF and inspect every slide for reflow, font substitution, or clipped callouts), reading order, alt text, and color-independent chart labels |
 
 Common slide sizes:
 
@@ -66,8 +66,11 @@ Export commands (uses Playwright Chromium underneath—pin fonts and assets so h
 
 ```sh
 npx slidev export --format pdf --with-clicks --output deck.pdf
+# WARNING: Slidev --format pptx exports flattened raster slide images, NOT editable PowerPoint text or Slide Masters!
 npx slidev export --format pptx --output deck.pptx
 ```
+
+> **Editable `.pptx` handoff warning:** `slidev export --format pptx` screenshots each slide into a non-editable PNG inside PowerPoint. Never deliver a Slidev `.pptx` when executives or clients expect editable text, live charts, or native Slide Masters—use **`PptxGenJS`** (see [pdfjs-and-pptx.md](pdfjs-and-pptx.md)), **Quarto `--to pptx` with `reference-doc`**, or native PowerPoint/Keynote masters instead.
 
 Rules:
 

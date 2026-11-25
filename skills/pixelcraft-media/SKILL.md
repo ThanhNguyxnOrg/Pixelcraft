@@ -16,39 +16,34 @@ Design the focal subject and minimum readable message for the smallest real crop
 
 ## References
 
-- Read [references/social-cards.md](references/social-cards.md) for OG/platform dimensions (YouTube thumbnails, GitHub, Bluesky, Mastodon, Discord, Slack, WhatsApp, Telegram, iMessage, X/LinkedIn), safe areas, crop behavior, thumbnail legibility, metadata, caching, and validation.
+- Read [references/social-cards.md](references/social-cards.md) for OG/platform dimensions (**Zalo**, Slack, iMessage, X, LinkedIn, WhatsApp, Discord, Telegram, Bluesky, YouTube, GitHub), the `1200×630` (`1000×500` safe zone) unfurl matrix, `1080×1920` (`9:16`) Reels/TikTok/Shorts pixel exclusion zones, JPEG/PNG unfurler fallbacks, and caching.
 - Read [references/og-generation.md](references/og-generation.md) for Satori, `@vercel/og`, Next.js `ImageResponse`, Takumi, `@resvg/resvg-js`, Sharp, `@napi-rs/canvas`/`skia-canvas`, and Playwright HTML-to-screenshot OG pipelines.
-- Read [references/banners-video.md](references/banners-video.md) for SVG banners/posters, Remotion v4+, Motion Canvas, Revideo, FFmpeg export pipelines, `dotLottie`/Rive vector exports, aspect-ratio variants, captions, and export verification.
+- Read [references/banners-video.md](references/banners-video.md) for SVG banners/posters, Remotion v4+, Motion Canvas, Revideo, `0.0s` legible poster frames, FFmpeg (`-14 LUFS` loudness, `yuv420p`, `+faststart`), `dotLottie`/Rive vector exports, and `SRT`/`VTT` + burned-in captions.
 
 For browser audio/video players and Web Audio DSP (`hls.js`, Shaka, Vidstack, Media Chrome, Video.js, Tone.js), use the `pixelcraft-web` skill.
 
 ## Required workflow
 
-1. **Define placement.** Identify exact platforms/clients, card type, feed context, static or animated media, localization, accessibility/caption requirements, cache/update cadence, and whether clicks are expected.
-2. **Choose frame and safe area.** Start from the platform table; preserve critical content inside conservative central regions. Never assume one crop fits every client.
-3. **Reduce the message.** Use the minimum truthful content: product/name, one concrete promise or artifact, recognizable visual evidence. Remove anything unreadable at thumbnail scale.
-4. **Implement with renderer constraints.** Static SVG/PNG generation, browser capture, Satori/ImageResponse, Remotion, or Motion Canvas each impose different layout/font/security limits.
-5. **Verify in context.** Inspect at actual pixel size, scaled thumbnail, dark/light embed context, compression, crop variants, screen reader/alt metadata where applicable, and platform preview/debugger when available.
+1. **Define placement.** Identify exact platforms/unfurlers, card type, feed context, static or animated media, localization, caption requirements, cache/update cadence, and click intent.
+2. **Lock frame and pixel safe zones.** Keep `1200×630` (`1.91:1`) headlines/logos inside the **center `1000×500` safe box**, and keep `1080×1920` (`9:16`) vertical video copy clear of **`top >= 150–220 px`, `bottom >= 320–420 px`, and `right >= 120–160 px`** host UI rails.
+3. **Reduce the message.** Use the minimum truthful content (`<= 6–8` words): product/name, one concrete claim or artifact, and recognizable visual evidence legible at `25%` thumbnail scale.
+4. **Ship unfurler-safe formats & `0.0s` video posters.** Serve absolute `https://` **PNG or JPEG** (`< 300 KB` for WhatsApp/Zalo, `< 1 MB` general, fast crawl TTFB) because SVG (`og:image`) is rejected universally and WebP still fails in legacy enterprise/chat unfurlers; render a legible **`0.0s` poster frame** and normalize social/web audio to **`-14 LUFS` (`-1.5 dBTP`)**.
+5. **Verify in context.** Inspect at 100%, `25–33%` thumbnail scale, dark/light feed surrounds, crop overlays, `ffprobe` metadata (`static`), and rendered frames (`rendered`).
 
 ## Non-negotiable rules
 
 | Concern | Rule |
 |---|---|
 | truthfulness | No invented user counts, screenshots, awards, logos, testimonials, benchmarks, or product capabilities. |
-| legibility | Text must survive thumbnail scale and platform compression; if a detail cannot be read, remove or enlarge it. |
-| safe area | Essential text/logos never touch edges or platform overlay/crop zones. |
-| renderer truth | Do not use unsupported CSS/font/asset behavior because browser JSX looks similar. Validate the actual renderer/version. |
-| accessibility | Provide meaningful alt text/link context where platforms support it; video needs captions/subtitles and must not autoplay sound by default. |
-| cache awareness | Social platforms cache aggressively. Use validation/cache-busting/deployment sequencing consciously. |
+| unfurler compatibility | Use `1200×630` (`1.91:1`, center **`1000×500` safe zone**), absolute `https://`, fast crawl response (`< 300 KB` WhatsApp/Zalo, `< 1 MB` Slack/iMessage/X/LinkedIn), and **PNG/JPEG `og:image`** (never SVG; avoid WebP-only `og:image` where chat unfurlers drop it). |
+| `9:16` vertical exclusion zones | On `1080×1920` Reels/TikTok/Shorts, keep all titles, faces, and open captions clear of **`top >= 150–220 px`**, **`bottom >= 320–420 px`** (caption/CTA drawer), and **`right >= 120–160 px`** (like/comment/share rail). |
+| `0.0s` poster, captions & `-14 LUFS` | Frame `0` (`0.0s`) must render a legible poster immediately (never `opacity={0}` black frames); pair muted autoplay video with **burned-in safe-zone captions or synced `SRT`/`VTT`**, and normalize web/social audio to **`loudnorm=I=-14:TP=-1.5:LRA=11`** (`-16 LUFS` for podcasts only). |
 | anti-slop | Avoid purple-blue gradients, floating browser chrome mockups, generic rocket/sparkle art, unreadable code screenshots, and badge clutter unrelated to the subject. |
 
 ## Pre-submit checklist
 
-- [ ] target platforms/card types/frame ratios/safe zones are explicit;
-- [ ] core message is readable at actual thumbnail size;
-- [ ] text contrast is checked against real background/compression;
-- [ ] fonts are licensed/embedded/loaded in the format required by the renderer;
-- [ ] generated image/video dimensions, file type, and file size match the target;
-- [ ] absolute metadata URLs and cache behavior are correct;
-- [ ] alt/caption/accessibility path exists where the platform supports it;
-- [ ] final evidence states which platform previews were actually inspected versus `not-checked`.
+- [ ] `1200×630` (`1000×500` center safe zone) or `1080×1920` (`top >= 150–220 px`, `bottom >= 320–420 px`, `right >= 120–160 px` clear) geometry verified;
+- [ ] `og:image` uses absolute `https://`, **PNG/JPEG** unfurler-safe format, and `< 300 KB` (WhatsApp/Zalo) / `< 1 MB` byte budget with versioned cache-busting URL;
+- [ ] core headline (`<= 6–8` words) survives `25–33%` thumbnail scale on both light and dark feed backgrounds;
+- [ ] video exports render a legible **`0.0s` poster frame**, `yuv420p` + `+faststart`, **`-14 LUFS` (`-1.5 dBTP`)** audio, and **burned-in / `SRT` / `VTT` captions**;
+- [ ] `ffprobe`/byte checks (`static`) separated honestly from rendered thumbnail/frame inspection (`rendered`) and untested platform crawlers (`not-checked`).

@@ -150,13 +150,16 @@ def top_regions(df: IntoFrameT, limit: int = 10) -> IntoFrameT:
     return df.sort("avg_score", descending=True).head(limit)
 ```
 
+- **Perceptual time-series downsampling (`Min-Max` / `LTTB`)**: when plotting `10k–1M+` telemetry rows, bucket timestamps into `~1,000–2,000` pixel-aligned windows using **`Min-Max` envelopes** (`group_by_dynamic` emitting `[first, min, max, last]` per bucket) or **`LTTB`**—never use `df.gather_every(n)` (`every-Nth` slicing), which drops incident spikes!
+- **Preserve `0` vs `null` and freshness metadata**: never call `.fill_null(0)` before charting or table display unless missingness literally equals zero in domain math; compute `max(event_ts)` alongside the query so the UI renders an explicit `UTC`/local timezone and **Data Freshness / SLA Staleness badge**.
+
 ## Do/don't pairs
 
 | Do | Don't |
 |---|---|
 | `debounce=True` on marimo sliders driving SQL or ML cells | Recompute heavy DAG branches on every pixel of a drag |
 | Keep marimo notebooks in Git as `.py` and run `marimo check` | Rely on hidden out-of-order execution state |
-| Push filters and aggregations into Polars LazyFrame/streaming or DuckDB and use Narwhals for library-agnostic helpers | Serialize raw million-row DataFrames over WebSockets or force `.to_pandas()` copies in every widget |
+| Push filters, `Min-Max`/`LTTB` downsampling, and aggregations into Polars LazyFrame/streaming or DuckDB | Use `df.gather_every(n)` (erasing spikes), call `.fill_null(0)` blindly, or serialize raw million-row DataFrames over WebSockets |
 | Offload slow Solara work to `solara.use_task` with error/pending UI | Block the Solara render function with synchronous network calls |
 | Keep Mesop session state serializable in `@me.stateclass` | Mutate module-level globals shared across concurrent Mesop users |
 | Style Taipy via `stylekit` and explicit `state.*` updates | Mutate global DataFrames without notifying `state` |

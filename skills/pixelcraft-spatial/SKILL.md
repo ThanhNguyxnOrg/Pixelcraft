@@ -34,21 +34,17 @@ For ordinary browser 3D product scenes and graphics runtimes (`<model-viewer>`, 
 
 | Concern | Rule |
 |---|---|
-| dimensional purpose | Use 3D/immersion only when spatial inspection, embodiment, presence, scale, or environmental context improves the task. |
-| comfort | Never move/rotate the camera involuntarily; offer locomotion/comfort choices and preserve orientation/recovery. |
-| frame stability | Dropped frames/reprojection are UX failures in XR; budget assets/shaders/lights/physics accordingly. |
-| input feedback | Every interactable needs hover/target/acquire/release feedback through visual/audio/haptic channels appropriate to input mode. |
-| privacy | Treat gaze, hand/body tracking, room geometry, camera/passthrough, biometrics, and spatial audio telemetry as sensitive. |
-| accessibility | Provide seated/standing/one-handed/controller alternatives, captions/audio equivalents, contrast/scale controls, reduced motion, and non-head-aimed interaction where possible. |
-| anti-slop | Reject floating glass panels everywhere, pointless particle/depth effects, miniature desktop UI, unbounded scroll walls, motion-heavy demos, and demo scenes that ignore safety boundaries. |
+| **Meta Quest VRC & frame lock** | Render the first head-tracked interactive frame in **`<= 4 s`** from launch and hold a locked **`72 / 90 / 120 fps`** (**`0` head-pose frame drops**; enable dynamic/eye-tracked foveated rendering `FFR`/`ETFR` before cutting stereo clarity). |
+| **visionOS target & zero-shift gaze** | Size interactive spatial targets **`>= 60×60 pt` (`dpt`)** with **`>= 12–16 pt` edge spacing** (`>= 72–76 pt` center-to-center) and enforce **zero geometry/layout shift on eye-gaze hover**—use subtle OS specular/luminance `.hoverEffect()` only (resizing or nudging bounds under gaze causes saccadic oscillation and eye strain!). |
+| **Spatial ergonomics & postures** | Anchor primary reading/control panels **`1.2–2.0 m`** away and **`5–15°` below eye horizon**, support **relaxed lap-level indirect pinch** ("gorilla-arm" prevention), and support **Seated, Standing, AND Lying-down / Reclined recentering**. |
+| **No head-locked HUDs & comfort** | **Never lock world-blocking HUD panels rigidly to head rotation** (use world-locked, lazy-follow, or wrist/orbiter anchors); never rotate/move the camera involuntarily; ship **teleport + `30–45°` snap-turn + angular comfort vignette** defaults. |
+| **Passthrough & privacy** | Reserve raw eye-gaze rays strictly to OS system hover (zero covert gaze telemetry), disclose room/hand/camera permissions, and verify **passthrough UI legibility in both sunlit bright rooms AND dim rooms**. |
+| **Accessibility & anti-slop** | Provide controller/hand/voice parity, one-handed mode, spatial captions, and reduced-motion presets; reject floating glass walls, head-locked clutter, and miniature desktop ports. |
 
 ## Pre-submit checklist
 
-- [ ] reality model, session duration, physical posture, and input modes are explicit;
-- [ ] object scale/distance/angular size can be recalculated from documented assumptions;
-- [ ] primary content stays in a comfortable viewing/interaction envelope;
-- [ ] depth/layering/occlusion collisions are tested from multiple positions/heights;
-- [ ] locomotion and camera-motion choices include comfort settings;
-- [ ] measured frame timing/headroom meets the target device or is `not-checked`;
-- [ ] gaze/hand/camera/room data collection is minimized and disclosed;
-- [ ] accessibility alternatives were implemented or explicitly labeled `not-checked`.
+- [ ] **Boot & frame budget**: first head-tracked frame **`<= 4 s`** and locked **`72 / 90 / 120 fps`** (`0` head-pose drops, dynamic foveation profiled) verified on device or marked `not-checked`;
+- [ ] **Targets & gaze stability**: visionOS/spatial controls **`>= 60×60 pt` (`dpt`)** with **`>= 12–16 pt` spacing** and **zero layout/geometry shift on eye-gaze hover**;
+- [ ] **Ergonomics & postures**: primary panels **`1.2–2.0 m`** at **`5–15°` below eye horizon**, **relaxed lap-level indirect pinch**, and **Seated + Standing + Lying-down/Reclined recentering** supported;
+- [ ] **Locomotion & HUD**: zero head-locked world-blocking HUDs; teleport, **`30–45°` snap-turn**, and angular tunneling vignette comfort defaults wired;
+- [ ] **Real-room passthrough & privacy**: text/glass contrast tested in **both sunlit bright rooms and dim rooms**; eye-gaze kept private to OS system hover (`rendered` vs `static` vs `not-checked`).

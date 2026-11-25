@@ -37,28 +37,24 @@ Start with the judgment the reader must make and expose its comparison baseline,
 
 | Concern | Rule |
 |---|---|
-| truthfulness | Never fabricate data, smooth away meaningful variation, truncate axes to exaggerate, or hide missing/uncertain values. |
-| baseline | Bar/area magnitude charts include zero unless there is an explicit indexed/change baseline; line charts may use nonzero scales only when labeled. |
-| color | Color never carries meaning alone; use direct labels, shape, line style, pattern, position, or text as a redundant channel. |
-| interaction | Hover/tooltips are enhancement. Keyboard, touch, screen-reader, and print/static export must retain the substance. |
-| density | Match density to decision frequency. Do not turn every metric into an equal card or every dataset into a chart. |
-| motion | Animated transitions must explain object constancy or state change; provide reduced-motion/static behavior. |
-| performance | Choose rendering technology after measuring element count, update rate, and interaction—not because WebGL sounds advanced. |
-| accessibility | Every chart has a text equivalent: summary plus underlying data table/list or structured access appropriate to its complexity. |
+| truthfulness & downsampling | Never fabricate data, truncate magnitude bars, or downsample `10k–1M+` time-series with naive `every-Nth` slicing that erases incident spikes—use **`LTTB` (Largest-Triangle-Three-Buckets)** or **`Min-Max` pixel envelopes**, re-querying raw detail on zoom. |
+| numeric semantics & `0` vs `null` | Enforce `font-variant-numeric: tabular-nums`, **True Minus `U+2212` (`−`)** on negative values, right-aligned numeric columns, explicit unit headers (`$ USD`, `ms`, `%`), and **strict visual separation between measured `0` and missing `null / — / N/A`** (break lines or render muted `—`; never coerce `null` to `0`). |
+| temporal truth & SLA freshness | Display explicit timezone (`UTC` vs local IANA zone) on every time axis/timestamp and surface a **Data Freshness / SLA Staleness badge** (`Updated 12s ago` escalating to warning/stale state when ingestion lags SLA). |
+| baseline | Bar/area magnitude charts include zero unless an explicit indexed/delta baseline is labeled; line charts may use nonzero scales only when labeled. |
+| color & monochrome | Color never carries meaning alone; pair Okabe–Ito / Viridis palettes with direct labels, dash style, shape, or pattern so charts survive grayscale/CVD. |
+| interaction & export safety | Hover/tooltips are progressive enhancement. Neutralize **OWASP CSV/XLSX formula injection** (`=`, `+`, `-`, `@`, `\t`, `\r` prefixes) on every downloadable table/chart export. |
+| accessibility | Every chart ships a concise text takeaway plus an accessible data table/summary and composite keyboard navigation (`<= 1` Tab stop + arrow keys). |
 
 ## Anti-slop warnings
 
-Avoid the default analytics collage: four KPI cards with invented deltas, a gradient area chart, a donut with unreadable slices, a purple-blue palette, unexplained "live" badges, generic axis ticks, and a legend that forces constant eye travel. Avoid chartjunk copied from demos: heavy gridlines, shadows, glassmorphism, 3D perspective, meaningless animated counters, and decorative map pin clouds. Distinctiveness belongs in editorial judgment, annotation quality, composition, and domain-specific emphasis—not in distorting evidence.
+Avoid the default analytics collage: four KPI cards with invented deltas, a gradient area chart, a donut with unreadable slices, a purple-blue palette, unexplained "live" badges without SLA timestamps, naive `every-Nth` downsampled lines hiding outages, `null` plotted as `0`, and legends forcing constant eye travel. Distinctiveness belongs in editorial judgment, annotation quality, composition, and domain-specific emphasis—not in distorting evidence.
 
 ## Pre-submit checklist
 
-- [ ] analytical question, unit, population, filter, timezone, freshness, and decision are explicit;
-- [ ] chart type matches the question rather than library convenience;
-- [ ] axis baseline/scale/transformation and missing-data treatment are defensible;
-- [ ] direct labels or annotation carry the primary reading path;
-- [ ] palette is colorblind-safe and meaning is redundantly encoded;
-- [ ] empty/one/many/extreme/null/long-label/locale states are designed;
-- [ ] text alternative and keyboard/screen-reader path exist;
-- [ ] update/rendering performance was measured or explicitly labeled `not-checked`;
-- [ ] static export/print/responsive behavior preserves legibility;
-- [ ] final claims separate `rendered` evidence from `static` inspection or `model-judgment`.
+- [ ] analytical question, unit (`$ USD`, `ms`, `%`), population, filter, explicit timezone (`UTC` vs local), and **Data Freshness / SLA Staleness badge** are visible;
+- [ ] dense time-series (`10k–1M+` points) use **`LTTB`** or **`Min-Max` envelopes** rather than spike-erasing `every-Nth` slicing;
+- [ ] numeric columns/labels enforce `tabular-nums`, right alignment, **True Minus `U+2212` (`−`)**, and strict **`0` vs `null / — / N/A`** distinction;
+- [ ] direct labels or annotations carry the primary reading path; palette is CVD/grayscale-safe with redundant non-color encoding;
+- [ ] CSV/XLSX data exports escape leading `=`, `+`, `-`, `@`, `\t`, `\r` against formula injection;
+- [ ] text alternative, synchronized data table, and composite keyboard/screen-reader paths exist;
+- [ ] final claims separate `rendered` evidence (at real cardinality) from `static` inspection or `not-checked`.

@@ -4,11 +4,12 @@
 
 Verified baseline constraints:
 - **Viewing distance**: typical **3 meter / 10-foot** lean-back surface.
-- **Android TV layout baseline**: design at **MDPI 960×540** so proportional scaling targets HD/4K cleanly; author bitmap art at 1080p+. Keep essential UI inside a **5% overscan safe margin** (`48 dp` left/right, `27 dp` top/bottom at 960×540); background art may bleed to edge.
+- **Overscan safe zones (`5%` / `10%`)**: keep interactive chrome inside the **`5%` action-safe inset** (`48 dp` L/R, `27 dp` T/B at `960×540` MDPI; `96 px` / `54 px` at `1080p`) and critical typography/logos inside the **`10%` title-safe inset** where legacy broadcast overscan or curved bezels apply; background art may bleed edge-to-edge.
 - **Typography floors**: Apple's typography table lists tvOS default **29 pt** (minimum **23 pt**) and watchOS default **16 pt** (minimum **12 pt**). Treat minimums as floors—prefer larger sizes for critical glance labels.
+- **QR Code / `RFC 8628` OAuth 2.0 Device Authorization Grant**: **never force users to peck a 32-character email + password on an on-screen TV remote keyboard** as the primary login! Render a scannable **QR code + short activation URL & 6–8 char user code (`RFC 8628`)** polling in the background, keeping on-screen keyboard entry strictly as a secondary fallback.
 
 TV rules:
-- Use sparse hierarchy, large focusable tiles, unmistakable high-contrast focus state, and instant response on every D-pad press.
+- Pair every focused tile with an unmistakable **focus halo** (**`scale(1.04–1.08)`** transform + `>= 3:1` high-contrast border/ring + elevation shadow; drop scale to `1.0` with thicker ring under `prefers-reduced-motion`).
 - Move metadata into a focused preview panel rather than cramming paragraphs onto every grid card.
 - Remember exact rail/item position when returning from detail or video playback.
 - Never ship hover-only menus, tiny tooltips, right-click triggers, or dense multi-column desktop tables.
@@ -18,7 +19,7 @@ TV rules:
 | Focus state | Required behavior |
 |---|---|
 | **Initial entry** | Predictable useful default (resume watching / primary rail), never an arbitrary hidden top-left node. |
-| **Directional move** | Score candidates by primary-axis distance + orthogonal overlap with dead-zone handling—pure Euclidean nearest-neighbor jumps erratically across mixed-height rails. |
+| **Directional move & column memory** | Build a deterministic **4-way (`Up/Down/Left/Right`) spatial graph** with **column-index / horizontal-coordinate memory across vertical rows** (pressing `Down` from column 4 into a 2-item hero banner and `Down` again restores column 4 in the next rail rather than resetting to column 1!). |
 | **Boundary** | Stop visibly, wrap only when intentional, or transition predictably to sidebar/top navigation chrome. |
 | **Content refresh** | Preserve focused item by stable ID; if removed, move to nearest neighbor—never drop focus to `null`. |
 | **Modal / overlay** | Trap focus inside the modal while open and restore focus to the invoking trigger on `Back`. |
@@ -93,7 +94,9 @@ Treat gamepads as continuous directional/stick input with explicit dead zones, h
 
 ## Wearables: Compose for Wear OS & watchOS
 
-Wearables are **2–5 second glance** and quick-action surfaces. Prefer a complication, Tile, or Smart Stack widget over burying glanceable status inside deep app navigation.
+Wearables are **`<= 2–3 second` single-glance** micro-task surfaces:
+- **True `#000000` OLED canvas & `< 15–20%` AOD On-Pixel Ratio (`OPR`)**: render backgrounds as pure `#000000` so unlit OLED pixels draw zero current and blend seamlessly into watch bezels; in Always-On / ambient mode (`isLuminanceReduced`), strip filled cards to outlines/text so **`< 15–20%` of pixels remain lit**, preventing burn-in and battery drain.
+- **One primary CTA per screen**: cap every screen at **`1` primary action** (`EdgeButton` or bottom pill) plus optional cancel/secondary action; expose rotary **Crown / Bezel scrolling with crisp haptic detents**. Prefer a complication, Tile, or Smart Stack widget over deep app navigation.
 
 ### Compose for Wear OS Material 3 Expressive (Wear OS 5 / 6)
 - Build screens on **`AppScaffold`** + **`ScreenScaffold`** + **`TimeText`** (curved top clock), **`TransformingLazyColumn`** (automatically scales/morphs items around circular bezels), and **`EdgeButton`** (bezel-hugging curved bottom primary action).
@@ -117,15 +120,15 @@ ScreenScaffold(scrollState = listState) {
 
 ### watchOS (10–26)
 - Design around **Smart Stack** widgets (`WidgetKit`) and full-screen vertical paging (**`.tabViewStyle(.verticalPage)`**) rather than cramped multi-button grids.
-- Support Digital Crown input (**`.digitalCrownRotation(...)`**) and **Double Tap** primary gestures (**`.handGestureShortcut(.primaryAction)`**).
-- Read **`@Environment(\.isLuminanceReduced)`** for Always-On Display: dim saturated fills, pause per-second animations/timers, and keep the critical value readable at low power.
+- Support Digital Crown input (**`.digitalCrownRotation(...)`** with haptic detents) and **Double Tap** primary gestures (**`.handGestureShortcut(.primaryAction)`**).
+- Read **`@Environment(\.isLuminanceReduced)`** for Always-On Display: enforce `< 15–20%` OPR on `#000000`, pause sub-minute animations/timers, and keep the critical value readable at low power.
 - On **watchOS 26**, verify **Liquid Glass** toolbar/pill controls remain sharp on small round-cornered OLED screens under Reduce Transparency and wrist-glare conditions.
 
 ## Verification matrix
 
 Verify on real hardware or faithful device emulators (`rendered`; label untested hardware `not-checked`):
-- 10-foot viewing distance, ambient glare, and 5% TV overscan margins;
-- rapid held-down D-pad repeat, diagonal stick input, empty rows, and focus restoration after Back/playback;
-- circular mask clipping on round Wear OS watches, Always-On `isLuminanceReduced`, and Digital Crown / rotary bezel scrolling;
+- 10-foot viewing distance, `5%` action / `10%` title overscan safe zones, `scale 1.04–1.08` focus halo, and **`RFC 8628` QR Device Authorization** sign-in;
+- 4-way D-pad **column-index memory across vertical rows**, rapid held-down repeat, empty rows, and focus restoration after `Back`/playback;
+- Wearables `#000000` OLED canvas, **`< 15–20%` AOD On-Pixel Ratio**, `<= 2–3 s` single-CTA task completion, circular mask clipping, and Crown/bezel haptic detents;
 - Roku texture-memory caps, Tizen `registerKey` remote transport keys, and low-RAM smart TV scroll frame pacing;
 - reduced motion, high contrast, text scaling, and offline/phone-companion disconnect recovery.

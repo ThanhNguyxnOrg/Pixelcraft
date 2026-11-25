@@ -14,7 +14,7 @@ Key visionOS 2 & visionOS 26 capabilities:
 
 - **visionOS 2**: react to viewing angle around volumes via `VolumeViewpoint` (`onVolumeViewpointChange`), build shared tabletop experiences with **`TabletopKit`** (table surface, seats, pawns, physics), and handle unified indirect/direct 3D input via `SpatialTapGesture` and `SpatialEventCollection`.
 - **visionOS 26**: author 3D SwiftUI hierarchies directly with **`SpatialLayout`**, **`depthAlignment`**, and **`ViewAttachmentComponent`** (attaching SwiftUI views straight onto RealityKit entities without boilerplate `attachments:` closures); anchor persistent **wall and table spatial widgets** (`WidgetKit` spatial mounting styles); coordinate shared spatial seating and **Spatial Personas / SharePlay** via `SystemCoordinator`; apply **Liquid Glass** spatial material updates thoughtfully (preserve text contrast over bright/cluttered passthrough); and embed stereo 3D on the spatial web via Safari's **`<model>`** element.
-- **Privacy & ornaments**: gaze-and-pinch is private by design—rely on system `.hoverEffect()` rather than logging gaze; place supplemental content in adjacent windows rather than bloated ornaments; request ARKit world/hand/scene permissions only inside a Full Space with clear user explanation.
+- **Target sizing (`>= 60×60 pt`), zero-shift hover & privacy**: size every visionOS interactive control **`>= 60×60 pt` (`dpt`)** (via `.frame(minWidth: 60, minHeight: 60)` + `.contentShape(...)`) with **`>= 12–16 pt` spacing** between adjacent hit bounds; apply OS `.hoverEffect(.highlight)` **without scaling or shifting layout geometry on gaze hover**; keep gaze-and-pinch private to system hover; and verify **Liquid Glass** legibility over both sunlit and dim passthrough rooms.
 
 ```swift
 import SwiftUI
@@ -26,13 +26,13 @@ struct InspectionVolume: View {
             let root = Entity()
             // visionOS 26: attach SwiftUI directly as an entity component
             let label = Entity()
-            label.components.set(ViewAttachmentComponent(rootView: Text("Turbine Core").padding(8).glassBackgroundEffect()))
+            label.components.set(ViewAttachmentComponent(rootView: Text("Turbine Core").padding(12).glassBackgroundEffect()))
             label.position = [0, 0.25, 0]
             root.addChild(label)
             content.add(root)
         }
         .gesture(SpatialTapGesture().targetedToAnyEntity().onEnded { value in
-            // Unified gaze+pinch or direct touch hit handling
+            // Unified relaxed lap-level gaze+pinch or direct touch hit handling
             handleInspect(entity: value.entity)
         })
     }
@@ -46,7 +46,7 @@ Android XR distinguishes **Home Space** (multitasking shared space where existin
 Use **Jetpack Compose for XR** (`androidx.xr.compose.spatial`) and **Material Design for XR** idioms:
 
 - `Subspace`: hosts spatial composables inside a 3D coordinate container when in Full Space;
-- `SpatialPanel`: positions interactive Compose UI panels in 3D space with resize/move policies;
+- `SpatialPanel`: positions interactive Compose UI panels in 3D space (`1.2–2.0 m` default distance, `5–15°` below horizon) with resize/move policies;
 - `Orbiter`: attaches floating contextual navigation rails, toolbars, or controls offset from a panel edge (Android XR equivalent of visionOS ornaments);
 - `SpatialRow` / `SpatialColumn` and `SpatialElevation` (`SpatialElevationLevel`): arrange multi-panel workspaces and depth hierarchy without manual matrix math;
 - **SceneCore (`Session`, `GltfModelEntity`)**: load 3D glTF/GLB assets, spatial audio, and environment skyboxes alongside Compose panels.
@@ -80,14 +80,14 @@ fun SpatialWorkspace() {
 
 Verify both Home Space fallback (2D window resizing without `Subspace`) and Full Space transition (`Session.scene.spatialEnvironment`) so apps degrade gracefully when users switch spaces.
 
-## Meta Horizon OS and Meta Spatial SDK
+## Meta Horizon OS and Meta Spatial SDK (`VRC` Certification Gates)
 
-Meta Quest runs **Meta Horizon OS** with two primary native paths:
+Meta Quest Store **Virtual Reality Checks (`VRCs`)** enforce hard startup, frame-pacing, and comfort thresholds:
 
-- **Meta Spatial SDK (native Android / Kotlin)**: build lightweight Quest spatial apps directly in Kotlin + Jetpack Compose panels + Spatial SDK ECS without a Unity/Unreal runtime—ideal for productivity, media, and mixed-reality utilities needing small APK size and crisp 2D/3D text.
-- **Meta XR Interaction SDK (Unity / Unreal)** + **Horizon OS UI Set**: use platform-idiomatic spatial UI controls, ray/distance interactors for far panels, poke/direct touch for near panels, grab interactors for physical objects, and controller + hand-tracking parity with hover/acquire/release visual, audio, and haptic feedback.
-- **Mixed Reality & Passthrough**: use **MRUK (Mixed Reality Utility Kit)** and OpenXR scene understanding for room mesh, walls, tables, raycast occlusion, and persistent spatial anchors; when using the **Passthrough Camera API** for computer vision, disclose camera usage explicitly and minimize retained frame data.
-- **Comfort**: follow Meta's angular locomotion tunneling vignette model—define comfort occlusion in visual degrees, never fixed screen UVs.
+- **VRC performance gates**: render the **first head-tracked interactive frame in `<= 4 s`** from cold launch (stream heavy assets asynchronously behind a responsive head-tracked splash/environment), sustain locked **`72 / 90 / 120 fps`** (`0` head-pose stalls), and enable **Dynamic Foveated Rendering (`OVRManager.foveatedRenderingLevel = HighTop / Dynamic`)**.
+- **Meta Spatial SDK (native Android / Kotlin)**: build lightweight Quest spatial apps directly in Kotlin + Jetpack Compose panels + Spatial SDK ECS without a Unity/Unreal runtime—ideal for productivity, media, and mixed-reality utilities needing fast `<= 4 s` startup and crisp 2D/3D text.
+- **Meta XR Interaction SDK (Unity / Unreal)** + **Horizon OS UI Set**: support seamless controller + relaxed lap-level hand-pinch parity, **Seated / Standing / Lying-down** recentering, and `30–45°` snap-turn + angular tunneling vignette comfort defaults (never lock opaque HUD panels to head rotation).
+- **Mixed Reality & Passthrough**: use **MRUK (Mixed Reality Utility Kit)** and OpenXR scene understanding for room mesh, walls, tables, and persistent spatial anchors; disclose **Passthrough Camera API** usage explicitly and verify UI legibility in both bright sunlit rooms and dim rooms.
 
 ## WebXR (2025–2026)
 

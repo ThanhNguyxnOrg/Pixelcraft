@@ -24,14 +24,15 @@ E-ink is a stateful, reflective, bistable display—never treat it as a slow LCD
 - **Physical E-stop supersedes software**: software "Stop" controls assist normal sequencing only; never label or rely on a touchscreen button as a safety-rated emergency stop (E-stop).
 - **Stale / bad-quality telemetry**: when a PLC/OPC-UA/Modbus tag loses communication or exceeds freshness TTL, immediately replace normal numeric values with a distinct bad-quality state (dashed frame, `?` / `STALE`, last-good timestamp)—never leave frozen stale readings styled as live normal state.
 
-### Public kiosks & lockdown
-- **Session lifecycle**: non-audio-dependent attract screen, explicit Start/Cancel, timeout warning before clearing session, privacy wipe (clear autofill/cart/PII on end or timeout), receipt/printer/scanner jam recovery with staff-assist code.
-- **Reach zones**: 2010 ADA Standards §308 unobstructed forward reach is commonly summarized as **15–48 inches** above finish floor (side-reach and obstruction rules differ—confirm mounting geometry and jurisdiction with compliance counsel; UI layout alone is not ADA certification).
-- **OS kiosk lockdown**: lock production terminals via **Android Lock Task mode** (`DevicePolicyManager`), **iOS/iPadOS Single App Mode** (MDM / Guided Access), or **Windows Assigned Access** (Shell Launcher). Always include a documented technician escape path, watchdog auto-relaunch on crash, and deferred OS reboots outside active customer sessions.
+### Public kiosks (`ADA §308 / §707` & `EN 301 549`) & terminal reliability
+- **Wheelchair reach (`38–122 cm` / `15–48"`) & Reachability Mode**: place all interactive controls within **`38–122 cm` (`15–48"`)** above the finished floor, **OR** render a persistent, high-contrast **"Lower Screen / Reachability Mode"** button anchored inside the bottom reach zone that shifts upper interactive controls down into reach.
+- **Touch target floor & tactile audio-jack navigation**: size touch buttons **`>= 60×60 px` (`12–15 mm` physical)** with generous spacing against Parallax/gloved taps; support **tactile keypad / `3.5 mm` audio-jack spoken navigation** (`ADA §707` / `EN 301 549`) and **automatically reset audio volume, speech rate, and UI language to default** at the end of every customer session.
+- **Idle timeout (`30–60 s`) + `"Still there?"` countdown (`WCAG 2.2.1`) & PII wipe**: after `30–60 s` of inactivity, display an accessible **`"Still there?"` countdown modal** (`>= 20 s` to extend session); if unanswered or when a user taps `Finish`/`Cancel`, **atomically purge all PII, auth tokens, form inputs, cached receipts, and cart state** before returning to the non-audio-dependent attract loop.
+- **Hardware telemetry & `72 h+` soak gate**: monitor receipt-printer **paper-low / cover-open / cutter-jam** states (degrading gracefully to SMS/QR digital receipt or queued offline print rather than freezing checkout), lock OS chrome (`LockTask` / `Single App Mode` / `Assigned Access`), and pass a **`72 h+` continuous automated session-loop soak test** with zero heap/DOM/WebGL memory leaks.
 
 ## Embedded MCUs: LVGL v9, Slint MCU, `embedded-graphics`, TouchGFX, & Qt for MCUs
 
-Measure real framebuffer bytes, SRAM/flash budget, DMA2D/GPU acceleration, worst-case input latency, and thermal limits before selecting a toolkit:
+Measure real framebuffer bytes, **compile-time static `Flash` / `SRAM` budgets**, DMA2D/GPU acceleration, worst-case input latency, and thermal limits before selecting a toolkit:
 
 | Framework | Language | Rendering & footprint | Best fit |
 |---|---|---|---|
@@ -41,7 +42,7 @@ Measure real framebuffer bytes, SRAM/flash budget, DMA2D/GPU acceleration, worst
 | **TouchGFX** | C++ (STM32) | Hardware-accelerated STM32 Chrom-ART (DMA2D) / NeoChrom GPU | High-FPS 60fps appliance/medical displays on STM32 MCUs |
 | **Qt for MCUs** | QML subset → C++ (`Qt Quick Ultralite`) | Static compiled QML engine with hardware acceleration | Teams standardizing on Qt/QML across Linux MPU and RTOS MCU product lines |
 
-**LVGL v9 concrete idiom** (partial buffer, reusable `lv_style_t`, and `lv_group_t` for rotary encoder / physical keypad navigation):
+**LVGL v9 concrete idiom** (double-buffered DMA, reusable static `lv_style_t`, and `lv_group_t` for rotary encoder / physical keypad navigation):
 
 ```c
 static lv_style_t style_focus;
@@ -50,38 +51,40 @@ lv_style_set_outline_width(&style_focus, 3);
 lv_style_set_outline_color(&style_focus, lv_color_hex(0x0074CA));
 
 lv_display_t *disp = lv_display_create(320, 240);
+/* Synchronize double-buffered DMA flush to panel VSYNC / Tearing-Effect (TE) pin */
 lv_display_set_buffers(disp, draw_buf1, draw_buf2, sizeof(draw_buf1), LV_DISPLAY_RENDER_MODE_PARTIAL);
 
 lv_group_t *group = lv_group_create();
 lv_obj_t *btn = lv_button_create(lv_screen_active());
 lv_obj_add_style(btn, &style_focus, LV_STATE_FOCUSED);
-lv_group_add_obj(group, btn); // binds rotary encoder / keypad focus
+lv_group_add_obj(group, btn); // binds rotary encoder / debounced physical keypad focus
 ```
 
-Subset embedded fonts to the exact required Unicode glyph ranges, pre-allocate styles/widgets outside frame ticks, and design monochrome/low-bit-depth screens with shape + inverse-video hierarchy rather than alpha shadows.
+MCU & E-Ink engineering gates:
+- **`0` runtime heap fragmentation**: allocate widgets, glyph bitmaps, and framebuffers statically at boot/compile time (`LV_STDLIB_BUILTIN` fixed pool or `#![no_std]` static structs)—never `malloc`/`free` dynamically per frame.
+- **Tear-free `VSYNC` / `TE` double-buffered DMA**: synchronize SPI/RGB/MIPI-DSI DMA buffer swaps to the panel's hardware **Tearing-Effect (`TE`)** or **`VSYNC`** interrupt so horizontal motion never shears diagonally.
+- **Physical button & rotary debounce (`15–30 ms`)**: apply hardware RC or deterministic **`15–30 ms` software state-machine debounce** on tactile switches and quadrature encoders so contact bounce never double-submits confirmations; on `1-bit`/`4-bit` E-Ink, use pure black-on-white crisp bitmap/hinted typography without gradient soup.
 
-## Automotive: CarPlay, CarPlay Ultra, Android Auto, & AAOS
+## Automotive IVI: CarPlay, Android Auto, AAOS (`NHTSA` / `ISO 15005`)
 
-Driver distraction is a physical safety hazard—follow host template and distraction-optimization gates strictly.
+Driver distraction is a physical safety hazard—enforce **NHTSA Visual-Manual Guidelines** and **ISO 15005** glance budgets strictly:
+
+- **Glance & target floor**: every driving-accessible task must complete within **`< 2.0 s` per single glance** and **`< 12.0 s` cumulative glance time**, using physical touch targets **`>= 15×15 mm`** with high-contrast labels (`>= 4.5:1`–`7:1` under direct sunlight).
+- **`speed > 0` motion interlocks**: the instant vehicle speed leaves `0` / `Park`, **lock complex QWERTY typing, long-list scrolling, settings setup, and video playback** (`CarUxRestrictionsManager`), handing off seamlessly to **voice (`PTT`) and steering-wheel switches** without losing context.
+- **Instant zero-flash Day <-> Night tunnel switch**: pre-load both Day and Night token palettes in GPU/RAM so entering or exiting a dark highway tunnel switches themes in **`1` frame with zero white-screen flash** (never reload stylesheets or flash `#FFFFFF` into a night-adapted driver's eyes!).
 
 ### Apple CarPlay & CarPlay Ultra
-- Build apps exclusively on Apple's category-entitled **CarPlay templates**: **`CPListTemplate`**, **`CPMapTemplate`**, **`CPTabBarTemplate`**, **`CPInformationTemplate`**, **`CPNowPlayingTemplate`**, **`CPGridTemplate`**. Never attempt arbitrary custom touch UI outside approved navigation/map drawing zones.
-- **iOS 26 CarPlay widgets & Live Activities**: support compact, glanceable CarPlay widgets and Live Activities for non-distracting status updates (trip ETA, charging status, flight gate) with large high-contrast type and zero multi-step interaction.
-- **CarPlay Ultra** (multi-screen vehicle integration spanning instrument cluster + center console + vehicle climate/controls): respect strict cluster glance budgets, day/night luminance parity, and OEM safety-critical indicator priority.
+- Build apps exclusively on Apple's category-entitled **CarPlay templates** (**`CPListTemplate`**, **`CPMapTemplate`**, **`CPTabBarTemplate`**, **`CPInformationTemplate`**, **`CPNowPlayingTemplate`**, **`CPGridTemplate`**) plus iOS 26 glanceable CarPlay widgets/Live Activities.
+- **CarPlay Ultra** (instrument cluster + center console): respect strict cluster glance budgets, instant Day/Night luminance parity, and OEM telltale priority.
 
 ### Android Auto & Android Automotive OS (AAOS)
-Distinguish **Android Auto** (phone projection) from **Android Automotive OS (AAOS)** (native Android running directly on vehicle head-unit hardware):
-
-- **Car App Library task quota (Android Auto + AAOS third-party apps)**: the host enforces a maximum of **5 templates** in a task flow, and the 5th (terminal) template must be a documented terminal type (`NavigationTemplate`, `PaneTemplate`, `MessageTemplate`, `MediaPlaybackTemplate`, `SignInTemplate`, `LongMessageTemplate`). Exhausting the quota terminates the flow with an error.
-- **AAOS Distraction Optimization (`CarUxRestrictionsManager`)**: native AAOS activities meant to remain visible while moving must declare `<meta-data android:name="distractionOptimized" android:value="true" />` and dynamically obey **`CarUxRestrictionsManager`** flags (`UX_RESTRICTIONS_NO_KEYBOARD`, `UX_RESTRICTIONS_LIMIT_STRING_LENGTH`, `UX_RESTRICTIONS_LIMIT_CONTENT`, `UX_RESTRICTIONS_NO_SETUP`) whenever the vehicle leaves Park (`P`).
-- **Library boundary**: third-party app developers build on the **Car App Library** (`androidx.car.app`) for portability across Android Auto and AAOS; OEMs and bundled system apps use **`car-ui-library`** for vehicle-skinned native chrome.
-- **Multi-zone / passenger displays**: isolate driver-safe distraction-optimized experiences from passenger or rear-seat entertainment zones—never allow passenger media/keyboard state to unlock driver screen restrictions.
+- **Car App Library (`androidx.car.app`) 5-template task quota**: cap flows at **5 templates**, ending on a documented terminal template (`NavigationTemplate`, `PaneTemplate`, `MessageTemplate`, `MediaPlaybackTemplate`, `SignInTemplate`, `LongMessageTemplate`).
+- **AAOS Distraction Optimization (`CarUxRestrictionsManager`)**: declare `<meta-data android:name="distractionOptimized" android:value="true" />` and obey `UX_RESTRICTIONS_NO_KEYBOARD`, `UX_RESTRICTIONS_LIMIT_STRING_LENGTH`, `UX_RESTRICTIONS_LIMIT_CONTENT`, and `UX_RESTRICTIONS_NO_SETUP` live; keep passenger-zone screens strictly isolated from the driver display.
 
 ## Shared hardware verification
 
 Never certify hardware surfaces from desktop browser screenshots. Verify on target devices (`rendered`; label missing hardware or regulatory sign-off `not-checked`):
-- e-ink ghosting, temperature effects, color Kaleido 3 / Gallery 3 refresh flashes, and sleep-screen truthfulness;
-- POS dual-display privacy, EMV double-tap idempotency, offline queue replay, and ISA-101 alarm legibility + stale tag indicators;
-- kiosk Lock Task / Assigned Access escape/crash-relaunch and physical ADA mounting reach;
-- MCU RAM/flash high-water mark, worst-case frame/input latency, and rotary/keypad `lv_group_t` traversal;
-- automotive parked vs driving `CarUxRestrictions` enforcement, day/night glare contrast, head-unit disconnect/reconnect, and CarPlay/Android Auto template quota checks.
+- E-Ink partial vs full waveform schedule, `1-bit`/`4-bit` pure B&W crispness, and sleep-screen timestamp honesty;
+- POS/Kiosk `38–122 cm` reachability mode, `>= 60×60 px` (`12–15 mm`) targets, audio-jack volume reset, `30–60 s` `"Still there?"` PII purge, printer paper-low/offline queue, and `72 h+` soak memory stability;
+- MCU static `Flash`/`SRAM` map (`0` runtime heap churn), `VSYNC`/`TE` DMA tear check, and `15–30 ms` button debounce;
+- Automotive `< 2.0 s` single / `< 12.0 s` cumulative glance timing, `>= 15×15 mm` targets, `speed > 0` `CarUxRestrictions` lockouts, and zero-flash tunnel Day <-> Night transitions.

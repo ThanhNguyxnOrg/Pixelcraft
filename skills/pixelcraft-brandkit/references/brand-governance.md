@@ -42,39 +42,40 @@ Document concise rules with examples where possible:
 
 Also document what is allowed: approved monochrome/reverse modes, partner lockup clearspace, localized/tagline lockups, motion behavior, and adaptation ownership.
 
-## Legal, licensing, and provenance boundary
+## Dual Screen (`OKLCH` / `sRGB` / `Display-P3`) <-> Print (`CMYK` / `Pantone`) color master
 
-Record what is known and unknown:
+High-chroma screen primaries (`Display-P3` / `sRGB` electric blues, emerald greens, and violet neons) collapse into dull muddy slate when auto-converted to CMYK by a browser or PDF export! Every production brand kit must publish a **hand-calibrated Dual Screen <-> Print Color Master Table**:
 
-- font licenses and redistribution rights;
-- stock/image/illustration licenses;
-- generated-asset provenance/tool constraints;
-- trademark search/registration status;
-- similarity risks discovered during review;
-- ownership/assignment status of commissioned work;
-- expiration/territory/channel restrictions.
+| Semantic role | Perceptual `OKLCH` | `sRGB HEX` fallback | Wide-gamut `Display-P3` | Hand-tuned `CMYK` (`FOGRA39` / `GRACoL`, `TAC <= 300%`) | Spot `Pantone` (Coated / Uncoated) |
+|---|---|---|---|---|---|
+| `brand.primary` | `oklch(0.58 0.21 258)` | `#1D63ED` | `color(display-p3 0.16 0.39 0.94)` | `C88 M58 Y0 K0` *(hand-tuned clean cobalt; zero black mud)* | `PMS 2728 C` / `2728 U` |
+| `ink.body` | `oklch(0.18 0.01 255)` | `#111827` | `color(display-p3 0.07 0.09 0.15)` | **`C0 M0 Y0 K100`** *(100% K overprint for `< 18pt` body text; `C60 M40 Y40 K100` rich black strictly for large solid fills)* | `PMS Black 6 C` |
+| `surface.paper` | `oklch(0.985 0.004 95)` | `#FAF9F5` | `color(display-p3 0.98 0.98 0.96)` | `C0 M1 Y4 K0` *(or unprinted stock white)* | Paper stock |
 
-Do not give legal advice or claim a mark is clear/registerable. Escalate trademark/legal clearance to qualified counsel or the project owner. Absence of a discovered conflict is not proof of legal availability.
+Never ship auto-generated RGB-to-CMYK values on packaging, stationery, signage, or `PDF/X-4` collateral without soft-proofing under the target ICC profile (`FOGRA39` / `GRACoL 2013`).
+
+## Commercial Font & Asset License Manifest
+
+Font EULAs restrict usage by **deployment surface**, not merely "commercial vs personal." A desktop `.otf` trial or basic webfont license frequently **forbids** bundling `.ttf` files inside an iOS/Android app binary, running headless server PDF invoices, or redistributing fonts in open-source repos! Ship an explicit **Commercial License Manifest** with every brand handoff:
+
+| Asset / Typeface | Foundry / Source & License (`OFL-1.1` / Commercial EULA) | Webfont (`@font-face` monthly pageview cap) | Mobile App Embedding (`.ipa` / `.apk` binary) | Server / Cloud PDF & OG Generation (headless SaaS) | Desktop App / Repo Redistribution |
+|---|---|---|---|---|---|
+| Primary UI / Display Font | e.g. `Inter` (`SIL OFL 1.1`) or Commercial Foundry | Verified (`Unlimited` / Tier cap) | Verified (`App License` or `OFL`) | Verified (`Server/CPU License` or `OFL`) | Verified (`Permitted` vs `Prohibited` in public Git) |
+| Brand Photography / 3D / Icons | Commissioned / Licensed Stock / Internal Vector | Verified | Verified | Verified (print run cap checked) | Verified (C2PA / AI provenance logged) |
+
+Do not give legal advice or claim a trademark is clear/registerable. Escalate trademark searches and EULA ambiguities to legal counsel or the project owner, marking unverified rights explicitly as `not-checked`.
 
 ## Accessibility and implementation checks
 
 Before implementation use:
 
-- verify approved foreground/background pairs by semantic role rather than logo color in isolation;
-- ensure essential meaning does not depend solely on a color or decorative mascot detail;
-- inspect reduced/monochrome/high-contrast/forced-color behavior;
-- validate small-size legibility and pixel fidelity;
-- check text expansion/localized tagline behavior;
-- keep raster exports sharp at actual display density;
-- ensure SVG/vector assets do not depend on missing fonts—outline or ship licensed fonts according to project/legal constraints.
+- verify approved foreground/background pairs (`WCAG 2.2 AA` + `APCA Lc`) across both `sRGB` and `Display-P3` light/dark tokens (`pixelcraft-tokens`);
+- inspect dedicated `16 px` / `24 px` / `32 px` small-size optical reductions, monochrome/reversed marks, and localized tagline expansion;
+- confirm standalone logo SVGs convert wordmark type to paths while UI/document pipelines ship only EULA-verified fonts.
 
 ## Governance workflow
 
-1. Freeze the approved master/source version and record approval owner/date/scope.
-2. Create implementation tokens/assets through controlled export rather than manual copying.
-3. Validate small sizes, contrast pairs, dark/light modes, and prohibited-use rules.
-4. Version changes and deprecate superseded exports explicitly.
-5. Review use in real surfaces before broad rollout.
-6. Revisit governance when product scope, licensing, trademark status, platforms, or identity strategy changes.
-
-A brand without ownership/versioning quickly fragments into incompatible exports. Keep the system lightweight but explicit.
+1. Freeze the approved master vectors (hero lockup + `16/24/32 px` optical reductions) and record owner/date/version.
+2. Publish the **Dual Screen <-> Print Color Master** and compile multi-target **DTCG `tokens.json`** (`CSS`/Swift/Kotlin/Desktop).
+3. Complete and sign off the **Commercial Font & Asset License Manifest** across Web, Mobile, Server PDF, and Desktop channels.
+4. Validate contrast pairs, dark/light/monochrome modes, and prohibited-use rules before broad rollout.

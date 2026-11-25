@@ -13,26 +13,27 @@ Platform behavior changes frequently and varies by client. Treat dimensions and 
 | Bluesky | 1200×630 | 1.91:1; blob limit ~1 MB | AT Protocol card crawler fetches `og:image` and re-encodes to JPEG/WebP; requires public unauthenticated fetch |
 | Mastodon / Fediverse | 1200×630 | 1.91:1 | federated instances crawl/cache independently and crop across web/Ivory/Elk clients; set `og:image:alt` and optional `fediverse:creator` |
 | Discord | 1200×630 | 1.91:1 | include `twitter:card="summary_large_image"`—without it Discord often shrinks `og:image` to a small right-aligned square thumbnail; `<meta name="theme-color">` sets the embed accent stripe |
-| Slack | 1200×630 | 1.91:1 | unfurls `og:title`/`og:description`/`og:image`; supports `twitter:label1`/`twitter:data1` metadata rows |
-| WhatsApp | 1200×630 (or 1:1) | **strict < 300 KB** (target < 200 KB) | exceeding ~300 KB or slow TTFB causes WhatsApp to drop the thumbnail silently; declare `og:image:width`, `og:image:height`, `og:image:type`, and serve optimized JPEG/WebP/palette PNG |
-| Telegram | 1200×630 | 1.91:1 | uses `og:image` + `twitter:card="summary_large_image"`; refresh stale caches with `@WebpageBot` |
-| iMessage / Apple Rich Links | 1200×630 | 1.91:1 | Apple `LPLinkMetadata` prefers `og:image` (>= 300px wide so it does not collapse to a small icon) plus `apple-touch-icon` fallback |
-| GitHub repository social preview | 1280×640 rec.; 640×320 min | exactly 2:1; PNG/JPG/GIF under 1 MB | upload in Settings → General → Social preview; keep essential content inside the central safe zone |
+| Slack | 1200×630 | 1.91:1; `< 1 MB` fast crawl | unfurls `og:title`/`og:description`/`og:image` (PNG/JPEG safest); supports `twitter:label1`/`twitter:data1` metadata rows |
+| **Zalo** (chat & Official Account) | 1200×630 | 1.91:1; **`< 300 KB–500 KB`**, PNG/JPEG | Zalo link crawler caches `og:image` aggressively, requires fast public HTTPS TTFB (`< 2 s`), and frequently drops `svg`/`webp` or oversized PNGs—keep copy in the **center `1000×500` safe zone** so 1:1 / mobile chat list crops survive |
+| WhatsApp | 1200×630 (or 1:1) | **strict `< 300 KB`** (target `< 200 KB`) | exceeding ~300 KB or slow TTFB causes WhatsApp to drop the thumbnail silently; declare `og:image:width`, `og:image:height`, `og:image:type`, and serve optimized **JPEG or indexed PNG** |
+| Telegram | 1200×630 | 1.91:1; `< 1 MB` | uses `og:image` + `twitter:card="summary_large_image"`; refresh stale caches with `@WebpageBot` |
+| iMessage / Apple Rich Links | 1200×630 | 1.91:1; `< 1 MB` PNG/JPEG | Apple `LPLinkMetadata` requires `og:image` (`>= 300px` wide so it does not collapse to a small icon; SVG `og:image` is ignored) plus `apple-touch-icon` |
+| GitHub repository social preview | 1280×640 rec.; 640×320 min | exactly 2:1; PNG/JPG/GIF under 1 MB | upload in Settings → General → Social preview; keep essential content inside the central `1000×500` safe zone |
 | Video / presentation landscape | 1920×1080 | 16:9 | standard video/slide frame; inset edges 5–10% |
-| Vertical short video / story | 1080×1920 | 9:16 | platform UI buttons/captions cover right/bottom/top edges; use platform safe overlays |
+| Vertical short video (`Reels / TikTok / Shorts`) | 1080×1920 | 9:16 | strict UI exclusion margins: **`top >= 150–220 px`**, **`bottom >= 320–420 px`**, **`right >= 120–160 px`** |
 | Square feed / thumbnail fallback | 1080×1080 or 1200×1200 | 1:1 | use only when the platform/card type favors square |
 
-## Safe-area design
+## Safe-area & `9:16` exclusion-zone geometry
 
-No single rectangle is universally safe. Apply layered protection:
+No single rectangle is universally safe. Lock layout guides to exact pixel coordinates:
 
-1. keep logos and text at least 5–8% of frame width/height away from edges;
-2. for **YouTube thumbnails**, leave the bottom-right corner clear of headlines, numbers, or focal expressions so the duration badge never covers them;
-3. for **GitHub's 2:1 preview**, treat the central band (middle ~60% width/height) as the must-survive zone;
-4. for **vertical 9:16 video**, keep headlines and captions out of the top ~15%, bottom ~20–25%, and right ~15% interaction column;
-5. export a crop contact sheet (1.91:1, 2:1, 16:9, 1:1, and 25% thumbnail scale) rather than inspecting only the 100% master.
-
-Never place critical meaning in corners—corners are the first casualty of rounded masks, crop variations, duration badges, and compression.
+1. **`1200×630` (`1.91:1`) universal OG safe zone (`1000×500` center box)**: inset at least **`100 px` left/right and `65 px` top/bottom** (`1000×500` inner box) so X (`2:1` `1200×600`), LinkedIn (`1200×627`), iMessage rounded bubbles, Slack, and Zalo mobile previews never clip headlines or brand marks;
+2. **`1080×1920` (`9:16`) Reels / TikTok / YouTube Shorts exclusion zones**: host chrome covers three edges simultaneously—keep all headlines, speaker faces, and burned-in captions strictly clear of:
+   - **`top >= 150–220 px`** (status bar, notch, search/live header),
+   - **`bottom >= 320–420 px`** (account handle, expandable multi-line caption, audio marquee, shop/CTA pill, scrub bar),
+   - **`right >= 120–160 px`** (vertical avatar, like, comment, bookmark, and share icon rail), plus `>= 60 px` left margin;
+3. **YouTube `1280×720` thumbnails**: leave the bottom-right `~260×110 px` clear of words or faces for the duration timestamp badge;
+4. export a crop & overlay contact sheet (`1200×630` + `1000×500` box, `2:1`, `9:16` UI mask, and `25%` thumbnail scale) rather than inspecting only the raw 100% canvas.
 
 ## Thumbnail legibility
 
@@ -45,13 +46,12 @@ Design at final dimensions, then verify scaled down:
 - use one dominant visual anchor: real product detail, simplified diagram, decisive metric, or recognizable mark;
 - test light and dark host feed backgrounds so transparent PNG edges never halo or vanish.
 
-## Metadata, byte budgets, and delivery
+## Metadata, format fallbacks, byte budgets, and delivery
 
-- use absolute HTTPS URLs for `og:image` and `twitter:image`;
-- include `og:title`, `og:description`, `og:image:width`, `og:image:height`, `og:image:type`, `og:image:alt`, `twitter:card="summary_large_image"`, and `twitter:image:alt`;
-- keep WhatsApp/messenger-targeted OG assets **under 200–300 KB** (prefer JPEG/WebP or indexed PNG when photography or gradients are present);
-- ensure crawler access: no auth wall, robots block, redirect loops, slow SSR generation (>3s timeouts drop previews in WhatsApp/Slack/Discord), or hotlink protection;
-- cache-bust via versioned query/path hash (`/og/v2/post-slug.png`) when updating artwork because social crawlers cache URLs aggressively.
+- **Absolute `https://` + PNG/JPEG `og:image` compatibility**: **never point `og:image` or `twitter:image` at an `.svg`** (all major social/chat crawlers reject SVG for security), and **prefer optimized `.png` or `.jpg` over `.webp`/`.avif`** for `og:image` because Zalo, older Outlook/Slack unfurlers, LinkedIn edge scrapers, and enterprise link-preview proxies still drop WebP/AVIF thumbnails silently;
+- include `og:title`, `og:description`, `og:image`, `og:image:secure_url`, `og:image:width` (`1200`), `og:image:height` (`630`), `og:image:type` (`image/png` or `image/jpeg`), `og:image:alt`, `twitter:card="summary_large_image"`, and `twitter:image:alt`;
+- keep **WhatsApp / Zalo** OG assets **`< 200–300 KB`** (`< 1 MB` across Slack/iMessage/X/LinkedIn/Bluesky) with crawler response **`< 1.5–2.0 s`** (no auth wall, `robots.txt` block on `/og/*`, or slow cold-start timeouts);
+- cache-bust via versioned path/query (`/og/v2/post-slug.png`) when updating artwork because Zalo, LinkedIn, Telegram (`@WebpageBot`), Slack, and iMessage cache unfurls aggressively.
 
 ## Composition patterns
 
