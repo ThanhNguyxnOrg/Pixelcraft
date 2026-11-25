@@ -594,8 +594,16 @@
 
   @media (max-width: 1024px) {
     .magazine-spread {
-      grid-template-columns: 1fr;
+      grid-template-columns: minmax(0, 1fr);
       min-height: auto;
+    }
+
+    .cover-plate,
+    .feature-spread,
+    .poster-stage,
+    .cover-controls {
+      min-width: 0;
+      max-width: 100%;
     }
 
     .cover-plate {
@@ -605,7 +613,7 @@
     }
 
     .poster-svg {
-      min-height: 320px;
+      min-height: 280px;
       max-height: 460px;
     }
 
@@ -614,27 +622,80 @@
     }
   }
 
-  @media (max-width: 720px) {
+  @media (max-width: 768px) {
     .essay-body {
       column-count: 1;
     }
 
     .pull-quote-band {
-      grid-template-columns: 1fr;
+      grid-template-columns: minmax(0, 1fr);
       gap: 10px;
     }
 
     .dispatch-grid {
-      grid-template-columns: 1fr;
+      grid-template-columns: minmax(0, 1fr);
     }
 
     .dispatch-btn {
       border-inline-end: 0;
       border-bottom: 1px solid var(--spread-hairline);
+      min-height: 44px;
     }
 
     .dispatch-btn:last-child {
       border-bottom: 0;
+    }
+  }
+
+  @media (max-width: 640px) {
+    .cover-plate {
+      padding: 16px 14px;
+    }
+
+    .masthead-row {
+      flex-wrap: wrap;
+      align-items: flex-end;
+      gap: 10px;
+    }
+
+    .masthead-wordmark {
+      font-size: clamp(50px, 16vw, 80px);
+    }
+
+    .issue-badge-stack {
+      min-width: 0;
+    }
+
+    .issue-stamp-red {
+      font-size: 26px;
+      padding: 6px 9px;
+    }
+
+    .issue-stamp-ochre {
+      font-size: 9.5px;
+      padding: 4px 9px;
+    }
+
+    .poster-svg {
+      min-height: 0;
+      max-height: 360px;
+    }
+
+    .poster-caption {
+      flex-wrap: wrap;
+      gap: 4px 10px;
+    }
+
+    .feature-spread {
+      padding: 20px 14px 24px;
+    }
+
+    .feature-headline {
+      font-size: clamp(28px, 7.5vw, 36px);
+    }
+
+    .colophon-line {
+      overflow-wrap: anywhere;
     }
   }
 
@@ -1068,6 +1129,16 @@
                 outline-offset: 2px;
                 position: relative;
                 z-index: 2;
+              }
+              @media (max-width: 640px) {
+                .group {
+                  flex-wrap: wrap;
+                  max-width: 100%;
+                }
+                button {
+                  min-height: 36px;
+                  padding: 6px 12px;
+                }
               }
               @media (prefers-reduced-motion: reduce) {
                 button {

@@ -1242,6 +1242,287 @@
       border-color: var(--indigo-border);
     }
 
+    @media (max-width: 1024px) {
+      html,
+      body {
+        width: 100%;
+        min-width: 0;
+        height: auto;
+        min-height: 100dvh;
+        overflow-x: clip;
+        overflow-y: visible;
+      }
+
+      .desktop-stage {
+        width: 100%;
+        min-width: 0;
+        height: auto;
+        min-height: 100dvh;
+        padding: 8px;
+      }
+
+      .tauri-window {
+        min-width: 0;
+        height: auto;
+        overflow: visible;
+      }
+
+      .window-titlebar {
+        height: auto;
+        padding: 8px 12px;
+        flex-wrap: wrap;
+        gap: 8px 10px;
+      }
+
+      .titlebar-left,
+      .titlebar-center,
+      .titlebar-right {
+        flex-wrap: wrap;
+        min-width: 0;
+      }
+
+      .path-breadcrumb,
+      .rust-badge {
+        white-space: normal;
+        max-width: 100%;
+        overflow-wrap: anywhere;
+      }
+
+      .palette-trigger {
+        min-height: 38px;
+      }
+
+      .menu-strip {
+        height: auto;
+        padding: 6px 12px;
+        flex-wrap: wrap;
+        gap: 6px 10px;
+      }
+
+      .menu-bar,
+      .workspace-toggles {
+        flex-wrap: wrap;
+        min-width: 0;
+      }
+
+      .menu-item,
+      .pane-toggle {
+        min-height: 36px;
+        font-size: 12px;
+      }
+
+      .workspace-grid,
+      .workspace-grid.hide-left,
+      .workspace-grid.hide-right,
+      .workspace-grid.hide-left.hide-right {
+        grid-template-columns: minmax(0, 1fr);
+      }
+
+      .pane-rule {
+        display: none;
+      }
+
+      .vault-pane {
+        min-width: 0;
+        overflow: visible;
+        border-bottom: 1px solid var(--rule);
+      }
+
+      .note-list {
+        overflow-y: visible;
+      }
+
+      .editor-pane {
+        min-width: 0;
+        border-bottom: 1px solid var(--rule);
+      }
+
+      .editor-scroll {
+        overflow-y: visible;
+        padding: 14px 16px;
+      }
+
+      .editor-split-wrap.is-split {
+        grid-template-columns: minmax(0, 1fr);
+      }
+
+      .graph-pane {
+        min-width: 0;
+        overflow-y: visible;
+      }
+
+      .window-statusbar {
+        height: auto;
+        padding: 8px 12px;
+        flex-wrap: wrap;
+        gap: 6px 12px;
+        font-size: 12px;
+      }
+
+      .status-group {
+        flex-wrap: wrap;
+        gap: 4px 10px;
+      }
+
+      .palette-dialog {
+        width: min(540px, calc(100vw - 24px));
+        max-width: 100%;
+      }
+
+      .wiki-link {
+        min-height: 28px;
+        padding: 2px 7px;
+      }
+
+      .copy-code-btn,
+      .palette-close {
+        min-height: 32px;
+        min-width: 40px;
+        font-size: 12px;
+      }
+    }
+
+    @media (max-width: 640px) {
+      .desktop-stage {
+        padding: 4px;
+      }
+
+      .tauri-window {
+        border-radius: 6px;
+      }
+
+      .window-titlebar {
+        padding: 8px 10px;
+      }
+
+      .titlebar-center {
+        width: 100%;
+      }
+
+      .path-breadcrumb {
+        width: 100%;
+        font-size: 12px;
+      }
+
+      .palette-trigger {
+        width: 100%;
+        justify-content: center;
+        min-height: 40px;
+        font-size: 12.5px;
+      }
+
+      .rust-badge {
+        font-size: 12px;
+      }
+
+      .menu-strip {
+        padding: 6px 10px;
+      }
+
+      .pane-toggle {
+        min-height: 40px;
+        padding: 6px 10px;
+        font-size: 12px;
+      }
+
+      .editor-toolbar {
+        padding: 8px 12px;
+        flex-wrap: wrap;
+      }
+
+      .doc-save-state {
+        flex-wrap: wrap;
+        font-size: 12px;
+      }
+
+      .mode-switcher {
+        width: 100%;
+        flex-wrap: wrap;
+      }
+
+      .mode-tab {
+        flex: 1 1 auto;
+        min-height: 38px;
+        text-align: center;
+      }
+
+      .editor-scroll {
+        padding: 12px;
+      }
+
+      .doc-heading {
+        font-size: 19px;
+      }
+
+      .wiki-link {
+        max-width: 100%;
+        white-space: normal;
+        overflow-wrap: anywhere;
+      }
+
+      .rust-block {
+        min-width: 0;
+        max-width: 100%;
+      }
+
+      .rust-block-head {
+        flex-wrap: wrap;
+        gap: 6px;
+      }
+
+      .copy-code-btn {
+        min-height: 34px;
+        font-size: 12px;
+      }
+
+      .rust-pre {
+        min-width: 0;
+        max-width: 100%;
+        overflow-x: auto;
+        font-size: 12px;
+      }
+
+      .invariant-table {
+        display: block;
+        width: 100%;
+        min-width: 0;
+        max-width: 100%;
+        overflow-x: auto;
+      }
+
+      .invariant-table th,
+      .invariant-table td {
+        white-space: nowrap;
+      }
+
+      .markdown-source-pane {
+        min-width: 0;
+        max-width: 100%;
+        overflow-x: auto;
+        overflow-wrap: anywhere;
+      }
+
+      .inspector-subject-bar,
+      .backlink-src,
+      .ipc-top,
+      .palette-label-row,
+      .palette-cmd-btn {
+        flex-wrap: wrap;
+        gap: 4px 8px;
+      }
+
+      .citation-svg {
+        width: 100%;
+        height: auto;
+        aspect-ratio: 338 / 232;
+      }
+
+      .bib-entry {
+        overflow-wrap: anywhere;
+        font-size: 12px;
+      }
+    }
+
     @media (prefers-reduced-motion: reduce) {
       *, *::before, *::after {
         animation-duration: 0.01ms !important;

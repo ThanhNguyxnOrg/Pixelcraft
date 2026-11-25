@@ -1063,14 +1063,218 @@
       color: var(--ink-muted);
     }
 
-    @media (max-width: 1180px) {
+    @media screen and (max-width: 1180px) {
       .proofing-desk {
-        grid-template-columns: 1fr;
+        grid-template-columns: minmax(0, 1fr);
+      }
+
+      .mat-stage,
+      .qa-rail {
+        min-width: 0;
       }
 
       .qa-rail {
         border-inline-start: 0;
         border-top: 1px solid var(--rule-crop);
+      }
+    }
+
+    @media screen and (max-width: 900px) {
+      .proofing-desk {
+        grid-template-columns: minmax(0, 1fr);
+      }
+
+      .mat-stage {
+        width: 100%;
+        max-width: 100%;
+        min-width: 0;
+        padding: 12px;
+        align-items: stretch;
+        overflow-x: visible;
+      }
+
+      .ruler-strip {
+        width: 100%;
+        max-width: 100%;
+        min-width: 0;
+        flex-wrap: wrap;
+        gap: 4px 8px;
+      }
+
+      .sheet-mount {
+        width: 100%;
+        max-width: 100%;
+        min-width: 0;
+        padding: 4px;
+      }
+
+      .a4-sheet {
+        width: 100%;
+        max-width: 100%;
+        min-width: 0;
+        min-height: 0;
+        padding: 1.25rem;
+      }
+
+      .a4-sheet > div {
+        min-width: 0;
+        max-width: 100%;
+      }
+
+      .proposal-table-scroll {
+        width: 100%;
+        max-width: 100%;
+        min-width: 0;
+        overflow-x: auto;
+        -webkit-overflow-scrolling: touch;
+      }
+
+      .prepress-guides {
+        inset: 0;
+      }
+
+      .prepress-guides::before {
+        top: 0;
+        right: 0;
+        max-width: 100%;
+        white-space: normal;
+      }
+
+      .prepress-guides::after {
+        inset: 12px;
+      }
+
+      .file-spec {
+        white-space: normal;
+        overflow: visible;
+        text-overflow: clip;
+      }
+
+      .tag-tree li {
+        white-space: normal;
+        overflow: visible;
+        text-overflow: clip;
+        overflow-wrap: anywhere;
+      }
+    }
+
+    @media screen and (max-width: 640px) {
+      .proofing-bar {
+        padding: 8px 12px;
+        gap: 8px;
+      }
+
+      .artifact-id {
+        flex-wrap: wrap;
+        width: 100%;
+      }
+
+      .proofing-controls {
+        width: 100%;
+        gap: 8px;
+      }
+
+      .sheet-switcher {
+        display: grid;
+        grid-template-columns: minmax(0, 1fr);
+        width: 100%;
+      }
+
+      .sheet-btn {
+        border-inline-end: 0;
+        border-bottom: 1px solid var(--rule-crop);
+        white-space: normal;
+        text-align: start;
+        min-height: 36px;
+        padding: 6px 10px;
+      }
+
+      .sheet-btn:last-child {
+        border-bottom: 0;
+      }
+
+      .guide-toggle {
+        min-height: 34px;
+        white-space: normal;
+      }
+
+      .currency-opt label {
+        min-height: 32px;
+        display: inline-flex;
+        align-items: center;
+        padding: 4px 10px;
+      }
+
+      .mat-stage {
+        padding: 8px 10px 14px;
+      }
+
+      .a4-sheet {
+        padding: 1.25rem;
+      }
+
+      .running-header,
+      .running-footer,
+      .figure-caption,
+      .sec-head {
+        flex-wrap: wrap;
+        gap: 4px 10px;
+      }
+
+      .sec-meta {
+        white-space: normal;
+      }
+
+      .doc-masthead {
+        grid-template-columns: minmax(0, 1fr);
+        gap: 10px;
+      }
+
+      .meta-ledger {
+        padding-inline-start: 0;
+        border-inline-start: 0;
+        padding-top: 8px;
+        border-top: 1px solid var(--rule-hairline);
+      }
+
+      .elevation-svg {
+        height: auto;
+        aspect-ratio: 680 / 132;
+        min-height: 64px;
+      }
+
+      .fee-table,
+      .gantt-table {
+        min-width: 480px;
+      }
+
+      .settlement-grid,
+      .terms-columns,
+      .signature-grid {
+        grid-template-columns: minmax(0, 1fr);
+        gap: 12px;
+      }
+
+      .po-field-row {
+        flex-wrap: wrap;
+      }
+
+      .po-field-row input {
+        min-height: 32px;
+      }
+
+      .totals-table td:first-child {
+        overflow-wrap: anywhere;
+      }
+
+      .sig-line,
+      .qa-list li {
+        flex-wrap: wrap;
+        gap: 4px 8px;
+      }
+
+      .typst-snippet {
+        overflow-wrap: anywhere;
       }
     }
 
@@ -1106,11 +1310,13 @@
 
       .proofing-desk,
       .mat-stage,
-      .sheet-mount {
+      .sheet-mount,
+      .proposal-table-scroll {
         display: block;
         padding: 0;
         margin: 0;
         background: none;
+        overflow: visible !important;
       }
 
       .a4-sheet {
@@ -1363,69 +1569,71 @@
               <span class="sec-meta" id="rate-note">960 Studio Hours · Blended Rate € 135.00 / h</span>
             </div>
 
-            <table class="fee-table" aria-label="Five-phase architectural fee schedule">
-              <thead>
-                <tr>
-                  <th scope="col">Phase &amp; Deliverable</th>
-                  <th scope="col">Stage</th>
-                  <th scope="col" class="num">Hours</th>
-                  <th scope="col" class="num">Share</th>
-                  <th scope="col" class="num" id="col-fee-head">Net Fee (EUR)</th>
-                </tr>
-              </thead>
-              <tbody>
-                <tr>
-                  <td>
-                    <span class="phase-name"><span class="phase-code">01</span> Concept Sketching</span>
-                    <span class="phase-deliverable">Harbour sightline survey, 1:200 massing model &amp; daylight study</span>
-                  </td>
-                  <td class="stage-ref">FRI A1 · RIBA 2</td>
-                  <td class="num">140 h</td>
-                  <td class="num">14.6%</td>
-                  <td class="num" data-eur="18900">€ 18,900.00</td>
-                </tr>
-                <tr>
-                  <td>
-                    <span class="phase-name"><span class="phase-code">02</span> Municipal Permit</span>
-                    <span class="phase-deliverable">Copenhagen coastal authority submission, fire strategy &amp; accessibility drawings</span>
-                  </td>
-                  <td class="stage-ref">FRI A2 · RIBA 3</td>
-                  <td class="num">190 h</td>
-                  <td class="num">19.8%</td>
-                  <td class="num" data-eur="25650">€ 25,650.00</td>
-                </tr>
-                <tr>
-                  <td>
-                    <span class="phase-name"><span class="phase-code">03</span> Timber Structural Detailing</span>
-                    <span class="phase-deliverable">1:20 glulam portal joinery, marine 316L steel shoes &amp; acoustic larch roof assembly</span>
-                  </td>
-                  <td class="stage-ref">FRI B1 · RIBA 4a</td>
-                  <td class="num">260 h</td>
-                  <td class="num">27.1%</td>
-                  <td class="num" data-eur="35100">€ 35,100.00</td>
-                </tr>
-                <tr>
-                  <td>
-                    <span class="phase-name"><span class="phase-code">04</span> Tender Dossier</span>
-                    <span class="phase-deliverable">Bill of quantities, ABR 18 work descriptions, IFC export &amp; bidder clarification log</span>
-                  </td>
-                  <td class="stage-ref">FRI B2 · RIBA 4b</td>
-                  <td class="num">160 h</td>
-                  <td class="num">16.7%</td>
-                  <td class="num" data-eur="21600">€ 21,600.00</td>
-                </tr>
-                <tr>
-                  <td>
-                    <span class="phase-name"><span class="phase-code">05</span> Site Supervision</span>
-                    <span class="phase-deliverable">Weekly quay inspections, timber moisture QA, snagging ledger &amp; as-built dossier</span>
-                  </td>
-                  <td class="stage-ref">FRI C1 · RIBA 5</td>
-                  <td class="num">210 h</td>
-                  <td class="num">21.9%</td>
-                  <td class="num" data-eur="28350">€ 28,350.00</td>
-                </tr>
-              </tbody>
-            </table>
+            <div class="proposal-table-scroll">
+              <table class="fee-table" aria-label="Five-phase architectural fee schedule">
+                <thead>
+                  <tr>
+                    <th scope="col">Phase &amp; Deliverable</th>
+                    <th scope="col">Stage</th>
+                    <th scope="col" class="num">Hours</th>
+                    <th scope="col" class="num">Share</th>
+                    <th scope="col" class="num" id="col-fee-head">Net Fee (EUR)</th>
+                  </tr>
+                </thead>
+                <tbody>
+                  <tr>
+                    <td>
+                      <span class="phase-name"><span class="phase-code">01</span> Concept Sketching</span>
+                      <span class="phase-deliverable">Harbour sightline survey, 1:200 massing model &amp; daylight study</span>
+                    </td>
+                    <td class="stage-ref">FRI A1 · RIBA 2</td>
+                    <td class="num">140 h</td>
+                    <td class="num">14.6%</td>
+                    <td class="num" data-eur="18900">€ 18,900.00</td>
+                  </tr>
+                  <tr>
+                    <td>
+                      <span class="phase-name"><span class="phase-code">02</span> Municipal Permit</span>
+                      <span class="phase-deliverable">Copenhagen coastal authority submission, fire strategy &amp; accessibility drawings</span>
+                    </td>
+                    <td class="stage-ref">FRI A2 · RIBA 3</td>
+                    <td class="num">190 h</td>
+                    <td class="num">19.8%</td>
+                    <td class="num" data-eur="25650">€ 25,650.00</td>
+                  </tr>
+                  <tr>
+                    <td>
+                      <span class="phase-name"><span class="phase-code">03</span> Timber Structural Detailing</span>
+                      <span class="phase-deliverable">1:20 glulam portal joinery, marine 316L steel shoes &amp; acoustic larch roof assembly</span>
+                    </td>
+                    <td class="stage-ref">FRI B1 · RIBA 4a</td>
+                    <td class="num">260 h</td>
+                    <td class="num">27.1%</td>
+                    <td class="num" data-eur="35100">€ 35,100.00</td>
+                  </tr>
+                  <tr>
+                    <td>
+                      <span class="phase-name"><span class="phase-code">04</span> Tender Dossier</span>
+                      <span class="phase-deliverable">Bill of quantities, ABR 18 work descriptions, IFC export &amp; bidder clarification log</span>
+                    </td>
+                    <td class="stage-ref">FRI B2 · RIBA 4b</td>
+                    <td class="num">160 h</td>
+                    <td class="num">16.7%</td>
+                    <td class="num" data-eur="21600">€ 21,600.00</td>
+                  </tr>
+                  <tr>
+                    <td>
+                      <span class="phase-name"><span class="phase-code">05</span> Site Supervision</span>
+                      <span class="phase-deliverable">Weekly quay inspections, timber moisture QA, snagging ledger &amp; as-built dossier</span>
+                    </td>
+                    <td class="stage-ref">FRI C1 · RIBA 5</td>
+                    <td class="num">210 h</td>
+                    <td class="num">21.9%</td>
+                    <td class="num" data-eur="28350">€ 28,350.00</td>
+                  </tr>
+                </tbody>
+              </table>
+            </div>
 
             <!-- Keep-Together VAT Breakdown & Remittance Block -->
             <div class="settlement-grid keep-together">
@@ -1488,76 +1696,78 @@
               <span class="sec-meta">◆ Municipal Gate · Net Drawdown Amounts</span>
             </div>
 
-            <table class="gantt-table" aria-label="32-week programme and billing drawdown schedule">
-              <thead>
-                <tr>
-                  <th scope="col">Phase</th>
-                  <th scope="col">Window</th>
-                  <th scope="col" style="width: 44%;">Q1 – Q3 2027 Programme (W01–W32)</th>
-                  <th scope="col">Gate</th>
-                  <th scope="col" class="num" id="col-draw-head">Drawdown (EUR)</th>
-                </tr>
-              </thead>
-              <tbody>
-                <tr>
-                  <td><span class="phase-code">01</span> Concept Sketching</td>
-                  <td class="stage-ref">W01–W05</td>
-                  <td>
-                    <div class="gantt-track">
-                      <span class="gantt-bar" style="left: 0%; width: 16%;"></span>
-                    </div>
-                  </td>
-                  <td class="stage-ref">M1 Sketch Sign-off</td>
-                  <td class="num" data-eur="18900">€ 18,900.00</td>
-                </tr>
-                <tr>
-                  <td><span class="phase-code">02</span> Municipal Permit</td>
-                  <td class="stage-ref">W05–W12</td>
-                  <td>
-                    <div class="gantt-track">
-                      <span class="gantt-bar" style="left: 15%; width: 23%;"></span>
-                      <span class="gantt-gate" style="left: 37%;" title="Permit Filing Gate"></span>
-                    </div>
-                  </td>
-                  <td class="stage-ref">M2 Permit Filing</td>
-                  <td class="num" data-eur="25650">€ 25,650.00</td>
-                </tr>
-                <tr>
-                  <td><span class="phase-code">03</span> Timber Structural Detailing</td>
-                  <td class="stage-ref">W11–W20</td>
-                  <td>
-                    <div class="gantt-track">
-                      <span class="gantt-bar" style="left: 34%; width: 29%;"></span>
-                    </div>
-                  </td>
-                  <td class="stage-ref">M3 CNC Timber Release</td>
-                  <td class="num" data-eur="49500">€ 49,500.00</td>
-                </tr>
-                <tr>
-                  <td><span class="phase-code">04</span> Tender Dossier</td>
-                  <td class="stage-ref">W19–W24</td>
-                  <td>
-                    <div class="gantt-track">
-                      <span class="gantt-bar" style="left: 59%; width: 17%;"></span>
-                      <span class="gantt-gate" style="left: 75%;" title="Contractor Award"></span>
-                    </div>
-                  </td>
-                  <td class="stage-ref">M4 Contract Award</td>
-                  <td class="num" data-eur="21600">€ 21,600.00</td>
-                </tr>
-                <tr>
-                  <td><span class="phase-code">05</span> Site Supervision</td>
-                  <td class="stage-ref">W24–W32</td>
-                  <td>
-                    <div class="gantt-track">
-                      <span class="gantt-bar" style="left: 75%; width: 25%;"></span>
-                    </div>
-                  </td>
-                  <td class="stage-ref">M5 Quay Handover</td>
-                  <td class="num" data-eur="28350">€ 28,350.00</td>
-                </tr>
-              </tbody>
-            </table>
+            <div class="proposal-table-scroll">
+              <table class="gantt-table" aria-label="32-week programme and billing drawdown schedule">
+                <thead>
+                  <tr>
+                    <th scope="col">Phase</th>
+                    <th scope="col">Window</th>
+                    <th scope="col" style="width: 44%;">Q1 – Q3 2027 Programme (W01–W32)</th>
+                    <th scope="col">Gate</th>
+                    <th scope="col" class="num" id="col-draw-head">Drawdown (EUR)</th>
+                  </tr>
+                </thead>
+                <tbody>
+                  <tr>
+                    <td><span class="phase-code">01</span> Concept Sketching</td>
+                    <td class="stage-ref">W01–W05</td>
+                    <td>
+                      <div class="gantt-track">
+                        <span class="gantt-bar" style="left: 0%; width: 16%;"></span>
+                      </div>
+                    </td>
+                    <td class="stage-ref">M1 Sketch Sign-off</td>
+                    <td class="num" data-eur="18900">€ 18,900.00</td>
+                  </tr>
+                  <tr>
+                    <td><span class="phase-code">02</span> Municipal Permit</td>
+                    <td class="stage-ref">W05–W12</td>
+                    <td>
+                      <div class="gantt-track">
+                        <span class="gantt-bar" style="left: 15%; width: 23%;"></span>
+                        <span class="gantt-gate" style="left: 37%;" title="Permit Filing Gate"></span>
+                      </div>
+                    </td>
+                    <td class="stage-ref">M2 Permit Filing</td>
+                    <td class="num" data-eur="25650">€ 25,650.00</td>
+                  </tr>
+                  <tr>
+                    <td><span class="phase-code">03</span> Timber Structural Detailing</td>
+                    <td class="stage-ref">W11–W20</td>
+                    <td>
+                      <div class="gantt-track">
+                        <span class="gantt-bar" style="left: 34%; width: 29%;"></span>
+                      </div>
+                    </td>
+                    <td class="stage-ref">M3 CNC Timber Release</td>
+                    <td class="num" data-eur="49500">€ 49,500.00</td>
+                  </tr>
+                  <tr>
+                    <td><span class="phase-code">04</span> Tender Dossier</td>
+                    <td class="stage-ref">W19–W24</td>
+                    <td>
+                      <div class="gantt-track">
+                        <span class="gantt-bar" style="left: 59%; width: 17%;"></span>
+                        <span class="gantt-gate" style="left: 75%;" title="Contractor Award"></span>
+                      </div>
+                    </td>
+                    <td class="stage-ref">M4 Contract Award</td>
+                    <td class="num" data-eur="21600">€ 21,600.00</td>
+                  </tr>
+                  <tr>
+                    <td><span class="phase-code">05</span> Site Supervision</td>
+                    <td class="stage-ref">W24–W32</td>
+                    <td>
+                      <div class="gantt-track">
+                        <span class="gantt-bar" style="left: 75%; width: 25%;"></span>
+                      </div>
+                    </td>
+                    <td class="stage-ref">M5 Quay Handover</td>
+                    <td class="num" data-eur="28350">€ 28,350.00</td>
+                  </tr>
+                </tbody>
+              </table>
+            </div>
 
             <div class="sec-head">
               <h2 class="sec-title">03 · General Consultancy Conditions (ABR 18 Summary)</h2>

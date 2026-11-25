@@ -1151,11 +1151,27 @@
     .topbar {
       padding: 12px 18px;
       flex-wrap: wrap;
+      gap: 10px 16px;
     }
-    .nav-list { display: none; }
+    .brand-group,
+    .topbar-right,
+    .nav-list {
+      flex-wrap: wrap;
+      min-width: 0;
+    }
+    .nav-list {
+      gap: 10px 18px;
+    }
     .workbench {
-      grid-template-columns: 1fr;
+      grid-template-columns: minmax(0, 1fr);
       padding: 18px;
+    }
+    .col-primary,
+    .estimator-pod,
+    .chassis-module,
+    .map-bay {
+      min-width: 0;
+      max-width: 100%;
     }
     .pop-selector-row {
       grid-template-columns: repeat(3, minmax(0, 1fr));
@@ -1167,6 +1183,143 @@
       padding: 10px 18px;
       flex-direction: column;
       align-items: flex-start;
+      gap: 6px;
+    }
+  }
+
+  @media (max-width: 768px) {
+    .workbench {
+      grid-template-columns: minmax(0, 1fr);
+      padding: 14px;
+      gap: 16px;
+    }
+    .module-header,
+    .module-title-group {
+      flex-wrap: wrap;
+    }
+  }
+
+  @media (max-width: 640px) {
+    .topbar {
+      padding: 10px 12px;
+      gap: 8px 12px;
+    }
+    .brand-divider {
+      display: none;
+    }
+    .nav-list {
+      width: 100%;
+      gap: 6px 14px;
+    }
+    .nav-list a {
+      display: inline-block;
+      padding: 6px 2px;
+    }
+    .topbar-right {
+      width: 100%;
+      justify-content: space-between;
+      gap: 8px;
+    }
+    .btn-hardware {
+      min-height: 36px;
+    }
+    .workbench {
+      padding: 12px 12px 18px;
+      gap: 14px;
+    }
+    .eyebrow-row {
+      flex-wrap: wrap;
+      gap: 6px 8px;
+    }
+    h1.display-title {
+      font-size: clamp(28px, 8.2vw, 36px);
+      max-width: 100%;
+    }
+    .btn-primary-lime {
+      min-height: 42px;
+    }
+    .config-head {
+      flex-wrap: wrap;
+      gap: 6px;
+    }
+    .topology-module,
+    .estimator-pod {
+      padding: 13px 12px;
+    }
+    .route-chip {
+      white-space: normal;
+      overflow-wrap: anywhere;
+    }
+    .toggle-pill {
+      min-height: 34px;
+    }
+    .map-bay {
+      min-height: 0;
+      padding: 4px 0;
+    }
+    .map-svg {
+      height: auto;
+    }
+    .pop-selector-row {
+      grid-template-columns: repeat(2, minmax(0, 1fr));
+      gap: 6px;
+    }
+    .pop-key {
+      min-height: 36px;
+      padding: 7px 9px;
+    }
+    .telemetry-bar {
+      grid-template-columns: repeat(2, minmax(0, 1fr));
+      gap: 6px;
+    }
+    .telemetry-bar .tel-cell:nth-child(4) {
+      grid-column: 1 / -1;
+    }
+    .tel-val {
+      font-size: 14.5px;
+    }
+    .btn-copy-mini {
+      min-height: 32px;
+      padding: 4px 10px;
+    }
+    .pod-head,
+    .cost-top,
+    .cost-line,
+    .control-row,
+    .billing-row,
+    .gate-head {
+      flex-wrap: wrap;
+      gap: 6px 10px;
+    }
+    .cost-figure {
+      font-size: 34px;
+    }
+    .pill-btn {
+      min-height: 32px;
+      padding: 5px 11px;
+    }
+    .seg-face {
+      min-height: 34px;
+      display: inline-flex;
+      align-items: center;
+      padding: 6px 12px;
+    }
+    .gate-item {
+      grid-template-columns: auto minmax(0, 1fr);
+      gap: 4px 8px;
+      align-items: start;
+    }
+    .gate-desc {
+      white-space: normal;
+      overflow: visible;
+      text-overflow: clip;
+    }
+    .gate-metric {
+      grid-column: 2;
+    }
+    .bottom-rail {
+      padding: 10px 12px;
+      overflow-wrap: anywhere;
     }
   }
 </style>

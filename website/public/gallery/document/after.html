@@ -53,8 +53,19 @@
   .plain h3 { margin: 0 0 8px; font-family: var(--mono); font-size: 11px; color: var(--mail-dim); text-transform: uppercase; letter-spacing: .05em; }
   .plain pre { margin: 0; font-family: var(--mono); font-size: 12px; line-height: 1.6; color: var(--mail-ink); white-space: pre-wrap; }
   @media (max-width: 960px) {
-    main.split { grid-template-columns: 1fr; }
+    main.split { grid-template-columns: minmax(0, 1fr); }
+    main.split > section { min-width: 0; }
     body { padding: 16px; }
+    header.meta { flex-wrap: wrap; gap: 6px; }
+  }
+  @media (max-width: 640px) {
+    body { padding: 12px; }
+    .a4, .mail, .plain { padding: 16px; min-height: auto; }
+    .a4-top, .mail-head, .a4-foot { flex-wrap: wrap; gap: 8px; }
+    .a4-top .inv-id { text-align: start; }
+    .parties { grid-template-columns: minmax(0, 1fr); gap: 12px; }
+    .totals { width: 100%; max-width: 250px; }
+    .plain pre { overflow-wrap: anywhere; }
   }
 </style>
 </head>

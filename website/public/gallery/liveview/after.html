@@ -990,10 +990,107 @@
 
   @media (max-width: 1120px) {
     .floor-stage {
-      grid-template-columns: 1fr;
+      grid-template-columns: minmax(0, 1fr);
+      padding: 14px 18px;
+    }
+    .architectural-sheet,
+    .dossier-slip,
+    .folio-ledger,
+    .plan-canvas-wrap {
+      min-width: 0;
+      max-width: 100%;
     }
     .folio-ledger {
       grid-template-columns: repeat(2, minmax(0, 1fr));
+    }
+    .ledger-cell:nth-child(2n) {
+      border-inline-end: 0;
+    }
+    .ledger-cell:nth-child(-n+2) {
+      border-bottom: 1px solid var(--brass);
+    }
+  }
+
+  @media (max-width: 768px) {
+    .room-bar {
+      padding: 10px 16px;
+      gap: 10px 14px;
+    }
+    .bar-controls {
+      width: 100%;
+      justify-content: space-between;
+    }
+    .segmented-track {
+      flex-wrap: wrap;
+      max-width: 100%;
+    }
+  }
+
+  @media (max-width: 640px) {
+    .room-bar {
+      padding: 10px 12px;
+    }
+    .identity-copy,
+    .control-cluster {
+      min-width: 0;
+    }
+    .bar-controls {
+      flex-direction: column;
+      align-items: stretch;
+      gap: 8px;
+    }
+    .segmented-track {
+      display: grid;
+      grid-template-columns: repeat(3, minmax(0, 1fr));
+      width: 100%;
+    }
+    .seg-option {
+      min-height: 36px;
+      text-align: center;
+      padding: 6px 4px;
+    }
+    .floor-stage {
+      padding: 10px 12px 18px;
+      gap: 14px;
+    }
+    .architectural-sheet,
+    .dossier-slip {
+      padding: 12px 13px;
+    }
+    .dossier-kicker-row,
+    .dossier-title-row,
+    .field-row-head,
+    .ticket-head,
+    .socket-footnote {
+      flex-wrap: wrap;
+      gap: 6px 8px;
+    }
+    .dossier-heading {
+      font-size: 28px;
+    }
+    .sensory-grid {
+      grid-template-columns: minmax(0, 1fr);
+      gap: 8px;
+    }
+    .hold-cta {
+      font-size: 17px;
+      padding: 12px;
+      min-height: 44px;
+    }
+    .ticket-details {
+      grid-template-columns: minmax(0, 1fr);
+    }
+    .folio-ledger {
+      grid-template-columns: minmax(0, 1fr);
+    }
+    .ledger-cell,
+    .ledger-cell:nth-child(-n+2) {
+      border-inline-end: 0;
+      border-bottom: 1px solid var(--brass);
+      padding: 12px 13px;
+    }
+    .ledger-cell:last-child {
+      border-bottom: 0;
     }
   }
 
