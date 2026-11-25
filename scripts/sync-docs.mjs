@@ -266,6 +266,10 @@ export function syncDocs(root, mode = 'check') {
       },
     },
     {
+      relPath: 'website/src/generated/repo-meta.json',
+      transform: (raw) => updateJsonVersion(raw, m.version, ['version']),
+    },
+    {
       relPath: 'plugin.json',
       transform: (raw) => updateJsonVersion(raw, m.version, ['version']),
     },

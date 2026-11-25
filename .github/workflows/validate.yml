@@ -18,6 +18,7 @@ jobs:
           node-version: 24
           package-manager-cache: false
       - run: node scripts/validate-skills.mjs
+      - run: npm run sync:docs:check && npm run test:sync-docs
       - run: node bin/pixelcraft.mjs add all --agent all --dry-run
       - run: npm run test:distribution
       - run: node scripts/test-release-archives.mjs
@@ -25,7 +26,7 @@ jobs:
         run: npm run test:installers -- --shell --powershell
       - name: Verify adapters, tokens, and validator contracts
         run: npm run test:adapters && npm run test:tokens && npm run test:validator
-      - run: npm run test:finish-gate && npm run test:slop-scan
+      - run: npm run test:finish-gate && npm run test:slop-scan && npm run test:cross-platform-qa && npm run eval:offline
       - name: Verify browser diagnostic fixtures
         env:
           PIXELCRAFT_TEST_PLAYWRIGHT_PROJECT: ${{ runner.temp }}/pixelcraft-qa
