@@ -61,12 +61,18 @@ try {
     'plugin.json',
     'gemini-extension.json',
     '.claude-plugin',
+    '.cursor-plugin',
+    '.antigravity-plugin',
+    '.codex-plugin',
+    '.github/plugin',
+    '.devin-plugin',
     'README.md',
     'docs',
     'evals',
     'skills',
     'bin',
     'website/package.json',
+    'website/package-lock.json',
     'website/README.md',
     'website/public/gallery',
   ]) {
@@ -76,7 +82,7 @@ try {
     fs.cpSync(src, dst, { recursive: true });
   }
 
-  // Introduce deliberate drift across README.md, evals/README.md, and website/package.json
+  // Introduce deliberate drift across README.md, evals/README.md, website/package.json, and .antigravity-plugin/plugin.json
   const readmePath = path.join(tmp, 'README.md');
   fs.writeFileSync(
     readmePath,
@@ -96,11 +102,17 @@ try {
   webPkg.version = '0.0.1';
   fs.writeFileSync(webPkgPath, `${JSON.stringify(webPkg, null, 2)}\n`, 'utf8');
 
+  const agyPath = path.join(tmp, '.antigravity-plugin/plugin.json');
+  const agyPkg = JSON.parse(fs.readFileSync(agyPath, 'utf8'));
+  agyPkg.version = '0.0.1';
+  fs.writeFileSync(agyPath, `${JSON.stringify(agyPkg, null, 2)}\n`, 'utf8');
+
   const failRes = run(['--check', '--root', tmp], true);
   assert.equal(failRes.code, 1, 'Expected --check to fail on drifted files');
   assert.match(failRes.stderr, /README\.md/);
   assert.match(failRes.stderr, /evals\/README\.md/);
   assert.match(failRes.stderr, /website\/package\.json/);
+  assert.match(failRes.stderr, /\.antigravity-plugin\/plugin\.json/);
 
   const writeRes = run(['--write', '--root', tmp]);
   assert.equal(writeRes.code, 0);
@@ -109,6 +121,8 @@ try {
   assert.equal(healedRes.code, 0);
   const healedWebPkg = JSON.parse(fs.readFileSync(webPkgPath, 'utf8'));
   assert.equal(healedWebPkg.version, parsed.metrics.version);
+  const healedAgyPkg = JSON.parse(fs.readFileSync(agyPath, 'utf8'));
+  assert.equal(healedAgyPkg.version, parsed.metrics.version);
   console.log('ok 3 - drift fails --check and heals idempotently with --write');
 } finally {
   fs.rmSync(tmp, { recursive: true, force: true });

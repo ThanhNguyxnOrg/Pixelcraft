@@ -1,0 +1,17 @@
+{
+  "name": "pixelcraft",
+  "owner": {
+    "name": "ThanhNguyxnOrg"
+  },
+  "metadata": {
+    "description": "Portable Agent Skills for distinctive UI and rigorous UX across frontend stacks",
+    "version": "0.1.0"
+  },
+  "plugins": [
+    {
+      "name": "pixelcraft",
+      "source": "./",
+      "description": "Portable Agent Skills for distinctive UI and rigorous UX across frontend stacks"
+    }
+  ]
+}

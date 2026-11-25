@@ -249,7 +249,6 @@ export function syncDocs(root, mode = 'check') {
       relPath: 'website/README.md',
       transform: (raw) =>
         applyReplacements(raw, [
-          [/\(\*\*\d+\.\d+\.\d+(?:-[0-9A-Za-z.-]+)?\*\*\)/g, `(**${m.version}**)`],
           [/\*\*\d+ multi-stack proof exhibits:\*\*/g, `**${m.galleryExhibits} multi-stack proof exhibits:**`],
           [/recapture all \d+ WebP assets/g, `recapture all ${galleryWebpCount} WebP assets`],
         ]),
@@ -257,6 +256,14 @@ export function syncDocs(root, mode = 'check') {
     {
       relPath: 'website/package.json',
       transform: (raw) => updateJsonVersion(raw, m.version, ['version']),
+    },
+    {
+      relPath: 'website/package-lock.json',
+      transform: (raw) => {
+        let next = updateJsonVersion(raw, m.version, ['version']);
+        next = updateJsonVersion(next, m.version, ['packages', '', 'version']);
+        return next;
+      },
     },
     {
       relPath: 'plugin.json',
@@ -272,13 +279,35 @@ export function syncDocs(root, mode = 'check') {
     },
     {
       relPath: '.claude-plugin/marketplace.json',
+      transform: (raw) => updateJsonVersion(raw, m.version, ['plugins', 0, 'version']),
+    },
+    {
+      relPath: '.cursor-plugin/plugin.json',
+      transform: (raw) => updateJsonVersion(raw, m.version, ['version']),
+    },
+    {
+      relPath: '.cursor-plugin/marketplace.json',
+      transform: (raw) => updateJsonVersion(raw, m.version, ['metadata', 'version']),
+    },
+    {
+      relPath: '.antigravity-plugin/plugin.json',
+      transform: (raw) => updateJsonVersion(raw, m.version, ['version']),
+    },
+    {
+      relPath: '.codex-plugin/plugin.json',
+      transform: (raw) => updateJsonVersion(raw, m.version, ['version']),
+    },
+    {
+      relPath: '.github/plugin/marketplace.json',
       transform: (raw) => {
-        const data = JSON.parse(raw);
-        if (!Array.isArray(data.plugins) || !data.plugins[0]) return raw;
-        if (data.plugins[0].version === m.version) return raw;
-        data.plugins[0].version = m.version;
-        return `${JSON.stringify(data, null, 2)}\n`;
+        let next = updateJsonVersion(raw, m.version, ['metadata', 'version']);
+        next = updateJsonVersion(next, m.version, ['plugins', 0, 'version']);
+        return next;
       },
+    },
+    {
+      relPath: '.devin-plugin/plugin.json',
+      transform: (raw) => updateJsonVersion(raw, m.version, ['version']),
     },
   ];
 

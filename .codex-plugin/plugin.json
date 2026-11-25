@@ -1,0 +1,45 @@
+{
+  "name": "pixelcraft",
+  "version": "0.1.0",
+  "description": "Portable Agent Skills for distinctive UI and rigorous UX across frontend stacks.",
+  "author": {
+    "name": "ThanhNguyxnOrg",
+    "url": "https://github.com/ThanhNguyxnOrg"
+  },
+  "homepage": "https://thanhnguyxnorg.github.io/Pixelcraft/",
+  "repository": "https://github.com/ThanhNguyxnOrg/Pixelcraft",
+  "license": "MIT",
+  "keywords": [
+    "frontend",
+    "ui",
+    "ux",
+    "design-system",
+    "design-tokens",
+    "accessibility",
+    "wcag",
+    "multi-platform"
+  ],
+  "skills": "./skills/",
+  "interface": {
+    "displayName": "Pixelcraft",
+    "shortDescription": "Plan, design, and verify frontend UI across platforms.",
+    "longDescription": "Portable Agent Skills for distinctive, evidence-verified UI and rigorous UX across 21 programming languages and 13 rendering surfaces—including Grill-Me discovery, 3-tier creative brainstorming, DTCG token export, accessibility floor checks, and runnable verification CLIs.",
+    "developerName": "ThanhNguyxnOrg",
+    "category": "Developer Tools",
+    "capabilities": [
+      "Interactive",
+      "Read",
+      "Write"
+    ],
+    "defaultPrompt": [
+      "Use Pixelcraft to run Grill-Me discovery and pitch 3 divergent directions for this UI.",
+      "Audit this interface with pixelcraft-review and report rendered vs static evidence."
+    ],
+    "websiteURL": "https://thanhnguyxnorg.github.io/Pixelcraft/",
+    "privacyPolicyURL": "https://docs.github.com/en/site-policy/privacy-policies/github-general-privacy-statement",
+    "termsOfServiceURL": "https://docs.github.com/en/site-policy/github-terms/github-terms-of-service",
+    "brandColor": "#080F17",
+    "logo": "./assets/pixelcraft-logo-256.png",
+    "composerIcon": "./assets/pixelcraft-logo-128.png"
+  }
+}

@@ -1,6 +1,6 @@
 ---
 name: pixelcraft-brandkit
-description: Creates premium brand-kit and identity-board image generation briefs for brand kits, logo systems, brand guidelines, moodboards, identity decks, visual-world presentations, launch identities, logo concepts, palette/type systems, and implementation-ready brand direction. Use when a user asks for a brand kit, identity board, moodboard, logo system, brand guidelines image, visual identity, rebrand, refresh, or premium brand mockup board.
+description: Creates art-directed brand-kit and identity-board image generation briefs for brand kits, logo systems, brand guidelines, moodboards, identity decks, visual-world presentations, launch identities, logo concepts, palette/type systems, and implementation-ready brand direction. Use when a user asks for a brand kit, identity board, moodboard, logo system, brand guidelines image, visual identity, rebrand, refresh, or brand mockup board.
 license: MIT
 metadata:
   version: 0.1.0
