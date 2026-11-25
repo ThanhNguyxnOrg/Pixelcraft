@@ -18,7 +18,7 @@ For a substantial review, first critique the brief and captures without detector
 
 - Read [references/heuristics.md](references/heuristics.md) when translating Nielsen's 10 heuristics into concrete checks.
 - Read [references/personas.md](references/personas.md) for structured persona walkthroughs. Treat personas as hypothesis generators.
-- Read [references/polish.md](references/polish.md) for final optical/state/copy/motion/dark-mode/long-string inspection.
+- Read [references/polish.md](references/polish.md) for the **Comprehensive Studio-Grade Polish & Delivery Gate**: 5-second hierarchy, Invisible Craft (`B1–B6`), non-happy-path/`404`/`500`/`IME`/`+50–100%` short-label resilience, and stack-neutral engineering & license handoff.
 - Read [references/critique-protocol.md](references/critique-protocol.md) before structured critique/design decision review.
 - Read [references/audit-report.md](references/audit-report.md) before writing an audit report.
 - Run `node scripts/slop-scan.mjs --help` for deterministic fingerprint scanning (use `--fail-on P0|P1|P2|P3` to fail review/CI gates on severity threshold, and `--waivers FILE` only for approved brand rules). The scanner is evidence input, not a judge of good design.
@@ -27,45 +27,43 @@ For a substantial review, first critique the brief and captures without detector
 
 | Mode | Use | Output |
 |---|---|---|
-| audit | verify floor/state/a11y/copy/implementation against criteria | severity-ranked findings + evidence + unverified scope |
-| critique | evaluate direction, hierarchy, distinctiveness, coherence | strengths, risks, alternatives, decision recommendation |
-| polish | improve an accepted implementation without changing direction | concrete micro-fixes in alignment/spacing/states/copy/motion |
+| audit | verify floor/state/a11y/copy/engineering/handoff against criteria | severity-ranked findings + Studio-Grade Gate summary + unverified scope |
+| critique | evaluate direction, 5-second hierarchy, distinctiveness, coherence | strengths, risks, alternatives, decision recommendation |
+| polish | harden an accepted implementation to the Studio-Grade bar (`references/polish.md`) without changing direction | concrete fixes across `B1–B6` micro-craft, states, `IME`/i18n, and release hygiene |
 
 Do not silently redesign during polish. Do not treat an audit as complete when only static code was inspected.
 
 ## Adversarial Defect-Hunt Iron Law & Rationalization Table
 
-**IRON LAW:** Assume defects exist until proven otherwise. Actively hunt unfinished stubs (`// TODO`, ellipsis truncation), dead handlers (`onClick={() => {}}`, `href="#"`), unwired mobile navigation, lazy DIY substitutes (hand-rolled modals/editors/charts/tables/toasts/drawers/carousels), lazy platform defaults (Tkinter/raw-Flexbox email/`window.print()` PDFs), and unapproved 3-item hardcoded mock arrays masquerading as live data.
+**IRON LAW:** Assume defects exist until proven otherwise. Actively hunt unfinished stubs (`// TODO`, ellipsis truncation), dead controls (no-op callbacks, unbound commands, placeholder links), unwired mobile navigation, unguarded `IME` `Enter` submits, missing `404`/`500`/offline/error recovery, lazy DIY substitutes (hand-rolled modals/editors/charts/tables/toasts/drawers/carousels), lazy platform defaults (Tkinter/raw-Flexbox email/`window.print()` PDFs), client-exposed secrets, unverified font/media licenses, and unapproved 3-item hardcoded mock arrays masquerading as live data.
 
 | Reviewer rationalization | Reality & required action |
 |---|---|
-| "`slop-scan.mjs` returned 0 findings, so the UI is clean." | Zero static hits proves only absence of scanned regexes. Inspect rendered captures, interactive flows, keyboard focus, and architectural DIY slop (`references/heuristics.md`). |
-| "The desktop layout looks polished, so mobile is probably fine." | Unwired hamburger toggles, clipped drawers, and hidden primary actions hide in narrow viewports. Explicitly inspect and exercise mobile navigation and reflow (`320px`). |
+| "`slop-scan.mjs` returned 0 findings, so the UI is clean." | Zero static hits proves only absence of scanned regexes. Inspect rendered captures, interactive flows, `B1–B6` micro-craft, keyboard focus, and architectural DIY slop (`references/heuristics.md`, `references/polish.md`). |
+| "The desktop layout looks polished, so mobile is probably fine." | Unwired hamburger toggles, clipped drawers, sticky-chrome focus occlusion (`2.4.11`), and hidden primary actions hide in narrow viewports. Explicitly exercise `320px` reflow and mobile navigation. |
 | "Those 3 sample cards and `+24.5%` stats are fine for a demo." | Unapproved mock arrays and invented KPI deltas violate Truthfulness (`P0`) unless explicitly requested by the user and visibly labeled as fixture/demo data. |
-| "The custom `<div>` modal works when I click it." | Click-only `<div>` modals break focus trap, `inert` backdrop, `Escape` dismissal, and focus restoration. Flag as Architectural / DIY Slop (`P1`). |
-| "There's a `// TODO` on the secondary action, I'll skip mentioning it." | Dead handlers and omitted branches on in-scope UI are delivery defects (`P0`/`P1`). Report every unfinished interactive path with `file:line`. |
+| "The custom click-only modal works when I click it." | Non-semantic modals break focus trap, `inert` backdrop, `Escape` dismissal, and focus restoration. Flag as Architectural / DIY Slop (`P1`). |
+| "There's a `// TODO` on the secondary action, I'll skip mentioning it." | Dead controls and omitted branches on in-scope UI are delivery defects (`P0`/`P1`). Report every unfinished interactive path with `file:line`. |
 
 ## Severity taxonomy
 
 | Severity | Meaning | Examples |
 |---|---|---|
-| P0 | floor violation/blocker/deception | inaccessible primary task, invented proof, data loss, unreadable critical content, unapproved fake live data |
-| P1 | major UX failure / architectural slop | missing error recovery, broken back state, unwired mobile nav, empty primary handler, DIY broken modal/editor/table, wrong platform idiom, severe clipping |
-| P2 | quality defect affecting comprehension/efficiency/trust | weak hierarchy, inconsistent state, vague error copy, AI marketing clichés, poor localization resilience |
-| P3 | polish/craft refinement | optical alignment, rhythm, copy tightening, restrained motion refinement |
+| P0 | floor violation/blocker/deception | inaccessible primary task, sticky-chrome focus trap/total occlusion, invented proof, leaked client secret, unlicensed commercial font/asset, data loss, unapproved fake live data |
+| P1 | major UX failure / architectural slop | missing error/`404`/`500`/offline recovery, premature `IME` `Enter` submit, broken back state, unwired mobile nav, dead primary control, DIY broken modal/editor/table, failing strict language checks |
+| P2 | quality defect affecting comprehension/efficiency/trust | weak 5-second hierarchy, `>2` unjustified font families, `>75ch` prose wall, muddy `#000000` dark-mode shadows (`B4`), jittering proportional digits (`B6`), clipped `+50–100%` short labels, `Unicode NFC` fallback ransom-note glyphs |
+| P3 | polish/craft refinement | `+1–2` unit optical icon centroid nudge (`B2`), concentric radius tweak, asymmetric exit timing (`B3`), warm-tooltip chain (`B1`), microcopy tightening |
 
 Every finding requires: severity, evidence (`file:line`, screenshot region/device state, tool output), confidence (`high/medium/low`), user impact, concrete fix, and evidence label (`rendered/static/model-judgment/not-checked/waived`). No unlabeled certainty.
 
 ## Protocol
 
-1. Establish scope, mode, direction card/project system, commit/build state, target platforms, locales, and user tasks.
-2. Gather deterministic evidence first: run `slop-scan.mjs` (with `--fail-on` where gating), tests, and builds; inspect files; capture rendered/device states via `pixelcraft-visual-qa` where possible.
-3. Walk primary flows using personas as hypotheses; do not claim they are users.
-   Actively inspect changed routes and diffs for unfinished handlers, `// TODO` stubs, ellipsis truncation, `href="#"` links, unwired mobile navigation, lazy DIY widgets, and unapproved mock arrays presented as live truth. Confirm suspected omissions through the affected interaction; a TODO in an unrelated test or a truthful empty state is not a failure.
-4. Apply heuristics (including **Architectural / DIY Slop** in `references/heuristics.md`) and floor checks. Separate actual violation from risk/opportunity; use the structured critique protocol when the output informs a design decision.
+1. Establish scope, mode, direction card/project system, commit/build state, target platforms, regulatory/store regime, locales, and user tasks.
+2. Gather deterministic evidence first: run `slop-scan.mjs` (with `--fail-on` where gating), strict active-language compiler/type/linter checks, and tests; inspect files; capture rendered/device states via `pixelcraft-visual-qa` where possible.
+3. Walk primary and non-happy-path flows (`loading`, `empty`, `error`, `offline`, `404`/`500`, `permission-denied`, `IME` composition `Enter`, `+50–100%` short-label expansion) using personas as hypotheses; confirm suspected stubs, dead controls, or DIY widgets through the affected interaction.
+4. Audit **Studio Invisible Craft (`B1–B6`)**, **5-Second Hierarchy**, **Architectural / DIY Slop**, and **Commercial Handoff Hygiene** (`<10m` setup, isolated previews, license manifest, account transfer) using `references/polish.md` and `references/heuristics.md`.
 5. Compare against slop fingerprints and `.pixelcraft/history.json`; identify repetition or absence of subject commitment.
-6. Rank by user impact and floor authority, not ease of fixing.
-7. Report verified positives only when material; prioritize actionable findings and unverified scope.
+6. Rank by user impact and floor authority, not ease of fixing, and report using `references/audit-report.md`.
 
 ## Distinctiveness check
 
@@ -77,9 +75,9 @@ One repair pass is appropriate for clear deterministic findings. Stop when findi
 
 ## Pre-submit checklist
 
-- [ ] Adversarial defect hunt completed for stubs (`// TODO`, ellipsis), empty handlers (`onClick={() => {}}`, `href="#"`), unwired mobile nav, unapproved mock data, and lazy DIY substitutes.
-- [ ] `slop-scan.mjs` executed (with `--fail-on` threshold where applicable) and paired with rendered/manual inspection—never treated as sole pass proof.
+- [ ] Adversarial defect hunt completed for stubs (`// TODO`, ellipsis), dead controls/links, unwired mobile nav, unguarded `IME` `Enter` handlers, client secrets, unapproved mock data, and lazy DIY substitutes.
+- [ ] `slop-scan.mjs` and strict active-language compiler/type/analyzer checks executed where available and paired with rendered/manual inspection—never treated as sole pass proof.
+- [ ] Studio-Grade Polish & Delivery Gate (`references/polish.md`) audited across 5-second hierarchy, Invisible Craft (`B1–B6`), non-happy-path + `+50–100%` short-label/`NFC` resilience, and `<10m` setup / license / ownership handoff.
 - [ ] Every finding includes severity (`P0`–`P3`), exact `file:line` or capture evidence, confidence, user impact, concrete fix, and evidence label.
-- [ ] Architectural / DIY Slop and Nielsen + AI/agentic heuristics (`references/heuristics.md`) audited against the changed scope.
 - [ ] Distinctiveness and `.pixelcraft/history.json` repetition checked; any brand waivers are explicit and non-floor only.
-- [ ] Unchecked surfaces, devices, or states are explicitly listed as `not-checked` with no false "looks good / ready" claim.
+- [ ] Unchecked surfaces, devices, regulatory regimes, or states are explicitly listed as `not-checked` with no false "looks good / ready" claim.

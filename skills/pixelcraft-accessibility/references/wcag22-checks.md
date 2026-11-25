@@ -77,3 +77,23 @@ Use short repeatable scripts rather than vague manual inspection:
 4. **Dragging alternative script:** identify every drag interaction, complete the same outcome using its single-pointer/keyboard alternative, cancel midway, and verify state/announcement.
 5. **Error recovery script:** submit invalid input, correct only one field, verify prompt revalidation, preserved input, summary freshness, and focus behavior.
 6. **Scaling script:** set 200% text/zoom or platform-large text, complete the task in light/dark/high-contrast modes, and inspect clipping, overlap, target size, and focus visibility.
+
+## Sticky and fixed chrome focus-unobscured remediation (`WCAG 2.4.11` / `2.4.12`)
+
+Sticky headers, floating action bars, bottom tab/composer bars, cookie/consent banners, and software keyboards routinely hide controls reached via `Tab` or `Shift+Tab`. Enforce unobscured focus (`2.4.12` zero-occlusion target; `2.4.11` AA floor) structurally across platforms:
+
+| Platform | Structural remediation pattern |
+|---|---|
+| **Web CSS / DOM** | Declare `scroll-padding-top` and `scroll-padding-bottom` on the scrolling container (`html` or overflow pane) matching tokenized sticky chrome heights (`scroll-padding-block: calc(var(--sticky-header-h, 0px) + 12px) calc(var(--sticky-footer-h, 0px) + 12px);`), and set `scroll-margin-block` on anchor targets. Dismiss or reserve flow space for consent/cookie banners so they never float over focused fields. |
+| **SwiftUI / UIKit** | Mount persistent bars with `.safeAreaInset(edge: .top / .bottom)` rather than uncompensated `ZStack` overlays so `ScrollView` and keyboard avoidance automatically inset focusable bounds; pair `@FocusState` with `ScrollViewReader` when custom chrome changes height dynamically. |
+| **Jetpack Compose / Android** | Pass `Scaffold` `innerPadding` into scrollable containers, apply `Modifier.imePadding()` + `WindowInsets.safeDrawing`, and use `BringIntoViewRequester` on custom focusable rows so focused inputs clear bottom sheets and keyboards completely. |
+| **Desktop / TUI / Game UI** | Subtract pinned toolbar/status-bar dimensions from scroll-into-view calculations (Qt `QScrollArea::ensureWidgetVisible`, WinUI/WPF/Avalonia `BringIntoView`, TUI/HUD viewport row clamping on keyboard/controller focus step). |
+
+## European Accessibility Act (`EAA` / `EN 301 549`) production readiness
+
+For B2C digital products, e-commerce checkouts, consumer banking/fintech, passenger transport services, e-books, and communications serving EU users, technical `WCAG 2.2 AA` / `EN 301 549` conformance must be paired with operational release readiness (escalating final legal sign-off to counsel):
+
+1. **Public Accessibility Statement:** link persistently from global navigation, footer, app settings, or store listing; state the applied technical standard (`EN 301 549` / `WCAG 2.2 AA`), publication/review date, and honest conformance status (`fully`, `partially`, or `non-conformant`).
+2. **Known limitations & accessible workarounds:** explicitly list any unresolved third-party embeds, archival documents, or exempted media alongside a concrete alternative path to complete the same user task.
+3. **Assistive-technology verification matrix:** document the real OS, browser/runtime, keyboard, text-zoom (`200%`), and screen-reader combinations actually tested (`VoiceOver`, `NVDA`, `TalkBack`, `Narrator`, `Orca`); mark unverified combinations `not-checked` rather than implying universal certification.
+4. **Accessible feedback & escalation channel:** provide a barrier-free contact mechanism (accessible form/email/support route free of cognitive CAPTCHAs) with expected response timing and jurisdiction-appropriate enforcement/ombudsman contact placeholders for the product owner to populate.

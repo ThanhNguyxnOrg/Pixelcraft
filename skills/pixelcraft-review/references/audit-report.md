@@ -30,6 +30,15 @@
 - Slop scan: <score/findings; note zero ≠ good design>.
 - Subject-derived commitment: <present/weak/absent + evidence>.
 
+## Studio-grade delivery gate (`references/polish.md`)
+
+| Pillar | Status (`pass`/`issue`/`not-checked`/`waived`) | Evidence & scope | Label |
+|---|---|---|---|
+| 1. Art direction & 5-second hierarchy (`≤2` fonts+`1` mono, `45–75ch`, 1–2 CTAs) |  |  |  |
+| 2. Invisible craft (`B1` timing, `B2` optical/concentric, `B3` origin/exit, `B4` dark `L`/edge, `B5` hit-slop/Safe Triangle/capture, `B6` `tnum`/`U+2212`) |  |  |  |
+| 3. States, a11y (`2.4.11`/`EAA`), `IME` `Enter` guard & `+50–100%` short-label / `NFC` i18n |  |  |  |
+| 4. Stack-neutral engineering (`<10m` setup, strict checks, zero secrets) & license/owner handoff |  |  |  |
+
 ## Not checked / waived
 
 - `<label>` <scope> — reason/consequence.

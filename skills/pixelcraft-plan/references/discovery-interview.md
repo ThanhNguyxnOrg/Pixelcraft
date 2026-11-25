@@ -33,14 +33,15 @@ Start with the outcome and work outward. Include only dimensions relevant to thi
 
 | Decision area | Questions the agent may need to resolve |
 |---|---|
-| Problem and outcome | What problem exists? Who experiences it? What should become easier, faster, safer, or possible? What signal would show success? |
-| Users and context | Primary user or role, expertise, frequency, device, environment, language, accessibility needs, and network conditions |
+| Problem, KPIs & primary CTAs | What problem exists? Which measurable business/task KPI signals success, and which **1–2 primary CTAs** outrank secondary actions? |
+| Users and context | Primary user or role, expertise, frequency, device, environment, language/IME scripts, accessibility needs, and network conditions |
 | Scope | Core jobs, MVP boundary, must-have versus later, non-goals, roles/permissions, and cost of missing a capability |
-| Product experience | Main flows, navigation, interaction model, content, visual ambition, states, recovery, and existing references or approved designs |
-| Platform | Web, mobile, desktop, data app, TUI, email, game, spatial, embedded, or a justified combination; distribution and input modalities |
+| Experience & 5-second hierarchy | What must a user understand and see where to act within **5 seconds**? Main flows, navigation, visual ambition, states, recovery, and approved designs |
+| Content & CMS ownership | Who writes, localizes, and maintains copy, pricing, legal text, and media post-launch (static source, Git Markdown/MDX, headless/integrated CMS, translation catalog)? |
+| Platform & distribution regime | Web, mobile, desktop, data app, TUI, email, document, game, spatial, or constrained hardware; store/host gates (App Store, Google Play, `MV3`, Steam Deck/Console `TRC`, `PDF/X-4`, `RFC 8058`) |
 | Data and integrations | Existing API/backend, ownership, persistence, import/export, authentication, permissions, realtime/offline behavior, third-party services |
 | Technical approach | Existing stack constraints, candidate languages/frameworks, rendering model, deployment, testing, operations, maintainability, and team capability |
-| Quality and constraints | Performance, reliability, security, privacy, legal duties, accessibility, localization, budget, timeline, and maintenance horizon |
+| Regulatory, quality & constraints | EU `EAA` / `EN 301 549`, `ADA Title II`, privacy/data residency, performance, security, licensing/IP ownership, budget, timeline, and maintenance horizon |
 | Validation | Acceptance criteria, critical states, measurement source, tests, and evidence needed to call the work complete |
 
 Do not ask every row as a checklist. A landing page with no backend does not need a database interview; a brownfield feature does not need a fresh framework comparison when the existing stack is authoritative.

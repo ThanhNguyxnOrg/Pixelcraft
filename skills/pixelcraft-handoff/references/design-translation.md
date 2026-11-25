@@ -117,6 +117,18 @@ Declare tolerance before comparing. Use the `pixelcraft-visual-qa` skill for the
 
 Antialiasing, font shaping, platform rendering, and dynamic content make exact byte equality inappropriate. Use the region-aware tolerance schema, hard-failure rules, normalization requirements, and deterministic fixture contract in `references/fidelity-tolerance.md`. Record tolerances before inspecting the diff.
 
+## 8. Commercial release, license manifest & ownership transfer
+
+Studio-grade handoff means another engineer or client owner can build, verify, legally distribute, and operate the product without depending on the author's local machine or personal accounts:
+
+| Handoff gate | Mandatory deliverable | Verification / failure boundary |
+|---|---|---|
+| **Reproducible `< 10m` clean-clone setup** | Committed lockfile/toolchain pins, `.env.example` (or native config template), and documented single-path bootstrap + verification commands | Clean checkout boots and passes strict active-language static checks (`rustc`/`clippy`, Swift strict concurrency, Kotlin/Dart analyzer, `mypy`/`pyright`, C# nullable, or `tsc --strict`) in `< 10 minutes` |
+| **Stack-native component / screen catalog** | Isolated state previews where the target stack supports them (SwiftUI `#Preview`, Compose `@Preview`, Flutter Widgetbook, Qt/QML preview fixtures, TUI state snapshots, or Storybook/Ladle) | Exercises default, `loading`, `empty`, `error`, dark-mode, and `+50–100%` localized short-label states without live production backends |
+| **Commercial license manifest** | Inventory of all shipped fonts (web/desktop/app embedding rights), icon packs, photography/illustrations, 3D models, shaders, audio clips, and copyleft/commercial packages | Every asset lists license type, redistribution scope, and seat/traffic bounds (`static`); trial/personal-only assets flagged `P0` blocker until replaced or procured |
+| **Owner-level account & key transfer** | Root admin & billing ownership rests with the client/product owner for DNS/domains, Apple Developer / Google Play / Chrome Web Store / Steamworks accounts, OAuth apps, analytics/error `DSN`s, CMS, and signing certificates | Zero personal/agency root accounts left in production critical paths; zero hardcoded secrets or private keys in client source, bundles, or git history |
+| **Post-launch warranty & regression baseline** | Frozen visual/behavioral QA baselines, documented waiver register, and clear defect-triage boundary distinguishing baseline regressions from new feature scope | Baselines reproducible via `pixelcraft-visual-qa` and native test suites |
+
 ## Acceptance report
 
-Report: source/version/frame/mode/breakpoint; classification of specification versus inspiration; reused versus new components; token substitutions/exceptions; missing-state assumptions; rendered comparison evidence and tolerance; intentional deviations; and remaining `not-checked` surfaces.
+Report: source/version/frame/mode/breakpoint; classification of specification versus inspiration; reused versus new components; token substitutions/exceptions; missing-state assumptions; rendered comparison evidence and tolerance; `< 10m` setup & isolated preview coverage; commercial license manifest & owner-account transfer status; post-launch regression baseline; intentional deviations; and remaining `not-checked` surfaces.

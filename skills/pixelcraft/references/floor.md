@@ -13,7 +13,7 @@ The floor is non-negotiable unless the user explicitly waives a scoped item. It 
 - Deliver the complete in-scope behavior, never a stub or half-wired shell:
   - zero `// TODO`, `// FIXME`, or unimplemented comments standing in for requested UI or logic;
   - zero ellipsis code truncation (`// ... rest`, `/* ... */`, omitted branches);
-  - zero empty or no-op handlers (`onClick={() => {}}`, `onSubmit={() => {}}`, dead `href="#"` links, or decorative buttons that do nothing);
+  - zero empty or no-op handlers (empty action closures, unbound commands, no-op callbacks, dead placeholder links, or decorative buttons that do nothing);
   - zero unwired mobile navigation (e.g. a hamburger toggle that never opens, traps focus, or omits desktop routes);
   - zero unapproved 3-item hardcoded mock arrays masquerading as live or persisted data.
 - User-requested placeholders, explicit test fixtures, and intentional UI display truncation are not defects; visibly label any requested demo/fixture data and never present it as live production truth.
@@ -48,11 +48,12 @@ The floor is non-negotiable unless the user explicitly waives a scoped item. It 
 
 ## 5. Localization and internationalization
 
-- Budget approximately 30–40% expansion for translated strings in dense UI; test contraction for CJK and expansion for German/Finnish-like cases where feasible.
+- Split text-expansion budgets by element class: budget **`+30–40%`** for prose and multi-sentence paragraphs, and **`+50–100%`** for short buttons, tabs, chips, column headers, and badges (where compact English words like `"Save"` or `"Views"` double in German, Vietnamese, or Finnish); test CJK horizontal contraction alongside vertical line-height and line-count growth.
+- Enforce **IME composition safety**: pressing `Enter` or `Escape` during active input-method composition (Vietnamese Telex/VNI, Japanese Kana-to-Kanji, Korean Hangul, Chinese Pinyin) commits or cancels candidate text and never prematurely submits forms, search bars, chat composers, or inline edits.
+- Enforce **combining and precomposed diacritic integrity**: normalize and test `Unicode NFC` strings and verify full font glyph coverage (including Vietnamese horn/circumflex/breve + stacked tone marks such as `ư, ơ, ệ, ử, ẫ` and target scripts) so custom fonts never drop marks, clip ascenders, or fall back mid-word to mismatched system glyphs.
 - Use logical direction (`inline-start`, trailing/leading) rather than physical left/right assumptions in directional layout.
 - Support RTL mirroring where directionality is semantic; do not mirror numerals, clocks, playback direction, or culturally asymmetric symbols blindly.
 - Use locale-aware plural, gender/case, date, time, number, currency, calendar, sorting, input method, and name formatting. Do not concatenate translated fragments.
-- Choose fonts/fallbacks for script coverage and test shaping, line breaking, hyphenation, emphasis, numerals, and input composition.
 - Treat color symbolism, gestures, imagery, formality, humor, reading order, and trust cues as localizable design decisions, not translation afterthoughts.
 
 ## 6. Performance and resilience
@@ -77,3 +78,12 @@ The floor is non-negotiable unless the user explicitly waives a scoped item. It 
 - Check repetition history so “distinctive” does not become a repeating template.
 - Every compliance claim carries `rendered`, `static`, `model-judgment`, `not-checked`, or `waived` plus method/scope.
 - A successful build, DOM presence, or page load is not evidence that visual or UX quality was inspected.
+
+## 9. Engineering and handoff hygiene
+
+- Zero dead interactive controls: every visible button, menu item, command, shortcut, toggle, or link executes wired behavior across supported input paths (never a no-op callback, unbound command, or placeholder target).
+- Strict compiler, type, analyzer, and linter checks pass cleanly for the active language and toolchain (for example `rustc`/`clippy`, Swift strict concurrency, Kotlin/Dart analyzer, `mypy`/`pyright`, C# nullable analysis, or `tsc --strict`) without blanket rule suppressions.
+- Reproducible `< 10 minute` clean-clone-to-run setup: committed lockfiles/toolchain pins, documented configuration template (such as `.env.example` or platform config stub), and a single documented bootstrap and verification command path.
+- Isolated component or screen state previews exist where the target stack supports them (such as SwiftUI `#Preview`, Jetpack Compose `@Preview`, Flutter Widgetbook, Qt/QML preview fixtures, TUI state snapshots, or web component stories) covering non-happy-path states.
+- Zero hardcoded secrets, private API keys, signing credentials, or privileged tokens in client-visible source, bundles, binaries, or debug output.
+- Verified commercial licenses for all shipped fonts, icon sets, imagery, 3D/audio media, and restricted packages, paired with clean owner-level transfer boundaries for domains, store accounts, analytics/error DSNs, signing keys, and billing.
