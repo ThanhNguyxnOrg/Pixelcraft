@@ -64,15 +64,21 @@ Fallback must not expose secrets or rely on callback internals. Test plain-text 
 - do not use ASCII tables that collapse in proportional/mobile clients;
 - avoid time-only urgency (“soon”)—use absolute time plus relative context where useful.
 
-## Privacy and security
+## Recovery, `429` rate limits, and warm human escalation
+
+- **3-part error recovery (*What failed · Why · Next action*)**: replace vague `"Something went wrong"` banners with concrete actionable copy (*"Invoice lookup failed · Warehouse timed out after 15 s · Retry query or narrow date range"*) preserving the user's draft.
+- **`429` rate-limit countdown & queue**: when quota or burst limits trip, display the exact `Retry-After` countdown (`Rate limit reached — sending queued prompt in 12s`) with a `Cancel queued send` button rather than dropping the user's message.
+- **Warm human-support escalation**: never trap frustrated or out-of-policy users in a bot loop ("I didn't understand that" × 3). Offer a visible **Talk to a human** handoff that transfers a **structured conversation summary, entity IDs, and failed tool traces** directly to the support agent so the customer **never repeats themselves**, displaying real queue/SLA status.
+
+## Privacy, retention disclosure, and security
 
 - validate interaction signatures/tokens and mini-app initialization data server-side;
 - scope callback data/opaque IDs and expire them;
-- redact secrets and personal data from logs/cards/fallbacks;
-- treat channel membership changes as an authorization concern;
-- use confirmation for irreversible/shared actions; state exactly what will happen;
-- never ask for passwords/tokens in chat input unless the platform explicitly supports a secure input path.
+- redact secrets and personal data from logs/cards/fallbacks, and block untrusted Markdown `<img>` URLs from auto-fetching (`CSP img-src` allowlist / click-to-load);
+- disclose **data retention & model-training policy** plainly in workspace chrome/settings and provide a working **Delete Thread** action that purges conversation state and uploaded files;
+- use `Before -> After` confirmation cards for irreversible/shared actions (`Approve once` / `Edit` / `Reject`);
+- never ask for passwords/tokens in chat input unless the platform explicitly provides an encrypted secret modal/flow.
 
 ## Anti-slop warnings
 
-Reject cheerful filler before the answer, fake typing delays, repeated apologies, dead-end “OK” buttons, cards filled with metadata but no decision, emoji spam, undocumented truncation, unbounded stacked notifications, and “AI assistant” personas that obscure system state. The interface should sound like a competent tool: direct, contextual, reversible, and honest.
+Reject cheerful filler before the answer, fake typing delays, repeated apologies, dead-end “OK” buttons, raw JSON tool-approval dumps, emoji spam, undocumented truncation, cold bot-to-human transfers that lose history, and “AI assistant” personas that obscure system state. The interface should sound like a competent tool: direct, contextual, reversible, and honest.

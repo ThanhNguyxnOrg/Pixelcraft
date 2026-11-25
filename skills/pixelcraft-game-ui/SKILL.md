@@ -28,41 +28,44 @@ Unity `ProjectSettings/`, `.unity`, UXML/USS/UI Builder or uGUI `Canvas`/`TextMe
 
 ## Platform-wide rules
 
-- Critical HUD information survives motion, explosion/particle noise, low brightness, colorblindness, and glanceable viewing distance.
-- Do not cover crosshair/objective/danger/state with decorative panels or tutorial prompts.
-- Controller navigation must have sane initial focus, wrapping/dead-end behavior, back/cancel semantics, and no invisible focus traps.
-- Text scaling/localization can break bitmap atlases, fixed-width labels, and glyph coverage; plan overflow/expansion early.
-- Certification-style requirements vary by platform/version; treat them as constraints to verify against current official checklists, not universal law.
-- UI audio/haptics/animation should reinforce state without masking gameplay-critical feedback.
+- **Steam Deck Verified (`1280×800`, `16:10`) & distance legibility**: enforce **`>= 9px` absolute floor / `12–14px` body target at `1280×800`** handheld (`>= 24–28px` at `1080p` 10-foot TV distance), full gamepad navigation from boot with **zero external mouse-only launcher**, and automatic OS/Steam virtual keyboard invocation (`ShowFloatingGamepadTextInput`) whenever a text field receives controller focus.
+- **Safe areas & non-stretched ultrawide clamping**: keep critical HUD inside a **`90%` title-safe inset** (`5%` margin) and clamp peripheral HUD widgets to a centered **`16:9` anchor box** on `21:9` / `32:9` displays (with an edge-offset slider) **without stretching 2D sprites, radial reticles, or minimaps**.
+- **Console Lotcheck / TRC / XR compliance gates**:
+  - Immediately **auto-pause single-player gameplay + open a modal prompt** when the active controller disconnects;
+  - Display a persistent **active player profile / gamertag indicator** across account-bound menus;
+  - Render an explicit **"Saving — do not turn off…" autosave indicator** before/during non-volatile writes without stalling the render thread;
+  - Cap full-screen/UI luminance flashes strictly **`<= 3 Hz`** (photosensitivity floor).
+- **Zero-lag glyphs, input buffering, audio feel & `0 B/frame` GC**:
+  - Hot-swap input glyphs (`Xbox <-> DualSense <-> Switch <-> Steam Deck <-> KB/Mouse`) in **`<= 1 frame` (`0` hysteresis lag on deliberate input)** using fixed-metrics inline icon slots so prompts **never layout-jump**;
+  - Buffer menu/confirm inputs for **`100–150 ms`** across brief state transitions, modulate repeated UI SFX pitch by **`±3%`** (`0.97–1.03`), route UI audio to **decoupled buses** (`Master / Music / SFX / Voice / UI`), and hold steady-state UI heap allocations to **`0 B/frame`** (pooled floaters, `SetText` / preallocated buffers).
+- **Accessibility & customization**: ship independent **HUD Scale**, **Subtitle size + background opacity (`0–100%`)**, **Colorblind symbol + palette**, and **Full Input Remapping** (with conflict detection + hold-to-toggle).
 
 ## Anti-lazy / do-not-hand-roll & anti-slop guard
 
 - **Never hand-roll raw `drawRect` / `fillText` / `pygame.draw.rect` layout and hit-test engines** when real UI toolkits exist for the engine: Unity UI Toolkit/uGUI, Godot `Control`, Unreal CommonUI/UMG, Bevy `bevy_ui`, Flame `overlayBuilderMap` Flutter widgets, `ebitenui`, `macroquad::ui`, `pygame_gui`, `arcade.gui`, or semantic HTML/DOM overlays in Phaser/Excalibur.
-- **Reject generic sci-fi/neon HUD slop**: do not paste glowing cyan boxes, unscaled 1080p mockups, or hardcoded Xbox/keyboard prompt strings detached from the game's direction and active input device.
+- **Reject generic sci-fi/neon HUD slop**: do not paste glowing cyan boxes, stretched 16:9 bitmaps on 21:9 monitors, mouse-only launchers, per-frame string-concatenation GC spikes, or hardcoded Xbox/keyboard prompt strings detached from the active input device.
 
 ## Common game-UI failures
 
-- HUD designed on a static 1080p mockup but illegible in motion/at distance;
-- menu navigation impossible without mouse or precise touch;
-- focus jumping unpredictably after closing a popup;
-- text clipped in German/Finnish or missing CJK/Arabic glyph atlases;
-- color-only team/enemy/rarity/status encoding;
-- tutorial modal blocking the mechanic it teaches;
-- safe-area violation on TV/handheld/notched devices;
-- remapping UI that cannot represent conflicts/chords/multiple devices.
+- text shrinking below `9px` on Steam Deck (`1280×800`) or `24px` on `1080p` TV, or text inputs failing to summon the gamepad virtual keyboard;
+- gameplay continuing unpaused when the active wireless controller disconnects, or silent disk writes without an autosave notice;
+- input-glyph swaps lagging multiple seconds or shifting surrounding text layout;
+- `21:9`/`32:9` ultrawide stretching 2D HUD sprites or pinning health bars at extreme screen edges;
+- per-frame UI string allocations (`$"HP: {hp}"`) triggering GC frame hitches;
+- color-only team/rarity/danger encoding, `> 3 Hz` flash transitions, or single-bus audio lacking a dedicated `UI` volume slider.
 
 ## Verification options
 
-Engine editor preview is not equivalent to runtime gameplay verification. Use playmode/device screenshots, controller-only walkthroughs, resolution/aspect matrices, localization pseudo-text/glyph tests, accessibility settings tests, and platform-specific validation where available. Label console/certification claims `not-checked` unless current official requirements were actually inspected.
+Engine editor preview is not runtime gameplay verification. Capture playmode/device screenshots at `1280×800` (`16:10`), `1920×1080` (`16:9`), and `3440×1440` (`21:9`), run controller-only boot-to-gameplay + controller-disconnect walkthroughs, profile steady-state `0 B/frame` UI allocations, and test pseudo-localized (+35–40%) + CJK/RTL glyph builds (`rendered`). Label unverified console TRC/Lotcheck/XR checklists `not-checked`.
 
 ## Pre-submit checklist
 
-- [ ] zero `TODO`s, placeholder stubs, invented strings, or dead menu/button handlers;
-- [ ] HUD legibility verified in motion across bright/dark scenes, ultrawide clamps, mobile/TV safe areas, and target viewing distance;
-- [ ] full controller/keyboard-only navigation works with clear focus state, dynamic input-device glyphs, and focus restoration after closing popups;
-- [ ] pause/modal layers own input cleanly (`mouse_filter`, `process_mode`, input stacks) without leaking clicks to gameplay;
-- [ ] localization expansion (+30–40%), CJK/RTL glyph atlases, subtitles, colorblind cues, and reduced-motion/HUD-scale options verified;
-- [ ] live playmode/device evidence labeled `rendered` and unchecked console/certification/screen-reader items labeled `not-checked`.
+- [ ] zero `TODO`s, placeholder stubs, mouse-only boot launchers, or dead menu/remapping handlers;
+- [ ] **Steam Deck (`1280×800`, `16:10`)** text `>= 9px` floor (`12–14px` target), **10ft TV (`1080p`)** `>= 24–28px`, automatic gamepad virtual keyboard, `90%` safe zone, and non-stretched `16:9` ultrawide HUD clamp verified;
+- [ ] **TRC/Lotcheck/XR gates**: controller-disconnect auto-pause modal, active player profile/gamertag indicator, `"Saving — do not turn off…"` notice, and `<= 3 Hz` flash cap wired;
+- [ ] **`<= 1 frame` input-glyph hot-swap** (zero layout jump), `100–150 ms` menu input buffer, `±3%` UI SFX pitch modulation, decoupled `Master/Music/SFX/Voice/UI` buses, and **`0 B/frame` steady-state UI GC** verified;
+- [ ] independent HUD Scale, Subtitle background opacity (`0–100%`), Colorblind symbol+palette, Full Input Remapping, and +35–40% / CJK / RTL localization verified;
+- [ ] live playmode/device evidence labeled `rendered` and unchecked console certification items labeled `not-checked`.
 
 ## Framework routing
 

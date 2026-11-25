@@ -88,6 +88,27 @@ export function QuickSearch({ open, onOpenChange }: { open: boolean; onOpenChang
 - **Vaul Drawer**: always provide `<Drawer.Title>` and `<Drawer.Description>` (visually hidden only when redundant) so screen readers announce the dialog name; set `repositionInputs` thoughtfully on iOS Safari keyboards; respect `prefers-reduced-motion` by disabling spring overshoots.
 - **Resizable panels**: give every `<PanelResizeHandle>` an explicit `aria-label` (e.g., `aria-label="Resize sidebar"`) and a visible `:focus-visible` indicator with at least a 4px interactive hit target.
 
+### Global single-key hotkey guard & Safe-Triangle cascading menus
+
+- **Single-key shortcut guard**: global single-key shortcuts (`/`, `,`, `c`, `?`, `j`/`k`, `e`) **must ignore** events whenever an IME composition is active (`event.isComposing || event.keyCode === 229`), a system modifier (`metaKey`, `ctrlKey`, `altKey`) is held, or focus resides inside `<input>`, `<textarea>`, `<select>`, `[contenteditable="true"]`, `[contenteditable="plaintext-only"]`, or `[role="textbox"]` (including across Shadow DOM via `event.composedPath()`):
+
+```ts
+export function shouldIgnoreSingleKeyHotkey(event: KeyboardEvent): boolean {
+  if (event.defaultPrevented || event.isComposing || event.keyCode === 229) return true;
+  if (event.metaKey || event.ctrlKey || event.altKey) return true;
+  for (const node of event.composedPath()) {
+    if (!(node instanceof HTMLElement)) continue;
+    if (node.isContentEditable) return true;
+    const tag = node.tagName;
+    if (tag === 'INPUT' || tag === 'TEXTAREA' || tag === 'SELECT') return true;
+    if (node.getAttribute('role') === 'textbox' || node.getAttribute('role') === 'combobox') return true;
+  }
+  return false;
+}
+```
+
+- **Safe-Triangle submenu pointer corridor**: cascading hover/pointer submenus (`Menu.Sub` in `@base-ui/react`, `radix-ui`, Ariakit, or `useHover(context, { handleClose: safePolygon() })` in `@floating-ui/react`) must maintain a diagonal pointer corridor between the parent item's exit point and the submenu's near/far corners (`~75–150 ms` intent window) so diagonal mouse movement never collapses the submenu mid-flight, while keeping `ArrowRight`/`ArrowLeft`/`Escape` keyboard parity intact.
+
 ## Search UI engineering
 
 Choose the search architecture by **index size, freshness, hosting budget, and ranking needs**:

@@ -91,12 +91,20 @@ Test `string()` edge cases on pages without headings, verify `target-counter()` 
 Use modern properties plus legacy aliases only when needed by the target renderer:
 
 ```css
-h2, h3 {
+h1, h2, h3 {
   break-after: avoid;
   break-inside: avoid;
 }
 
-figure, .signature-block, .total-row {
+thead {
+  display: table-header-group; /* repeat column headers at the top of every split page */
+}
+
+tfoot {
+  display: table-footer-group;
+}
+
+tr, figure, .signature-block, .total-row {
   break-inside: avoid;
 }
 
@@ -113,11 +121,9 @@ table {
 |---|---|---|
 | `break-before: page` | force a break before the element | use for chapters/major sections, not every card |
 | `break-after: avoid` | prevent a break immediately after | essential for headings before content |
-| `break-inside: avoid` | keep a box together where possible | use for figures/signatures/totals, not entire long tables |
-| `orphans` | minimum lines left at bottom | set deliberately; initial/support behavior varies |
-| `widows` | minimum lines carried to next page | pair with orphans and inspect real text lengths |
-
-Tables need separate rules: repeat `<thead>` where the renderer supports it, avoid breaking rows (`tr { break-inside: avoid; }`), and never apply `break-inside: avoid` to a table taller than one page.
+| `break-inside: avoid` | keep a box together where possible | use for `tr`/figures/signatures/totals, never entire multi-page tables |
+| `thead { display: table-header-group }` | repeat table header across page breaks | mandatory on multi-page financial, audit, and line-item tables |
+| `orphans` / `widows` | minimum lines at bottom / carried to next page | set `orphans: 3; widows: 3;` and inspect real paragraph lengths |
 
 ## Physical units and typography
 
@@ -132,36 +138,32 @@ Use `mm`, `cm`, `in`, and `pt` for print-critical dimensions. Use `px` only for 
 Design a type system:
 
 - measure: often 60–90 characters for prose, narrower for dense reference matter;
-- leading: enough for script/ascenders/diacritics; CJK/Indic/Arabic text may need different metrics;
+- leading: enough for script/ascenders/diacritics; CJK/Indic/Arabic/Vietnamese stacked diacritics need generous leading;
 - hyphenation/line breaking: language-dependent (`lang` attribute required for `hyphens: auto`) and renderer-dependent;
-- font embedding/license: verify embedding rights and glyph coverage;
-- fallback: test Latin diacritics, CJK, RTL, Indic shaping, symbols, emoji, and numeric styles actually used.
+- font embedding, `ToUnicode` CMap, and license: verify `pdffonts` (`emb=yes`, `uni=yes`) so ligatures (`fi`, `fl`), Vietnamese, and CJK copy cleanly without `□` tofu.
 
-## Print color and backgrounds
+## Dual print profiles: Office Grayscale vs Commercial Prepress (`PDF/X-4`)
 
-Browsers may omit backgrounds by default to save ink. `-webkit-print-color-adjust: exact` / standard `print-color-adjust: exact` preserves backgrounds in Chromium and Safari when user settings allow, but users can still override print dialogs. Do not rely on background color alone for meaning.
+Select and design against the exact target print profile rather than mixing screen RGB habits with print-shop assumptions:
 
-Rules:
-
-- foreground/background contrast must remain sufficient on white paper if backgrounds are dropped;
-- avoid full-bleed dark backgrounds unless the artifact truly requires them; ink cost and printer margins matter;
-- test grayscale because office printers often default to monochrome;
-- use patterns/line styles as redundant differentiation in charts/tables;
-- never use color-only red/green semantics.
-
-## Bleed, trim, and printer marks
-
-Professional print artifacts use bleed so color/images extend beyond trim:
+| Dimension | Profile A — Digital & Office Grayscale Proof | Profile B — Commercial Prepress (`PDF/X-4`) |
+|---|---|---|
+| **Margins & bleed** | **`10–12mm` minimum safe outer margin** (office laser/inkjet unprintable gripper edge); `0mm` bleed | **`3mm` (`0.125"`) bleed on all 4 sides** (`TrimBox` + `BleedBox`) + **`5mm` inner trim safety inset** for all live text/logos |
+| **Color & ink budget** | sRGB with `-webkit-print-color-adjust: exact` / `print-color-adjust: exact`, **verified in grayscale** and with backgrounds disabled (`>= 4.5:1` contrast on white paper; patterns/direct labels distinguish red vs green series without color ink) | Target CMYK ICC output intent (e.g. `FOGRA39` / `ISO Coated v2` or `GRACoL 2013`), **Total Area Coverage `TAC <= 300%`**; **body black text (`< 18–24pt`) strictly `100% K` overprint (`C0 M0 Y0 K100`)**—never 4-plate rich black (`C60 M40 Y40 K100`), which ghosts/halos from press plate misregistration |
+| **Graphics & DPI** | Strict vector SVG/PDF primitives for charts/logos; `150–300 DPI` photos | Strict vector SVG/PDF primitives for charts/logos/type; **`>= 300 effective DPI` at final printed dimensions** for continuous-tone photography |
+| **Navigation & compliance** | Clickable TOC outline/bookmarks, hyperlinks, and **`PDF/UA-1` / `PDF/UA-2`** tag tree | **`PDF/X-4`** output intent, crop/registration marks outside bleed box (`marks: crop cross`), embedded fonts (`100%` subset/full), flattened or `PDF/X-4` live transparency per print shop spec |
 
 ```css
+/* Commercial Prepress (@page in PrinceXML / WeasyPrint / Vivliostyle) */
 @page {
   size: 210mm 297mm;
+  margin: 16mm; /* >= 5mm trim safety inset strictly respected */
   bleed: 3mm;
   marks: crop cross;
 }
 ```
 
-Support for `bleed` and `marks` is renderer-specific (supported by PrinceXML, WeasyPrint, Vivliostyle, and Paged.js) and absent from ordinary browser print. In Typst, do not assume a universal `#set page(bleed: ...)` flag across versions—verify the pinned Typst release or prepress package, or expand page dimensions explicitly with trim offsets (see `references/pdf-tools.md`). For print-shop output, confirm required bleed (often 3mm / 0.125in), color profile (CMYK/ICC), imposition, crop/registration marks, DPI, and PDF/X expectations with the printer instead of guessing.
+Support for `bleed`, `marks`, and `cmyk()` / ICC profiles is renderer-specific (PrinceXML, WeasyPrint, Vivliostyle) and absent from native browser print. In Typst, verify pinned version flags or expand page dimensions (`width: 210mm + 6mm, height: 297mm + 6mm`) with explicit trim marks (see [pdf-tools.md](pdf-tools.md)).
 
 ## Browser print limitations
 

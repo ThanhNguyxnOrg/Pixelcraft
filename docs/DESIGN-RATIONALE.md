@@ -170,6 +170,14 @@ Brand governance exists because generated imagery is not yet a usable identity s
 
 **Trade-off:** purpose-built libraries add dependency evaluation and version verification work. Pixelcraft still prefers native HTML/OS primitives whenever they cover the interaction cleanly, escalating to specialized libraries only where native semantics fall short.
 
+## Invisible craft, composition safety, and release-grade delivery
+
+**Rule:** pair macro aesthetic direction with frequency-calibrated interaction physics, optical geometry, dark-surface luminance elevation, input-method and script-shaping safety, and reproducible commercial release gates across every target stack.
+
+**Why:** the distance between a convincing static mockup and a studio-grade product lives in sub-second, sub-pixel, and operational execution. High-frequency menus or command palettes that animate like ceremonial reveals feel sluggish by the twentieth repetition; asymmetric glyphs centered by bounding box appear off-axis; dark surfaces built by mechanical inversion or black drop shadows collapse into muddy halation; compact icon controls without expanded invisible hit-slop or diagonal submenu corridors punish ordinary pointer and touch travel; proportional numerals jitter live counters, timers, and financial columns. At the text-entry boundary, treating `Enter` as submit during active input-method (`IME`) composition corrupts Vietnamese Telex/VNI, Japanese Kana-to-Kanji, Korean Hangul, and Chinese Pinyin input, while unnormalized combining marks (`NFD` vs `NFC`) or incomplete font subsets produce mid-word fallback glyphs across Latin diacritics, CJK, and RTL scripts. Finally, an interface is not release-ready if a clean clone takes hours to boot, strict language-appropriate static analyzers fail, secrets leak into client artifacts, store or regulatory regimes (`EAA`, App Store, Google Play, `MV3`, `PDF/X-4`, `RFC 8058`) go unaddressed, or commercial font/media licenses and root account credentials stay locked to the implementer.
+
+**Trade-off:** micro-physical calibration, composition-aware input guards, and commercial handoff verification require discipline that a single happy-path screenshot never rewards. Pixelcraft accepts that cost because durable quality is judged on the hundredth daily interaction, across every writing system, and at the moment a client or engineering team takes legal and operational ownership of the build.
+
 ## Changing these rules
 
 Do not weaken a rule merely because a task is inconvenient. Change the rule when the underlying trade-off changed, when evidence shows the rule produces worse outcomes, or when a platform/standard changed. Record the reason in the commit and update affected skills, evals, and verification tooling together.

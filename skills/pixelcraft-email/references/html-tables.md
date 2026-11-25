@@ -16,8 +16,9 @@ Always include `lang`, `dir`, `<title>`, dark-mode meta opt-in, a hidden prehead
   <title>Invoice #2026-041 due 15 Dec</title>
 </head>
 <body style="margin:0;padding:0;background-color:#f4f5f7;">
+  <!-- Repeat &#847;&zwnj;&nbsp; 50–90 times (~140–200+ rendered chars); 3–5 repeats only pad ~9–15 chars and leak "View in browser" or logo alt text into 120-char inbox snippets -->
   <div style="display:none;max-height:0;overflow:hidden;mso-hide:all;" aria-hidden="true">
-    Invoice #2026-041 due 15 Dec — €1,420.50&#847;&zwnj;&nbsp;&#847;&zwnj;&nbsp;&#847;&zwnj;&nbsp;
+    Invoice #2026-041 due 15 Dec — €1,420.50&#847;&zwnj;&nbsp;&#847;&zwnj;&nbsp;&#847;&zwnj;&nbsp;&#847;&zwnj;&nbsp;&#847;&zwnj;&nbsp;&#847;&zwnj;&nbsp;&#847;&zwnj;&nbsp;&#847;&zwnj;&nbsp;&#847;&zwnj;&nbsp;&#847;&zwnj;&nbsp;&#847;&zwnj;&nbsp;&#847;&zwnj;&nbsp;&#847;&zwnj;&nbsp;&#847;&zwnj;&nbsp;&#847;&zwnj;&nbsp;&#847;&zwnj;&nbsp;&#847;&zwnj;&nbsp;&#847;&zwnj;&nbsp;&#847;&zwnj;&nbsp;&#847;&zwnj;&nbsp;&#847;&zwnj;&nbsp;&#847;&zwnj;&nbsp;&#847;&zwnj;&nbsp;&#847;&zwnj;&nbsp;&#847;&zwnj;&nbsp;&#847;&zwnj;&nbsp;&#847;&zwnj;&nbsp;&#847;&zwnj;&nbsp;&#847;&zwnj;&nbsp;&#847;&zwnj;&nbsp;&#847;&zwnj;&nbsp;&#847;&zwnj;&nbsp;&#847;&zwnj;&nbsp;&#847;&zwnj;&nbsp;&#847;&zwnj;&nbsp;&#847;&zwnj;&nbsp;&#847;&zwnj;&nbsp;&#847;&zwnj;&nbsp;&#847;&zwnj;&nbsp;&#847;&zwnj;&nbsp;&#847;&zwnj;&nbsp;&#847;&zwnj;&nbsp;&#847;&zwnj;&nbsp;&#847;&zwnj;&nbsp;&#847;&zwnj;&nbsp;&#847;&zwnj;&nbsp;&#847;&zwnj;&nbsp;&#847;&zwnj;&nbsp;&#847;&zwnj;&nbsp;&#847;&zwnj;&nbsp;&#847;&zwnj;&nbsp;&#847;&zwnj;&nbsp;&#847;&zwnj;&nbsp;&#847;&zwnj;&nbsp;&#847;&zwnj;&nbsp;&#847;&zwnj;&nbsp;&#847;&zwnj;&nbsp;&#847;&zwnj;&nbsp;&#847;&zwnj;&nbsp;&#847;&zwnj;&nbsp;
   </div>
   <table role="presentation" width="100%" cellspacing="0" cellpadding="0" border="0" dir="ltr" style="background-color:#f4f5f7;">
     <tr>
@@ -27,10 +28,29 @@ Always include `lang`, `dir`, `<title>`, dark-mode meta opt-in, a hidden prehead
             <td style="padding:28px 24px;font-family:-apple-system,BlinkMacSystemFont,'Segoe UI',Roboto,Arial,sans-serif;color:#111827;">
               <h1 style="margin:0 0 12px;font-size:22px;line-height:1.3;">Invoice #2026-041</h1>
               <p style="margin:0 0 20px;font-size:15px;line-height:1.5;">Amount due: €1,420.50 by 15 Dec 2026.</p>
-              <a href="https://example.com/pay/2026-041"
-                 style="display:inline-block;padding:12px 20px;background-color:#0f5132;color:#ffffff;text-decoration:none;font-weight:600;border-radius:4px;">
-                Review and pay invoice
-              </a>
+              <!-- Bulletproof Dual-Engine CTA: VML roundrect for Classic Outlook Word + table/td bgcolor + padded <a> for New Outlook, Gmail, and Apple Mail -->
+              <!--[if mso]>
+              <v:roundrect xmlns:v="urn:schemas-microsoft-com:vml" xmlns:w="urn:schemas-microsoft-com:office:word"
+                href="https://example.com/pay/2026-041"
+                style="height:44px;v-text-anchor:middle;width:220px;" arcsize="14%" stroke="f" fillcolor="#0f5132">
+                <w:anchorlock/>
+                <center style="color:#ffffff;font-family:'Segoe UI',Arial,sans-serif;font-size:15px;font-weight:600;">
+                  Review and pay invoice
+                </center>
+              </v:roundrect>
+              <![endif]-->
+              <!--[if !mso]><!-->
+              <table role="presentation" cellspacing="0" cellpadding="0" border="0">
+                <tr>
+                  <td align="center" bgcolor="#0f5132" style="border-radius:6px;background-color:#0f5132;">
+                    <a href="https://example.com/pay/2026-041"
+                       style="display:inline-block;padding:12px 24px;font-family:-apple-system,BlinkMacSystemFont,'Segoe UI',Roboto,Arial,sans-serif;font-size:15px;font-weight:600;line-height:20px;color:#ffffff;text-decoration:none;border-radius:6px;border:1px solid #0f5132;">
+                      Review and pay invoice
+                    </a>
+                  </td>
+                </tr>
+              </table>
+              <!--<![endif]-->
             </td>
           </tr>
         </table>
@@ -74,13 +94,14 @@ Critical email states are: images off, dark-mode inversion, Gmail 102 KB clippin
 |---|---|
 | Set `lang`, `dir`, `<title>`, and `role="presentation"` on every layout `<table>` | Omit `role="presentation"`, forcing screen readers to announce layout table rows/columns |
 | Inline 6-digit hex and `px` values on table cells and text elements | Rely on external stylesheets, CSS variables, `oklch()`, Flexbox, or Grid |
-| Keep HTML CTA visible to New Outlook and scope any Classic Outlook VML strictly in `<!--[if mso]>` | Ship a VML-only CTA that disappears in New Outlook, Gmail, and Apple Mail |
-| Real HTML text for primary copy, dates, amounts, and CTA | Image-only hero containing essential content |
-| Budget total HTML well under Gmail's 102 KB clipping threshold | Ship bloated nested tables that clip legal/unsubscribe footers |
+| Use a Bulletproof Dual-Engine CTA (`<!--[if mso]><v:roundrect>` + `<!--[if !mso]><!--><table role="presentation"><tr><td bgcolor>` wrapping styled `<a>`) | Ship a bare `<a style="padding:...">` (loses padding/radius in Classic Outlook) or a VML-only button (invisible in New Outlook) |
+| Pad hidden preheaders with 50–90 repeats (`~140+` chars) of `&#847;&zwnj;&nbsp;` | Use 3–5 repeats that let `"View in browser"` or header alt text leak into 120-char inbox previews |
+| Add a `1–2px` light keyline/halo or translucent pill to dark logos alongside `.light-img`/`.dark-img` swaps | Export pure black transparent PNG logos that vanish on forced `#121212` dark backgrounds (`Gmail Android` / `Outlook Windows`) |
+| Keep compiled HTML `< 80 KB` (`< 102 KB` hard Gmail clip cap) and wire `RFC 8058` one-click unsubscribe on promotional mail | Ship bloated nested tables that clip legal/unsubscribe footers or gate unsubscribe behind a login wall |
 
 ## Known traps
 
-New Outlook vs Classic Outlook divergence, Gmail 102 KB clipping and `<style>` stripping on syntax errors, GANGA dropping `<style>`, image blocking, dark-mode logo disappearance, forwarding mutations, and plaintext divergence.
+New Outlook vs Classic Outlook divergence, Gmail 102 KB clipping (`< 80 KB` target before ESP tracking URLs) and `<style>` stripping on syntax errors, GANGA dropping `<style>`, forced dark-mode logo disappearance, Apple MPP proxy open inflation, forwarding mutations, and plaintext divergence.
 
 ## Verification commands
 
@@ -90,4 +111,4 @@ Run the repository's email build/template validation pipeline without suppressin
 npm run build
 ```
 
-Inspect compiled HTML byte size (`static`), validate `lang`/`dir`/`role="presentation"` and plaintext parity (`static`), and test real client previews across New Outlook, Classic Outlook, Gmail, and Apple Mail in light/dark mode with images off (`rendered`).
+Inspect compiled HTML byte size (`< 80 KB` target / `< 102 KB` cap, `static`), validate `lang`/`dir`/`role="presentation"` and plaintext parity (`static`), and test real client previews across New Outlook, Classic Outlook, Gmail (Web/iOS/Android), and Apple Mail across all 3 dark-mode regimes with images off (`rendered`).

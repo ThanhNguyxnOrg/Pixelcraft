@@ -99,3 +99,53 @@ For long or complex forms:
 - after correction, remove stale summary entries or explain that revalidation/submission is required.
 
 Focus movement is a context change. Do not use it as a substitute for visible persistent messages.
+
+## Cross-platform IME composition guard & `Unicode NFC` normalization
+
+Single-line search bars, chat/comment composers, tag inputs, inline cell editors, and dialogs that bind `Enter` (submit/send) or `Escape` (cancel/close) **must check active IME composition first**. Otherwise users typing Vietnamese Telex/VNI, Japanese Kana→Kanji, Korean Hangul, or Chinese Pinyin accidentally send half-composed messages or dismiss dialogs when committing/canceling IME candidates:
+
+| Platform | Guard condition before treating `Enter` as submit or `Escape` as cancel/dismiss |
+|---|---|
+| **Web DOM** | `if (event.isComposing || event.keyCode === 229) return;` inside `keydown` (never bind submit to `keyup`) |
+| **iOS UIKit / SwiftUI** | `guard textField.markedTextRange == nil else { return true }` (`UITextInput` marked text active) |
+| **Android Views / Compose** | Views: `BaseInputConnection.getComposingSpanStart(editable) != -1`; Compose: `if (value.composition != null) return@onPreviewKeyEvent false` |
+| **macOS AppKit / Qt / Desktop** | AppKit: `client.hasMarkedText()`; Qt: track active `QInputMethodEvent` preedit (`!preedit.isEmpty()`) before accepting `Qt::Key_Return` / `Qt::Key_Escape` |
+
+Idiomatic multi-platform guards:
+
+```js
+// Web DOM: chat composer / search input / inline edit
+input.addEventListener('keydown', (event) => {
+  if (event.isComposing || event.keyCode === 229) return;
+  if (event.key === 'Enter' && !event.shiftKey) {
+    event.preventDefault();
+    submitNormalized(input.value.normalize('NFC'));
+  }
+});
+```
+
+```swift
+// iOS UIKit / SwiftUI UITextInput bridge: ignore Return while marked IME text is active
+func textFieldShouldReturn(_ textField: UITextField) -> Bool {
+    guard textField.markedTextRange == nil else { return false }
+    submit((textField.text ?? "").precomposedStringWithCanonicalMapping)
+    return true
+}
+```
+
+```kotlin
+// Jetpack Compose: guard hardware Enter while IME composition span is active
+OutlinedTextField(
+    value = fieldValue,
+    onValueChange = { fieldValue = it },
+    modifier = Modifier.onPreviewKeyEvent { event ->
+        if (event.type == KeyEventType.KeyDown && event.key == Key.Enter && !event.isShiftPressed) {
+            if (fieldValue.composition != null) return@onPreviewKeyEvent false
+            onSubmit(Normalizer.normalize(fieldValue.text, Normalizer.Form.NFC))
+            true
+        } else false
+    }
+)
+```
+
+Normalize submitted and validated text to **`Unicode NFC`** before length checks, regex rules, deduplication, or persistence so pasted `NFD` strings (such as macOS filenames or Vietnamese names like `"Nguyễn"`) never fail validation or create duplicate records.

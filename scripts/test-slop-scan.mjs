@@ -345,6 +345,70 @@ final themeColor = Theme.of(context).colorScheme.primary;
   const invalidFailOn = spawnSync(process.execPath, [local('slop-scan.mjs'), local('fixtures/clean.html'), '--fail-on', 'p9'], { encoding: 'utf8' });
   assert.equal(invalidFailOn.status, 1);
   console.log('ok 10 - --fail-on p0|p1|p2|any enforces severity exit gates while preserving default exit 0');
+
+  // 11. Studio-Grade 2026 rules: ime-enter-without-composing, important-override-sprawl, and mv3-remote-script
+  const imeBad = path.join(tmp, 'ChatComposerBad.tsx');
+  fs.writeFileSync(imeBad, `export function ChatComposerBad({ send }: { send: () => void }) {
+  return (
+    <label>
+      Message
+      <textarea onKeyDown={(e) => { if (e.key === 'Enter' && !e.shiftKey) { e.preventDefault(); send(); } }} />
+    </label>
+  );
+}
+`);
+  assert.deepEqual(runPath(imeBad).findings.map((f) => f.rule), ['ime-enter-without-composing']);
+
+  const imeGood = path.join(tmp, 'ChatComposerGood.tsx');
+  fs.writeFileSync(imeGood, `export function ChatComposerGood({ send }: { send: () => void }) {
+  return (
+    <label>
+      Message
+      <textarea onKeyDown={(e) => {
+        if (e.nativeEvent.isComposing || e.keyCode === 229) return;
+        if (e.key === 'Enter' && !e.shiftKey) { e.preventDefault(); send(); }
+      }} />
+    </label>
+  );
+}
+`);
+  assert.deepEqual(runPath(imeGood).findings, [], 'IME-guarded Enter handler should pass');
+
+  const impBad = path.join(tmp, 'sprawl.css');
+  fs.writeFileSync(impBad, `.a { color: var(--ink) !important; }
+.b { padding: 8px !important; }
+.c { margin: 0 !important; }
+.d { display: block !important; }
+`);
+  assert.deepEqual(runPath(impBad).findings.map((f) => f.rule), ['important-override-sprawl']);
+
+  const impGood = path.join(tmp, 'a11y-print.css');
+  fs.writeFileSync(impGood, `@media (prefers-reduced-motion: reduce) {
+  *, *::before, *::after {
+    animation-duration: 0.01ms !important;
+    animation-iteration-count: 1 !important;
+    transition-duration: 0.01ms !important;
+    scroll-behavior: auto !important;
+  }
+}
+@media print {
+  .no-print { display: none !important; }
+  .sheet { background: transparent !important; }
+}
+`);
+  assert.deepEqual(runPath(impGood).findings, [], 'prefers-reduced-motion and @media print !important resets must not be flagged');
+
+  const mv3Dir = path.join(tmp, 'mv3-ext');
+  fs.mkdirSync(mv3Dir, { recursive: true });
+  fs.writeFileSync(path.join(mv3Dir, 'manifest.json'), JSON.stringify({ manifest_version: 3, name: 'Test Ext', version: '1.0.0' }));
+  const mv3Popup = path.join(mv3Dir, 'popup.html');
+  fs.writeFileSync(mv3Popup, `<!doctype html><html lang="en"><head><title>Ext</title><script src="https://cdn.example.com/sdk.js"></script></head><body><h1>Inspector</h1></body></html>\n`);
+  assert.deepEqual(runPath(mv3Popup).findings.map((f) => f.rule), ['mv3-remote-script']);
+
+  const regularWeb = path.join(tmp, 'marketing.html');
+  fs.writeFileSync(regularWeb, `<!doctype html><html lang="en"><head><title>Site</title><script src="https://plausible.io/js/script.js" defer></script></head><body><h1>Docs</h1></body></html>\n`);
+  assert.deepEqual(runPath(regularWeb).findings, [], 'normal non-MV3 web page with deferred script should not trigger mv3-remote-script');
+  console.log('ok 11 - ime-enter-without-composing, important-override-sprawl, and mv3-remote-script catch real defects with zero false positives');
 } finally {
   fs.rmSync(tmp, { recursive: true, force: true });
 }

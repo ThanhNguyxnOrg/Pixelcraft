@@ -57,11 +57,42 @@ if (await supportsConditionalPasskeys()) {
 - **One-time code (`one-time-code`)**: support pasting the full 6-digit code into either a single `inputmode="numeric" autocomplete="one-time-code"` field (preferred for screen readers and mobile SMS autofill) or segmented boxes that distribute pasted characters cleanly and allow `Backspace` across boxes.
 - **Resend & expiry**: show an explicit countdown before re-enabling "Resend code", preserve the entered email address on error, and allow editing the email without restarting the entire flow.
 
-## Checkout, billing, and payment UI
+## Checkout, double-charge prevention & `401` session-expiry recovery
 
 - **PCI isolation**: never mount raw `<input>` card-number fields inside your own app bundle; use Stripe Embedded Checkout / Payment Element, Polar/Paddle/Lemon Squeezy checkout, or Adyen Drop-in, passing semantic CSS custom properties into the provider's appearance config so visual craft stays coherent without touching raw PANs.
 - **Express wallets & Payment Request**: surface Apple Pay / Google Pay / Link only when capability-detected on the current device/browser; never render broken wallet buttons on unsupported platforms.
-- **Idempotent submit & failure recovery**: lock the Pay button with an explicit pending state (`aria-busy="true"`, clear amount shown on button: `"Pay $49.00"`), keep all billing/shipping fields intact if a card declines, focus the decline message with actionable recovery ("Try another card" / "Check postal code"), and handle async webhook fulfillment gracefully ("Confirming payment…").
+- **Double-charge prevention (`Idempotency-Key` + synchronous submit lock)**: guard every payment, order creation, subscription change, or invite mutation with **both** a synchronous in-memory ref lock (`if (submittingRef.current) return; submittingRef.current = true;` before the first `await`, paired with `aria-busy="true"` / `disabled` and exact charge copy like `"Pay $49.00"`) **and** an `Idempotency-Key: <uuid>` header tied to that logical checkout attempt. Reuse the same `Idempotency-Key` across transient network retries; rotate a fresh UUID only when cart line items/amounts change or after a terminal `4xx` validation/decline error.
+- **Decline & webhook recovery**: keep all billing/shipping fields intact if a card declines, move focus to the decline alert with actionable recovery (`"Try another card"` / `"Check postal code"`), and poll/stream webhook settlement (`"Confirming payment…"`) rather than assuming a client redirect guarantees entitlement.
+- **`401` session-expiry draft preservation**: when an authenticated save/checkout/comment request returns `401 Unauthorized` mid-work, **never** redirect immediately and destroy unsaved user input. Snapshot dirty form/editor state (excluding raw secrets/PANs) into `IndexedDB` or `sessionStorage` keyed by route + user hint, open an inline re-auth modal (or pass a validated relative `returnTo` path), and automatically hydrate the saved draft with a confirmation banner once re-authenticated.
+
+```ts
+// Synchronous lock + stable Idempotency-Key per checkout payload fingerprint
+let inflight = false;
+let attemptKey = crypto.randomUUID();
+
+export async function submitOrder(payload: OrderPayload) {
+  if (inflight) return;
+  inflight = true;
+  try {
+    const res = await fetch('/api/orders', {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json', 'Idempotency-Key': attemptKey },
+      body: JSON.stringify(payload),
+    });
+    if (res.status === 401) {
+      sessionStorage.setItem('draft:checkout', JSON.stringify(payload));
+      window.location.assign(`/sign-in?returnTo=${encodeURIComponent(location.pathname + location.search)}`);
+      return;
+    }
+    if (res.status >= 400 && res.status < 500 && res.status !== 409 && res.status !== 429) {
+      attemptKey = crypto.randomUUID(); // rotate only on non-retryable 4xx validation/decline
+    }
+    return await res.json();
+  } finally {
+    inflight = false;
+  }
+}
+```
 
 ## Do/don't pairs
 
@@ -70,8 +101,9 @@ if (await supportsConditionalPasskeys()) {
 | Use `getClientCapabilities()` + `parseRequestOptionsFromJSON()` + `mediation: "conditional"` + `AbortController` | Force a disruptive modal WebAuthn prompt on page load or hand-roll buggy Base64URL byte loops |
 | Allow paste and password managers on password & OTP fields (WCAG 3.3.8) | Disable paste on password/confirm-password/OTP inputs |
 | Use Stripe Embedded Checkout / Payment Element or Polar / Paddle / Lemon Squeezy themed with semantic tokens | Collect raw credit card numbers in custom React/Vue inputs |
-| Preserve shipping/billing inputs, show exact charge amount, and handle post-redirect webhook settling | Wipe checkout fields on card decline or assume redirect return equals settled entitlement |
-| Enforce server-side session & authz checks with Better Auth / Clerk / Auth.js / Supabase SSR | Trust client-only auth state or redirect flags for protected routes |
+| Lock submit synchronously before `await` and send a stable `Idempotency-Key` across network retries | Rely only on async `useState` `disabled` (vulnerable to fast double-click) or generate a new UUID per retry |
+| Snapshot dirty drafts before `401` re-auth and preserve checkout fields on card decline | Redirect on `401` and wipe 10 minutes of form/editor work or assume redirect return equals settled entitlement |
+| Enforce server-side session & authz checks with Better Auth / Clerk / Auth.js / Supabase SSR | Trust client-only auth state or unvalidated open-redirect `returnTo` URLs |
 
 ## Verification commands
 
@@ -80,4 +112,4 @@ npm run build
 npx playwright test
 ```
 
-Verify password-manager autofill attributes (`static`), and test virtual authenticator WebAuthn conditional UI, OTP paste, auth error recovery, and card-decline input preservation in a real browser (`rendered`).
+Verify password-manager autofill attributes and `Idempotency-Key` wiring (`static`), and test virtual authenticator WebAuthn conditional UI, OTP paste, rapid double-click submit lock, `401` session-expiry draft restoration, and card-decline input preservation in a real browser (`rendered`).

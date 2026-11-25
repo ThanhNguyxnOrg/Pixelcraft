@@ -16,9 +16,9 @@ UX precedes styling. Establish user intent, task sequence, state coverage, and r
 - Read [references/cognitive-walkthrough.md](references/cognitive-walkthrough.md) when judging first-use learnability or step-by-step task completion.
 - Read [references/usability-testing.md](references/usability-testing.md) when behavioral uncertainty requires real-user evidence rather than inspection.
 - Read [references/state-matrix.md](references/state-matrix.md) whenever data, network, permission, input, or async behavior exists.
-- Read [references/forms.md](references/forms.md) for labels, validation, input preservation, autofill, paste, mobile keyboards, redundant entry, authentication, and error recovery.
+- Read [references/forms.md](references/forms.md) for labels, validation, input preservation, autofill, paste, mobile keyboards, redundant entry, passkeys, cross-platform `IME` composition `Enter`/`Escape` guards, and error recovery.
 - Read [references/feedback-performance.md](references/feedback-performance.md) for response-time limits, undo/destructive behavior, loading strategy, and perceived performance.
-- Read [references/i18n.md](references/i18n.md) before layout/copy for multilingual, RTL, locale-format, name/address, plural/gender, or IME contexts.
+- Read [references/i18n.md](references/i18n.md) before layout/copy for `+30–40%` prose vs `+50–100%` short-label expansion, `Unicode NFC` & Vietnamese/stacked-diacritic glyph coverage, `IME` safety, RTL, and ICU/MF2 plurals.
 - Read [references/locale-test-matrix.md](references/locale-test-matrix.md) when selecting concrete locales, scripts, fixtures, and rendering evidence for international verification.
 - Read [references/ux-writing.md](references/ux-writing.md) for microcopy, actions, errors, empty states, and tone by mode.
 - Read [references/laws.md](references/laws.md) when applying Hick, Fitts, Jakob, Doherty, recognition-over-recall, and cognitive-load evidence.
@@ -32,13 +32,14 @@ UX precedes styling. Establish user intent, task sequence, state coverage, and r
 5. **Complete the mandatory core state matrix:** do not build only the happy path. Explicitly specify and wire every applicable core state: **empty** (first-use + no-results), **loading** (stable skeleton/progress without layout shift), **error** (cause + preserved input + recovery action), **disabled** (why disabled + how to unlock), **offline / degraded network**, **permission / unauthorized**, **long-content / overflow / extreme counts**, and **AI / streaming** (pending, partial tokens, abort/stop, citation provenance, side-effect approval).
 6. **Design interaction copy and feedback:** concrete domain verbs, response-time budgets, progress, undo/recovery; zero AI marketing clichés (`references/ux-writing.md`).
 7. **Reduce cognitive load:** smart defaults, recognition over recall, progressive disclosure, grouped decisions.
-8. **Apply logical layout & locale resilience by default:** use logical directional properties (`inline-start`/`inline-end`, leading/trailing) and locale-aware number/date/currency/plural formatting **even on English-first apps** so future translation, expansion, or RTL never requires a structural rewrite.
+8. **Apply logical layout, expansion budgets & `IME`/`NFC` safety by default:** use logical directional properties (`inline-start`/`inline-end`, leading/trailing), budget `+30–40%` prose and `+50–100%` short-label expansion, normalize `Unicode NFC` diacritics with verified glyph coverage (`ư, ơ, ệ`), guard `Enter`/`Escape` during active `IME` composition, and format dates/numbers/plurals via locale APIs **even on English-first apps**.
 9. **Validate against platform conventions & record risks:** back/escape, scroll restoration, shortcuts, gestures, focus/controller behavior, and unresolved UX risks with evidence labels.
 
 ## Non-negotiable checks & anti-slop guard
 
 - Do not ask for information already available, inferable, previously entered, or low-value at the moment of use.
 - Preserve user input across validation, navigation, authentication expiry, network failure, and accidental refresh where feasible.
+- Guard `Enter`/`Escape` key handlers on search bars, chat composers, inline editors, and dialogs against active `IME` composition (`isComposing`, `markedTextRange`, `composition != null`, `hasMarkedText`).
 - Every destructive action provides proportional undo, confirmation, or explicit irreversibility friction.
 - Every async action exposes pending/success/failure/cancellation/retry semantics.
 - Navigation state survives back/forward, refresh, deep link, logout/login, and app relaunch as appropriate.
@@ -49,7 +50,7 @@ UX precedes styling. Establish user intent, task sequence, state coverage, and r
 
 - [ ] 2–3 competing IA/workflow shapes compared and recorded for undecided greenfield/redesign flows (or existing/approved IA cited).
 - [ ] All applicable core states specified and wired: `empty`, `loading`, `error`, `disabled`, `offline`, `permission`, `long-content`, and `AI/streaming`.
-- [ ] User input preserved across errors and retries; destructive actions have proportionate undo or confirmation.
-- [ ] Logical layout direction (`inline-start`/leading) and locale-aware date/number/plural formatting applied even on English-first apps.
+- [ ] User input preserved across errors and retries; `Enter`/`Escape` guarded during active `IME` composition; destructive actions have proportionate undo or confirmation.
+- [ ] Logical layout direction (`inline-start`/leading), `+50–100%` short-label / `+30–40%` prose expansion, `Unicode NFC` diacritic glyph integrity, and locale-aware formatting applied.
 - [ ] All CTAs, headings, errors, and empty states use concrete domain nouns/verbs with zero AI marketing clichés or fake proof.
 - [ ] Primary task verified without hover, via keyboard/platform back-escape, and labeled honestly (`rendered`, `static`, `model-judgment`, or `not-checked`).

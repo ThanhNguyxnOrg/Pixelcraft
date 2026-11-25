@@ -34,22 +34,19 @@ Roku `manifest`/`.brs`/SceneGraph XML, Fire TV / Vega OS (`KeplerScript`, React 
 
 ## Non-negotiable rules
 
-| Concern | Rule |
+| Domain | Mandatory hardware & human-factors contract |
 |---|---|
-| glanceability | Critical state/action must be understandable within the context's intended glance time; dense reading does not belong on TV/wearable/automotive surfaces. |
-| focus truth | No invisible focus, unreachable controls, circular traps, diagonal ambiguity, or focus loss after content refresh. |
-| input honesty | Do not require hover, precise touch, keyboard chords, drag, multitouch, or pointer input unless physically available. |
-| physical safety | Automotive/kiosk/POS/HMI/public interfaces must prioritize distraction, reach, privacy, timeout, alarm legibility, and safety interlocks over visual novelty. |
-| hardware honesty | Respect refresh physics, memory/texture caps, color gamut, contrast, burn-in, frame-rate, and audio/input latency budgets. |
-| accessibility | Provide scaling/contrast/reduced-motion/voice or alternate-input paths appropriate to the platform. |
-| anti-slop | Do not port dense dashboards, tiny text, hover-only menus, decorative motion, carousels without position control, or desktop dialogs onto constrained surfaces. |
+| **10-Foot TV** | Deterministic 4-way D-pad spatial graph with **column-index memory across vertical rows**, visible focus halo (`scale 1.04–1.08` + high-contrast ring), **`5%` action / `10%` title overscan safe zones**, and **QR Code / `RFC 8628` Device Authorization Flow** (never force 32-char remote password entry). |
+| **Wearables** | True **`#000000` OLED** canvas (**`< 15–20%` On-Pixel Ratio** in Always-On Display), **`<= 2–3 s` single-glance micro-task**, **`1` primary CTA per screen**, and rotary Crown/Bezel haptic detents. |
+| **Kiosk & POS (`ADA` / `EN 301 549`)** | Wheelchair reach **`38–122 cm` (`15–48"`)** or persistent **"Lower Screen / Reachability Mode"** toggle, **`>= 60×60 px` (`12–15 mm`)** touch targets, tactile audio-jack keypad nav with **auto volume/locale reset between sessions**, **`30–60 s` idle timeout with `"Still there?"` countdown (`WCAG 2.2.1`) before purging PII/cart state**, receipt-printer paper-low/offline queue, and **`72 h+` zero-leak soak stability**. |
+| **Automotive IVI (`NHTSA` / `ISO 15005`)** | **`< 2.0 s` single glance / `< 12.0 s` cumulative glance** budget, **`>= 15×15 mm`** touch targets, **lock complex typing/video while `speed > 0`** (handoff to voice/wheel controls), and **instant zero-flash Day <-> Night theme switch** on tunnel ambient-light transitions. |
+| **Embedded MCU & E-Ink** | Compile-time static `Flash`/`SRAM` budget (**`0` runtime heap fragmentation**), **`VSYNC` / Tearing-Effect (`TE`) double-buffered DMA transfer**, `15–30 ms` physical button debounce, and scheduled partial vs full E-Ink waveforms (`1-bit`/`4-bit` crisp black-white type, zero gradient soup). |
+| **Voice UI (`VUI`)** | **`< 300 ms` local barge-in audio cutoff** + assistant transcript truncation on user speech, **`<= 3` options / `< 10–12 s` spoken turns**, explicit read-back confirmation before irreversible actions, progressive reprompts, and multimodal transcript fallback. |
 
 ## Pre-submit checklist
 
-- [ ] physical/input/environment constraints are written down;
-- [ ] initial focus/back/escape/idle-timeout behavior is explicit;
-- [ ] type/target sizing is justified for distance, resolution, and input accuracy;
-- [ ] all controls are reachable without forbidden input modalities;
-- [ ] safety/regulatory constraints are cited or marked out of scope/`not-checked`;
-- [ ] real hardware/emulator behavior was tested or explicitly labeled `not-checked`;
-- [ ] empty/loading/error/offline/interruption states preserve orientation and input.
+- [ ] physical distance, input modality, refresh physics, `Flash`/`SRAM`/texture caps, and regulatory gates (`ADA`/`EN 301 549`/`NHTSA`/`ISA-101`) documented;
+- [ ] **TV / Wearables**: 4-way D-pad column memory + `scale 1.04–1.08` focus halo + `5%/10%` safe zone + `RFC 8628` QR login (TV); `#000000` OLED `< 15–20%` AOD OPR + `1` CTA + rotary detents (Wear);
+- [ ] **Kiosk / POS / IVI**: `38–122 cm` reachability toggle + `>= 60×60 px` targets + `"Still there?"` PII wipe + `72 h+` soak (Kiosk); `< 2 s / < 12 s` glance + `>= 15×15 mm` targets + `speed > 0` lockout + zero-flash tunnel Day/Night switch (IVI);
+- [ ] **MCU / E-Ink / Voice**: `0` runtime heap churn + `VSYNC`/`TE` DMA + `15–30 ms` button debounce + E-Ink waveform schedule; `< 300 ms` VUI barge-in cutoff + `<= 3` options / `< 10–12 s` turns + read-back confirmation;
+- [ ] real hardware/emulator verification (`rendered`) separated honestly from `static` checks and `not-checked` regulatory sign-off.

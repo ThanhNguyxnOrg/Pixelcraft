@@ -113,22 +113,23 @@ export async function renderCard(title: string) {
         </div>
       </div>
     ),
-    { width: 1200, height: 630, format: 'webp' },
+    // Use 'png' (or JPEG via Sharp) for universal og:image chat unfurlers (Zalo, iMessage, Slack, LinkedIn); reserve 'webp'/'avif' for in-app <img>/<picture>
+    { width: 1200, height: 630, format: 'png' },
   );
 }
 ```
 
-## Sharp composite and format-budget pipeline
+## Sharp composite and unfurler-safe `< 300 KB` pipeline
 
-Use **Sharp** to composite generated overlays onto product photography/screenshots, generate multi-aspect variants, and compress strictly under platform byte caps (e.g., WhatsApp <300 KB, GitHub <1 MB):
+Use **Sharp** to composite generated overlays inside the **center `1000×500` safe zone** of a `1200×630` card and emit universally decodable **JPEG (`mozjpeg`) or palette-quantized PNG** under `< 200–300 KB` so Zalo, WhatsApp, iMessage, Slack, X, and LinkedIn unfurlers never drop the preview:
 
 ```ts
 import sharp from 'sharp';
 
 await sharp('base-1200x630.png')
-  .composite([{ input: svgOverlayBuffer, top: 0, left: 0 }])
-  .webp({ quality: 84 }) // or .png({ palette: true, compressionLevel: 9 }) for crisp UI graphics
-  .toFile('og-card.webp');
+  .composite([{ input: svgOverlayBuffer, top: 65, left: 100 }]) // 1000x500 center safe zone
+  .jpeg({ quality: 84, mozjpeg: true }) // or .png({ palette: true, compressionLevel: 9 }) for flat UI cards
+  .toFile('og-card.jpg');
 ```
 
 ## `@napi-rs/canvas` / `skia-canvas` and Playwright HTML-to-screenshot

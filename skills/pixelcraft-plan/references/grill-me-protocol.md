@@ -20,12 +20,12 @@ Walk only the **unresolved** branches below, in dependency order. Skip any branc
 
 | Order | Branch | What to resolve | Skip when |
 |---|---|---|---|
-| 1 | **Problem, User & Success Signal** | Who uses this, what triggers the task, what concrete outcome proves it worked, and what is strictly in/out of MVP scope? | Brief already states actor, job, MVP boundary, and measurable outcome. |
+| 1 | **Problem, KPIs & 1–2 Primary CTAs** | Who uses this, what business KPI or task outcome proves success, which **1–2 primary CTAs** dominate the flow, and what is strictly in/out of MVP scope? | Brief already states actor, measurable KPI/outcome, primary CTAs, and MVP boundary. |
 | 2 | **Anti-Goals & Hate-List** | Which competitor tropes, visual clichés, or UX patterns does the user **hate** or explicitly refuse (e.g., cluttered SaaS cards, modal traps, generic dark-neon AI styling, bloated wizards)? | User already supplied explicit taboos or an approved locked design. |
-| 3 | **Core Workflow & IA Shape** | What is the primary navigation/workspace shape (e.g., master-detail split, canvas-first studio, command-driven ledger, stepped editorial flow) and entry/deep-link model? | Existing app navigation or approved wireframes fix the IA. |
+| 3 | **Core Workflow, 5-Second Hierarchy & Content/CMS Ownership** | What must a user grasp and see where to act within **5 seconds**, what is the primary IA/workspace shape, and **who owns/updates copy & media** (static repo files, Git Markdown, headless/integrated CMS, localization pipeline)? | Existing app IA, content/CMS pipeline, or approved wireframes fix these. |
 | 4 | **Visual World, Ambition Tier & Signature Moment** | Which ambition tier fits the stakes—**Pragmatic High-Craft**, **Editorial / Domain-Object Signature**, or **Bold Experimental**—and what real subject material or single signature moment anchors it? | Approved brand/design spec locks visual direction. |
 | 5 | **Stack & Library Craft Bar** | Confirm target platform(s), runtime stack (rejecting lazy defaults), and purpose-built libraries for complex sub-stack capabilities (editors, charts, tables, drawers, search, maps, PDF) instead of DIY hand-rolls. | Brownfield stack and approved libraries already cover every capability. |
-| 6 | **Critical States, Constraints & Acceptance Criteria** | Confirm non-happy-path priorities (offline, realtime, auth/permissions, locales/RTL, density, performance/bundle ceiling) and the exact verification proof required for "done". | Brief + repo tests already specify states, constraints, and acceptance checks. |
+| 6 | **Regulatory/Store Regime, Critical States & Acceptance** | Confirm target **regulatory/distribution regime** (App Store, Google Play, Chrome `MV3`, EU `EAA` / `EN 301 549`, Steam Deck/Console `TRC`, Commercial Print `PDF/X-4`, Bulk Email `RFC 8058`), non-happy-path states, and acceptance proof. | Brief + repo configs already specify distribution regime, states, and acceptance checks. |
 
 ## Step 3: Per-Decision Frame & Option Contract
 

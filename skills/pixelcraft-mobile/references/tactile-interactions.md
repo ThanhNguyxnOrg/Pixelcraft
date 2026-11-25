@@ -8,17 +8,23 @@ Use this reference alongside the target mobile framework guide (`swiftui.md`, `u
 |---|---|
 | **Detents** | Define explicit resting heights (`medium`/`peek`, `large`, or content-fit) rather than arbitrary pixel stops; dismiss smoothly on downward velocity fling, backdrop tap, or Escape/Back. |
 | **Scroll handover** | When a sheet wraps a scrollable list, upward drags scroll content once at the top detent, and downward drags at `scrollOffset == 0` hand control back to the sheet without stutter or double-scrolling. |
-| **Keyboard & safe areas** | Track soft-keyboard insets so sheet inputs and primary submit actions remain visible above the IME, and pad bottom content above the home indicator / gesture bar. |
+| **Keyboard & safe areas** | Pair scroll-coupled interactive keyboard dismissal with soft-keyboard inset tracking so sheet inputs and primary submit actions stay visible above the IME and home indicator / gesture bar. |
+| **Velocity handover (`panVelocity`)** | Spring animations completing a sheet fling, card swipe, or detent snap **must** inherit the finger's release velocity (`initialVelocity` / `panVelocity`)—never restart from zero velocity on finger lift. |
 | **Accessibility** | Always expose a visible Close/Done button (and screen-reader escape gesture) so users who cannot drag are never trapped inside a modal sheet. |
 
-| Framework | Sheet primitive | Keyboard & detent idiom |
+| Framework | Sheet & interactive keyboard primitive | Velocity handover & detent idiom |
 |---|---|---|
-| **SwiftUI** | `.sheet(isPresented:)` | `.presentationDetents([.medium, .large])`, `.presentationDragIndicator(.visible)`, `.presentationBackgroundInteraction(.enabled(upThrough: .medium))` |
-| **UIKit** | `UISheetPresentationController` | `detents = [.medium(), .large()]` or `.custom(identifier:)`, `prefersGrabberVisible = true`, pin CTA to `view.keyboardLayoutGuide` |
-| **Jetpack Compose** | `ModalBottomSheet` (Material 3) | `rememberModalBottomSheetState(skipPartiallyExpanded = false)`, `contentWindowInsets = { WindowInsets.safeDrawing }`, `Modifier.imePadding()` |
-| **Flutter** | `showModalBottomSheet` / `CupertinoSheetRoute` | `isScrollControlled: true` + `DraggableScrollableSheet` (Material) or `showCupertinoSheet` (iOS); pad by `MediaQuery.viewInsetsOf(context).bottom` |
-| **React Native / Expo** | `@gorhom/bottom-sheet` (or native `react-native-true-sheet`) | `snapPoints={['50%', '90%']}`, `BottomSheetScrollView` / `BottomSheetFlatList`, paired with `react-native-keyboard-controller` |
-| **LynxJS** | Custom sheet `<view>` driven by MTS | Handle `main-thread:bindtouchmove` / `touchend` snap physics on main thread; notify React state via `runOnBackground` |
+| **SwiftUI** | `.sheet(isPresented:)` + `.scrollDismissesKeyboard(.interactively)` | `.presentationDetents([.medium, .large])`, `.presentationDragIndicator(.visible)`, `Spring(duration: 0.35, bounce: 0.1)` seeded with gesture velocity |
+| **UIKit** | `UISheetPresentationController` + `scrollView.keyboardDismissMode = .interactive` | `detents = [.medium(), .large()]`, `UISpringTimingParameters(dampingRatio: 0.85, initialVelocity: velocityVector)` |
+| **Jetpack Compose** | `ModalBottomSheet` + `WindowInsetsAnimationCompat` / `Modifier.imeNestedScroll()` | `rememberModalBottomSheetState()`, `Animatable.animateTo(target, spring(), initialVelocity = panVelocity)` |
+| **Flutter** | `showModalBottomSheet` / `showCupertinoSheet` + `ScrollViewKeyboardDismissBehavior.onDrag` | `SpringSimulation(springDesc, currentPos, targetPos, panVelocity)` via `AnimationController.animateWith` |
+| **React Native / Expo** | `@gorhom/bottom-sheet` + `keyboardDismissMode="interactive"` + `react-native-keyboard-controller` | Reanimated 4 `withSpring(target, { velocity: event.velocityY, damping: 22, stiffness: 240 })` on UI thread |
+| **LynxJS** | Custom sheet `<view>` driven by MTS | Handle `main-thread:bindtouchmove` / `touchend` spring physics with release velocity on main thread; sync state via `runOnBackground` |
+
+## Performance physics: cold start & `120fps` ProMotion (`< 8.33 ms`/frame)
+
+- **Cold start budget**: target **`< 800 ms–1.2 s`** (hard ceiling `< 2.0 s` TTID) on mid-tier hardware via Android **Baseline Profiles** (`androidx.profileinstaller`), lazy TurboModules, and deferring non-essential analytics/attribution SDK boot until after first interactive frame.
+- **`120fps` ProMotion & high-refresh parity**: unlock `120 Hz` animations on iOS by setting `<key>CADisableMinimumFrameDurationOnPhone</key><true/>` in `Info.plist`, and keep all scroll, sheet, shared-element, and keyboard-tracking animations strictly on the native UI/Render/Impeller thread (`< 8.33 ms` frame budget)—never couple scroll or pan frames to JS-bridge round-trips or main-thread JSON parsing.
 
 ## Thumb-zone ergonomics & gesture conflict avoidance
 
@@ -26,26 +32,22 @@ Use this reference alongside the target mobile framework guide (`swiftui.md`, `u
 - Keep touch targets ≥ `44×44 pt` (iOS) / `48×48 dp` (Android) with ≥ `8 pt/dp` separation between destructive and safe sibling actions.
 - Never attach custom horizontal edge swipes inside the OS back-gesture zone (iOS left-edge swipe back, Android predictive back edges); inset horizontal carousels or provide explicit Previous/Next controls.
 
-## Semantic haptics (restraint over noise)
+## 4-tier contextual haptics (restraint over noise)
 
-Trigger haptics only to confirm physical thresholds or consequential state changes—never on every scroll tick or routine tap:
+Trigger haptics strictly across four semantic tiers—**never** buzz on routine button taps, tab switches, or list scrolling:
 
-| Moment | SwiftUI | Jetpack Compose | Flutter | React Native / Expo | LynxJS |
+| Tier & moment | SwiftUI | Jetpack Compose | Flutter | React Native / Expo | LynxJS |
 |---|---|---|---|---|---|
-| **Picker / detent snap** | `.sensoryFeedback(.selection, trigger:)` | `LocalView.current.performHapticFeedback(HapticFeedbackConstants.SEGMENT_TICK)` | `HapticFeedback.selectionClick()` | `Haptics.selectionAsync()` (`expo-haptics`) | Host native haptic module triggered at detent threshold |
-| **Tactile toggle / drag lock** | `.sensoryFeedback(.impact(weight: .light), trigger:)` | `LocalHapticFeedback.current.performHapticFeedback(HapticFeedbackType.LongPress)` / `CONTEXT_CLICK` | `HapticFeedback.lightImpact()` | `Haptics.impactAsync(ImpactFeedbackStyle.Light)` | Host native light impact via MTS callback / `runOnBackground` |
-| **Completed task / error** | `.sensoryFeedback(.success, trigger:)` / `.error` | `HapticFeedbackConstants.CONFIRM` / `REJECT` | `HapticFeedback.mediumImpact()` / `heavyImpact()` | `Haptics.notificationAsync(NotificationFeedbackType.Success / Error)` | Host native notification haptic on background commit |
+| **1. Light selection tick** (wheel, scrub, detent snap) | `.sensoryFeedback(.selection, trigger:)` | `performHapticFeedback(HapticFeedbackConstants.SEGMENT_TICK)` | `HapticFeedback.selectionClick()` | `Haptics.selectionAsync()` (`expo-haptics`) | Host native selection tick at threshold |
+| **2. Crisp state toggle** (switch flip, pin/lock, long-press) | `.sensoryFeedback(.impact(weight: .light), trigger:)` | `HapticFeedbackConstants.CLOCK_TICK` / `CONTEXT_CLICK` | `HapticFeedback.lightImpact()` | `Haptics.impactAsync(ImpactFeedbackStyle.Light)` | Host native light impact via MTS |
+| **3. Success confirmation** (payment settled, check-in done) | `.sensoryFeedback(.success, trigger:)` | `HapticFeedbackConstants.CONFIRM` | `HapticFeedback.mediumImpact()` | `Haptics.notificationAsync(NotificationFeedbackType.Success)` | Host native confirm notification |
+| **4. Warning / error double-tap** (invalid code, hard limit, failed scan) | `.sensoryFeedback(.warning / .error, trigger:)` | `HapticFeedbackConstants.REJECT` | `HapticFeedback.vibrate()` / distinct double `heavyImpact()` | `Haptics.notificationAsync(NotificationFeedbackType.Warning / Error)` | Host native reject double-pulse |
 
-Honor system haptic and reduced-motion preferences; degrade silently on devices without a linear resonant actuator, and never use haptics as the sole confirmation without visible/accessible feedback.
+Honor system haptic and reduced-motion preferences; degrade silently on hardware without a linear resonant actuator, and never use haptics as the sole confirmation without visible/accessible feedback.
 
-## Swipe-to-act & optimistic offline queues
+## Swipe-to-act, OS process-death restoration & production stability
 
-- Every swipe action on a list row (archive, pin, delete) must also be reachable via row detail, context menu, or accessibility custom actions (SwiftUI `.accessibilityAction(named:)`, Compose `CustomAccessibilityAction`, Flutter `Semantics(customSemanticsActions:)`, RN `accessibilityActions`).
-- Pair swipe-archive/delete with an immediate `Undo` snackbar/toast positioned above the home indicator and tab bar, staying visible long enough for assistive users to reach it.
-- Queue offline mutations visibly (`Pending sync` text + icon) with idempotent replay when connectivity returns; never discard drafted forms or media on backgrounding or network drop.
-
-## Dynamic Type / `sp` scaling reflow
-
-- Test every screen at default size **and** accessibility-large (`200%` / `AX3+`).
-- Reflow side-by-side horizontal pairs (label + value, avatar + metadata + CTA) into vertical stacks when font scale exceeds standard thresholds instead of truncating essential numbers or actions.
-- Never lock list rows, pills, chips, or bottom bars to fixed pixel/point heights that clip ascenders/descenders when text scales.
+- Every swipe action on a list row (archive, pin, delete) must also be reachable via row detail, context menu, or accessibility custom actions (SwiftUI `.accessibilityAction(named:)`, Compose `CustomAccessibilityAction`, Flutter `Semantics(customSemanticsActions:)`, RN `accessibilityActions`), paired with an immediate `Undo` snackbar above the home indicator / tab bar.
+- **Survive OS background process death**: mobile OSes routinely evict backgrounded apps under camera/game RAM pressure. Test explicitly with `adb shell am kill <package>` (while backgrounded) and Xcode background termination—restoring route stack, selected entity IDs, scroll context, and dirty form drafts via `SavedStateHandle` + `rememberSaveable`, `@SceneStorage` / SwiftData, `NSUserActivity`, `RestorationMixin`, or persisted router state.
+- **Offline mutation queue & crash-free bar**: persist queued offline writes with visible `Pending sync` + retry/conflict UI; maintain **`>= 99.5%` crash-free sessions** and **`0` ANRs** backed by automated CI uploads of iOS **dSYMs** and Android **R8/ProGuard mappings + NDK symbols**.
+- **Real-device & Dynamic Type QA matrix**: verify at default and **`200%` (`AX3+`)** font scales (reflowing horizontal pairs into vertical stacks without fixed-height clipping) across **`>= 2` physical iOS devices** and **`>= 3` physical Android devices** spanning Pixel + OEM skins (Samsung One UI, Xiaomi HyperOS / OPPO ColorOS) with both **VoiceOver** and **TalkBack**.

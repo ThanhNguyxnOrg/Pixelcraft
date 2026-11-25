@@ -18,15 +18,23 @@ Rules:
 
 ## Gmail / Google clients
 
-- **102 KB clipping limit**: Gmail clips the HTML MIME part at **102 KB** (UTF-8 bytes including indentation, comments, and ESP click-tracking URL rewrites), replacing the bottom of the email with `[Message clipped] View entire message` and hiding unsubscribe/legal footers. Budget compiled HTML under ~85–90 KB before ESP link wrapping.
+- **102 KB clipping ceiling (`< 80 KB` safety target)**: Gmail clips the `text/html` MIME part strictly at **102 KB** (`104,448` UTF-8 bytes including whitespace, MSO comments, and ESP click-tracking URL rewrites), replacing the bottom of the email with `[Message clipped] View entire message` and hiding legal/unsubscribe footers plus open pixels. Target **`< 80 KB` compiled HTML** before ESP link wrapping.
 - **`<style>` size limit (~8–16 KB)**: Gmail webmail drops `<style>` blocks exceeding ~16 KB (and Gmail mobile apps drop around ~8 KB); keep `<style>` minimal and inline critical properties.
 - **Full `<style>` stripping on syntax errors**: any unsupported rule or syntax error inside `<style>`—including Tailwind v4 `@layer`, native CSS nesting, `@property`, or unclosed declarations—causes Gmail to discard the **entire** `<style>` block.
 - **GANGA (Gmail Apps with Non-Google Accounts)**: IMAP/POP accounts opened in Gmail iOS/Android strip `<style>` blocks completely; layout, typography, spacing, and contrast must survive inline-only.
 - **Image proxying & threading**: Gmail proxies remote images (requiring public HTTPS URLs) and groups threads; lead every message with clear subject, preheader, and opening live text.
 
-## Apple Mail, iOS, and Dark Mode
+## 3-Regime Dark Mode Matrix
 
-Opt into dark mode deliberately in `<head>` and `<style>`:
+Email clients handle dark mode across **three incompatible regimes**. Never assume `@media (prefers-color-scheme: dark)` works everywhere:
+
+| Regime | Representative clients | Color behavior | `@media (prefers-color-scheme: dark)` | Survival strategy |
+|---|---|---|---|---|
+| **1. No change** | Gmail Web (default), Yahoo Mail Web, legacy desktop webmail | Renders authored light/dark hex colors verbatim | Ignored | Authored baseline palette must have `>= 4.5:1` contrast with zero reliance on dark-mode CSS |
+| **2. Partial color inversion / CSS opt-in** | Apple Mail (macOS/iOS), `Outlook.com` / New Outlook, `Gmail iOS` (partial surface rewrite) | Inverts light surfaces & dark text selectively; Apple Mail honors CSS dark media queries; Outlook exposes `[data-ogsc]` / `[data-ogsb]` | Honored in Apple Mail; Outlook uses `[data-ogsc]` / `[data-ogsb]` | Declare `<meta name="color-scheme" content="light dark">`, `@media (prefers-color-scheme: dark)` overrides with `!important`, `[data-ogsc]`/`[data-ogsb]` hooks, and `.light-img` / `.dark-img` swaps |
+| **3. Full forced inversion** | `Gmail Android`, `Classic Outlook for Windows` (Dark Mode) | Algorithmically inverts **all** light backgrounds to `#121212`–`#1e1e1e` and dark text to light gray, **ignoring CSS media queries** | **Ignored** | Avoid pure `#000000` / `#ffffff` glare (use `#111827` on `#f8fafc` / `#ffffff`), and protect dark transparent PNG logos/icons with a **`1–2px` light keyline/halo or translucent light pill** so they never vanish on forced `#121212` backgrounds |
+
+Dark-mode head boilerplate + dual-logo swap (with MSO hide guard so Classic Outlook never renders duplicate logos, plus light-pill fallback on the default logo for Regime 3):
 
 ```html
 <meta name="color-scheme" content="light dark">
@@ -40,32 +48,50 @@ Opt into dark mode deliberately in `<head>` and `<style>`:
   }
   @media (prefers-color-scheme: dark) {
     .bg-page { background-color: #121417 !important; }
+    .bg-card { background-color: #1a1f26 !important; }
     .text-body { color: #f1f5f9 !important; }
+    .light-img { display: none !important; }
+    .dark-img { display: block !important; width: auto !important; max-height: none !important; overflow: visible !important; }
   }
   [data-ogsc] .text-body { color: #f1f5f9 !important; }
-  [data-ogsb] .bg-page { background-color: #121417 !important; }
+  [data-ogsb] .bg-card { background-color: #1a1f26 !important; }
+  [data-ogsc] .light-img { display: none !important; }
+  [data-ogsc] .dark-img { display: block !important; width: auto !important; max-height: none !important; overflow: visible !important; }
 </style>
+
+<!-- Default logo carries a subtle light keyline/pill so Regime 3 (Gmail Android / Classic Outlook) stays legible -->
+<img class="light-img" src="https://example.com/logo-dark-with-keyline.png" width="132" height="32" alt="Acme" style="display:block;border:0;">
+<!--[if !mso]><!-->
+<div class="dark-img" style="display:none;overflow:hidden;width:0;max-height:0;mso-hide:all;">
+  <img src="https://example.com/logo-light.png" width="132" height="32" alt="Acme" style="display:block;border:0;">
+</div>
+<!--<![endif]-->
 ```
 
-- **Apple Mail & iOS dark mode**: honors `@media (prefers-color-scheme: dark)` when `<meta name="color-scheme">` is present; use `!important` to override inlined light colors.
-- **Outlook dark mode**: Outlook.com, New Outlook, and Outlook mobile rewrite inline colors and expose `[data-ogsc]` (text color) and `[data-ogsb]` (background) attribute hooks.
-- **Forced inversion (Gmail mobile, Outlook Windows)**: clients may invert colors without honoring media queries. Avoid pure `#000000`/`#ffffff` glare, give dark transparent logos a subtle light outer glow/backing or swap light/dark assets, and verify contrast after forced inversion.
-- **Apple Mail Privacy Protection (MPP)**: Apple pre-fetches remote images via proxy servers, inflating open counts and masking IP/time-of-open. Never gate product logic or dynamic real-time images on open-pixel fetches.
-- **Apple Intelligence inbox summaries**: iOS/macOS Mail generates AI summaries from opening live text, competing with or replacing manual preheaders. State the sender, action, date, and amount plainly in the first real text paragraph instead of burying them in an image hero.
+- **Apple Intelligence inbox summaries**: iOS/macOS Mail generates AI summaries from opening live text, competing with manual preheaders. State sender, action, date, and amount plainly in the first real `<p>` instead of burying them in an image hero.
 
-## Deliverability, headers, preheaders, and interactive standards
+## 2025–2026 Bulk Sender Mandate (Gmail, Yahoo, Outlook.com)
 
-- **Preheader zero-width spacer**: keep preview text concise (40–90 chars) and follow it with repeated hidden zero-width fillers so inbox lists do not pull header links or legal copy into the snippet:
+Mailbox providers enforce strict protocol gates at the SMTP/inbox edge (especially at `>= 5,000` messages/day to Gmail/Yahoo/Outlook.com, and best practice for every production domain):
+
+| Requirement | Concrete specification | Promotional / Bulk | Transactional (Receipts, OTPs, Alerts) |
+|---|---|---|---|
+| **Authentication & alignment** | `SPF` + `DKIM` (`>= 2048-bit` RSA or Ed25519) + `DMARC` (`p=quarantine` or `p=reject` recommended; strict/relaxed alignment with visible `RFC5322.From`), valid forward/reverse DNS (`PTR`) | Mandatory | Mandatory (isolate on a dedicated subdomain e.g. `tx.example.com` so marketing reputation never delays OTPs) |
+| **One-click unsubscribe (`RFC 8058`)** | Both `List-Unsubscribe: <https://example.com/unsub?t=...>, <mailto:unsub@...>` AND `List-Unsubscribe-Post: List-Unsubscribe=One-Click`, plus a visible 1-click footer link; process within **`<= 48h` with zero login wall or survey gate** | **Mandatory** | **Omit** `List-Unsubscribe` on security/OTP/receipt mail—and **never** inject promotional cross-sells that reclassify transactional mail as marketing |
+| **Spam complaint rate** | Monitor Google Postmaster Tools, Yahoo Sender Hub, and Microsoft SNDS | **`< 0.10%` target** (`>= 0.30%` triggers bulk rejection/spam routing) | `< 0.05%` expected |
+| **Apple MPP analytics** | Apple Mail Privacy Protection pre-fetches tracking pixels via relay proxies regardless of whether the human opened the email | Measure **verified link clicks, conversions, and replies**; never trigger drip branches or purge lists solely from open pixels | Never use open pixels as delivery/read proof for legal or billing notices |
+| **BIMI (optional brand trust)** | Enforced `DMARC` (`p=quarantine` or `p=reject`), square **SVG Tiny-PS** logo over HTTPS, and **VMC** / **CMC** certificate | Recommended | Recommended |
+
+## Preheaders and interactive extensions
+
+- **Preheader zero-width padding (`50–90` repeats / `~140+` chars)**: keep preview text concise (`40–90` chars) and follow it with **50–90 repeats** of `&#847;&zwnj;&nbsp;` (`~150–270` invisible characters). Repeating only 3–5 times pads ~12 characters and leaks `"View in browser"` or header `alt` text into 120–140 character inbox snippets:
 
 ```html
 <div style="display:none;max-height:0;overflow:hidden;mso-hide:all;" aria-hidden="true">
-  Invoice #2026-041 due 15 Dec — €1,420.50
-  &#847;&zwnj;&nbsp;&#847;&zwnj;&nbsp;&#847;&zwnj;&nbsp;&#847;&zwnj;&nbsp;&#847;&zwnj;&nbsp;
+  Invoice #2026-041 due 15 Dec — €1,420.50&#847;&zwnj;&nbsp;&#847;&zwnj;&nbsp;&#847;&zwnj;&nbsp;<!-- repeat &#847;&zwnj;&nbsp; 50–90 times (~140+ chars) in compiled output -->
 </div>
 ```
 
-- **RFC 8058 One-Click Unsubscribe**: bulk senders (required by Gmail, Yahoo, and Microsoft) must include both `List-Unsubscribe: <https://example.com/unsub?token=...>` and `List-Unsubscribe-Post: List-Unsubscribe=One-Click` headers alongside a visible footer unsubscribe link; the endpoint must process `POST` immediately without requiring login.
-- **BIMI (Brand Indicators for Message Identification)**: displaying a verified sender logo in Gmail/Apple Mail requires enforced DMARC (`p=quarantine` or `p=reject`), a square **SVG Tiny-PS** logo hosted over HTTPS, and a **VMC** (Verified Mark Certificate) or **CMC** (Common Mark Certificate) where required by the mailbox provider.
 - **AMP for Email (`text/x-amp-html`)**: optional third MIME part (`text/plain`, `text/html`, `text/x-amp-html`) for interactive state in Gmail/Yahoo/Mail.ru. Requires SPF/DKIM/DMARC + sender approval, expires after ~30 days, and is ignored by Apple Mail and Outlook—always preserve full functional parity in `text/html` and `text/plain`.
 
 ## Email accessibility rules
@@ -83,4 +109,4 @@ Opt into dark mode deliberately in `<head>` and `<style>`:
 
 ## Verification matrix
 
-Record: client/app/version (including **New Outlook** vs **Classic Outlook**), OS/device, light/dark mode, images on/off, viewport width, zoom/text size, HTML byte size vs Gmail 102 KB cap, plaintext parity, forwarded/quoted behavior, RFC 8058 headers, and accessibility inspection. Label untested clients `not-checked`; never claim universal compatibility.
+Record: client/app/version (**New Outlook** vs **Classic Outlook**, Gmail Web/iOS/Android, Apple Mail), OS/device, all 3 dark-mode regimes, images on/off, viewport width, zoom/text size, HTML byte size vs `< 80 KB` target / `102 KB` cap, plaintext parity, forwarded/quoted behavior, `RFC 8058` / `SPF` / `DKIM` / `DMARC` headers, and accessibility inspection. Label untested clients `not-checked`; never claim universal compatibility.

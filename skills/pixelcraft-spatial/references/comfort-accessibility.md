@@ -1,98 +1,38 @@
 # XR comfort, ergonomics, and accessibility
 
-## Locomotion and frame-rate comfort
+## Locomotion, boot time (`<= 4 s`), and locked frame-rate comfort
 
-Motion sickness usually comes from sensory conflict: visual motion without matching vestibular motion, unexpected camera acceleration/rotation, latency, or unstable frames.
+Motion sickness stems from visual-vestibular conflict, camera acceleration, head-locked clutter, or dropped head-tracked frames:
 
-Rules:
+- **Meta Quest VRC boot & frame lock**: render the **first head-tracked interactive frame in `<= 4 seconds`** from app launch (never hang on a frozen black stereo buffer!) and sustain a locked **`72 / 90 / 120 fps`** with **`0` head-pose frame drops**, enabling **Dynamic / Eye-Tracked Foveated Rendering (`FFR` / `ETFR`)** and stereo layers before sacrificing text resolution.
+- **Zero head-locked world-blocking HUDs**: **never bolt opaque HUD panels rigidly to the HMD camera transform**—head-locked panels induce immediate claustrophobia and prevent users from glancing directly at corner labels! Use lazy-follow/tag-along tethers with angular deadzones, wrist anchors, or world-locked spatial panels.
+- **Comfort locomotion defaults**: never move/rotate/tilt the camera involuntarily; default to **physical movement / teleport + `30–45°` snap-turn + angular tunneling vignette** (offering smooth locomotion/turn strictly as opt-in comfort settings).
 
-- never move/rotate/tilt the camera involuntarily for cutscenes, transitions, impacts, or UI emphasis;
-- prefer physical movement or teleport for high-comfort defaults;
-- offer snap turn and smooth turn as explicit settings; do not decide one is universally correct;
-- use acceleration sparingly; constant velocity is usually easier than rubbery acceleration;
-- use tunneling/vignette during artificial locomotion, configurable in angular size/feather/color where supported;
-- avoid forced bobbing/head shake/peripheral motion particles;
-- maintain orientation landmarks and provide recentering/pause/exit at all times;
-- preserve user control during loading/network stalls.
+## Ergonomic placement (`1.2–2.0 m`, `5–15°` below horizon), targets, and lap pinch
 
-There is no universal “correct FPS” across devices. The hard rule is to meet the target headset/runtime frame rate with worst-case scenes and thermal state. Design scenes with measured headroom rather than average frame rate; frame-time spikes matter. Test density, lighting/shadows, transparency/overdraw, postprocessing, physics, GC churn, asset streaming, and both eyes.
+Use angular and physical ergonomics together (`physical size ≈ 2 × distance × tan(angle / 2)`; `1° ≈ 17.5 mm` at `1 m`, `35 mm` at `2 m`):
 
-## Ergonomic distances, field of view, and angular sizing
-
-These are working spatial-design heuristics, not regulatory constants. Validate target headset optics/body size/app scale. Use angular measures because physical pixel size at one distance is meaningless in XR.
-
-Angular conversion:
-
-```text
-physical size ≈ 2 × distance × tan(angle / 2)
-```
-
-At 1 meter, a 0.5° object is about 8.7 mm tall and a 1° object about 17.5 mm tall. At 2 meters those values double.
-
-Practical starting envelope:
-
-| Concern | Initial heuristic |
+| Concern | Studio-Grade spatial specification |
 |---|---|
-| frequent direct interaction | roughly 0.5–1.5 m from user, within reachable/comfortable arm/torso posture |
-| primary read/watch content | roughly 1–3 m depending scale/session; avoid forcing prolonged neck flexion |
-| near boundary | be cautious below ~0.5 m because stereo convergence/focus and physical collision discomfort increase |
-| frequent attention zone | around eye height within approximately ±15° vertical/horizontal of neutral forward gaze |
-| secondary scan zone | up to roughly ±30°, not dense permanent controls |
-| periphery | ambient/wayfinding only; no critical persistent text or tiny targets |
-| critical short text | start around 0.5° visual angle or larger and validate in headset |
-| ordinary readable body text | often needs ~0.7–1°+ depending duration/contrast/typeface/user |
-| minimum target visual size | start around 1–1.5° plus input-error tolerance; increase for gaze/hand/controller imprecision |
+| **Primary panel anchor** | **`1.2–2.0 m` depth**, angled **`5–15°` below the eye horizon** (natural resting neck/gaze posture; placing primary UI above horizon causes rapid cervical strain) |
+| **visionOS / spatial target floor** | **`>= 60×60 pt` (`dpt`)** interactive hit area with **`>= 12–16 pt` minimum edge spacing** (`>= 72–76 pt` center-to-center) for reliable eye-gaze + pinch targeting |
+| **"Gorilla-arm" prevention** | Support **relaxed lap-level indirect gaze-and-pinch / controller ray** for sustained sessions (`> 2 min`); reserve `0.4–0.6 m` direct mid-air poke strictly for brief optional physical manipulation |
+| **3-posture recentering** | Support **Seated**, **Standing**, **AND Lying-down / Reclined** (`up`-vector pitch tilt) recentering so users in bed, wheelchairs, or airplane seats can orient the workspace perpendicular to their gaze without fighting world gravity |
+| **Near boundary** | Keep sustained reading surfaces **`>= 0.5 m`** away to avoid vergence-accommodation conflict |
 
-Do not copy phone point sizes into 3D. Compute physical size from intended distance using the formula above. Validate seated/standing heights, wheelchair reach, shorter/taller users, and recentering behavior.
+## Depth, layering, and real-room passthrough lighting QA
 
-## Depth and layering
+- Near objects invite direct manipulation; mid-distance (`1.2–2.0 m`) panels support reading/selection; distant geometry provides ambient context.
+- Avoid z-fighting, intersecting panels, and eye-level overlays that block real-world tripping hazards in mixed reality.
+- **Dual-lighting passthrough legibility QA**: translucent glass/additive spatial materials wash out against sunlit windows and glare harshly in dark bedrooms. **Test passthrough UI legibility in BOTH sunlit bright rooms (`> 500–1,000 lux`) AND dim rooms (`< 20 lux`)**, providing adaptive dark scrims/plates behind typography.
 
-Depth should encode spatial meaning:
+## Zero-shift eye-gaze hover & biometric privacy
 
-- near objects invite direct manipulation;
-- mid-distance surfaces support reading/selection;
-- distant content supports scale/context/ambience;
-- foreground occlusion must never hide critical controls unexpectedly;
-- shadows/contact cues/lighting establish grounding better than arbitrary float height;
-- parallax is evidence of depth—test while moving, not only from a fixed camera screenshot.
+- **Zero geometry or layout shift on eye-gaze hover**: when a user's eyes sweep across controls, **never scale, translate, expand, or reflow button bounds on hover**! Moving target edges under eye-gaze triggers involuntary corrective saccades, hover oscillation loops, and severe eye strain. Use **subtle OS-rendered specular/luminance `.hoverEffect()` highlights only**, deferring size/layout transitions until explicit pinch/click commit.
+- **Strict gaze privacy**: keep raw eye-tracking vectors inside the OS compositor hover boundary—never record covert gaze heatmaps or dwell biometrics without explicit opt-in clinical/research consent, and always provide controller/hand/voice parity when eye tracking is uncalibrated or denied.
 
-Avoid z-fighting, intersecting panels, clipping through walls/users, duplicate curved screens at slightly different depths, and eye-level content that blocks passthrough/safety awareness. In mixed reality, respect real surfaces/occlusion rather than treating the room as empty.
+## Text legibility and XR accessibility
 
-## Gaze-and-pinch input and privacy
-
-Gaze direction, dwell time, hand/body pose, room scans, passthrough imagery, voice, and behavioral biometrics are sensitive even when no raw camera frame is stored.
-
-Rules:
-
-- prefer system-mediated hover/selection feedback;
-- collect the minimum spatial/eye/hand telemetry necessary and define retention;
-- do not use covert dwell/attention scoring for manipulation or advertising;
-- explain permission purpose in plain language before system prompts;
-- provide controller/indirect/touch alternatives where gaze/hand tracking is unavailable or denied;
-- never require precise pinch/rapid gestures as the only completion path.
-
-Input feedback sequence: target/hover → confirmation of acquisition → manipulation/state change → release/commit. Missing intermediate feedback makes spatial controls feel unreliable.
-
-## Text legibility in XR
-
-- use high contrast, sturdy weight, generous line spacing, and controlled measure;
-- avoid thin/light fonts, subpixel-dependent detail, dense tables, and long paragraphs;
-- keep text surfaces perpendicular enough to view direction or provide billboard/reorientation behavior deliberately;
-- account for chromatic aberration at lens edges, mura/compression, passthrough lighting, and accommodation distance;
-- localize expansion/CJK/RTL/Indic scripts and test glyph rasterization at physical scale;
-- use semantic UI/text objects rather than baking critical text into textures where possible.
-
-## Accessibility in XR
-
-Provide meaningful alternatives rather than declaring XR inherently exempt:
-
-- seated mode, height scaling, recentering, one-handed mode, controller-only mode;
-- captions/subtitles and visual alerts for spatial audio cues;
-- audio/haptic cues for visual state and visual cues for audio/haptic state;
-- adjustable text scale/contrast/brightness and color-independent encoding;
-- reduced motion/comfort presets and locomotion speed/turn-angle controls;
-- remappable input and dwell/activation alternatives;
-- screen reader/voice access where platform supports it, semantic object labels otherwise;
-- safe exit/pause accessible without precise gesture or visual search.
-
-Test with real target users/devices where possible. Simulator compliance checklists do not capture fatigue, nausea, reach, tracking failure, or sensory overload.
+- Use sturdy font weights (Regular/Medium+), generous leading, perpendicular/billboarded text planes, and native **compositor quad/cylinder layers** (`ViewAttachmentComponent`, `WebXR Layers`, `UStereoLayerComponent`) rather than double-sampled eye-buffer textures.
+- Provide **Seated / Standing / Reclined** posture modes, **one-handed** mode (never require simultaneous two-hand pinch-zoom as the only scale path), spatial audio **directional captions**, adjustable text/panel scale, and an always-reachable pause/exit action.
+- Label simulator-only checks honestly—stereo comfort, convergence, passthrough contrast, and `72/90/120 fps` thermal headroom require real headset `rendered` verification or `not-checked`.

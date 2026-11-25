@@ -6,25 +6,40 @@ Evidence base: usability research, platform motion/accessibility guidance, rende
 
 Motion earns its cost only when it acknowledges input, shows causality, preserves orientation, communicates progress/state, or creates the direction's single signature moment. Apple gives the same constraint: purposeful, brief, precise, optional motion—not motion for its own sake. Showcase spectacle is not permission to sacrifice usability; celebrated interfaces are still wrong when motion blocks comprehension, control, or access.
 
-## Budgets
+## B1 — Frequency-calibrated motion & warm tooltip chains
 
-| Layer | Budget posture |
-|---|---|
-| input acknowledgment | immediate; roughly 50–120ms; never delayed behind a scene animation |
-| local state change | roughly 100–250ms; most UI animation belongs in a 100–500ms envelope |
-| sheet/panel/route transition | roughly 200–400ms; shortest non-jarring duration |
-| scroll-linked progress | visually respond within one normal wheel/touch increment; never require pixel-perfect scrolling |
-| concurrent choreographed elements | normally 1 primary + at most 2 supporting motions; cascade only when order encodes meaning |
-| ambient/looping motion | default none in Operate/Read; if used, subtle, pausable, and outside the reading focus |
-| rendering | target compositor work; animate transform/opacity, avoid layout/paint-triggering properties and `transition: all` |
-| assets | motion cannot justify layout shift, delayed LCP media, blocked input, or main-thread long tasks |
+Calibrate animation duration inversely to daily action frequency—high-repetition controls must never pay ceremonial animation tax:
 
-Tokenize semantic durations/easings (`feedback.instant`, `state.standard`, `scene.enter`) rather than scattering raw milliseconds. For physics-driven systems (Material 3 Expressive, SwiftUI, Motion), prefer **spring composite tokens** (`stiffness` + `damping` / `response` + `bounce`) over fixed-duration curves so interrupted gestures settle naturally; degrade springs to brief opacity crossfades under Reduced Motion.
+| Frequency tier | Typical interactions | Duration budget | Required behavior |
+|---|---|---|---|
+| **High frequency** (`50–100+×/day`) | command palettes, context/dropdown menus, tab/row/cell selection, keyboard list traversal, warm tooltips | **`0–100ms`** (`0ms` on key-repeat / TUI cell step) | Instant acknowledgment; zero stagger or decorative entrance delay; hold-key repeat runs at `0ms` |
+| **Warm tooltip chain** | sweeping pointer/focus across sibling toolbar icons or table headers | `300–500ms` cold open (`~100ms` fade) → **`0ms` delay & `0ms` fade** while warm | Once one tooltip in a group opens, sibling tooltips open immediately with zero fade until pointer leaves the group (`~300–400ms` cooldown) |
+| **Medium frequency** (`5–30×/day`) | drawers, side sheets, modal dialogs, inspector panes, accordion disclosures | **`150–220ms`** | Snappy deceleration or critically damped spring; retargetable mid-flight without queuing |
+| **Low frequency / expressive** (`≤ 1–3×/session`) | first-run onboarding, signature hero reveal, milestone confirmation | **`300–500ms`** | Never block pointer, scroll, or keyboard input; user can click or navigate through immediately |
+| **Rendering & concurrency** | all interactive and choreographed layers | compositor-only (`transform`, `opacity`) | Normally 1 primary + at most 2 supporting motions; ban `transition: all`, layout/paint thrashing, and idle loops in Operate/Read |
+
+Tokenize semantic durations and physics (`motion.instant`, `motion.fast`, `motion.panel.enter`, `motion.panel.exit`, `motion.spring.operational`) rather than scattering raw milliseconds.
+
+## B3 — Origin-aware scaling, asymmetric open/close & damped springs
+
+Overlays and interactive surfaces must preserve spatial causality and dismiss without drag:
+
+1. **Subtle trigger-anchored scale (`0.95 → 1.0`, never `0 → 1` center balloon):** popovers, context menus, combobox lists, and contextual sheets enter from **`scale(0.95)`–`scale(0.97)` to `1.0`** paired with opacity, anchored to the trigger's attachment corner or edge—never zooming from `0` or expanding from viewport center when opened by a corner button.
+2. **Asymmetric enter vs exit duration:** closing transitions run **faster than opening (`~100–130ms` exit vs `~160–200ms` enter)** using a brisk exit curve (`ease-in` or tight spring) so dismissing menus, modals, and sheets gets out of the user's way immediately.
+3. **Velocity-preserving, non-rubbery operational springs (`ζ ≥ 0.85`):** gesture-driven sheets, swipeable cards, and pan-to-dismiss overlays inherit release velocity via spring physics without cartoonish overshoot (damping ratio `ζ ≥ 0.85`—critically or near-critically damped—in Operate/Read UI; degrade to brief opacity crossfades under Reduced Motion).
+
+| Platform | Trigger-origin anchor idiom | Asymmetric timing / operational spring (`ζ ≥ 0.85`) |
+|---|---|---|
+| **Web CSS / Popover** | `transform-origin: var(--popover-origin, top start)` (or CSS Anchor Positioning edge) + `scale(0.96)` | Enter `180ms` `ease-out` / spring `linear()`; exit `115ms` `ease-in` |
+| **SwiftUI / AppKit** | `.popover(attachmentAnchor: .rect(.bounds))` or `.scaleEffect(open ? 1 : 0.96, anchor: .topLeading)` | `.spring(duration: 0.2, bounce: 0.0)` (enter) / `.easeIn(duration: 0.12)` (exit) |
+| **Jetpack Compose** | `scaleIn(initialScale = 0.95f, transformOrigin = TransformOrigin(0f, 0f))` | `tween(180, FastOutSlowInEasing)` enter / `tween(115, FastOutLinearInEasing)` exit; `Spring.DampingRatioNoBouncy` |
+| **Flutter** | `ScaleTransition` / `Transform.scale` with `alignment: AlignmentDirectional.topStart` | `SpringDescription.withDampingRatio(mass: 1, stiffness: 500, ratio: 0.9)` or `duration: 180ms` / `reverseDuration: 115ms` |
+| **Desktop / Game UI** | Anchor popup rect to widget `mapToGlobal` trigger edge (Qt/WinUI/Slint/UMG); scale `0.96 → 1.0` | `160–180ms` enter, `100–120ms` exit; instant `0ms` in TUI |
 
 ## Concentric geometry and translucent materials
 
-- **Concentric corner radii**: when nesting rounded containers, compute `innerRadius = max(0, outerRadius - padding)` (or use platform concentric radius APIs) so nested borders stay optically parallel instead of pinching at corners.
-- **Refractive / glass surfaces**: translucent blur/refraction layers must maintain readable contrast over shifting backgrounds and provide a solid high-contrast fallback under `@media (prefers-reduced-transparency: reduce)` (and platform Reduce Transparency settings):
+- **Concentric corner radii** (see `references/layout.md` `B2`): when nesting rounded containers, compute `innerRadius = max(0, outerRadius - padding)` so nested borders stay optically parallel instead of pinching at corners.
+- **Refractive / glass surfaces** (see `references/color.md` `B4`): pair translucent blur with saturation boost (`saturate(160–180%)` / native OS vibrancy) and provide a solid high-contrast fallback under `@media (prefers-reduced-transparency: reduce)` and platform Reduce Transparency settings:
 
 ```css
 @media (prefers-reduced-transparency: reduce) {
@@ -54,27 +69,30 @@ Tokenize semantic durations/easings (`feedback.instant`, `state.standard`, `scen
 Prefer declarative browser primitives over JS animation runtimes when targeting modern web surfaces—always pair with `@supports` progressive enhancement and `@media (prefers-reduced-motion: reduce)`:
 
 ```css
-/* 1. CSS linear() spring easing (approximated physics curve with zero JS runtime) */
+/* 1. Critically damped operational spring curve (zeta >= 0.85, zero rubbery overshoot) */
 :root {
-  --ease-spring-snappy: linear(
-    0, 0.009, 0.035 2.1%, 0.141, 0.281 6.7%, 0.723 12.9%, 0.938 16.7%,
-    1.017, 1.077, 1.121, 1.149 24.3%, 1.159, 1.163, 1.161, 1.154 29.9%,
-    1.129 32.8%, 1.051 39.6%, 1.017 43.1%, 0.991, 0.977 51%, 0.974 53.8%,
-    0.975 57.1%, 0.997 69.8%, 1.003 76.9%, 1.004 83.8%, 1
+  --ease-spring-operational: linear(
+    0, 0.012, 0.049 2.2%, 0.194 5%, 0.421 9%, 0.728 15.5%,
+    0.892 20.8%, 0.968 25.4%, 0.996 29.8%, 1.004 35%, 1.002 46%, 1
   );
 }
 
-/* 2. Entry/exit transitions for top-layer <dialog> and [popover] */
-dialog, [popover] {
+/* 2. Origin-aware 0.96 -> 1.0 scale + asymmetric faster exit (115ms close vs 180ms open) */
+[popover], dialog {
   opacity: 0;
-  transform: translateY(6px);
-  transition: opacity 160ms ease-out, transform 180ms var(--ease-spring-snappy),
-              overlay 180ms allow-discrete, display 180ms allow-discrete;
+  transform-origin: var(--popover-origin, top left);
+  transform: scale(0.96) translateY(-2px);
+  /* Exit transition (applies when closing): brisk 115ms ease-in */
+  transition: opacity 115ms ease-in, transform 115ms ease-in,
+              overlay 115ms allow-discrete, display 115ms allow-discrete;
 }
-dialog[open], [popover]:popover-open {
+[popover]:popover-open, dialog[open] {
   opacity: 1;
-  transform: translateY(0);
-  @starting-style { opacity: 0; transform: translateY(6px); }
+  transform: scale(1) translateY(0);
+  /* Enter transition (applies when opening): 180ms damped spring */
+  transition: opacity 160ms ease-out, transform 180ms var(--ease-spring-operational),
+              overlay 180ms allow-discrete, display 180ms allow-discrete;
+  @starting-style { opacity: 0; transform: scale(0.96) translateY(-2px); }
 }
 
 /* 3. Cross-document View Transitions + shared group styling */

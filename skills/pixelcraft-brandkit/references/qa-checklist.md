@@ -83,11 +83,11 @@ Reject or revise if the output contains random floating icons, generic startup g
 
 Pass the board only when every observable visual-system criterion holds:
 - **Exact grid geometry:** uniform gutters, aligned panel edges, and one clear anchor panel with deliberate density contrast across panels.
-- **Single-mark fidelity:** identical mark proportions and construction repeated across every panel, legible as a solid-black silhouette at 16/32/64 px.
-- **Controlled palette & contrast:** one dominant base, neutral ramp, and 1–2 repeating accents with verifiable foreground/background contrast (`≥ 4.5:1` for text labels) and zero stray colors.
+- **Single-mark fidelity & optical reduction:** identical mark proportions repeated across panels, plus **dedicated `16 px` / `24 px` / `32 px` small-size optical reductions** (simplified stroke/counter geometry, never a shrunken hero lockup).
+- **Dual Screen <-> Print color master & contrast:** one dominant base, neutral ramp, and 1–2 repeating accents with `>= 4.5:1` text contrast and a **hand-tuned Screen (`OKLCH` + `sRGB HEX` + `Display-P3`) <-> Print (`CMYK` + `Pantone`) master table**.
 - **Sparse, legible, domain-real text:** exact brand spelling, zero lorem ipsum, zero tiny unreadable copy, and zero generic AI tagline clichés.
-- **Implementation readiness:** every color, type role, spacing ratio, and mark treatment translates directly into DTCG tokens (`pixelcraft-tokens`) and production SVG/raster exports without inventing missing rules.
+- **Multi-target tokens & license manifest:** DTCG `tokens.json` ready for CSS/Swift/Kotlin/Desktop export (`pixelcraft-tokens`) plus a **Commercial Font & Asset License Manifest** covering Webfont pageviews, Mobile App embedding, Server PDF generation, and Desktop redistribution.
 
 ## Delivery report
 
-Include: selected concept; rejected alternatives; actual output size; evidence label; what was inspected; unresolved issues; whether palette/type should be exported as tokens for implementation.
+Include: selected concept; rejected alternatives; actual output size; evidence label (`rendered`, `static`, `model-judgment`, `not-checked`, `waived`); Dual Screen/Print palette summary; `16/24/32 px` optical reduction status; Commercial License Manifest status; and multi-target DTCG token export readiness.

@@ -76,15 +76,17 @@ export function AssistantChat({ chatId }: { chatId: string }) {
             if (part.type === 'dynamic-tool' || part.type.startsWith('tool-')) {
               if (part.state === 'input-streaming') return <p key={i}>Preparing tool call…</p>;
               if (part.state === 'approval-requested' && 'approval' in part && part.approval) {
+                const inputSummary = 'input' in part ? JSON.stringify(part.input) : '';
                 return (
                   <div key={i} role="region" aria-label="Tool approval required">
-                    <p>Approve {part.type}?</p>
-                    <button type="button" onClick={() => addToolApprovalResponse({ id: part.approval.id, approved: true })}>Approve</button>
-                    <button type="button" onClick={() => addToolApprovalResponse({ id: part.approval.id, approved: false })}>Deny</button>
+                    <p><strong>Confirm action:</strong> {part.type.replace(/^tool-/, '')}</p>
+                    <p>Target &amp; parameters (Before → After): <code>{inputSummary}</code></p>
+                    <button type="button" onClick={() => addToolApprovalResponse({ id: part.approval.id, approved: true })}>Approve once</button>
+                    <button type="button" onClick={() => addToolApprovalResponse({ id: part.approval.id, approved: false })}>Reject</button>
                   </div>
                 );
               }
-              if (part.state === 'output-error') return <p key={i} role="alert">Tool failed: {part.errorText}</p>;
+              if (part.state === 'output-error') return <p key={i} role="alert">Tool failed: {part.errorText} — retry or edit parameters.</p>;
               if (part.state === 'output-available') return <pre key={i}>{JSON.stringify(part.output)}</pre>;
               // For client-executed tools awaiting output: call addToolOutput({ tool, toolCallId, output })
             }
@@ -95,18 +97,48 @@ export function AssistantChat({ chatId }: { chatId: string }) {
 
       {error && (
         <div role="alert">
-          <p>Request failed: {error.message}</p>
+          <p><strong>Response interrupted:</strong> {error.message} — your draft and history are preserved.</p>
           <button type="button" onClick={() => regenerate()}>Retry last response</button>
         </div>
       )}
 
       <form onSubmit={onSubmit}>
         <label htmlFor="chat-prompt" className="sr-only">Message</label>
-        <input id="chat-prompt" value={input} onChange={(e) => setInput(e.target.value)} disabled={isBusy} />
+        {/* Never lock input with disabled={isBusy}; guard Enter-to-send against CJK/Vietnamese IME composition */}
+        <input
+          id="chat-prompt"
+          value={input}
+          onChange={(e) => setInput(e.target.value)}
+          onKeyDown={(e) => {
+            if (e.key === 'Enter' && (e.nativeEvent.isComposing || e.keyCode === 229)) {
+              e.preventDefault();
+            }
+          }}
+          placeholder={isBusy ? 'Draft next turn or steer while streaming…' : 'Ask anything…'}
+        />
         {isBusy ? (
-          <button type="button" onClick={() => stop()}>Stop generating</button>
+          <>
+            <button type="button" onClick={() => stop()} aria-label="Stop active stream">
+              Stop
+            </button>
+            {input.trim() && (
+              <button
+                type="button"
+                onClick={() => {
+                  const next = input.trim();
+                  stop();
+                  sendMessage({ text: next });
+                  setInput('');
+                }}
+              >
+                Steer now
+              </button>
+            )}
+          </>
         ) : (
-          <button type="submit" disabled={!input.trim()}>Send</button>
+          <button type="submit" disabled={!input.trim()}>
+            Send
+          </button>
         )}
       </form>
     </section>

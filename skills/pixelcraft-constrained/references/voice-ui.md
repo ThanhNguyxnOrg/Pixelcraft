@@ -4,16 +4,16 @@ Voice is transient, linear, and invisible—users cannot visually scan a menu. K
 
 ## Conversation model & prompt design
 
-- Lead with **state/result first**, then offer at most 2–3 concrete options:
+- **Strict turn budget (`<= 3` options, `< 10–12 s` spoken duration)**: working memory collapses on long audio lists—lead with **state/result first**, cap every spoken prompt under **`10–12 seconds`** (~25–30 words), and present **at most `3` options** per turn:
   - Bad: *"Welcome to the Acme productivity assistant. How can I help you today?"*
-  - Better: *"Three invoices are ready. Review them, or say a supplier name."*
+  - Better: *"Three invoices are ready. Review them, approve urgent, or say a supplier name."*
 - Ask one question per turn; preserve conversational context across corrections (*"the second one"* resolves against mentioned/visible candidates).
-- Distinguish recognition failure (*"I didn't catch that"*), ambiguity (*"Acme Corp or Acme Labs?"*), backend failure, and microphone/permission failure.
-- Escalate error recovery progressively—never loop the identical prompt:
-  1. Targeted reprompt for the missing slot,
-  2. Simplified binary choice,
-  3. Multimodal visual/touch fallback (show selectable list or input),
-  4. Graceful handoff preserving progress.
+- Distinguish **no-input** (silence timeout) from **no-match** (recognition/intent miss), ambiguity (*"Acme Corp or Acme Labs?"*), backend failure, and microphone/permission failure.
+- Escalate no-input / no-match recovery progressively—never loop the identical prompt:
+  1. Targeted reprompt naming valid examples,
+  2. Simplified binary yes/no choice,
+  3. **Multimodal transcript / visual card fallback** (selectable list or text input),
+  4. Warm handoff preserving captured slots.
 - Never make voice the sole path for critical functionality unless hardware mandates it.
 
 ## Realtime Voice AI & WebRTC voice agents (2025–2026)
@@ -24,10 +24,10 @@ Modern speech-to-speech and streaming pipelines (**OpenAI Realtime API**, **Gemi
 |---|---|
 | **Transport (WebRTC vs WebSocket)** | Use **WebRTC** (Opus, adaptive jitter buffer, UDP/ICE) between end-user devices and the voice server/edge for low latency and packet-loss resilience; keep raw WebSockets strictly on reliable server-to-model hops. |
 | **Acoustic VAD vs semantic turn detection** | Pure acoustic VAD (e.g., Silero energy/speech silence timeout) frequently cuts users off mid-sentence while pausing to think or read a number. Pair acoustic VAD with **semantic end-of-turn (EOT)** detection and tune silence timeouts per task (tight for commands, generous for dictating IDs/addresses). |
-| **Barge-in & assistant-transcript truncation** | When the user speaks over the agent, **immediately flush local audio playback** AND **truncate the unplayed assistant text from conversation history** (e.g., `conversation.item.truncate` with exact played-audio milliseconds). Without truncation, the model falsely believes the user heard sentences that were cut off! |
+| **`< 300 ms` local barge-in cutoff & transcript truncation** | Detect speech onset locally on the client VAD and **halt local speaker output in `< 300 ms`** (never wait for a server round-trip to silence audio!), **AND** send `conversation.item.truncate` with exact played-audio milliseconds so the LLM never assumes the user heard unplayed words. |
 | **AEC & mic privacy indicators** | Enable WebRTC/OS Acoustic Echo Cancellation (`echoCancellation: true`, `noiseSuppression: true`, `autoGainControl: true`) so speaker output never self-triggers false barge-in. Display an unmistakable, non-color-only state indicator (`Muted`, `Listening`, `Thinking`, `Speaking`) plus an always-reachable single-tap Mute / End Call control. |
 | **Latency masking during tool calls** | When a backend tool call exceeds ~500–800 ms, emit one concise truthful status cue (*"Checking order 4821 now…"*) or subtle non-looping earcon—never leave >1.5 s of dead silence (users assume disconnection and repeat themselves) and never spam synthetic filler chatter. |
-| **Irreversible-action guardrails** | Before executing payment, deletion, booking, or external-message tools, require explicit spoken (or on-screen tap) confirmation restating concrete parameters (*"Send $420 to Northwind Supplies—confirm?"*). Treat retrieved web/tool text as untrusted data so prompt injection cannot silently invoke high-impact actions. |
+| **Irreversible-action read-back confirmation** | Before executing payment, deletion, booking, or external-message tools, perform an **explicit spoken read-back** of the exact entity, amount, and recipient (*"Send $420 to Northwind Supplies—say confirm or cancel"*) or require on-screen tap confirmation. Treat retrieved web/tool text as untrusted data against prompt injection. |
 
 ## Platform assistant integrations
 

@@ -41,20 +41,18 @@ Build a reading sequence around repeated headers, explicit units and page bounda
 | Concern | Rule |
 |---|---|
 | truthfulness | Totals, dates, references, legal text, names, and page numbers must be data-driven or explicitly marked draft/placeholder; never invent invoice/report content. |
-| fragmentation | No orphan headings, split signature blocks, dangling table headers, clipped footnotes, or totals separated from the rows they summarize unless intentional and labeled. |
-| physical correctness | Use mm/pt/in for print dimensions; CSS px are screen abstraction, not print measurements. |
-| legibility | Body text must remain readable at final size; slides must be legible from the back of the room, not merely on the author's monitor. |
-| accessibility | PDF/export needs document structure, meaningful reading order, text alternatives for images/charts, selectable text where possible, and sufficient contrast. |
-| renderer awareness | Do not claim support for margin boxes, footnotes, bleed, grid, or font behavior without checking the chosen renderer. |
-| anti-slop | Avoid decorative report templates, fake charts, stock-photo covers, dense wall-of-text slides, and generic blue corporate styling detached from content. |
+| fragmentation | Enforce `thead { display: table-header-group }`, `h1, h2, h3 { break-after: avoid; break-inside: avoid }`, and `break-inside: avoid` on `tr`, figures, signatures, and invoice totals; never split a total block from the rows it summarizes without repeating context. |
+| dual print profiles | Choose explicitly between **(A) Digital & Office Grayscale Proof** (`10–12mm` safe hardware margins, grayscale legibility without color ink, clickable TOC bookmarks, `PDF/UA` tags) and **(B) Commercial Prepress (`PDF/X-4`)** (`3mm` / `0.125"` bleed on all sides, `5mm` inner trim safety inset, `>= 300 effective DPI` photos, `FOGRA39`/`GRACoL` CMYK ICC, `TAC <= 300%`, and **body black text on single-plate `100% K` overprint `C0 M0 Y0 K100`** so small type never ghosts from 4-plate misregistration). |
+| font subset & `ToUnicode` CMap | Verify via `pdffonts` (`emb=yes`, `uni=yes`) + `pdftotext` that subsetted fonts retain a valid `ToUnicode` CMap so copying Vietnamese, CJK, or ligatures (`fi`, `fl`) and running ATS/search parsers never yields tofu `□` or garbled bytes. |
+| vector vs raster | Emit charts, diagrams, and logos as **strict vector SVG / PDF primitives**; reserve `>= 300 effective DPI` raster strictly for photographs or `100k+`-point dense heatmaps. |
+| slide deck parity | Build on **Master Slide** layouts (`>= 24pt` room-projection body floor, `>= 18pt` dense leave-behind), embedded/universal fonts, pixel-snapped `16:9` assets (`< 25–30 MB` email-safe deck size), native editable `.pptx` objects (never rasterized Slidev PNG slides for executive handoff), and **`PPTX <-> PDF` visual parity verification**. |
+| accessibility | Ship `PDF/UA` tag trees (`H1`–`H6`, `Table`/`TH` scope, `Artifact` running headers/footers, `Figure` alt text), logical reading order, and non-color pattern/label differentiation. |
 
 ## Pre-submit checklist
 
-- [ ] output medium, renderer, page size/orientation, locale, and duplex/bleed requirements are explicit;
-- [ ] named pages/page numbering/running headers/footers behave correctly;
-- [ ] break rules tested with short/long/missing data and repeated tables/figures;
-- [ ] fonts are embedded/licensed and fallback behavior inspected;
-- [ ] contrast/background behavior tested in print/PDF/projector output;
-- [ ] actual generated artifact inspected at 100% and final size;
-- [ ] accessibility/reading order/text extraction checked or labeled `not-checked`;
-- [ ] document/slide content is truthful, necessary, and free of template filler.
+- [ ] output profile explicit: **Digital/Office Grayscale (`PDF/UA`)** vs **Commercial Prepress (`PDF/X-4`, `3mm` bleed, `5mm` safety, `TAC <= 300%`, `100% K` body black)** vs **Slide Deck (`16:9`, `< 25–30 MB`)**;
+- [ ] `thead { display: table-header-group }`, `break-after: avoid` on headings, and page-break rules tested on short, multi-page, and worst-case data;
+- [ ] `pdffonts` confirms `emb=yes` and `uni=yes` (`ToUnicode` CMap intact—Vietnamese/CJK/ligatures `fi`/`fl` copy cleanly with zero `□`);
+- [ ] charts/logos are vector SVG/PDF primitives; office proofs pass **grayscale legibility** without red/green ink dependency;
+- [ ] slide decks enforce Master Slides, `>= 24pt` projection body (`>= 18pt` leave-behind), native editable `.pptx` primitives where editability is expected, and **`PPTX <-> PDF` parity**;
+- [ ] `check-pdf.mjs` (`--prepress` for commercial `PDF/X-4` `/TrimBox`, `/BleedBox`, `/OutputIntents`, `/ToUnicode` checks in `pixelcraft-visual-qa`) (`static`) separated honestly from 100%-zoom page/slide inspection (`rendered`) or `not-checked`.

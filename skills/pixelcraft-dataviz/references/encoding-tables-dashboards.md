@@ -52,48 +52,56 @@ Annotation should answer “what should I notice?” Use sparse domain-specific 
 
 When two percentage series answer related but different questions, repeat their denominators in local labels rather than writing only “share” or distinguishing them by hue. If a comparison becomes a stack on phones, keep the order, date range, denominator and common domain close to each value. Verify that a reader can explain which group each percentage describes without hover or looking back to the desktop legend.
 
-## Formatting and units
+## Honest numeric semantics, timezone, and SLA freshness
 
-- Put the unit in the axis title or first tick label (`ms`, `%`, `€`, `requests/s`), not only in a hidden tooltip.
-- Use locale-aware decimal/grouping/currency/date formatting in user-facing UI; preserve machine precision only when users need it.
-- Round for decision-making resolution, not cosmetic symmetry. Keep enough precision to distinguish consequential differences.
-- Use consistent time zone/calendar labeling; mark incomplete trailing periods.
-- Explain nulls/gaps. Zero is not missing.
-- Use tabular numerals for changing or column-aligned numeric values.
+- **Explicit unit headers & axis labels**: put exact units and currency codes in column headers or axis titles (`Revenue ($ USD)`, `P99 Latency (ms)`, `Error Rate (%)`), never hidden exclusively inside hover tooltips.
+- **`tabular-nums` + True Minus `U+2212` (`−`)**: apply `font-variant-numeric: tabular-nums lining-nums` on every numeric column, KPI, tick, and live counter, and render negative numbers with **True Minus `U+2212` (`−`)** rather than ASCII hyphen-minus `U+002D` (`-`) so `−` matches `+` glyph width and optical crossbar height:
 
-## Tables as visualization
+```ts
+export function formatMetric(value: number | null | undefined, unit = ''): string {
+  if (value === null || value === undefined || Number.isNaN(value)) return '—'; // never coerce null to 0
+  const formatted = new Intl.NumberFormat('en-US', { maximumFractionDigits: 2 }).format(Math.abs(value));
+  const sign = value < 0 ? '\u2212' : '';
+  return `${sign}${formatted}${unit ? `\u00A0${unit}` : ''}`;
+}
+```
 
-Tables are often the correct visual representation. Design them as scanning instruments:
+- **Strict separation between `0` (measured zero) and `null / — / N/A` (missing/uncollected)**:
+  - **In tables/KPIs**: render measured zero as `0` / `0.00` in standard foreground ink; render missing/uncollected values as muted `—` or `N/A` (`aria-label="No data collected"`) with an explanatory tooltip (`Sensor offline 02:10–02:25 UTC`).
+  - **In line/area charts**: break the path across `null` intervals (`defined(d => d.value !== null)` in D3/Plot, `connectNulls: false` in ECharts/Recharts) or bridge only with an explicit dashed "missing interval" style—never drop `null` to the `0` baseline!
+- **Explicit display timezone (`UTC` vs local) & Data Freshness / SLA Staleness badge**:
+  - Label the active timezone visibly (`2026-11-25 14:00 UTC` or `Local · America/New_York`) and provide a `UTC <-> Local` switch on operational incidents/logs.
+  - Pair every live or warehouse-backed region with a **Data Freshness / SLA Staleness badge** (`Updated 12s ago · SLA 60s` -> transitions to high-contrast warning `Stale · 14m behind SLA` when `now - max(event_ts) > sla_ms`).
+
+## Tables as visualization & safe exports
+
+Tables are often the sharpest visual representation. Design them as high-precision scanning instruments:
 
 | Rule | Application |
 |---|---|
-| alignment | right-align numeric columns; left-align names; align decimal precision or use tabular numerals |
-| units | put shared units in headers (`Latency (ms)`); repeat only when mixed |
-| hierarchy | primary identifier first; hide low-frequency metadata behind details/overflow |
-| comparison | use inline bars/sparklines only when scale is labeled and consistent across rows |
-| state | use text plus icon/color for status; never color alone |
-| sorting | expose active sort direction/column; preserve stable ordering |
-| density | choose row density by frequency/expertise; preserve touch target minimums on interactive rows |
-| overflow | truncation needs expansion/copy path; never truncate the only distinguishing part of IDs |
+| alignment | right-align numeric/timestamp columns (`text-align: right; font-variant-numeric: tabular-nums`); left-align text/IDs |
+| units | put shared units in column headers (`Latency (ms)`, `Cost ($ USD)`); repeat inline only when rows mix currencies/units |
+| `0` vs `null` | `0.0` = observed zero; muted `—` / `N/A` = null/unreported (sort `null` consistently last regardless of `ASC`/`DESC`) |
+| comparison | use inline bars/sparklines only when scale + zero/baseline are consistent and labeled across rows |
+| state | pair text + icon/shape + color for status; never rely on red/green fill alone |
+| overflow | never truncate the distinguishing suffix of IDs/hashes (`…9f4a` or middle-ellipsis + one-click copy) |
+| CSV/XLSX export safety | neutralize **OWASP Formula Injection**: prefix string cells starting with `=`, `+`, `-`, `@`, `\t`, or `\r` with `'` before CSV/XLSX export (while exporting true numeric negatives as native numbers in XLSX) so opening exports in Excel/Sheets cannot trigger `DDE` or formula execution |
 
-Sparklines show shape, not exact magnitude. Pair them with current/range values and state whether axes are shared across rows.
-
-> **Cross-skill boundary:** `pixelcraft-dataviz` governs analytical tables, numeric alignment, visual encodings, inline sparklines, and dashboard information density. Operational table CRUD (row selection, bulk actions, inline editing, pagination, saved filters) and workspace shell navigation belong in `pixelcraft-patterns`.
+> **Cross-skill boundary:** `pixelcraft-dataviz` governs analytical tables, numeric alignment, visual encodings, inline sparklines, and dashboard information density. Operational table CRUD (row selection, bulk actions, inline editing, keyset pagination, saved URL filters) coordinates with `pixelcraft-data-apps` and `pixelcraft-patterns`.
 
 ## Dashboard layout and density
 
 Start from decisions, not chart inventory.
 
-1. Put system health/outliers/actions first; contextual trends second; exploratory detail later.
+1. Put system health/outliers/actions and **Data Freshness / SLA status** first; contextual trends second; exploratory detail later.
 2. Group by operational object or decision, not by chart type.
-3. State time range, freshness, source scope, filters, permissions, and update mode once per coherent region.
-4. Preserve drill-down context: selection, filter, sort, time range, scroll, and back/refresh/deep-link state.
+3. State time range, explicit timezone (`UTC` vs local), freshness SLA, source scope, and URL-serialized filters once per coherent region.
+4. Preserve drill-down context: selection, filter, sort, time range, timezone, scroll, and deep-link URL state.
 5. Use unequal emphasis. Every metric in the same card size teaches users that nothing matters.
-6. High-frequency operations favor dense tables and exception queues; infrequent executive overview favors fewer, larger comparisons.
-7. Leave enough whitespace to separate regions. Density means information priority, not cramped padding.
+6. High-frequency operations favor dense `tabular-nums` tables and exception queues; infrequent executive overview favors fewer, larger comparisons.
 
-Required dashboard states: no data yet, partial ingestion, stale/offline, source error, permission-limited, empty after filter, extreme cardinality, long entity names, and degraded real-time connection. Never fabricate sparklines or placeholder deltas.
+Required dashboard states: no data yet, partial ingestion, **SLA stale/offline**, source error, permission-limited, empty after filter, extreme cardinality, long entity names, and degraded real-time connection. Never fabricate sparklines or placeholder deltas.
 
 ## Anti-slop dashboard pattern
 
-Reject the generic grid of four KPI cards, purple gradient area chart, donut, leaderboard table, and “AI insights” box unless each element answers a real question. Replace decorative KPI deltas with explicit comparison periods and confidence/freshness. A dashboard can be visually distinctive through editorial hierarchy, domain-specific visual language, calibrated typography, and precise annotation while remaining operationally boring in interaction.
+Reject the generic grid of four KPI cards, purple gradient area chart, donut, leaderboard table, and “AI insights” box unless each element answers a real question. Replace decorative KPI deltas with explicit comparison periods, True Minus `−` formatting, and SLA freshness provenance.

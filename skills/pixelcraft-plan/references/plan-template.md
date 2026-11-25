@@ -23,6 +23,10 @@
 ## Discovery status
 - Adaptive discovery mode: Grill-Me / Deep Shaping | Fast Confirm | Direct Execution
 - Trigger or reason deep discovery was unnecessary:
+- Business KPIs & 1–2 primary CTAs:
+- 5-second hierarchy goal (what first-time viewers grasp & where they act):
+- Content & CMS ownership (source of truth, post-launch editor workflow, localization ownership):
+- Target regulatory & store regime (App Store, Google Play, Chrome `MV3`, EU `EAA` / `EN 301 549`, Steam Deck/Console `TRC`, Print `PDF/X-4`, Bulk Email `RFC 8058`, or N/A):
 - Anti-goals & hate-list (rejected competitor tropes / visual or UX patterns):
 - Material decisions resolved (user-selected / recommendation accepted / repository-constrained):
 - Assumptions and their consequences:
@@ -72,9 +76,10 @@ List every complex UI capability in scope (rich text, code editor, node graph, m
 - Existing design system/tokens/theme:
 - Component library/styling approach:
 - State management/data ownership:
-- i18n/localization:
+- Content/CMS & asset licensing pipeline:
+- i18n/localization (`IME` & `Unicode NFC` scope):
 - CI/test/visual tooling:
-- Packaging/distribution/legal constraints:
+- Packaging/store/regulatory constraints:
 
 ## Surfaces and modes
 | Surface/screen | Mode | Input modality | Notes |
@@ -83,8 +88,8 @@ List every complex UI capability in scope (rich text, code editor, node graph, m
 ## UX work required
 - Flows to design:
 - State matrices required:
-- Accessibility/legal floor specifics:
-- Localization scope:
+- Accessibility/legal floor specifics (including sticky-chrome focus & `EAA` statement if applicable):
+- Localization scope (`+30–40%` prose / `+50–100%` short-label expansion, `IME`, RTL):
 
 ## Adaptive UI by device or window class
 | Class, sample size/aspect, input | Navigation, density, controls and reach | Task/data/state to preserve | Runtime, acceptance check, evidence/status |

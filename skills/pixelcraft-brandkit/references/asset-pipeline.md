@@ -2,22 +2,27 @@
 
 A logo concept is not production identity until it survives favicons, adaptive masks, app stores, font licensing, raster compression, and build automation. Generate assets from source vectors; never upscale screenshots.
 
-## Web favicon and manifest set
+## Dedicated small-size optical reduction (`16 px` / `24 px` / `32 px`) & favicon set
 
-Minimum practical set:
+Shrinking a complex hero lockup linearly down to `16×16 px` collapses counters into muddy gray antialiasing. Ship **dedicated optical-size masters** snapped to integer pixel grids:
+
+| Optical tier | Target sizes | Required geometric simplification |
+|---|---|---|
+| **Hero / Lockup** | `>= 64 px` height | Full mark + wordmark lockup, hairline construction details, optional tagline |
+| **Standard UI / App Icon (`32 px` / `24 px`)** | `24×24 px`, `32×32 px`, taskbar/dock | Drop wordmark & tagline; thicken strokes by `+15–25%`, widen internal negative-space counters (`>= 2 px` gap), and snap vertical/horizontal stems to integer pixels |
+| **Micro Favicon (`16 px`)** | `16×16 px` browser tab, tray icon | Reduce to the single boldest silhouette/monogram primitive (`<= 2–3` shapes, stroke width `>= 1.5–2 px`, zero internal filigree) |
+
+Minimum web favicon and manifest set:
 
 | Asset | Requirement |
 |---|---|
-| `favicon.svg` | vector source with `viewBox`; include a scoped `@media (prefers-color-scheme: dark)` rule only when the mark remains recognizable without inversion artifacts |
-| `favicon.ico` | include a real 32×32 entry; multi-resolution ICO commonly also carries 16×16/48×48 depending legacy support |
-| `apple-touch-icon.png` | 180×180, opaque background appropriate to the mark; Apple expects no transparency-dependent composition |
-| manifest icon | 192×192 PNG for baseline PWA/install use |
-| manifest icon | 512×512 PNG for install/splash use |
-| maskable icon | 512×512 PNG with `purpose: "maskable"` and critical artwork inside the platform safe zone |
+| `favicon.svg` | optical-reduced mark with `viewBox`; include a scoped `@media (prefers-color-scheme: dark)` rule + high-contrast outline/backing where needed |
+| `favicon.ico` | multi-resolution `16×16` (dedicated `16 px` optical master) + `32×32` (`32 px` master) |
+| `apple-touch-icon.png` | `180×180`, opaque background appropriate to the mark; Apple expects no transparency-dependent composition |
+| manifest icons | `192×192` PNG and `512×512` PNG for PWA/install/splash use |
+| maskable icon | `512×512` PNG with `purpose: "maskable"` and critical artwork inside the central `80%` (`410×410 px`) safe circle |
 
-Validate the SVG separately from raster exports. A dark-mode media query inside SVG only affects contexts that execute SVG styling; raster conversions and some icon consumers ignore it. Export explicit light/dark raster variants where needed rather than assuming live SVG behavior.
-
-Maskable icons need generous quiet space because Android masks crop corners/circles/squircles differently. Test actual mask shapes; do not merely center the normal logo.
+Validate the SVG separately from raster exports. Export explicit light/dark raster variants where needed rather than assuming live SVG `@media` execution, and test Android maskable icons across circle, squircle, and teardrop masks.
 
 ## Native app icons
 
@@ -137,6 +142,10 @@ Use `<picture>` with ordered `<source>` candidates and a universally decodable f
 
 `srcset` width descriptors describe image resource width; `sizes` tells the browser the rendered layout width. Density descriptors (`1x/2x/3x`) fit fixed-size icons/thumbnails, while width descriptors fit fluid layout. Do not ship retina multiplication when the source lacks detail or text becomes illegible.
 
+## Multi-target DTCG token export (`tokens.json` -> Web / Mobile / Desktop)
+
+A brand kit is incomplete if engineers have to eyedropper PNG swatches. Author canonical **W3C DTCG `tokens.json`** (`color`, `fontFamily`, `dimension`, `shadow`, light/dark mode aliases) and compile via the `pixelcraft-tokens` exporter (`export-tokens.mjs --format all`) into **CSS custom properties (`OKLCH` + `sRGB` fallback)**, **iOS/macOS Swift (`Color` / `UIColor`)**, **Android Jetpack Compose Kotlin**, and **Desktop (`Qt QSS`, `GTK4`, `Slint`, `XAML`)** targets from one source of truth.
+
 ## Provenance and C2PA Content Credentials
 
 Preserve or attach **C2PA Content Credentials** (`c2patool` / generator-signed manifests) on AI-generated or AI-edited brand imagery whenever publishing externally or handing off to legal/brand teams:
@@ -146,14 +155,11 @@ Preserve or attach **C2PA Content Credentials** (`c2patool` / generator-signed m
 
 ## Pipeline checklist
 
-- [ ] master vector has clean geometry (not unedited auto-trace), `viewBox`, metadata, and license attribution;
-- [ ] text is converted to paths or the font license permits embedding;
+- [ ] master vector has clean geometry (not unedited auto-trace), `viewBox`, metadata, and **dedicated `16 px` / `24 px` / `32 px` optical reductions**;
+- [ ] **multi-target DTCG `tokens.json`** compiled cleanly to CSS, Swift, Kotlin, and Desktop token files (`pixelcraft-tokens`);
+- [ ] text is converted to paths in standalone logo marks, and font licenses explicitly permit Webfont, Mobile App, Server PDF, and Desktop embedding where bundled;
 - [ ] light/dark/tinted/mono variants are deliberate, not automatic inversion;
 - [ ] SVGO v3/v4 (`preset-default`) output preserves `viewBox`/a11y/geometry and is visually diffed;
-- [ ] favicon ICO/SVG/apple-touch/manifest/maskable files match documented dimensions;
-- [ ] native adaptive/iOS 18+ Dark/Tinted and Apple 26 `.icon` assets tested in real masks/scales;
-- [ ] font subsets include required scripts/features and license/name metadata;
-- [ ] raster images use `<picture>` AVIF/WebP/JPEG fallback, explicit `width`/`height`, and verified color profiles;
-- [ ] C2PA Content Credentials / provenance status recorded for generated assets;
-- [ ] generated outputs are reproducible from source and never hand-edited;
-- [ ] tiny-size legibility (`16–32 px`), contrast, transparency, dark background, and compression are inspected.
+- [ ] favicon ICO/SVG/apple-touch/manifest/maskable and iOS 18+/26 `.icon` + Android `108×108 dp` (`72×72 dp` safe zone) assets verified in real masks;
+- [ ] font subsets preserve Vietnamese/CJK/Arabic shaping features (`kern,liga,ccmp,mark,mkmk`);
+- [ ] raster images use `<picture>` AVIF/WebP/JPEG fallback, explicit `width`/`height`, and C2PA provenance records.

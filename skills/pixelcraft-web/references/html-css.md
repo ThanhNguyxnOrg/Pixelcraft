@@ -20,9 +20,33 @@ Use semantic HTML structure first, then CSS Grid for two-dimensional composition
 
 For an editorial or commerce shell, separate the primary task or active state from the destination index. If inline navigation becomes a disclosure on touch, consider keeping booking, a cart count, or the current chapter exposed outside it. Keep the same destination and state across layouts. Test the closed and open menu at phone portrait and landscape: reach the primary action, dismiss the menu with the supported inputs, and confirm focus returns to its trigger. If the scene cannot fit in a shallow viewport, use a purposeful crop or a static composition instead of burying the action below empty scene space.
 
-## Typography/custom fonts
+## Typography, self-hosted WOFF2 & fallback metric matching
 
-Use `font-face` with `font-display: swap` or `optional` deliberately, preload only critical fonts, set metric overrides/fallbacks where needed, and use system fonts when platform fit/performance matters. Control measure with `max-inline-size: 65ch`–`75ch` rather than arbitrary containers.
+Self-host subsetted variable or static `.woff2` files (`<= 2–3` font files total on the critical path; preload only primary above-the-fold faces with `<link rel="preload" as="font" type="font/woff2" crossorigin>`). Pair `font-display: swap` (or `optional` on fast repeat-visit apps) with explicit `@font-face` metric overrides on a local system fallback so glyph swap causes **zero CLS**:
+
+```css
+@font-face {
+  font-family: "Brand Sans";
+  src: url("/fonts/brand-sans-latin.woff2") format("woff2");
+  font-weight: 300 700;
+  font-display: swap;
+}
+
+@font-face {
+  font-family: "Brand Sans Fallback";
+  src: local("Inter"), local("Segoe UI"), local("Arial");
+  size-adjust: 101.4%;
+  ascent-override: 96%;
+  descent-override: 24%;
+  line-gap-override: 0%;
+}
+
+:root {
+  --font-sans: "Brand Sans", "Brand Sans Fallback", system-ui, sans-serif;
+}
+```
+
+Control reading measure with `max-inline-size: 65ch`–`75ch` rather than arbitrary wide containers.
 
 ## Motion/reduced motion
 
@@ -120,13 +144,45 @@ Use progressive, zero-dependency CSS and HTML capabilities before importing JS a
 }
 ```
 
-## Accessibility specifics
+## Accessibility, skip links & cascade discipline
 
 Native elements carry most semantics: `button`, `a`, `form`, `label`, `input`, `select`, `table`, headings, landmarks. Do not use positive `tabindex`; use DOM order. Use `<dialog>`/`[popover]`/`inert` patterns carefully and restore focus. Validate names/roles/status behavior in the accessibility tree.
 
-## States idiom
+- **Mandatory `Skip to main content` link**: render `<a class="skip-link" href="#main-content">Skip to main content</a>` as the very first focusable element inside `<body>`, visually clipped off-screen until `:focus-visible`, jumping directly to `<main id="main-content" tabindex="-1">` so keyboard and switch users bypass repetitive headers (WCAG 2.4.1).
+- **Zero `!important` cascade sprawl**: govern specificity with an explicit `@layer reset, tokens, base, components, utilities;` declaration order and semantic tokens—never patch component rules with ad-hoc `!important` overrides.
+
+```css
+.skip-link {
+  position: fixed;
+  inset-block-start: 0.75rem;
+  inset-inline-start: 0.75rem;
+  z-index: 9999;
+  padding: 0.625rem 1rem;
+  background: var(--semantic-color-background);
+  color: var(--semantic-color-foreground);
+  border: 2px solid var(--semantic-color-action);
+  translate: 0 -200%;
+}
+.skip-link:focus-visible { translate: 0 0; }
+```
+
+## States, custom `404` / `500` recovery routes & `@media print`
 
 Use real elements/classes and server/client state consistently: `hidden`, `disabled`, `aria-disabled` only when focus must remain, `role="status"` for nonintrusive async completion, skeleton containers with stable dimensions, and explicit empty/error markup rather than blank containers.
+
+- **Custom branded `404` & `500` recovery surfaces**: never leave default framework/CDN error screens in production. Ship a branded `404` route (states what is missing, preserves site search / top category links, and offers a clear primary return CTA with HTTP `404` status) and a zero-dependency static-safe `500` route / root error boundary (shows human recovery copy, retry button, support contact, and copyable request/correlation ID without relying on the broken API).
+- **Print stylesheet (`@media print`)**: provide clean print styling for articles, documentation, invoices, order receipts, and booking confirmations—hide navbars, footers, sticky toolbars, cookie banners, and chat launchers; force high-contrast black ink on white paper even if the user is in dark mode; expand scroll containers; and prevent page-break slicing across tables, receipts, and code blocks:
+
+```css
+@media print {
+  @page { margin: 15mm; }
+  :root, body { background: #fff; color: #000; color-scheme: light; }
+  header, nav, footer, aside, .skip-link, [data-print-hidden], dialog, [popover] { display: none; }
+  main { max-inline-size: none; padding: 0; overflow: visible; }
+  table, figure, pre, blockquote, .invoice-summary { break-inside: avoid; }
+  h1, h2, h3 { break-after: avoid; }
+}
+```
 
 ## Forms idiom
 
@@ -137,6 +193,9 @@ Use one persistent `label`, correct `type`, `inputmode`, `autocomplete`, spellch
 | Do | Don't |
 |---|---|
 | `<button type="button">Save draft</button>` | `<div onclick="save()">Save draft</div>` |
+| Render `<a class="skip-link" href="#main-content">` first in `<body>` and order CSS via `@layer` | Force keyboard users through 25 nav links or fight specificity with `!important` |
+| Self-host `<= 2–3` subsetted `.woff2` files with `@font-face` `size-adjust` / `ascent-override` | Load 6 unsubsetted Google Font weights that shift layout on swap |
+| Ship branded `404`/`500` recovery routes and `@media print` rules for receipts/articles/docs | Leave raw stack traces/framework `404`s or print dark-mode navbars over invoices |
 | `margin-inline-start: var(--space-4);` | `margin-left: var(--space-4);` for direction-neutral layout |
 | Gate decorative/parallax motion inside `@media (prefers-reduced-motion: no-preference)` while keeping subtle functional opacity/progress feedback | Global `* { animation: none !important; transition: none !important; }` that kills progress spinners, focus feedback, and state transitions |
 | Reset `margin: 0` on anchored `[popover]` panels using `position-anchor` | Omit `margin: 0` and let UA `margin: auto` recenter the popover off its anchor |
@@ -145,7 +204,7 @@ Use one persistent `label`, correct `type`, `inputmode`, `autocomplete`, spellch
 
 ## Known traps
 
-`100vh` on mobile browsers, missing `margin: 0` on anchored `[popover]`, sticky/fixed chrome obscuring focus, unguarded `appearance: base-select` without checking older browser fallback, specificity wars solved better by `@layer`, autofocus as a substitute for flow design, duplicated IDs from reused fragments, logical/physical mismatch in charts and media controls.
+`100vh` on mobile browsers, missing `margin: 0` on anchored `[popover]`, sticky/fixed chrome obscuring focus, unguarded `appearance: base-select` without checking older browser fallback, specificity wars solved better by `@layer`, missing `Skip to main content` link, broken dark-mode printouts, autofocus as a substitute for flow design, duplicated IDs from reused fragments, logical/physical mismatch in charts and media controls.
 
 ## Verification commands
 

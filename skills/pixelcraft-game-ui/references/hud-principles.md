@@ -18,51 +18,50 @@ Choose each HUD layer deliberately based on legibility vs immersion—never let 
 - Use multi-channel redundancy: color + distinct shape/icon + text/number + position + audio/haptic cue.
 - Never cover the crosshair, objective path, or incoming threats with decorative panels or modal tutorial prompts.
 
-## Dynamic input-glyph hot-swapping
+## Dynamic input-glyph hot-swapping (`<= 1 frame`, zero layout jump)
 
-- Detect the **active input device** dynamically and swap prompt glyphs live across **Xbox**, **PlayStation (DualSense/DualShock)**, **Nintendo Switch**, **Steam Deck**, **Keyboard + Mouse**, and **Touch**.
-- **Debounce analog stick drift** (require a deliberate deadzone threshold > ~0.35 or explicit button press before switching from KBM to gamepad, and mouse delta > threshold before switching back) so prompts never flicker between icons.
-- Provide a manual **Button Prompt Style override** (`Auto / Xbox / PlayStation / Nintendo / KBM`) in Settings for Steam Input wrappers, third-party adapters, and assistive controllers.
-- Reflect **remapped bindings** dynamically in tutorials, HUD prompts, and combat callouts—never bake static `"Press [E]"` strings into localization files.
+- **Instant `<= 1 frame` hot-swap (`0` hysteresis timer lag)**: switch glyphs on the **very next rendered frame** across **Xbox**, **PlayStation (DualSense)**, **Nintendo Switch**, **Steam Deck**, **Keyboard + Mouse**, and **Touch** the moment an explicit button/key press or stick/mouse delta exceeding the hardware noise floor (`stick magnitude > 0.35`, `mouse delta > 4px`) occurs—filter stick drift by deadzone threshold, **never** by multi-second delay timers that leave stale icons onscreen.
+- **Zero layout jump**: render button prompts inside fixed-dimension inline glyph slots or monospaced sprite atlases (`min-width` sized for wide keys like `[Space]` / `[LShift]`) so swapping `(A)` <-> `[Enter]` never reflows surrounding HUD or dialog text.
+- **Manual override & live bindings**: provide a **Button Prompt Style** override (`Auto / Xbox / DualSense / Switch / Steam Deck / KBM`) in Settings and resolve glyphs from the player's **live remapped action bindings** rather than hardcoded `"Press [E]"` strings.
+
+## Steam Deck Verified (`1280×800`, `16:10`), Safe Areas & Ultrawide Clamping
+
+| Target surface | Resolution / aspect | Mandatory UI engineering contract |
+|---|---|---|
+| **Steam Deck Verified** | `1280×800` (`16:10` native) | **`>= 9px` absolute minimum glyph height / `12–14px` body target** at `1280×800`; **100% controller navigation from boot with zero external mouse-only launcher**; invoke Steam/OS virtual keyboard (`SteamUtils.ShowFloatingGamepadTextInput` / `DisplayServer.virtual_keyboard_show`) automatically on text-input focus; render native Steam Deck / gamepad glyphs and `16:10` without black bars or clipped sidebars |
+| **10-Foot Console / Living-Room TV** | `1920×1080` / `3840×2160` (`16:9`) | **`>= 24–28px` body/HUD floor at `1080p`** (`>= 52px` at `4K`); keep all vital HUD/subtitle elements inside a **`90%` title-safe inset** (`5%` margin per edge) respecting overscan and OS achievement/party toast corners |
+| **Ultrawide & Super-Ultrawide** | `21:9` (`3440×1440`) & `32:9` (`5120×1440`) | Clamp peripheral HUD anchors (health, minimap, ammo, objective feed) to a **centered `16:9` container** by default (with a `HUD Horizontal Bounds` slider `16:9 <-> Full`) while spanning world render and edge vignettes edge-to-edge—**never stretch 2D sprites, circular reticles, or minimap aspect ratios** |
+
+## Console Lotcheck / TRC / XR Compliance & Game-Feel Polish
+
+Design these certification and feel mechanics into core UI systems from day one (still label formal console submission `not-checked` unless verified against the NDA checklist):
+
+- **Active controller disconnect auto-pause**: subscribe to hardware device-loss events (`InputSystem.onDeviceChange`, `Input.joy_connection_changed`, `PlatformUser` pairing); immediately **pause gameplay simulation and present a controller-reconnect modal** specifying which player slot disconnected.
+- **Persistent active profile / gamertag**: display the signed-in player's gamertag/avatar on title, main menu, and profile-switching surfaces so save-data ownership is unambiguous.
+- **Explicit autosave notice**: display a non-blocking **"Saving — do not turn off your system…"** indicator + animated icon **before and during** non-volatile storage writes, performing serialization asynchronously off the UI/render thread.
+- **Menu input buffering (`100–150 ms`)**: queue `Confirm` / `Cancel` / `Tab` presses arriving during the final `100–150 ms` of a screen/tab transition instead of dropping player inputs during brief animations.
+- **UI audio buses & `±3%` pitch modulation**: route UI audio to a dedicated **`UI` bus** decoupled from **`Master / Music / SFX / Voice`** volume faders, and randomize hover/tick/inventory SFX pitch by **`±3%` (`0.97–1.03`)** (with `>= 30–40 ms` retrigger cooldown) so rapid list scrolling never sounds robotic.
+- **`0 B/frame` steady-state UI GC allocation**: preallocate text buffers (`TMP_Text.SetText`, reusable `StringBuilder`, pooled combat floaters, cached delegates) so active gameplay HUD updates allocate **`0 bytes/frame`** on the managed heap and never trigger GC frame spikes.
 
 ## HDR UI paper-white calibration
 
-- Separate UI luminance from scene HDR specular peaks (which can hit 1,000–4,000 nits). Render the UI layer at a calibrated **SDR paper-white target (typically 150–250 nits default)** with a user-adjustable **HDR UI Brightness / Paper-White slider** in Display Settings.
-- Composite UI **after** scene tone-mapping, auto-exposure, bloom, and chromatic aberration (or explicitly exempt UI from bright post-processing) so white HUD text neither sears eyes in dark rooms nor turns muddy gray in sunlit scenes.
+- Separate UI luminance from scene HDR specular peaks (`1,000–4,000 nits`). Render the UI layer at a calibrated **SDR paper-white target (`150–250 nits` default)** with a user-adjustable **HDR UI Brightness / Paper-White slider**, composited **after** scene tone-mapping, bloom, and chromatic aberration.
 
-## Safe areas and ultrawide (21:9 / 32:9) HUD clamping
-
-- Respect TV overscan (~90–95% title-safe area), mobile notches/Dynamic Island, and platform system notification corners (achievements, invites, recording indicators).
-- **Ultrawide HUD clamping**: on **21:9 and 32:9** monitors, clamp peripheral HUD anchors (health, ammo, minimap, chat) inside a central **16:9 safe box** by default—and expose a **HUD Safe Width / Edge Clamping** slider—so players never turn their heads 60° to check health. Keep fullscreen backgrounds/vignettes spanning full width while keeping interactive HUD inside comfortable peripheral vision.
-- Test 16:9, 21:9, 32:9, 16:10 handheld (Steam Deck 1280×800), 4:3/split-screen, and portrait layouts where applicable.
-
-## Controller and focus navigation
-
-- Set deterministic initial focus on every screen/modal and restore previous focus on close, cancel, transaction completion, error, or scene transition.
-- Avoid dead ends, hidden-widget focus jumps, and surprise wrap behavior; ensure `Back`/`Cancel` semantics stay identical across menus, popups, and platform overlays.
-- Every primary action must work without a mouse or touch where controller/keyboard is supported.
-- Input remapping UI must display device, context, chords, and binding conflicts cleanly with one-step Reset to Default.
-
-## Xbox Accessibility Guidelines (XAG) and localization patterns
-
-Treat accessibility and localization as core UI architecture (still label official platform certification `not-checked` unless verified against the current official checklist):
+## Accessibility, photosensitivity & localization floor (XAG)
 
 | Area | Concrete testable pattern |
 |---|---|
-| Text & distance legibility (XAG 101) | Default body/HUD text legible at 10-foot viewing distance (~28px+ at 1080p for TVs, scalable up to 150–200% without clipping or overlap); crisp high-contrast backing behind floating text |
-| Contrast & colorblindness (XAG 102/103) | >= 4.5:1 text contrast (or adjustable opaque backdrop); pair team/rarity/danger colors with distinct shapes, icons, labels, or patterns |
-| Subtitles & captions (XAG 104) | Scalable font size, adjustable background opacity (0–100%), speaker identification, and non-speech directional/important audio cues |
-| Input & motor assists (XAG 107/108) | Full button remapping, hold-to-toggle conversions (sprint, aim, radial wheels), QTE/rapid-press alternatives, and single-stick/one-handed presets where feasible |
-| Screen narration & focus (XAG 109/110) | High-visibility focus highlight (shape + contrast, not tint alone), predictable spatial order, and OS/TTS menu narration hooks where supported |
-| Motion & photosensitivity (XAG 115) | Explicit reduced-motion, camera-shake, motion-blur, FOV, and flash-reduction sliders (avoid >3 Hz full-screen flashes) |
-| Localization | Pseudo-localize early (+35–40% expansion for German/Finnish), verify CJK/Arabic/RTL/Cyrillic glyph fallback atlases, and keep numbers/units locale-formatted |
+| **HUD & distance scale (XAG 101)** | Independent **HUD Scale (`80%–150%+`)** and **Menu Text Size** presets (`>= 9px` floor / `12–14px` at `1280×800`; `>= 24–28px` at `1080p` TV) without clipping |
+| **Contrast & colorblindness (XAG 102/103)** | `>= 4.5:1` text contrast over dynamic 3D scenes via dark scrim/plate; pair team/rarity/status colors with **distinct shapes, icons, patterns, or labels** + customizable palette |
+| **Subtitles & captions (XAG 104)** | Scalable subtitle size, **independent background scrim opacity (`0–100%`)**, speaker labels + color tags, and directional `[Explosion — Left]` audio captions |
+| **Full input remapping & motor assists (XAG 107/108)** | Remap every gameplay/UI action across gamepad & KBM with conflict resolution, one-button **Reset to Default**, **hold-to-toggle** (`Aim`, `Sprint`, `Crouch`, `Radial Wheel`), and QTE rapid-tap bypass |
+| **Photosensitivity & motion (XAG 115)** | Hard cap luminance/red transitions at **`<= 3 Hz`** across HUD alerts, hit-flashes, and menus; independent **Camera Shake**, **Motion Blur**, ** Vignette**, and **Reduced UI Motion** toggles |
+| **Localization** | Pseudo-localize early (`+35–40%` expansion for German/Finnish), bundle dynamic CJK/Arabic/RTL/Vietnamese/Cyrillic fallback font atlases, and pull dynamic action glyphs into localized templates |
 
 ## State hierarchy
 
-Separate persistent HUD state, transient feedback, modal interruption, tutorial/coach marks, cinematic subtitles, network/system notifications, and debug overlays with explicit priority rules.
-
-Give acquisitions or milestones two levels when the moment needs both: brief non-blocking confirmation during active play, and a stable record in the inventory, objective log, or pause screen to inspect afterward. Verify the player can keep playing without interruption, look up exact details later, and distinguish the event without color or sound alone.
+Separate persistent HUD state, transient non-blocking pickups (mirrored permanently in the inventory/log), modal controller-disconnect/pause interruptions, subtitles, autosave indicators, and OS overlays with an explicit z-order and input-capture stack.
 
 ## Verification matrix
 
-Record engine/version/target hardware, resolution/aspect/ultrawide clamp, HDR paper-white setting, input device + hot-swap debounce, viewing distance, locale/script/HUD scale, accessibility settings, gameplay chaos level, and task completion (`rendered`; mark uninspected console/platform certification rules `not-checked`).
+Record engine/version/target hardware, resolution matrix (`1280×800` Steam Deck, `1920×1080` TV, `3440×1440` `21:9`), `<= 1 frame` glyph hot-swap, controller-disconnect auto-pause, virtual keyboard trigger, `0 B/frame` profiler trace, audio bus separation, `<= 3 Hz` flash check, and localization/accessibility passes (`rendered`; mark uninspected console NDA checklists `not-checked`).

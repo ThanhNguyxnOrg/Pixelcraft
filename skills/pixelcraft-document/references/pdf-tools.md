@@ -121,7 +121,7 @@ HTML('invoice.html', base_url='./static/').write_pdf(
 
 Constraints:
 
-- does not execute JavaScript; pre-render charts as inline SVG or high-DPI PNG;
+- does not execute JavaScript; pre-render charts, diagrams, and logos strictly as vector SVG / PDF primitives so text and strokes stay razor-sharp at any zoom or print RIP (reserve `>= 300 effective DPI` raster strictly for continuous-tone photography or `100k+`-point dense heatmaps/scatterplots where vector node count would freeze PDF viewers);
 - configure `FontConfiguration` and ship fonts in the container rather than relying on host OS fonts;
 - pass `base_url` explicitly and sanitize untrusted HTML / block `url_fetcher` access to internal URLs.
 
@@ -286,13 +286,29 @@ await wb.xlsx.writeFile('invoices.xlsx');
 - **Word (`docx` JS/TS, `python-docx`)**: attach a reference template or named styles, set explicit page sizes/headers/footers, and inspect in Word + LibreOffice Writer;
 - **Spreadsheets (ExcelJS vs SheetJS)**: use **ExcelJS** (or Python `openpyxl` / `xlsxwriter`) when column widths, frozen headers, cell styles, data validation, or streaming `WorkbookWriter` matter; **SheetJS (`xlsx`)** Community Edition is fast for unstyled data import/export but omits cell styling. Never inject untrusted strings starting with `=`, `+`, `-`, or `@` unescaped into spreadsheet cells (CSV/formula injection).
 
+## Font subsetting & `ToUnicode` CMap copy / ATS gate
+
+Subsetting embedded fonts keeps PDFs compact, but broken subsetters strip or corrupt the **`ToUnicode` CMap**—causing copy-paste, search indexers, and Applicant Tracking Systems (ATS) to extract tofu `□`, Private Use Area garbage, or broken OpenType ligatures (`fi`, `fl`, `ffi`) and stacked diacritics (Vietnamese `Nguyễn`, `ệ`, `ợ`, CJK, Arabic).
+
+Run Poppler's `pdffonts` and `pdftotext` (plus `check-pdf.mjs` from `pixelcraft-visual-qa`, passing `--prepress` for commercial `PDF/X-4` `/TrimBox`, `/BleedBox`, `/OutputIntents`, and `/ToUnicode` verification) on every generated PDF before delivery:
+
+```sh
+# Every font must report emb=yes AND uni=yes (valid ToUnicode CMap)
+pdffonts output.pdf
+# Verify ligatures (fi, fl), Vietnamese/CJK diacritics, and reading order extract cleanly
+pdftotext output.pdf - | head -n 40
+```
+
+- If `uni` is `no`, switch from legacy Type 3 / bitmap / broken subset paths to OpenType/TrueType embedding with full Unicode CMap generation (`lualatex` over `pdflatex`, `@pdf-lib/fontkit`, WeasyPrint `FontConfiguration`, Typst `--font-path`, Chromium `tagged: true`).
+- Never convert body text or CV headings to vector paths/outlines (`text-to-path`)—outlined glyphs look crisp visually but fail ATS parsing, Ctrl+F search, and screen readers completely.
+
 ## Toolchain verification matrix
 
 | Check | Evidence required |
 |---|---|
-| pagination | inspect rendered PDF/DOCX/XLSX first, middle, and last pages (`rendered`) |
-| fonts | verify embedded/subset fonts (`pdffonts`), glyph coverage, and license (`static`) |
-| links / bookmarks | clickable destinations, outline tree, and metadata (`rendered`) |
-| accessibility | PDF/UA tag tree, reading order, alt text, and `pdftotext` extraction (`static`/`rendered`, or `not-checked`) |
-| reproducibility | pinned dependencies, container/CLI versions, and `--font-path` / local assets (`static`) |
-| security | SSRF allowlists on Chromium/Gotenberg, sanitized HTML, formula-injection escaping in spreadsheets (`static`) |
+| pagination | inspect rendered PDF/DOCX/XLSX first, middle, and last pages + grayscale proof (`rendered`) |
+| fonts & `ToUnicode` CMap | `pdffonts` confirms `emb=yes` and `uni=yes`; `pdftotext` extracts Vietnamese/CJK/ligatures (`fi`, `fl`) with zero `□` (`static`) |
+| vector vs prepress | charts/logos are vector SVG/PDF primitives; `PDF/X-4` print jobs verify `3mm` bleed, `5mm` trim safety, `>= 300 DPI` photos, `TAC <= 300%`, and `100% K` (`C0 M0 Y0 K100`) body black (`static`/`rendered`) |
+| links / bookmarks | clickable TOC outline tree, internal destinations, and `/Title` + `/Lang` metadata (`rendered`/`static`) |
+| accessibility | `PDF/UA` tag tree (`H1`–`H6`, `Table`/`TH`, `Artifact` running headers), reading order, and `Figure` alt text (`static`/`rendered`, or `not-checked`) |
+| reproducibility & security | pinned CLI/font paths, SSRF allowlists on Chromium/Gotenberg, sanitized HTML, and OWASP formula-injection escaping (`=`, `+`, `-`, `@`, `\t`, `\r`) in spreadsheets (`static`) |

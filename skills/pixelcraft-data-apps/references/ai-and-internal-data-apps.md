@@ -95,13 +95,30 @@ else:
 
 Coerce numeric filter inputs strictly before SQL formatting, verify source freshness, and avoid exporting private data or credentials in browser-side WASM builds.
 
-## Low-code internal tools (Retool, Appsmith, ToolJet, Budibase)
+## Enterprise grid, export security, and safe mutations (internal tools & admin apps)
 
-Low-code platforms fail in production through spaghetti query graphs, unguarded writes, and zero environment separation—not missing styling:
+Operational data apps and low-code panels (Retool, Appsmith, ToolJet, Budibase, FastHTML, Reflex, Dash) touch live production tables—enforce enterprise data-grid, export, and write safety by default:
 
-- **Query & transformer DAG discipline**: Keep SQL/REST queries parameterized (`{{ selectRegion.value }}`), place derived shaping in pure JS transformers instead of chaining side-effect `onSuccess` scripts across 5 queries, and enable server-side pagination/filtering on every table over ~500 rows.
-- **Sandboxed custom components**: Use native tables, forms, drawers, and tabs first. Reach for sandboxed custom components (iframe/React/Web Components) only for domain visuals the host lacks, respecting CSP, `postMessage` payload limits, and host light/dark CSS tokens.
-- **RBAC, staging, and auditability**: Separate `development` / `staging` / `production` resource credentials, enforce least-privilege read/write roles per app/page, require confirmation modals + audit log writes on destructive queries (refunds, account disables, bulk updates), and sync app definitions to Git via Source Control where supported.
+- **Indexed cursor/keyset pagination + URL-serialized views**: replace `OFFSET 50000` (which scans and discards 50k rows per page) with indexed keyset pagination (`WHERE (created_at, id) < (:cursor_ts, :cursor_id) ORDER BY created_at DESC, id DESC LIMIT 50`), and mirror active filters, sort keys, timezone (`UTC` vs local), and saved view IDs in the URL query string so operators can bookmark and share exact incident views.
+- **OWASP CSV/XLSX Formula Injection neutralization + streaming exports**: user-controlled strings starting with `=`, `+`, `-`, `@`, `\t`, or `\r` execute as live formulas or `DDE` payloads when opened in Excel, LibreOffice Calc, or Google Sheets! Neutralize every string cell before CSV/XLSX serialization (while keeping genuine `int`/`float` negatives typed as numbers in XLSX), and stream exports (`> 10k` rows) via chunked/background workers instead of buffering whole tables in web worker RAM:
+
+```python
+FORMULA_TRIGGERS = ("=", "+", "-", "@", "\t", "\r")
+
+def sanitize_spreadsheet_cell(val: object) -> object:
+    # Keep real numbers numeric; neutralize untrusted strings that Excel/Sheets parse as formulas
+    if isinstance(val, (int, float)) or val is None:
+        return val
+    text = str(val)
+    if text.startswith(FORMULA_TRIGGERS):
+        return f"'{text}"
+    return text
+```
+
+- **RBAC, Row-Level Security (RLS), `Diff / Confirm` modals, and Audit Logs**:
+  - Separate `development` / `staging` / `production` credentials and enforce both UI role gates **and** backend/database **Row-Level Security (RLS)** (hiding a button in UI never secures the endpoint).
+  - Gate every bulk update, refund, status override, or delete behind a **`Diff / Confirm` impact modal** showing exact affected row count, target scope, and `Before -> After` field diffs (requiring a typed reason or confirmation token for high-blast-radius actions).
+  - Record every mutation in an append-only **Audit Log** (`actor_id`, `role`, `timestamp_utc`, `entity_id`, `before_json`, `after_json`, `reason`, `request_id`).
 
 ## Do/don't pairs
 
@@ -109,9 +126,9 @@ Low-code platforms fail in production through spaghetti query graphs, unguarded 
 |---|---|
 | `cl.Step` + `cl.user_session` in Chainlit | Module-global conversation lists shared across users |
 | FastHTML semantic HTML + `hx_indicator` + `aria_live` | Dropping raw unescaped user HTML via `NotStr()` |
-| Parameterized queries + server-side pagination in Retool/Appsmith | Fetching 100k rows client-side into a low-code table widget |
-| Staging credentials + Git sync + audit logs on internal writes | Editing production SQL queries live with admin DB creds |
-| Pure JS transformers over explicit query dependencies | Tangled `onSuccess` trigger chains firing duplicate mutations |
+| Indexed keyset/cursor pagination + URL-serialized filter/timezone state | `OFFSET 100000` queries or ephemeral filters lost on browser refresh |
+| Prefix string cells starting with `=`, `+`, `-`, `@`, `\t`, `\r` on CSV/XLSX export and stream large downloads | Export raw user strings into CSV/XLSX where `=HYPERLINK(...)` or `=CMD|...` executes on open |
+| Enforce backend RBAC/RLS + `Diff / Confirm` impact modal + immutable `who/when/before->after` Audit Log | Execute direct production bulk `UPDATE`/`DELETE` on a single unlogged button click |
 
 ## Verification commands
 
@@ -127,4 +144,4 @@ uvicorn main:app --reload
 preswald run
 ```
 
-For low-code tools (Retool, Appsmith, ToolJet, Budibase), run staging smoke tests across each RBAC role (viewer vs operator vs admin), inspect query network timings, verify empty/error/destructive-confirm states in a real browser (`rendered` evidence), and check Git diff exports (`static` evidence).
+Run staging tests across each RBAC role (`viewer` vs `operator` vs `admin`), test CSV/XLSX export payloads containing `=1+1` and `@SUM(...)` (`static`), verify keyset pagination, URL filter reload, SLA staleness badges, and `Diff / Confirm` modals in a real browser (`rendered`), and inspect Audit Log writes (`static`/`rendered`).

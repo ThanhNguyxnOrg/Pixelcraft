@@ -59,11 +59,12 @@ class InvoiceApp(App):
 
 Handle loading (`LoadingIndicator`), empty, error, offline, and worker-cancelled states visibly in the widget tree; preserve user input across `push_screen` / `pop_screen` modal dialogs and terminal resizes.
 
-## Typography, motion, accessibility, & forms idioms
+## `UAX #29` width (`wcwidth`/`rich.cells`), Bracketed Paste, `OSC 52` & teardown
 
-Terminals control fonts—use Textual bold/italic/dim/underline/reverse styles and spatial hierarchy, and never assume emoji or CJK glyph width matches single-cell Latin characters. Keep `styles.animate(...)` sparse and non-blocking; never use rapid flashing or continuous repaint loops, and provide a plain/reduced-motion toggle for low-capability terminals.
-
-Ensure every task works strictly via keyboard (`Tab`/`Shift+Tab`, arrow keys, `Enter`, `Esc`, `CommandPalette`), pair colors with plain-text state markers (`[ERR]`, `[*]`) so `NO_COLOR` and 16-color terminals remain legible, and use real `Input`, `TextArea`, `Select`, `Checkbox`, and `Button` widgets with `Validator` classes that display recovery copy after edit/submit.
+- **Grapheme width & `--ascii`**: never compute terminal column alignment with Python `len(s)`—use **`rich.cells.cell_len`** or **`wcwidth.wcswidth`** so CJK (`2` cols), ZWJ emoji (`👨‍👩‍👧‍👦` = `2` cols), `VS16` (`⚠️` = `2` cols), and Vietnamese combining diacritics (`0` extra cols) align cleanly; provide `textual-ansi` (16-color dark+light safe) and ASCII borders (`border: ascii`) when `--ascii`, `TERM=dumb`, or non-UTF-8 locale is set.
+- **Bracketed Paste (`DECSET 2004`) & `OSC 52` clipboard**: handle Textual's **`events.Paste`** (`?2004h`) in `Input` / `TextArea` / custom widgets so multi-line pastes never fire accidental `Enter` submissions, and call **`self.copy_to_clipboard(text)`** (which emits **`OSC 52`** automatically over remote SSH/`tmux`).
+- **Stream hygiene, `BrokenPipeError`, & 6-step crash restoration**: only boot the alternate-screen Textual app when `sys.stdout.isatty()`; for `--json`/`--plain` CLI modes, write strictly to `sys.stdout`, catch **`BrokenPipeError`** (`os.dup2(os.open(os.devnull, os.O_WRONLY), sys.stdout.fileno())` + `sys.exit(0)` so `| head -n 5` exits silently without a Python traceback!), and ensure `SIGINT`/`SIGTERM`/`SIGHUP` + uncaught exception hooks complete the 6-step terminal reset (`?1049l`, mouse `?1000l/?1002l/?1003l/?1006l`, `?2004l`, `?2026l`, `\x1b[<u`, `?25h` + raw mode exit—see [terminal-protocols.md](terminal-protocols.md)).
+- **Accessibility & CLI distribution**: ensure every task works strictly via keyboard (`Tab`/`Shift+Tab`, arrow keys, `Enter`, `Esc`, `CommandPalette`), pair colors with plain-text state markers (`[ERR]`, `[*]`), and ship `--help`, `--version`, `0/1/2/130` exit codes, `bash`/`zsh`/`fish`/`pwsh` completions (via Typer/Click/argcomplete), a `man` page, and `uv tool` / Homebrew / Scoop / Winget packaging.
 
 ## Headless verification (`App.run_test()` / `Pilot` & SVG snapshots)
 
@@ -85,26 +86,23 @@ async def test_narrow_keyboard_flow():
 
 | Do | Don't |
 |---|---|
-| Use cell units (`padding: 0 2;`) and registered `Theme` `$primary`/`$surface` vars | Write web pixel units (`4px`) or scatter raw hex literals in TCSS |
-| Use `@work(exclusive=True)` and check `worker.is_cancelled` | Block the Textual event loop or let stale async responses overwrite newer filters |
+| Use cell units (`padding: 0 2;`), registered `Theme` vars, and `textual-ansi` / `border: ascii` fallbacks | Write web pixel units (`4px`) or hardcode `#ffffff` unreadable on light 16-color terminals |
+| Measure columns with `rich.cells.cell_len` / `wcwidth`, handle `events.Paste`, and use `copy_to_clipboard` (`OSC 52`) | Use Python `len(s)` on CJK/`👨‍👩‍👧‍👦`/Vietnamese text or let pasted newlines fire `Enter` submits |
+| Use `@work(exclusive=True)`, catch `BrokenPipeError` on `--plain`/`--json`, and verify 6-step signal reset | Block asyncio, dump `BrokenPipeError` tracebacks on `\| head -n 5`, or leave `?1049h`/`?1003h` stuck |
 | Test keyboard flows with `App.run_test(size=(80, 24))` + `Pilot` & `snap_compare` | Rely only on manually glancing at one wide developer terminal |
-| Pair `BINDINGS` + `Footer` + `CommandPalette` providers for discoverability | Hide essential commands behind mouse-only clicks or undocumented keys |
-| Combine text markers (`[OK]`, `[ERR]`) with semantic theme colors | Use green/red text color alone without `NO_COLOR` / 16-color legibility |
+| Pair `BINDINGS` + `Footer` + `CommandPalette` + CLI completions (`bash`/`zsh`/`fish`/`pwsh`) + `man` page | Hide essential commands behind mouse-only clicks or ship without `--version`/completions |
 
 ## Known traps
 
-Invalid CSS `px` units in TCSS, blocking the asyncio loop with synchronous `requests` calls, stale worker results mutating UI without `exclusive=True`, Unicode/emoji width misalignment in `DataTable` cells, focus lost after closing `ModalScreen`, omitting non-interactive CLI fallback when piped in CI.
+Invalid CSS `px` units in TCSS, blocking the asyncio loop with synchronous `requests` calls, Python `len()` miscounting CJK/ZWJ/combining marks, `BrokenPipeError` tracebacks on piped `--json` output, focus lost after closing `ModalScreen`, omitting non-interactive CLI fallback when piped in CI.
 
 ## Verification commands
 
 ```sh
 python -m compileall .
 python -m pytest
-# Intentionally refresh SVG snapshots only after visual inspection:
-# pytest --snapshot-update
-# Interactive terminal run at 80x24 and NO_COLOR=1:
-python app.py
-NO_COLOR=1 python app.py
+NO_COLOR=1 python app.py --help
+python app.py --plain | head -n 5
 ```
 
-`compileall` and logic tests are `static`; `App.run_test`/`Pilot` and `snap_compare` SVGs verify headless rendering (`rendered` snapshot evidence). Also run in a real terminal emulator at `80×24`, `TERM=dumb`/`NO_COLOR=1`, and piped stdin/stdout to confirm keyboard and capability fallback (`rendered`; label untested terminals `not-checked`).
+`compileall` and logic tests are `static`; `App.run_test`/`Pilot` and `snap_compare` SVGs verify headless rendering (`rendered` snapshot evidence). Also run in real dark and light terminal emulators at `80×24`, `TERM=dumb`/`NO_COLOR=1`, `--ascii`, multi-line paste, and piped `head -n 5` (`rendered`; label untested terminals `not-checked`).

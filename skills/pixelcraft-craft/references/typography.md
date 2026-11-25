@@ -39,15 +39,28 @@ Choose a typographic voice from the direction: editorial, instrumental, humanist
 | vertical/rotated type | culturally meaningful vertical writing or navigational furniture | vertical CJK requires real line-breaking/font review; Latin rotation only for labels/metadata | rotated text that becomes unreadable chrome |
 | expressive numerals | scoreboards, indexes, finance, measurement | choose lining/tabular behavior intentionally; align decimal/degree/unit | oversized numerals implying fake metrics |
 
-## Scale, measure, and detail
+## Scale, measure, and macro discipline
 
-- Dense UI scale ratio roughly 1.125–1.2; editorial/persuasion roughly 1.25–1.4. Do not create twelve indistinguishable steps.
-- Long-form Latin target around 65–75 characters per line; adjust rather than copying blindly for CJK/Arabic/Indic and dense UI.
-- Latin body line-height roughly 1.45–1.65; tighten display while protecting ascenders/diacritics; dense UI may tighten only when scanlines remain clear.
-- Use optical size when available: display optical sizes tighter/sharper, text optical sizes sturdier.
-- Use tabular figures for changing/aligned data; proportional figures for prose unless alignment matters.
-- Avoid tracked-out lowercase; uppercase/labels can receive modest tracking. Extreme negative tracking breaks script rendering.
-- Preserve hanging punctuation, baseline rhythm, paragraph spacing, and orphan/widow behavior where platform allows.
+- **Intentional type palette cap:** use **at most 2 font families + 1 monospace** (`display` + `body/UI` + optional `code/data` mono) unless the user's brief explicitly justifies additional voices. Delete loaded weights/styles that lack a distinct semantic role.
+- **Comfortable reading measure (`45–75ch`):** constrain continuous Latin prose columns to **`45–75ch`** (`60–70ch` sweet spot); never let body paragraphs span full desktop viewport width. Calibrate equivalent character density for CJK (`~30–42` fullwidth glyphs/line) and RTL scripts.
+- **Scale & line-height:** dense UI scale ratio roughly `1.125–1.2`; editorial/persuasion roughly `1.25–1.4` (avoid twelve indistinguishable steps). Latin body line-height roughly `1.45–1.65`; tighten display while protecting ascenders and stacked diacritics (`ệ, ử`).
+- **Unified icon & glyph language:** match icon stroke weight, cap/join geometry, corner radius, and `1cap`/optical sizing to the active typeface—never mix rounded cartoon icons, sharp hairline technical glyphs, and solid fills across the same toolbar or navigation chrome.
+- **Optical size & tracking:** use `opsz` when available; avoid tracked-out lowercase; restrict subtle negative tracking (`-0.02em` to `-0.04em`) to large Latin display headlines—never body copy or scripts with combining marks/shaping. Preserve hanging punctuation and orphan/widow control where supported.
+
+## B6 — Cross-platform tabular numerals (`tnum`) & true minus (`U+2212`)
+
+Proportional digits (`1` narrower than `8`) make live counters, timers, prices, progress readouts, scrubbers, and table columns jitter horizontally on every tick or row scan, while ASCII hyphen-minus (`-`, `U+002D`) sits too low and narrow beside `+`:
+
+1. **Lock tabular figures (`tnum`)** on every live counter, timer/stopwatch, financial/price readout, KPI delta, data-table numeric column, badge count, and playback/progress percentage. Keep proportional figures (`pnum`) only inside flowing narrative prose where vertical column alignment is irrelevant.
+2. **Render true typographic minus `−` (`U+2212`)** for negative numbers, currency deltas (`−$42.00`, `−3.4%`), coordinates, and axis ticks so negative signs match the width and crossbar height of `+` (while keeping input parsers tolerant of typed ASCII `-`, `U+002D`).
+
+| Platform | Idiomatic tabular-numeral & minus implementation |
+|---|---|
+| **Web CSS / HTML** | `font-variant-numeric: tabular-nums lining-nums;` (fallback `font-feature-settings: "tnum" 1;`); format negative display values via `Intl.NumberFormat` or `U+2212` `−` |
+| **SwiftUI / UIKit / AppKit** | `.monospacedDigit()` on `Text` / `UIFontDescriptor` `kNumberSpacingType: kMonospacedNumbersSelector`; `NumberFormatter` / `.number.sign(strategy:)` |
+| **Jetpack Compose / Android** | `TextStyle(fontFeatureSettings = "tnum")` on `Text` (`android:fontFeatureSettings="tnum"` in Views) |
+| **Flutter** | `TextStyle(fontFeatures: const [FontFeature.tabularFigures()])` (`dart:ui`) |
+| **Desktop / Game / TUI** | Qt `QFont::setTag("tnum")` (`QFont::Tag("tnum")`), WinUI/WPF `Typography.NumeralAlignment="Tabular"`, Slint/Godot/Unity SDF OpenType `tnum` or fixed-advance digit kerning; TUI cells are intrinsically monospace |
 
 ### Modern web typographic controls
 

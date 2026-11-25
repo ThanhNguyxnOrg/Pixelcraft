@@ -28,9 +28,9 @@ Render the actual surface, inspect representative captures, execute the primary 
 - Read [references/capture-desktop-game.md](references/capture-desktop-game.md) for native windows, Wayland/X11/macOS/Windows capture, Electron/Tauri drivers, high-DPI, frame capture, HUD legibility, and game-safe-area checks.
 - Run `node scripts/shoot.mjs --help` for optional browser capture/audit. The script has no required dependencies; it uses Playwright only when already installed or installable by the user.
 - Run `node scripts/check-contrast.mjs --help` for zero-dependency WCAG 2.2 / APCA contrast verification across tokens and stylesheets.
-- Run `node scripts/check-email.mjs --help` for zero-dependency email HTML auditing (102 KB Gmail clipping, Outlook/Flexbox hazards, image alt text, plaintext parity).
-- Run `node scripts/check-tui.mjs --help` for zero-dependency terminal output auditing (ANSI width/wrapping, `NO_COLOR` resilience, capability fallbacks).
-- Run `node scripts/check-pdf.mjs --help` for zero-dependency PDF verification (page geometry, embedded fonts, text extractability, PDF/UA structure checks).
+- Run `node scripts/check-email.mjs --help` for zero-dependency email HTML auditing (102 KB Gmail clipping, Outlook/Flexbox hazards, image-only CTA/alt checks, preheader spacer padding, plaintext parity, and `--headers` RFC 8058 One-Click unsubscribe checks).
+- Run `node scripts/check-tui.mjs --help` for zero-dependency terminal output auditing (UAX #29 grapheme-cluster width/wrapping for CJK & ZWJ emoji, `NO_COLOR` resilience, and 6-step terminal mode teardown checks).
+- Run `node scripts/check-pdf.mjs --help` for zero-dependency PDF verification (page geometry, embedded fonts, `/ToUnicode` CMap copy/ATS extractability, PDF/UA structure checks, and `--prepress` PDF/X `/TrimBox`, `/BleedBox`, `/OutputIntents` gates).
 
 ## Required loop
 

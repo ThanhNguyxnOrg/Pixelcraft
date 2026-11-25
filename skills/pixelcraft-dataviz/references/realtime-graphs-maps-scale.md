@@ -69,13 +69,23 @@ There is no single cutoff—measure on target hardware—but use this architectu
 
 Canvas, WebGL, and WASM layers never waive accessibility: retain an offscreen/external semantic data summary, keyboard controls, and CSV/table access.
 
+## Perceptual time-series downsampling (`LTTB` & `Min-Max` envelopes)
+
+Never downsample dense time-series (`10k–1M+` points) onto an `800–1600px` chart using naive `every-Nth` stride slicing (`rows[::step]` or `points.filter((_, i) => i % step === 0)`): stride slicing drops `99%` of samples blind to amplitude, **erasing single-tick P99 latency spikes, voltage transients, and flash crashes**.
+
+| Method | Target budget | Guarantee & best fit |
+|---|---|---|
+| **`LTTB` (Largest-Triangle-Three-Buckets)** | `2×`–`4×` chart CSS pixel width (e.g. `1,500–3,000` points for a `1000px` plot) | Selects the actual observed point in each bucket maximizing triangular area with neighbors—preserving local extrema, slopes, and exact hoverable `(t, y)` coordinates without inventing synthetic averages |
+| **Per-pixel `Min-Max` (M4) envelope** | `1` bucket per horizontal pixel (`[first, min, max, last]` or `[min, max]` band) | **Mathematically lossless visual hull**: every spike and drop across millions of rows renders inside the pixel column's vertical stroke; ideal for observability, oscilloscope, and financial tick series |
+| **Zoom-triggered re-query** | Re-run `LTTB` / `Min-Max` on `[t_start, t_end]` in SQL/DuckDB/Polars |Brushing into a 5-minute incident window switches seamlessly from downsampled overview to raw unaggregated events, displaying a badge (`Downsampled · LTTB 2,000 pts` vs `Raw · 840 pts`) |
+
 ## Performance verification
 
-Measure with realistic cardinality and device constraints:
+Measure with realistic cardinality (`10k–1M+` points) and device constraints:
 
-- initial parse, WASM/tile fetch, layout, and first-paint time;
-- frame time during pan, zoom, brush, hover, and filter changes;
-- update latency and dropped frames under realistic streaming bursts;
+- initial parse, `LTTB` / `Min-Max` reduction, WASM/tile fetch, layout, and first-paint time;
+- frame time during pan, zoom re-query, brush, hover, and filter changes;
+- spike-preservation check: inject a single-sample `10×` outlier into a `100k`-point series and verify it remains visible at overview zoom (`rendered`);
 - memory and WebGL context cleanup across route changes and reconnects;
 - bundle, worker, and tile payload size plus mobile thermal/battery behavior.
 

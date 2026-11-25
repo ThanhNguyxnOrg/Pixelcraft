@@ -117,16 +117,17 @@ Use `pixelcraft-craft` for motion design intent; `pixelcraft-web` for browser im
 
 The full floor in `references/floor.md` is normative. At minimum:
 
-- truthfulness & completeness: no invented facts, metrics, logos, or testimonials; zero `// TODO`, zero ellipsis truncation, zero empty handlers (`onClick={() => {}}`, `href="#"`), zero unapproved mock arrays posing as live data;
-- accessibility: native semantic controls, persistent names/labels, visible keyboard/focus path, contrast floor, reduced-motion path, text scaling/reflow, no color-only meaning;
-- interaction: visible feedback, platform target sizes, cancellation/undo/escape, no conflicting gestures, complete states;
+- truthfulness & completeness: no invented facts, metrics, logos, or testimonials; zero `// TODO`, zero ellipsis truncation, zero no-op handlers/commands/links, zero unapproved mock arrays posing as live data;
+- accessibility: native semantic controls, persistent names/labels, visible & unobscured keyboard/focus path (`WCAG 2.4.11`), contrast floor, reduced-motion & reduced-transparency paths, text scaling/reflow, no color-only meaning, plus `EAA`/`EN 301 549` statement readiness where applicable;
+- interaction & invisible craft: frequency-calibrated timing, origin-aware overlays, optical alignment, forgiving hit-slop, tabular numerals, cancellation/undo/escape, no conflicting gestures, complete states;
 - adaptation: restructure across sizes, orientations, input modalities, and platform idioms;
-- localization: expansion/contraction, logical directionality, script/font fallback, IME safety, locale formatting;
+- localization: `+30–40%` prose and `+50–100%` short-label expansion, logical directionality, `Unicode NFC` diacritic & font-glyph integrity, active `IME` `Enter`-commit safety, locale formatting;
 - performance: instant orientation, stable layout, asset budgets, nonblocking interaction;
 - robustness: zero/one/many/long/missing/error/offline/permission/interruption/concurrency/AI-streaming states;
 - coherence: semantic tokens and consistent hierarchy, affordances, motion, iconography, and copy;
 - distinctiveness: at least one deliberate subject-specific commitment when mode permits;
-- verifiability: no claim without an evidence label.
+- engineering & handoff hygiene: strict compiler/type/analyzer checks for the active language, `< 10m` clean-clone setup, isolated component/screen previews where supported, zero client-exposed secrets, verified commercial font/icon/media licenses, and owner-level account/key handoff;
+- verifiability: no claim without an evidence label (`references/surface-acceptance.md` covers IME, regulatory/store, and handoff rows).
 
 The floor never mandates a hero, card, palette, typeface, border radius, shadow, layout shape, or visual movement.
 
@@ -145,7 +146,7 @@ The floor never mandates a hero, card, palette, typeface, border radius, shadow,
 - [ ] planning mode selected honestly (Grill-Me / Fast Confirm / Direct Execution) and repo inspected before asking questions;
 - [ ] lazy stack defaults rejected and complex UI capabilities routed to native primitives or purpose-built libraries;
 - [ ] pre-code Design Approval gate met for greenfield/redesign/undecided scope (or approved design preserved via `pixelcraft-handoff`);
-- [ ] zero `// TODO`, zero ellipsis stubs, zero dead handlers, zero unwired mobile navigation, zero unapproved fake proof/mocks;
-- [ ] mandatory floor (a11y, states, adaptation, localization, tokens, distinctiveness) applied natively in the target stack;
+- [ ] zero `// TODO`, zero ellipsis stubs, zero dead controls/handlers, zero unwired mobile navigation, zero client secrets, zero unapproved fake proof/mocks;
+- [ ] mandatory floor (a11y, states, adaptation, `+50–100%` short-label i18n & `IME`/`NFC` safety, invisible craft, tokens, strict active-language checks, license/handoff hygiene) applied natively in the target stack;
 - [ ] applicable verification scripts (`slop-scan`, `check-*`, `finish-gate`) and rendered inspection actually attempted;
 - [ ] final response lists what changed, selected direction & rationale, verification by evidence label, `not-checked`/`waived` items, and open risks.

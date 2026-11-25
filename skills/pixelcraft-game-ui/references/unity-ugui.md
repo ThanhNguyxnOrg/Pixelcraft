@@ -43,16 +43,16 @@ public sealed class SafeAreaPanel : MonoBehaviour
 }
 ```
 
-## `TextMeshPro` (`TMP_Text`) typography and localization
+## `TextMeshPro` (`TMP_Text`) typography, Steam Deck floor, and `0 B/frame` GC
 
 - Always use **`TextMeshPro` (`TMP_Text` / `TextMeshProUGUI`)**—never legacy `UnityEngine.UI.Text`.
-- **SDF Atlases & Fallback Chains**: use static SDF atlases for fixed Latin HUD fonts and configure **Dynamic SDF + Multi-Atlas** fallback fonts in `TMP_Settings` (or per `TMP_FontAsset.fallbackFontAssetTable`) covering **CJK, Arabic/Hebrew (with RTL shaping plugin where needed), Cyrillic, Thai, and user-generated names** so missing glyphs never render as empty squares.
-- **Zero-GC updates**: use `tmpText.SetText("HP: {0} / {1}", hp, maxHp)` instead of string interpolation (`$"HP: {hp}"`) inside `Update()`.
-- Keep `Auto Size` constrained with a readable minimum font size rather than letting long German/Finnish strings shrink to illegible 8px text.
+- **SDF Atlases & Fallback Chains**: use static SDF atlases for fixed Latin HUD fonts and configure **Dynamic SDF + Multi-Atlas** fallback fonts in `TMP_Settings` (or per `TMP_FontAsset.fallbackFontAssetTable`) covering **CJK, Arabic/Hebrew (with RTL shaping plugin where needed), Cyrillic, Thai, Vietnamese, and user-generated names** so missing glyphs never render as empty squares.
+- **`0 B/frame` steady-state UI GC**: call `tmpText.SetText("HP: {0} / {1}", hp, maxHp)` (or `SetCharArray` from a preallocated `char[]` buffer) instead of string interpolation (`$"HP: {hp}"`) inside `Update()`—steady-state gameplay HUD frames must record **`0 B` `GC.Alloc`** in Unity Profiler, and set `Image.preserveAspect = true` on 2D icons/reticles so `21:9` / `16:10` scaling never stretches sprites.
+- **Steam Deck (`1280×800`) minimum size**: constrain `enableAutoSizing` with `fontSizeMin` keeping rendered glyph height **`>= 9px` (`12–14px` target) at `1280×800`** rather than letting German/Finnish strings shrink to unreadable `6–8px` microtext, and invoke `SteamUtils.ShowFloatingGamepadTextInput` when `TMP_InputField` is activated via gamepad.
 
-## `EventSystem`, `InputSystemUIInputModule`, and explicit `Selectable` navigation
+## `EventSystem`, `InputSystemUIInputModule`, disconnect pause, and explicit `Selectable` navigation
 
-- Pair `EventSystem` with Unity's **`InputSystemUIInputModule`** (replacing legacy `StandaloneInputModule`), mapping `Navigate`, `Submit`, `Cancel`, and `Point` cleanly to Input Actions.
+- Pair `EventSystem` with Unity's **`InputSystemUIInputModule`** (replacing legacy `StandaloneInputModule`), mapping `Navigate`, `Submit`, `Cancel`, and `Point` cleanly to Input Actions, and subscribe to `InputSystem.onDeviceChange` (`InputDeviceChange.Disconnected`) to **auto-pause gameplay and open a reconnect modal** immediately when the active gamepad drops.
 - Set **`Deselect On Background Click` = false** (or keep a focus guard) in controller-capable menus so an accidental mouse click on empty space never orphans gamepad focus.
 - **Explicit `Selectable` Navigation**: Unity's `Navigation.Mode.Automatic` casts spatial rays that break on scroll views, non-uniform grids, and tabbed dialogs. Set `Navigation.Mode.Explicit` (`selectOnUp`, `selectOnDown`, `selectOnLeft`, `selectOnRight`) on grids/menus and restore `EventSystem.current.SetSelectedGameObject(previous)` when closing any modal:
 

@@ -8,16 +8,19 @@ Use this reference when deciding what evidence a platform implementation must pr
 |---|---|---|
 | layout ownership | the surface controls resize/reflow through constraints rather than fixed perfect pixels | smallest/typical/large geometry inspected without clipping or accidental two-dimensional scrolling |
 | navigation truth | back/escape/close/deep link/refresh/relaunch restore understandable state | primary forward/back task path exercised in the real runtime or labeled emulation |
-| input completeness | pointer/touch/keyboard/controller/remote/voice/IME paths match platform expectations | primary task completed without mouse-only, hover-only, precision-only, or hidden-command dependency |
-| focus and restoration | focus/selection/scroll/input context survive dialogs, errors, route changes, interruption, and re-entry | focus path and restoration inspected across at least one interruption |
+| input completeness | pointer/touch/keyboard/controller/remote/voice paths match platform expectations with forgiving hit areas and pointer capture | primary task completed without mouse-only, hover-only, precision-only, or hidden-command dependency |
+| IME and composition safety | active input-method composition (`Enter`/`Escape` during Telex/VNI, Kana-Kanji, Hangul, Pinyin) commits/cancels candidates without premature submit; `Unicode NFC` text preserved | search, chat, form, and inline-edit inputs verified with composed characters (`ư, ơ, ệ`, CJK, RTL) or labeled `not-checked` |
+| focus and restoration | focus/selection/scroll/input context survive dialogs, errors, route changes, interruption, and re-entry without sticky-chrome occlusion | focus path and restoration inspected across at least one interruption and smallest supported viewport |
 | state coverage | loading/empty/error/offline/permission/long-content/conflict/cancellation states are designed | representative non-happy-path states rendered or explicitly marked absent/not applicable |
 | accessibility exposure | native semantics/accessibility tree carry name, role, value, state, order, grouping, and status changes | automated scan plus manual keyboard/screen-reader or platform-equivalent inspection where available |
-| text scaling/localization | expansion, contraction, line breaking, directionality, numerals, fonts, plural forms, IME composition survive | representative locale matrix or targeted stress case; no fixed-height clipping |
-| performance/interaction | acknowledgment is fast, input remains responsive, layout is stable, media/asset cost is proportionate | runtime measurement against surface budget or explicit `not-checked` |
+| text scaling/localization | `+30–40%` prose and `+50–100%` short-label expansion, CJK contraction, line breaking, directionality, tabular numerals, plural forms, and diacritic glyph coverage survive | representative locale matrix or targeted stress case; zero fixed-height clipping or ransom-note fallback glyphs |
+| performance/interaction | frequency-calibrated motion, fast acknowledgment, responsive input, stable layout, proportionate media/asset cost | runtime measurement against surface budget or explicit `not-checked` |
 | safe geometry | safe areas, overscan, notches, system chrome, virtual keyboard, taskbar/menu bar, window minimums are respected | real device/simulator/windowed/terminal evidence where environment permits |
 | capture/verification | output can be captured meaningfully without hiding defects | screenshots/recordings/snapshots include edge cases and identify exact runtime/build |
-| data/privacy | user data, secrets, private media, and personal identifiers are protected in artifacts | captures redacted/synthetic; no fake metrics/proof/testimonials |
+| data/privacy | user data, secrets, private media, and personal identifiers are protected in source, bundles, and artifacts | zero client-exposed secrets; captures redacted/synthetic; no fake metrics/proof/testimonials |
 | platform idiom | navigation, controls, feedback, scaling, lifecycle, packaging, and system integration feel native | idioms named in implementation notes; deviations deliberate and justified |
+| regulatory/store readiness | target distribution and legal gates (App Store, Google Play, browser `MV3`, EU `EAA` / `EN 301 549` accessibility statement, console/Steam Deck TRC, print `PDF/X-4`, bulk email `RFC 8058`) are addressed | store/regulatory checklist items verified in config/UI or explicitly scoped `not-checked`/`waived` |
+| commercial/engineering handoff | `< 10m` clean-clone setup, strict active-language static checks, isolated state previews where supported, verified font/icon/media commercial licenses, and owner-level account/key transfer | clean build/analyzer output, license manifest, and root billing/DNS/store/signing ownership boundaries documented |
 
 ## Mode overlays
 

@@ -53,17 +53,18 @@ let [header, body, footer] = Layout::vertical([
 - **Images in terminal cells (`ratatui-image`)**: use `ratatui-image` when displaying previews/thumbnails—it automatically probes and renders via Kitty Graphics, Sixel, iTerm2 inline images, or Unicode halfblock (`▀`/`▄`) fallback without crashing unsupported terminals.
 - **Multi-line text input (`tui-textarea` / `edtui`)**: reuse mature editing crates for cursor movement, selection, undo/redo, and paste rather than hand-rolling byte-offset UTF-8 string slicing (which panics on multi-byte Unicode/CJK graphemes).
 
-## Typography, motion, accessibility, & states idioms
+## Grapheme width (`UAX #29`), Bracketed Paste, `OSC 52` & 6-step teardown
 
-Terminals control fonts—communicate hierarchy with `Modifier::BOLD`, `DIM`, `UNDERLINED`, `REVERSED`, alignment, and borders. Always measure printable display width via `unicode-width` (`Line::width()`) rather than `.len()`.
+- **Grapheme-cluster column width**: never use `str::len()` or `chars().count()` for cell alignment or cursor slicing. Segment text with **`unicode-segmentation`** (`s.graphemes(true)`) and compute column width with **`unicode-width`** (`UnicodeWidthStr::width`) so CJK (`2` cols), ZWJ emoji (`👨‍👩‍👧‍👦` = `2` cols), `VS16` (`⚠️` = `2` cols), and Vietnamese combining diacritics (`0` extra cols) never corrupt box borders; switch to `ratatui::symbols::border::ASCII` (`+--+`) when `--ascii`, `TERM=dumb`, or non-UTF-8 locale is active.
+- **Bracketed Paste (`DECSET 2004`) & `OSC 52` clipboard**: enable `crossterm::event::EnableBracketedPaste` (`Event::Paste(String)`) so multi-line pastes into inputs never fire `KeyCode::Enter` per line; support copying via `arboard` locally plus **`OSC 52`** (`crossterm::clipboard::CopyToClipboard`) over SSH/`tmux`.
+- **Complete 6-step panic & signal restoration**: whenever enabling mouse capture, bracketed paste, synchronized updates, or Kitty keyboard enhancement alongside `ratatui::init()`, ensure your `Drop` guard + panic hook + `tokio::signal` (`SIGINT`, `SIGTERM`, `SIGHUP`) handler executes all 6 steps ([terminal-protocols.md](terminal-protocols.md)): `?1049l` (leave alt screen), `?1000l/?1002l/?1003l/?1006l` (disable mouse), `?2004l` (disable bracketed paste), `?2026l` (end sync output), `\x1b[<u` (pop Kitty keyboard flags), and `?25h` + `disable_raw_mode()`.
+- **Stream hygiene, `BrokenPipe`, & CLI packaging**: write TUI/spinners to `stderr` (or alt-screen only when `std::io::stdout().is_terminal()`), emit `--json`/`--plain` strictly to `stdout` while catching **`io::ErrorKind::BrokenPipe`** (`exit(0)` silently on `| head -n 5` instead of `.unwrap()` panicking!), use semantic exit codes (`0`, `1`, `2`, `130`), and generate `bash`/`zsh`/`fish`/`pwsh` completions + `man` pages via **`clap_complete`** and **`clap_mangen`** (`cargo-dist` / Homebrew / Winget / Scoop / Cargo).
 
-Keep event polling (`crossterm::event::poll`) and tick intervals bounded so idle TUIs consume near-zero CPU. Manage async backend work on Tokio channels with explicit request IDs and cancellation (`CancellationToken`) so stale results never overwrite newer selections. Render explicit loading, empty, error, offline, and narrow-terminal fallback views into buffers—never leave blank black panes.
-
-Include plain-text state markers (`>`, `[x]`, `[ERR]`) alongside color, position the real terminal cursor (`frame.set_cursor_position(...)`) inside focused text inputs for assistive tools/IME, and expose non-interactive CLI flags (`--json`, `--plain`) when stdout is not a TTY.
+Keep event polling (`crossterm::event::poll`) and tick intervals bounded so idle TUIs consume near-zero CPU. Manage async backend work on Tokio channels with explicit request IDs and cancellation (`CancellationToken`) so stale results never overwrite newer selections. Render explicit loading, empty, error, offline, and narrow-terminal fallback views into buffers—never leave blank black panes, and position the real terminal cursor (`frame.set_cursor_position(...)`) inside focused text inputs for assistive tools/IME.
 
 ## Snapshot & buffer verification (`TestBackend` + `insta`)
 
-Test layout, narrow `80×24` collapse behavior, focus markers, and error states deterministically with **`TestBackend::new(width, height)`** and **`insta`** snapshots:
+Test layout, narrow `80×24` collapse behavior, CJK/ZWJ/Vietnamese grapheme alignment, focus markers, and error states deterministically with **`TestBackend::new(width, height)`** and **`insta`** snapshots:
 
 ```rust
 #[test]
@@ -78,26 +79,24 @@ fn renders_cleanly_at_80x24() {
 
 | Do | Don't |
 |---|---|
-| Use `ratatui::run(...)` or `ratatui::init()` + `ratatui::restore()` | Manual raw-mode setup with no panic hook leaving user shells broken |
-| Use `Constraint::Fill` + `Flex` derived from `frame.area()` | Hard-code `120×40` coordinates or fragile `Percentage` sums |
-| Centralize semantic `PcTheme` using ANSI/Reset-safe fallbacks | Scatter `Color::Rgb(255, 255, 255)` unreadable on light terminals |
-| Use `tui-textarea` / `unicode-width` and `ratatui-image` | Slice UTF-8 strings by byte index or emit unprobed Sixel bytes |
+| Run `ratatui::run`/`restore` + full 6-step teardown (`?2004l`, `?1003l`, `\x1b[<u`) on panic & signals | Manual raw-mode setup leaving mouse capture, bracketed paste, or `CSI u` stuck after crashes |
+| Measure/slice via `unicode-segmentation` + `unicode-width` + `border::ASCII` fallback | Slice UTF-8 strings by byte index or use `.len()` on CJK / `👨‍👩‍👧‍👦` / Vietnamese text |
+| Enable `EnableBracketedPaste` (`Event::Paste`) and `OSC 52` SSH clipboard | Treat pasted newlines as accidental `Enter` confirmations |
+| Catch `ErrorKind::BrokenPipe` on `--json`/`--plain` `stdout` writes and ship `clap_complete` + `man` pages | `.unwrap()` `writeln!(stdout)` so `mycli --plain \| head -n 5` panics with a backtrace |
+| Centralize semantic `PcTheme` using `Color::Reset` + ANSI 16 dark/light-safe roles | Scatter `Color::Rgb(255, 255, 255)` unreadable on light terminals |
 | Verify buffers across `80×24` and wide sizes with `TestBackend` + `insta` | Rely solely on `cargo build` or one wide manual glance |
 
 ## Known traps
 
-Byte-index string slicing panicking on UTF-8/emoji/CJK characters, forgetting `ratatui::init`/`run` leaving terminals corrupted after panics, hard-coding `Color::White` on light-background terminals, spinning a 0ms event loop burning 100% CPU, emitting alt-screen control codes when piped to `grep`/`jq`, stale async task messages overwriting active UI state.
+Byte-index string slicing panicking on UTF-8/emoji/CJK/Vietnamese characters, forgetting `DisableBracketedPaste` / `PopKeyboardEnhancementFlags` on panic, `.unwrap()` panicking on `SIGPIPE`/`BrokenPipe`, hard-coding `Color::White` on light-background terminals, spinning a 0ms event loop burning 100% CPU, emitting alt-screen control codes when piped to `grep`/`jq`.
 
 ## Verification commands
 
 ```sh
 cargo test
 cargo clippy --all-targets -- -D warnings
-cargo run
-# Interactive snapshot review (only when snapshots changed intentionally):
-# cargo insta review
-# Verify non-TTY / NO_COLOR handling:
 NO_COLOR=1 cargo run -- --help
+cargo run -- --plain | head -n 5
 ```
 
-`cargo test` (`TestBackend` / `insta` snapshots) and `cargo clippy` provide `static` and deterministic buffer evidence. Run the compiled binary in real dark and light terminals at `80×24`, `NO_COLOR=1`, `TERM=dumb`, and panic/interrupt recovery paths for `rendered` evidence; label untested emulators `not-checked`.
+`cargo test` (`TestBackend` / `insta` snapshots) and `cargo clippy` provide `static` and deterministic buffer evidence. Run the compiled binary in real dark and light terminals at `80×24`, `NO_COLOR=1`, `TERM=dumb`, `--ascii`, multi-line paste, and panic/interrupt recovery paths for `rendered` evidence; label untested emulators `not-checked`.

@@ -48,6 +48,26 @@ Prefer native CSS layout primitives over JS resize observers or hardcoded breakp
 | **Dynamic viewport units** (`svh`, `dvh`, `lvh`) | Full-height mobile shells, sticky composers, and hero frames with collapsible mobile browser toolbars | Use `svh` for stable initial-paint heights that must not jump as toolbars retract; reserve `dvh` for active interactive workspaces (e.g., chat input bars) where real-time bottom-edge fit matters; avoid `100vh` on mobile |
 | **Intrinsic sizing animation** (`interpolate-size: allow-keywords` / `calc-size()`) | Smooth disclosure, accordion, and `<details>` height transitions to/from `auto` without measuring `scrollHeight` in JS | Opt in via `interpolate-size: allow-keywords` (or `calc-size(auto, size)`) and gate motion under `prefers-reduced-motion` |
 
+## B2 — Optical alignment, concentric geometry & text-box balance
+
+Numeric bounding-box math produces subtly crooked interfaces; align by optical mass and curvature:
+
+| Law | Defect when ignored | Concrete rule & cross-platform idiom |
+|---|---|---|
+| **Asymmetric icon centroid offset** | Play triangles (`▶`), chevrons (`›`/`‹`), back/forward arrows, and paper-plane send glyphs centered by bounding box look pushed away from their tip inside circular/square buttons | Shift glyph **`+1–2` units (`px`/`pt`/`dp`) toward its visual center of mass** (e.g., play triangle nudged `+1.5px` inline-end inside a circular button) or author optical padding directly inside the `24×24` icon frame |
+| **Concentric corner radii** | Giving nested cards and inner media/buttons the exact same border radius (`16px` inside `16px`) creates pinched, lumpy corner walls | Enforce **`R_outer = R_inner + padding`** (`R_inner = max(0, R_outer - padding)`). Clamp `R_inner` to `0` when `padding >= R_outer`. Use CSS `calc(var(--r-outer) - var(--pad))`, SwiftUI `ConcentricRectangle` / container-relative shapes, or tokenized inner/outer radius pairs |
+| **Optical vertical text balance** | Font em-boxes reserve descender space below the alphabetic baseline, making symmetric top/bottom padding look bottom-heavy on buttons, pills, and single-line headers | Trim or compensate vertical metrics: CSS `text-box-trim: trim-both; text-box-edge: cap alphabetic`, Compose/SwiftUI/Qt `FirstBaseline` alignment, or `-1` to `-2` unit bottom padding compensation where trim APIs are unavailable |
+
+## B5 — Forgiving pointer, invisible hit-slop, Safe Triangle & pointer capture
+
+Decouple compact visual density from physical pointer/touch ergonomics so fast movement never mis-fires:
+
+| Mechanism | Required behavior | Cross-platform idioms |
+|---|---|---|
+| **Invisible hit-slop expansion** | Compact `24–28` unit icon controls (`px`/`pt`/`dp`) keep crisp visual bounds while expanding their interactive hit box by **`+6–10` units per side** (meeting `≥ 40–48` unit comfort targets without colliding with neighbors) | **Web:** `position: relative` + `::before { content: ""; position: absolute; inset: -8px; }`<br>**SwiftUI / UIKit:** `.padding(8).contentShape(Rectangle())` or override `point(inside:with:)`<br>**Android / Compose:** `TouchDelegate` or `Modifier.minimumInteractiveComponentSize()`<br>**Flutter / Desktop / Game:** `HitTestBehavior.translucent` padded box, Qt hit-margin, or expanded HUD rect |
+| **Safe Triangle submenu corridor** | Cascading hover submenus, flyouts, and megamenus must survive diagonal cursor travel from trigger row to child pane without collapsing across sibling items | Compute a dynamic **Safe Triangle** from cursor exit `(x, y)` to the open submenu's near top and bottom corners (or hold a `120–180ms` directional-intent grace timer while pointer moves toward the submenu); always preserve click/Enter/Arrow keyboard parity |
+| **Slider, scrubber & splitter pointer capture** | Dragging a timeline scrubber, range slider, color Loupe, or pane splitter continues smoothly until release even when the pointer drifts outside the narrow track | **Web:** call `el.setPointerCapture(e.pointerId)` on `pointerdown` and release on `pointerup`/`pointercancel`<br>**SwiftUI / Compose / Flutter:** `DragGesture` / `pointerInput { detectDragGestures }` continuous capture<br>**Desktop / Game:** Qt `grabMouse()`, Win32/XAML `CapturePointer` + **`Escape` cancel** + **`Shift`/Arrow fine-stepping** |
+
 ## Hierarchy checks
 
 Squint test: primary/secondary/tertiary grouping should remain visible when detail blurs. Remove one visual property at a time; if hierarchy disappears only when color is removed, color-only dependence is likely. Compare real content lengths rather than lorem ipsum symmetry.

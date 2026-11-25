@@ -21,14 +21,14 @@ For repository banners/docs, export PNG/WebP fallbacks where inline SVG is block
 
 Design a system rather than center-cropping one master:
 
-| Ratio | Typical frame | Role |
+| Ratio | Typical frame | Role & mandatory safe inset |
 |---|---:|---|
-| 16:9 | 1920×1080 or 1280×720 | presentation, YouTube, landscape video, docs |
-| 1:1 | 1080×1080 | square feed/embed |
-| 9:16 | 1080×1920 | Reels/Shorts/TikTok vertical video |
-| 2:1 | 1280×640 | GitHub social-preview baseline |
+| 16:9 | 1920×1080 or 1280×720 | presentation, YouTube, landscape video, docs (`5–10%` edge inset; YouTube bottom-right duration badge clear) |
+| 1:1 | 1080×1080 | square feed/embed (`>= 80 px` edge inset) |
+| 9:16 | 1080×1920 | Reels / TikTok / Shorts: keep titles, faces, and burned-in captions clear of **`top >= 150–220 px`**, **`bottom >= 320–420 px`**, and **`right >= 120–160 px`** (`>= 60 px` left) |
+| 1.91:1 / 2:1 | 1200×630 / 1280×640 | universal OG (`1000×500` center safe zone) / GitHub social preview |
 
-Recompose hierarchy per ratio: square favors a single centered anchor, vertical stacks vertically around platform UI overlays, and landscape supports lateral sequencing.
+Recompose hierarchy per ratio: never center-crop a `16:9` master into `9:16`—vertical feeds require stacking subject + open captions inside the `top 220 px .. bottom 1500 px`, `left 60 px .. right 920 px` clear corridor so TikTok/Reels/Shorts chrome never occludes copy.
 
 ## Remotion (v4+)
 
@@ -73,13 +73,22 @@ import { createRef, waitFor } from '@motion-canvas/core';
 
 export default makeScene2D(function* (view) {
   const title = createRef<Txt>();
-  view.add(<Txt ref={title} fill="#f8fafc" fontSize={84} opacity={0}>Pixelcraft</Txt>);
-  yield* title().opacity(1, 0.45);
+  const subtitle = createRef<Txt>();
+  // Frame 0 (0.0s) MUST render a legible title/poster immediately when autoplay is disabled
+  view.add(
+    <>
+      <Txt ref={title} fill="#f8fafc" fontSize={84} y={-26} opacity={1}>Pixelcraft v2</Txt>
+      <Txt ref={subtitle} fill="#94a3b8" fontSize={36} y={42} opacity={0}>Studio-Grade Motion</Txt>
+    </>,
+  );
+  yield* waitFor(0.2);
+  yield* subtitle().opacity(1, 0.45);
   yield* waitFor(1.2);
 });
 ```
 
 - Pick **Motion Canvas** for author-driven visual editing and technical explainer animations; pick **Revideo** (`@revideo/2d`, `@revideo/core`, `@revideo/renderer`) when you need headless CI/server video generation from the same generator paradigm;
+- **Never start frame `0` (`0.0s`) empty or at `opacity={0}`**: paused embeds, reduced-motion fallbacks, and social feed scrubbers display `0.0s` whenever no external poster overrides it—render a legible title/poster state at `0.0s` before secondary transitions;
 - use signals/layout references rather than visual guesses, pin project resolution/fps, and verify fonts in both editor and headless render.
 
 ## FFmpeg export pipeline
@@ -87,10 +96,10 @@ export default makeScene2D(function* (view) {
 Standardize web and social video exports with explicit pixel format, container atom ordering, codec budget, loudness normalization, and caption tracks:
 
 ```sh
-# 1. Universal H.264 MP4 (Safari/QuickTime/iOS safe + fast web start + EBU R128 loudness)
+# 1. Universal H.264 MP4 (Safari/QuickTime/iOS safe + fast web start + -14 LUFS social/web loudness)
 ffmpeg -i input.mov -i captions.vtt \
   -c:v libx264 -crf 20 -preset slow -pix_fmt yuv420p \
-  -c:a aac -b:a 160k -af "loudnorm=I=-16:TP=-1.5:LRA=11" \
+  -c:a aac -b:a 160k -af "loudnorm=I=-14:TP=-1.5:LRA=11" \
   -c:s mov_text -metadata:s:s:0 language=eng \
   -movflags +faststart output.mp4
 
@@ -104,8 +113,8 @@ Critical FFmpeg rules:
 - **`-pix_fmt yuv420p` is mandatory for H.264 compatibility**: default `yuv444p` / 10-bit output renders black or fails to open in Safari, QuickTime, and iOS;
 - **`-movflags +faststart`**: relocates the MP4 `moov` atom to the start of the file so browsers begin playback immediately instead of downloading the entire file first;
 - **Codec ladder**: use H.264 (`libx264`, `-crf 18–23`) as the universal baseline; add VP9 (`libvpx-vp9`) or AV1 (`libsvtav1`) `<source>` variants for bandwidth-heavy loops where target decoders support them;
-- **Audio loudness (`loudnorm`)**: normalize to EBU R128 (`I=-16` LUFS for web/podcasts, `I=-14` LUFS for YouTube/streaming, true peak `TP=-1.5 dBTP`);
-- **Captions**: mux WebVTT/SRT soft tracks (`-c:s mov_text` for MP4) or ship sidecar `.vtt` `<track>` files rather than only burning text into pixels;
+- **Audio loudness (`loudnorm`)**: normalize social and web video feeds (YouTube, Reels, TikTok, Shorts, X, LinkedIn) to `loudnorm=I=-14:TP=-1.5:LRA=11` (`-14 LUFS` integrated loudness, `-1.5 dBTP` true-peak ceiling); use `-16 LUFS` only for Apple Podcasts and spoken-word mobile audio;
+- **Captions**: mux WebVTT/SRT soft tracks (`-c:s mov_text` for MP4) AND keep burned-in open captions inside vertical/feed safe zones for muted social autoplay;
 - **MP4/WebM loops over heavy GIFs**: replace multi-megabyte GIFs with muted looping `<video autoplay loop muted playsinline poster="first-frame.webp">` (typically 5–10× smaller with full 24-bit color and 60 fps); use GIF only on surfaces that disallow video embeds.
 
 ## Lottie (`dotLottie`) and Rive vector export pipelines

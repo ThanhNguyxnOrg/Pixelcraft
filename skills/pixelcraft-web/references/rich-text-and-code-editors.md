@@ -163,9 +163,33 @@ export function setTabSize(size: number) {
 - Always lazy-load Monaco (`React.lazy` / dynamic `import()`) and configure its Web Workers (`MonacoEnvironment.getWorker`) so TypeScript/JSON language services do not run on the main thread.
 - Dispose both the editor instance and created `ITextModel` instances on unmount to avoid multi-megabyte memory leaks.
 
-## Visual page builders (Puck / Craft.js / GrapesJS)
+## Visual page builders & client-proof CMS authoring guardrails
 
 - **Puck**: define a typed `Config` mapping component names to `fields` and `render`, author via `<Puck config={config} data={data} onPublish={save} />`, and render the published page cleanly on the server with `<Render config={config} data={data} />` without shipping editor chrome to end users.
+- **Raw camera upload auto-transcode & focal-point crop**: non-technical editors routinely upload raw `10–15 MB` camera/phone photos (`4000×3000+` JPEG/PNG/HEIC). Enforce an upload/CDN pipeline (Sharp, Cloudflare Images, Sanity, Payload, Strapi, Imgix) that auto-rotates EXIF, strips sensitive GPS metadata, transcodes into responsive `AVIF`/`WebP` `srcset` widths, and honors **hotspot / focal-point coordinates** (`object-position: calc(var(--fp-x, 0.5) * 100%) calc(var(--fp-y, 0.5) * 100%)` or CDN `fp-x`/`fp-y` crop params) so portraits and product shots never get decapitated across card aspect ratios.
+- **Word / Google Docs / Notion paste sanitization**: configure ProseMirror `editorProps.transformPastedHTML` (or Lexical `PASTE_COMMAND` + server allowlist) to strip inline `style="font-family: Calibri; color: #000000; font-size: 11pt"`, `<font>`, `MsoNormal` classes, arbitrary `<span>` soup, and accidental `<h1>` tags—converting pasted content cleanly into semantic `<h2>`–`<h4>`, `<p>`, `<ul>`/`<ol>`, `<blockquote>`, `<strong>`/`<em>`, and safe `<a>` nodes styled exclusively by design tokens.
+- **Schema guardrails, alt-text enforcement & Draft Live Preview**: configure CMS field schemas (Sanity, Payload, Strapi, Contentful, Directus, Tina, Keystatic, Wagtail, Gutenberg) with soft/hard character limits and live counters on titles, card teasers, and SEO descriptions so long copy cannot shatter layouts; require explicit `alt` text (or an intentional `"Decorative"` checkbox emitting `alt=""`) before publishing media; and wire **Draft Mode / Live Preview** so editors inspect unpublished responsive pages in real templates prior to publish.
+
+```ts
+// ProseMirror / Tiptap: strip Word & Google Docs inline style/font soup on paste
+const cleanWordPaste = (html: string): string => {
+  const doc = new DOMParser().parseFromString(html, 'text/html');
+  doc.querySelectorAll('style, meta, link, script, xml, o\\:p').forEach((el) => el.remove());
+  doc.querySelectorAll('*').forEach((el) => {
+    el.removeAttribute('style');
+    el.removeAttribute('class');
+    el.removeAttribute('face');
+    el.removeAttribute('color');
+    el.removeAttribute('size');
+    if (el.tagName === 'H1') {
+      const h2 = doc.createElement('h2');
+      h2.innerHTML = el.innerHTML;
+      el.replaceWith(h2);
+    }
+  });
+  return doc.body.innerHTML;
+};
+```
 
 ## Accessibility, IME, and collaborative CRDT rules for editors
 
@@ -182,6 +206,7 @@ export function setTabSize(size: number) {
 | Disable `StarterKit` `undoRedo` **only** when Yjs Collaboration is attached | Copy `undoRedo: false` into a standalone single-user editor (silently breaks Undo/Redo) |
 | Use **Shiki** (build/SSR) for read-only code blocks and CodeMirror 6 (`Compartment`) for editable inputs | Ship Monaco or CodeMirror just to highlight static code examples, or recreate `EditorView` on prop change |
 | Lazy-load Monaco and configure Web Workers for desktop IDE surfaces | Bundle full Monaco synchronously into a mobile form or settings modal |
+| Auto-transcode `10–15 MB` CMS uploads to AVIF/WebP `srcset` with focal-point crop, sanitize Word/Docs paste, and wire Draft Live Preview | Serve raw camera uploads directly, allow pasted `style="font-family: Calibri"` soup into production HTML, or publish blind without preview |
 | Provide a `Tab` escape hatch and `role="toolbar"` roving focus | Trap keyboard focus inside `Tab`-indented editors |
 | Sanitize persisted rich-text HTML or store structured JSON AST | Render unsanitized `dangerouslySetInnerHTML` from editor output |
 
@@ -192,4 +217,4 @@ npm run build
 npx playwright test
 ```
 
-Verify bundle chunk splitting (editor chunks lazy-loaded, `static`), and test typing, IME composition, undo/redo, copy-paste, and keyboard escape from `Tab` in a real browser (`rendered`).
+Verify bundle chunk splitting (editor chunks lazy-loaded, `static`), and test typing, IME composition, undo/redo, Word/Google Docs paste cleanup, CMS focal-point crop, Draft Live Preview, and keyboard escape from `Tab` in a real browser (`rendered`).

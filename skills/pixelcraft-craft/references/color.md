@@ -44,13 +44,18 @@ accent core L .58 C .16 / hover L .52 C .17 / soft-fill L .91 C .05
 dark surface L .20 C .02 / dark raised L .26 C .025 / dark accent L .72 C .11
 ```
 
-## Dark and high-contrast behavior
+## B4 — Dark-surface luminance elevation, specular edges & vibrancy
 
-- Reassign semantic values rather than mathematically inverting.
-- Reduce large-area saturation in dark mode; use lighter foreground accents.
-- Use luminance layering/borders/scrims for elevation because shadows weaken on dark surfaces.
-- Test focus, selection, caret, placeholder, disabled, pressed, visited, chart grid, and error text independently in each mode.
-- Honor `prefers-contrast`, forced-colors, and platform high-contrast modes; do not remove system-controlled boundaries.
+Never build dark mode by mechanically inverting light tokens or dropping `#000000` shadows onto dark cards (black drop shadows vanish on dark surfaces or muddy surrounding pixels):
+
+| Rule | Concrete specification | Cross-platform idioms |
+|---|---|---|
+| **Luminance-stepped elevation (`+5% to +8%` OKLCH `L`)** | Elevate higher z-layers by stepping surface lightness upward in **`+0.05` to `+0.08` OKLCH `L` increments** (e.g., base canvas `L ≈ 0.14–0.17` → raised card/sidebar `L ≈ 0.20–0.23` → floating popover/dialog `L ≈ 0.26–0.31`). Reserve pure `#000000` (`L = 0`) for OLED wearable/battery-saver modes, high-contrast accessibility themes, or explicit brief direction. | CSS `oklch()` surface tokens (`surface-0`, `surface-1`, `surface-2`); SwiftUI elevated `Color` asset variants; Compose tonal/luminance surface ramp; Flutter `ColorScheme` surface containers |
+| **`1px` subtle top/inner specular edge** | Separate stacked dark cards, modals, and command palettes with a **`1px` top or inner rim highlight** at **`rgba(255, 255, 255, 0.07–0.12)`** (`oklch(1 0 0 / 8%–12%)`) instead of heavy outer shadows. | **Web:** `box-shadow: inset 0 1px 0 oklch(1 0 0 / 10%)` + `1px solid oklch(1 0 0 / 8%)`<br>**SwiftUI:** `.overlay(RoundedRectangle(...).strokeBorder(LinearGradient(...)))`<br>**Compose / Flutter:** `Modifier.border(1.dp, Brush.verticalGradient(...))` |
+| **Desaturated & lifted semantic accents** | Pull chroma down slightly and lift lightness on status/accent fills and foregrounds in dark mode so saturated reds, blues, and greens do not vibrate or halate against dark backgrounds. | Test focus, selection, caret, placeholder, disabled, pressed, visited, chart grid, and error text independently in both modes (`WCAG 2.2 AA` + `APCA |Lc|`) |
+| **Vibrancy saturation boost + opaque fallback** | Plain Gaussian blur over dark/colorful content looks muddy gray; pair blur with **`160–180%` saturation boost** or native OS vibrancy, and switch to a **solid opaque raised surface** under Reduced Transparency. | **Web:** `backdrop-filter: blur(16px) saturate(170%)` + `@media (prefers-reduced-transparency: reduce)` solid fallback<br>**Apple / Windows / Android:** `NSVisualEffectView`, `.ultraThinMaterial` (`accessibilityReduceTransparency`), Windows `Mica`/`Acrylic`, Android `RenderEffect` |
+
+Honor `prefers-contrast`, `forced-colors`, and platform high-contrast modes; never strip system-controlled boundaries.
 
 ### CSS Color 5, wide-gamut P3, and `forced-colors` idioms
 
