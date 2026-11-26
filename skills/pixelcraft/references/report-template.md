@@ -12,6 +12,14 @@ Use this structure for substantial UI creation or review. Compress it for tiny c
 ### Implemented
 - <user-visible change and files/surface affected>
 
+### Executed scans & checklist gate (`Scan-Until-Clean`)
+| Gate / Scanner / Checklist | Command or checklist walked | Repair rounds | Final result |
+|---|---|---|---|
+| Slop & floor static scan | `node .../slop-scan.mjs <target> --fail-on p2` | <0..N> | `exit 0` (score <N>, 0 P0–P2) |
+| Surface / token / build checks | `<check-contrast / check-email / check-tui / check-pdf / compiler / tests>` | <0..N> | `exit 0` / `<not-checked reason>` |
+| Checklist walk | `floor.md` + `pixelcraft-<platform>` Pre-submit + `polish.md` (`B1–B6`) | <0..N> | `<all applicable rows passed>` |
+| Rendered finish gate | `node .../finish-gate.mjs <evidence.json>` | <0..3> | `PASS` / `OPEN` / `not-checked` |
+
 ### Verification
 | Claim | Evidence label | Method/scope | Result |
 |---|---|---|---|

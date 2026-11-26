@@ -59,3 +59,16 @@ Never sign off a build as studio-ready on visual appearance alone:
 - [ ] **Zero client-exposed secrets (`P0`):** no private keys, service-role tokens, signing credentials, or internal endpoints leaked in client source, bundles, binaries, or logs.
 - [ ] **Commercial license manifest & owner handoff (`P0`/`P1`):** commercial embedding/redistribution licenses verified for all shipped fonts, icons, imagery, 3D, and audio; root billing/admin ownership boundary clean for DNS, App Store / Google Play / extension / game stores, analytics/error DSNs, CMS, and signing keys; target regulatory/store regime (`MV3`, `PDF/X-4`, `RFC 8058`, `TRC`, `EAA`) checked.
 - [ ] **Honest evidence labels (`P0`):** every verification row carries `rendered`, `static`, `model-judgment`, `not-checked`, or `waived` with exact runtime/viewport/tool scope.
+
+---
+
+## 5. Mandatory `Scan → Fix → Rescan` Exit Gate (Do Not Stop Early)
+
+Never treat this document as passive reading. Before reporting completion:
+
+1. **Walk Sections 1–4 plus the active platform skill's `Pre-submit checklist` row-by-row** against the actual implementation and rendered captures.
+2. **Execute every applicable deterministic scan and build gate:**
+   - `node <pixelcraft-review>/scripts/slop-scan.mjs <target> --fail-on p2`
+   - `node <pixelcraft-visual-qa>/scripts/check-contrast.mjs <tokens-or-css>` (plus `check-email.mjs`, `check-tui.mjs`, `check-pdf.mjs` where surface matches)
+   - Active-language strict compiler, typechecker, linter, and automated test suite
+3. **Loop until clean (`exit 0`):** If any scan returns `P0`–`P2` findings, any build/test check exits non-zero, or any checklist row fails, **repair the root cause and re-run the exact scans and affected checks from scratch** until all deterministic gates return `exit 0`. Never silence rules, hide overflow, delete required copy, or add unauthorized waivers just to exit.

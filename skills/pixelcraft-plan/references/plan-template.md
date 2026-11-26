@@ -103,10 +103,19 @@ For responsive web, consider small and large phone portrait, phone landscape, ta
 - Partial/inconsistent/missing areas:
 - Token export/handoff needs:
 
-## Verification capabilities
-- Available here: rendered / static / device / browser / simulator / snapshot / CI
-- Commands/tools:
-- Cannot verify here (`not-checked`):
+## Mandatory completion gate & scan-until-clean contract (Definition of Done `<HARD-GATE>`)
+Implementation MUST NOT stop or claim completion until every applicable row below is executed, repaired, and re-verified clean (`exit 0` on all deterministic scans and build checks):
+
+- Available verification runtimes here: rendered / static / device / browser / simulator / snapshot / CI
+- Genuinely unavailable here (`not-checked` + exact missing binary/device reason):
+
+| Gate | Exact command or checklist to execute | Required pass condition before stopping | Final status (`exit 0` / `PASS` / `not-checked`) |
+|---|---|---|---|
+| Slop & floor static scan | `node <path>/slop-scan.mjs <target> --fail-on p2` | `exit 0` (`0` `P0`/`P1`/`P2` findings; `scan → fix → rescan` until clean) |  |
+| Surface / token scanners | `<check-contrast.mjs / check-email.mjs / check-tui.mjs / check-pdf.mjs / export-tokens.mjs>` | `exit 0` across all applicable modes/targets (`scan → fix → rescan` until clean) |  |
+| Active-language compiler, linter & tests | `<strict compiler / typecheck / analyzer / linter / test command>` | `exit 0` with zero newly introduced errors or blanket suppressions |  |
+| Mandatory checklists walked item-by-item | `pixelcraft` `floor.md` + `pixelcraft-<platform>` `Pre-submit checklist` + `pixelcraft-review` `polish.md` (`B1–B6`) | 100% of applicable items verified in code/render (fix & re-check any failing row) |  |
+| Rendered task QA & finish gate | `<shoot.mjs / simulator / CLI capture + finish-gate.mjs evidence.json>` | `PASS` (up to 3 rendered repair rounds before escalating blocked visual conflict as `OPEN`) |  |
 
 ## Existing behavior and replacement boundaries
 | Contract (entry point, flow, content, data, accessibility/localization, etc.) | Inspected source and current evidence | Preserve or authorized change | Baseline and regression check |

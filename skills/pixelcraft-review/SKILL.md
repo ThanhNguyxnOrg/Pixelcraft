@@ -44,6 +44,7 @@ Do not silently redesign during polish. Do not treat an audit as complete when o
 | "Those 3 sample cards and `+24.5%` stats are fine for a demo." | Unapproved mock arrays and invented KPI deltas violate Truthfulness (`P0`) unless explicitly requested by the user and visibly labeled as fixture/demo data. |
 | "The custom click-only modal works when I click it." | Non-semantic modals break focus trap, `inert` backdrop, `Escape` dismissal, and focus restoration. Flag as Architectural / DIY Slop (`P1`). |
 | "There's a `// TODO` on the secondary action, I'll skip mentioning it." | Dead controls and omitted branches on in-scope UI are delivery defects (`P0`/`P1`). Report every unfinished interactive path with `file:line`. |
+| "I fixed the findings, no need to re-run `slop-scan` / `check-*` / compiler." | **Forbidden.** Fixes frequently introduce new specificity, contrast, focus, or syntax regressions. Always re-run all affected scans and checklists until they exit `0`. |
 
 ## Severity taxonomy
 
@@ -59,25 +60,25 @@ Every finding requires: severity, evidence (`file:line`, screenshot region/devic
 ## Protocol
 
 1. Establish scope, mode, direction card/project system, commit/build state, target platforms, regulatory/store regime, locales, and user tasks.
-2. Gather deterministic evidence first: run `slop-scan.mjs` (with `--fail-on` where gating), strict active-language compiler/type/linter checks, and tests; inspect files; capture rendered/device states via `pixelcraft-visual-qa` where possible.
+2. Gather deterministic evidence first: run `slop-scan.mjs <target> --fail-on p2`, applicable surface CLIs (`check-contrast.mjs`, `check-email.mjs`, `check-tui.mjs`, `check-pdf.mjs`), strict active-language compiler/type/linter checks, and tests; inspect files; capture rendered/device states via `pixelcraft-visual-qa` where possible.
 3. Walk primary and non-happy-path flows (`loading`, `empty`, `error`, `offline`, `404`/`500`, `permission-denied`, `IME` composition `Enter`, `+50–100%` short-label expansion) using personas as hypotheses; confirm suspected stubs, dead controls, or DIY widgets through the affected interaction.
-4. Audit **Studio Invisible Craft (`B1–B6`)**, **5-Second Hierarchy**, **Architectural / DIY Slop**, and **Commercial Handoff Hygiene** (`<10m` setup, isolated previews, license manifest, account transfer) using `references/polish.md` and `references/heuristics.md`.
+4. Walk **100% of applicable checklist rows** across `polish.md` (**Studio Invisible Craft `B1–B6`**, **5-Second Hierarchy**, **Non-Happy-Path & Input Completeness**, **Commercial Handoff Hygiene**), the active platform skill's `Pre-submit checklist`, and `references/heuristics.md`.
 5. Compare against slop fingerprints and `.pixelcraft/history.json`; identify repetition or absence of subject commitment.
-6. Rank by user impact and floor authority, not ease of fixing, and report using `references/audit-report.md`.
+6. Rank by user impact and floor authority, not ease of fixing. When polishing or verifying an implementation, run **`Scan → Fix → Rescan`** until `slop-scan.mjs --fail-on p2`, applicable `check-*` CLIs, compiler/tests, and in-scope checklist rows pass cleanly (`exit 0`), then report using `references/audit-report.md`.
 
 ## Distinctiveness check
 
 Ask whether removing the subject would leave a generic interface. Compare composition/type/color/material/motion/imagery/copy fingerprints with history. A repetition is not automatically wrong inside one coherent product; repetition across unrelated surfaces or absence of any subject-derived commitment is a finding.
 
-## Review termination
+## Scan-until-clean & review termination
 
-One repair pass is appropriate for clear deterministic findings. Stop when findings become speculative, require unavailable user/business knowledge, or need device/access human review. Report `not-checked` rather than inventing certainty.
+When verifying or polishing an implementation, **do not stop after a single pass while deterministic scan (`P0–P2`), compiler/test, stub, state, or floor-checklist defects remain**: fix every confirmed defect and re-run `slop-scan.mjs --fail-on p2`, applicable `check-*` scripts, and active-language checks until `exit 0`. Stop only once deterministic gates are clean and remaining observations become purely speculative taste, require unavailable user/business facts, or depend on unavailable external hardware (reported honestly as `not-checked`, never as passed).
 
 ## Pre-submit checklist
 
 - [ ] Adversarial defect hunt completed for stubs (`// TODO`, ellipsis), dead controls/links, unwired mobile nav, unguarded `IME` `Enter` handlers, client secrets, unapproved mock data, and lazy DIY substitutes.
-- [ ] `slop-scan.mjs` and strict active-language compiler/type/analyzer checks executed where available and paired with rendered/manual inspection—never treated as sole pass proof.
-- [ ] Studio-Grade Polish & Delivery Gate (`references/polish.md`) audited across 5-second hierarchy, Invisible Craft (`B1–B6`), non-happy-path + `+50–100%` short-label/`NFC` resilience, and `<10m` setup / license / ownership handoff.
+- [ ] **`Scan → Fix → Rescan` loop completed to `exit 0`:** `slop-scan.mjs --fail-on p2`, applicable `check-*` CLIs, and strict active-language compiler/type/analyzer/test suites re-executed after every edit until clean, paired with rendered/manual inspection.
+- [ ] Studio-Grade Polish & Delivery Gate (`references/polish.md`) and active platform `Pre-submit checklist` walked row-by-row across 5-second hierarchy, Invisible Craft (`B1–B6`), non-happy-path + `+50–100%` short-label/`NFC` resilience, and `<10m` setup / license / ownership handoff.
 - [ ] Every finding includes severity (`P0`–`P3`), exact `file:line` or capture evidence, confidence, user impact, concrete fix, and evidence label.
 - [ ] Distinctiveness and `.pixelcraft/history.json` repetition checked; any brand waivers are explicit and non-floor only.
 - [ ] Unchecked surfaces, devices, regulatory regimes, or states are explicitly listed as `not-checked` with no false "looks good / ready" claim.

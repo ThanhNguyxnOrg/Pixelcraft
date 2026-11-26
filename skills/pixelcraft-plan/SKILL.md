@@ -41,7 +41,7 @@ Record the task route separately: new project, extend existing product, edit/fix
 5. **Map existing authority.** Decide whether tokens/components/conventions are authoritative, partial, inconsistent, or absent. Existing project decisions outrank Pixelcraft taste.
 6. **Resolve material open decisions.** After inspecting the repo and artifacts, enter **Grill-Me / Deep Shaping** ([references/grill-me-protocol.md](references/grill-me-protocol.md)) or **Fast Confirm** ([references/discovery-interview.md](references/discovery-interview.md)) if outcome, anti-goals, IA, visual ambition, or architecture remains unresolved. Ask only what the repo and docs cannot answer.
 7. **Apply the Capability Library Gate & check versions.** Map any complex UI capability (editor, chart, >500-row table, command palette, drawer, toast, carousel, search, DnD, calendar, map, node graph, PDF, media player, complex form) to a vetted library using [references/stack-selection.md](references/stack-selection.md). Verify version-sensitive APIs via [references/stack-freshness.md](references/stack-freshness.md).
-8. **Write `.pixelcraft/plan.md`** using [references/plan-template.md](references/plan-template.md). Include discovery mode/outcome, anti-goals, platform skill/reference routing, capability libraries, and available verification capabilities.
+8. **Write `.pixelcraft/plan.md`** using [references/plan-template.md](references/plan-template.md). Include discovery mode/outcome, anti-goals, platform skill/reference routing, capability libraries, and the **Mandatory Completion Gate & Scan-Until-Clean Contract (Definition of Done)** binding the exact scanners, build/test commands, and checklists that must pass before stopping.
 
 Before modifying an existing surface, read the affected entry point, implementation, shared conventions/tokens, state or data flow, resolved dependencies and relevant tests or fixtures. Record inspected paths or symbols and what each establishes. Capture the current task outcome or failure where tools allow; otherwise record which baseline is `not-checked`. For a redesign or rebuild, map what must be preserved, what may change, and the regression check for each material contract. An implementation replacement is not authorization to remove existing behavior.
 
@@ -52,11 +52,11 @@ Before modifying an existing surface, read the affected entry point, implementat
 3. **Reject lazy defaults and generate candidates across languages.** Use [references/stack-selection.md](references/stack-selection.md). Reject Tkinter for greenfield Python desktop, unjustified Electron wrappers, Streamlit for multi-user/DAG BI, bare `print()` TUIs, WebView consumer mobile apps, `window.print()` PDFs, raw-Flexbox email, and DIY web widgets unless explicitly waived.
 4. **Build a weighted matrix & resolve sub-stack libraries.** Reject candidates that fail hard constraints regardless of total score. Complete the **Sub-Stack Capability → Purpose-Built Library Gate** so no fragile DIY editors, charts, tables, drawers, toasts, carousels, or search widgets slip into Build.
 5. **Verify and recommend one stack plus runner-up.** Apply [references/stack-freshness.md](references/stack-freshness.md) before finalizing versions and APIs. Record why the runner-up lost. Any web choice must be justified against native/TUI/server-rendered alternatives; TypeScript/React is never an unexamined default, nor artificially avoided when its ecosystem is the best fit.
-6. **Write `.pixelcraft/plan.md`** before visual direction begins, and keep the **Creative Direction → Plan Feedback Loop** open: if `pixelcraft-direction` wins approval for a concept needing Rive, WebGPU, Typst, Tauri, or a native runtime, update `.pixelcraft/plan.md` cleanly before Build.
+6. **Write `.pixelcraft/plan.md`** before visual direction begins—including the **Mandatory Completion Gate & Scan-Until-Clean Contract**—and keep the **Creative Direction → Plan Feedback Loop** open: if `pixelcraft-direction` wins approval for a concept needing Rive, WebGPU, Typst, Tauri, or a native runtime, update `.pixelcraft/plan.md` cleanly before Build.
 
 ## Required plan contents
 
-The plan must state: **business KPIs & 1–2 primary CTAs**; **5-second hierarchy goal**; **content/CMS ownership**; **target regulatory/store regime**; chosen stack and rejected lazy defaults; platform skill and framework reference by name; Sub-Stack Capability → Purpose-Built Library mappings; surfaces/screens; mode per surface; UX flows/state matrices to design; existing design-system authority; design-input classification/provenance/completeness and handoff decision; i18n/accessibility/legal constraints; risks/unknowns; verification capabilities available here; evidence classification for material facts; and open questions. Record the adaptive discovery mode (`Grill-Me` / `Fast Confirm` / `Direct Execution`), anti-goals/hate-list, user-selected decisions, accepted recommendations, assumptions, and approval gate status.
+The plan must state: **business KPIs & 1–2 primary CTAs**; **5-second hierarchy goal**; **content/CMS ownership**; **target regulatory/store regime**; chosen stack and rejected lazy defaults; platform skill and framework reference by name; Sub-Stack Capability → Purpose-Built Library mappings; surfaces/screens; mode per surface; UX flows/state matrices to design; existing design-system authority; design-input classification/provenance/completeness and handoff decision; i18n/accessibility/legal constraints; risks/unknowns; **the Mandatory Completion Gate & Scan-Until-Clean Contract (exact scanner commands `slop-scan --fail-on p2` / `check-*`, compiler/linter/test commands, rendered QA / `finish-gate.mjs`, and mandatory checklists `floor.md` + platform `Pre-submit` + `polish.md` that block task completion until `exit 0`)**; evidence classification for material facts; and open questions. Record the adaptive discovery mode (`Grill-Me` / `Fast Confirm` / `Direct Execution`), anti-goals/hate-list, user-selected decisions, accepted recommendations, assumptions, and approval gate status.
 
 For adaptable surfaces, fill out the device class matrix in the plan before building. Name supported sizes and inputs, what changes in navigation, density and task controls, what stays equivalent, and how each applicable class or transition will be checked. Include height and aspect ratio, not just width.
 
@@ -64,7 +64,7 @@ For adaptable surfaces, fill out the device class matrix in the plan before buil
 
 - **IRON LAW 1:** Never ask the user facts readable from the repo, manifests, lockfiles, or supplied artifacts.
 - **IRON LAW 2:** Never dump a multi-question questionnaire wall; walk unresolved branches **one principal question per turn** with **(Recommended)** options and trade-offs.
-- **IRON LAW 3:** Never silently invent product scope, accept lazy defaults (Tkinter, unjustified Electron, raw Flexbox email, DIY modals/charts/editors), or bypass design approval on undecided greenfield/redesign work.
+- **IRON LAW 3:** Never silently invent product scope, accept lazy defaults (Tkinter, unjustified Electron, raw Flexbox email, DIY modals/charts/editors), bypass design approval on undecided greenfield/redesign work, or write a plan without a binding **Scan-Until-Clean Completion Gate**.
 
 | Agent rationalization | Reality & required action |
 |---|---|
@@ -73,6 +73,7 @@ For adaptable surfaces, fill out the device class matrix in the plan before buil
 | "Tkinter / Streamlit / raw `<div>` modal / hand-coded SVG chart is quicker and avoids dependencies." | Lazy defaults and DIY substitutes fail accessibility, edge cases, and visual craft. Enforce the Lazy-Default Rejection and Sub-Stack Capability tables. |
 | "Planning locked the stack, so I can't adopt the stronger creative concept." | Use the **Creative Direction → Plan Feedback Loop**: update `.pixelcraft/plan.md` cleanly when the approved direction warrants a better runtime or renderer. |
 | "I remember the latest API for this library." | Training memory drifts. Verify current versions/APIs via docs/registry tools or mark `assumption` / `not-checked` explicitly. |
+| "Verification details can wait until after I finish coding." | Unplanned verification gets skipped. Lock exact scan, build/test, and checklist exit gates into `.pixelcraft/plan.md` up front so implementation cannot stop while checks fail. |
 
 ## Hard rules
 
@@ -80,7 +81,7 @@ For adaptable surfaces, fill out the device class matrix in the plan before buil
 - Do not rely on training-data memory for version-sensitive APIs, config syntax, or package versions; verify via available docs/registry tools or mark `assumption` / `not-checked`.
 - Keep brownfield runtime and dependencies unless an upgrade is in scope. For new apps, commit a reproducible lockfile; never resolve floating `@latest` on every CI build.
 - Do not overwrite an existing `.pixelcraft/plan.md` without preserving prior decisions and recording why they changed.
-- Do not write implementation before `.pixelcraft/plan.md` exists unless the user explicitly waives planning.
+- Do not write implementation before `.pixelcraft/plan.md` exists (with its **Mandatory Completion Gate & Scan-Until-Clean Contract** populated) unless the user explicitly waives planning.
 
 ## Pre-submit checklist
 
@@ -88,7 +89,7 @@ For adaptable surfaces, fill out the device class matrix in the plan before buil
 - [ ] Correct adaptive mode chosen (`Grill-Me / Deep Shaping`, `Fast Confirm`, or `Direct Execution`) with **business KPIs & 1–2 primary CTAs**, **5-second hierarchy goal**, **content/CMS ownership**, **regulatory/store regime**, and anti-goals recorded before visual styling.
 - [ ] Stack selected against hard constraints with lazy defaults explicitly rejected (or waived by user) and version sources cited or labeled `not-checked`.
 - [ ] Every complex UI capability in scope mapped in the **Sub-Stack Capability → Purpose-Built Library Gate** (no DIY modals, editors, charts, large tables, search, toasts, drawers, or carousels).
-- [ ] Device/window class matrix, verification capabilities, and preservation boundaries documented in `.pixelcraft/plan.md`.
+- [ ] Device/window class matrix, preservation boundaries, and **Mandatory Completion Gate & Scan-Until-Clean Contract** (exact `slop-scan --fail-on p2`, `check-*`, compiler/test, rendered QA, and checklist gates blocking completion) documented in `.pixelcraft/plan.md`.
 - [ ] Approval boundary clear before handing off to `pixelcraft-direction` / `pixelcraft-ux` (no premature implementation on undecided scope).
 
 ## Reference routing

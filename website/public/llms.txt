@@ -7,7 +7,7 @@
 - Package: `@thanhnguyxn/pixelcraft`
 - Install (all skills): `npx skills add ThanhNguyxnOrg/Pixelcraft` or `npm i -g @thanhnguyxn/pixelcraft && pixelcraft add all --agent <host>`
 - Supported coding agents (14): claude, codex, agents, devin, cursor, gemini, copilot, windsurf, opencode, kiro, cline, roo, droid, antigravity
-- Verification metrics: 26 skills, 247 framework references, 9 zero-dependency Node QA scripts, 19 DTCG token export targets, 66 offline eval fixtures, 22 multi-stack proof exhibits.
+- Verification metrics: 26 skills, 247 framework references, 9 zero-dependency Node QA scripts, 19 DTCG token export targets, 71 offline eval fixtures, 22 multi-stack proof exhibits.
 
 ## Core Loop & Authority Order
 1. Explicit user brief outranks everything.

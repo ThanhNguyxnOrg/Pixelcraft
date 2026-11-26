@@ -178,6 +178,14 @@ Brand governance exists because generated imagery is not yet a usable identity s
 
 **Trade-off:** micro-physical calibration, composition-aware input guards, and commercial handoff verification require discipline that a single happy-path screenshot never rewards. Pixelcraft accepts that cost because durable quality is judged on the hundredth daily interaction, across every writing system, and at the moment a client or engineering team takes legal and operational ownership of the build.
 
+## Completion gate, checklist execution, and scan-until-clean
+
+**Rule:** bind a mandatory Definition-of-Done completion contract inside `.pixelcraft/plan.md` during planning, and enforce a hard `Phase 5 → Phase 6` exit gate requiring the agent to walk every applicable checklist (`floor.md`, the active platform skill's `Pre-submit checklist`, and `polish.md`) and run a `scan → fix → rescan` loop until all deterministic scanners (`slop-scan.mjs --fail-on p2`, `check-contrast.mjs`, `check-email.mjs`, `check-tui.mjs`, `check-pdf.mjs`) and active-language compiler/linter/test suites exit `0` before stopping.
+
+**Why:** defining checklists and static scanners is useless if an agent writes `.pixelcraft/plan.md` without an exit gate, runs zero or one perfunctory pass after coding, and stops while fixable `P0–P2` defects, compiler errors, or unchecked checklist rows remain. Separating deterministic defects from subjective visual oscillation solves both failure modes: deterministic scan, build, state, and floor checklist failures must be fixed and rescanned until clean, whereas rendered layout/pixel critique remains bounded at three documented `finish-gate.mjs` rounds so agents never loop endlessly by taste or overwrite baselines to fake a pass.
+
+**Trade-off:** mandatory checklist execution and rescan loops cost extra verification turns at the end of implementation. Pixelcraft accepts that cost because shipping after a single unverified pass defeats every upstream planning and craft rule.
+
 ## Changing these rules
 
 Do not weaken a rule merely because a task is inconvenient. Change the rule when the underlying trade-off changed, when evidence shows the rule produces worse outcomes, or when a platform/standard changed. Record the reason in the commit and update affected skills, evals, and verification tooling together.
