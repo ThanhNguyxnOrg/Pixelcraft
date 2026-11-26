@@ -2,7 +2,7 @@
   "$schema": "https://antigravity.google/schemas/v1/plugin.json",
   "name": "pixelcraft",
   "displayName": "Pixelcraft",
-  "version": "0.1.0",
+  "version": "0.2.0",
   "description": "Portable Agent Skills for distinctive, evidence-verified UI and rigorous UX across web, mobile, desktop, TUI, document, email, and game stacks.",
   "logo": "assets/pixelcraft-logo-256.png",
   "suggestedPrompts": [
