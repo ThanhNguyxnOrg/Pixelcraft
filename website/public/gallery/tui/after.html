@@ -1,126 +1,2019 @@
 <!doctype html>
-<html lang="en">
+<html lang="en" data-no-color="false" data-term="xterm-256color">
 <head>
-<meta charset="utf-8">
-<meta name="viewport" content="width=device-width, initial-scale=1">
-<title>kestrel-deploy · Rust Ratatui TUI (with Pixelcraft)</title>
-<link rel="stylesheet" href="../../fonts/gallery.css">
-<style>
-  :root {
-    --bg: #0c1116; --surface: #121a21; --panel: #152028; --rule: #2d404e; --rule-hi: #6fe3b5;
-    --ink: #e8f1ee; --ink-2: #9ab0ba; --ok: #6fd3a3; --warn: #f2b84b; --err: #ff7a70; --sel: #1c313b;
-    --mono-bg: #141414; --mono-ink: #e5e5e5; --mono-dim: #a3a3a3; --mono-rule: #404040;
-    --mono: "IBM Plex Mono", ui-monospace, monospace;
-    --sans: Archivo, system-ui, sans-serif;
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>Kestrel Deploy — Rust Ratatui 0.29 Rollout Monitor &amp; NO_COLOR=1 Parity Workbench</title>
+  <meta name="description" content="Kestrel Deploy interactive Rust Ratatui 0.29 rollout monitor comparing a 120x36 ANSI color cell grid against an 80x24 NO_COLOR=1 monochrome parity terminal with canary traffic gates, staged rollback, and check-tui.mjs verification.">
+  <link rel="canonical" href="https://pixelcraft.dev/gallery/tui/after.html">
+  <meta property="og:type" content="website">
+  <meta property="og:title" content="Kestrel Deploy — Rust Ratatui 0.29 Rollout Monitor &amp; NO_COLOR=1 Parity Workbench">
+  <meta property="og:description" content="Keyboard-first Rust Ratatui 0.29 terminal studio comparing 120x36 ANSI color layout alongside 80x24 NO_COLOR=1 monochrome parity, staged rollback, and panic-safe Drop teardown.">
+  <meta property="og:url" content="https://pixelcraft.dev/gallery/tui/after.html">
+  <link rel="stylesheet" href="../../fonts/gallery.css">
+  <script type="application/ld+json">
+  {
+    "@context": "https://schema.org",
+    "@type": "SoftwareApplication",
+    "name": "Kestrel Deploy",
+    "applicationCategory": "DeveloperApplication",
+    "operatingSystem": "Linux, macOS, Unix TTY",
+    "softwareVersion": "0.29.0",
+    "description": "Rust Ratatui 0.29 production rollout monitor demonstrating 120x36 ANSI color cell layout alongside 80x24 NO_COLOR=1 monochrome parity, canary weight gating, staged rollback confirmation, and panic-hook terminal teardown."
   }
-  * { box-sizing: border-box; }
-  body { margin: 0; background: var(--bg); color: var(--ink); font-family: var(--mono); min-height: 100vh; padding: 26px 34px; display: flex; flex-direction: column; gap: 18px; }
-  .meta-bar { display: flex; justify-content: space-between; align-items: baseline; font-size: 12px; color: var(--ink-2); }
-  .meta-bar strong { color: var(--ink); font-family: var(--sans); font-size: 15px; letter-spacing: .02em; }
-  .stage { flex: 1; display: grid; grid-template-columns: 1.55fr 1fr; gap: 20px; align-items: stretch; }
-  .tui-frame { background: var(--surface); border: 1px solid var(--rule); display: flex; flex-direction: column; overflow: hidden; }
-  .tui-head { display: flex; justify-content: space-between; padding: 10px 16px; border-bottom: 1px solid var(--rule); background: var(--panel); font-size: 12px; color: var(--ink-2); }
-  .tui-head b { color: var(--ink); }
-  .tui-body { flex: 1; display: grid; grid-template-rows: auto 1fr; padding: 14px 16px; gap: 14px; }
-  .pane { border: 1px solid var(--rule); padding: 12px 14px; }
-  .pane.focus { border-color: var(--rule-hi); }
-  .pane-title { font-size: 11px; color: var(--ink-2); margin: 0 0 10px; letter-spacing: .05em; text-transform: uppercase; }
-  .pane.focus .pane-title { color: var(--rule-hi); }
-  table { width: 100%; border-collapse: collapse; font-size: 13px; font-variant-numeric: tabular-nums; }
-  th { text-align: start; color: var(--ink-2); font-weight: 500; padding: 4px 8px 8px; border-bottom: 1px solid var(--rule); }
-  td { padding: 7px 8px; border-bottom: 1px solid var(--panel); }
-  tr.selected { background: var(--sel); }
-  tr.selected td:first-child { font-weight: 700; color: var(--rule-hi); }
-  .num { text-align: end; }
-  .st-ok { color: var(--ok); }
-  .st-err { color: var(--err); font-weight: 700; }
-  .st-warn { color: var(--warn); }
-  .events { margin: 0; padding: 0; list-style: none; font-size: 12.5px; line-height: 1.65; color: var(--ink-2); }
-  .events li strong { color: var(--ink); font-weight: 600; }
-  .events .tag-err { color: var(--err); font-weight: 700; }
-  .events .tag-ok { color: var(--ok); }
-  .tui-keys { display: flex; flex-wrap: wrap; gap: 18px; padding: 10px 16px; border-top: 1px solid var(--rule); background: var(--panel); font-size: 12px; color: var(--ink-2); }
-  .tui-keys kbd { color: var(--rule-hi); font-family: inherit; font-weight: 700; }
+  </script>
+  <style>
+    :root {
+      --bg-canvas: #0D1117;
+      --bg-surface: #131922;
+      --bg-panel: #171F2B;
+      --bg-elevated: #1D2736;
+      --bg-row-sel: rgba(88, 166, 255, 0.14);
+      --bg-row-hover: rgba(230, 237, 243, 0.05);
+      --bg-err-soft: rgba(248, 81, 73, 0.14);
+      --bg-warn-soft: rgba(210, 153, 34, 0.14);
+      --bg-ok-soft: rgba(63, 185, 80, 0.13);
+      --bg-accent-soft: rgba(88, 166, 255, 0.13);
+      --bg-backdrop: rgba(6, 9, 13, 0.82);
 
-  .nocolor { background: var(--mono-bg); border: 1px solid var(--mono-rule); color: var(--mono-ink); display: flex; flex-direction: column; }
-  .nocolor .tui-head { background: var(--mono-bg); border-color: var(--mono-rule); color: var(--mono-dim); }
-  .nocolor .tui-head b { color: var(--mono-ink); }
-  .nocolor .tui-body { padding: 14px 16px; display: flex; flex-direction: column; gap: 12px; }
-  .nocolor pre { margin: 0; font-size: 12.5px; line-height: 1.62; color: var(--mono-ink); white-space: pre-wrap; }
-  .nocolor .note { margin-top: auto; padding: 10px 14px; border-top: 1px solid var(--mono-rule); font-size: 11.5px; color: var(--mono-dim); line-height: 1.5; }
-  @media (max-width: 960px) {
-    .stage { grid-template-columns: 1fr; }
-    body { padding: 16px; }
-  }
+      --ink-primary: #E6EDF3;
+      --ink-secondary: #9BA7B4;
+      --ink-muted: #768390;
+
+      --accent-blue: #58A6FF;
+      --warn-amber: #D29922;
+      --err-red: #F85149;
+      --ok-green: #3FB950;
+      --focus-ring: #58A6FF;
+
+      --rule-subtle: #242E3B;
+      --rule-strong: #344254;
+
+      --mono-bg: #111111;
+      --mono-panel: #191919;
+      --mono-ink: #EAEAEA;
+      --mono-dim: #A6A6A6;
+      --mono-rule: #454545;
+      --mono-sel: rgba(234, 234, 234, 0.14);
+
+      --font-mono: "IBM Plex Mono", ui-monospace, SFMono-Regular, Menlo, Consolas, monospace;
+      --font-sans: "Archivo", system-ui, -apple-system, sans-serif;
+    }
+
+    html[data-no-color="true"] {
+      --bg-canvas: var(--mono-bg);
+      --bg-surface: var(--mono-panel);
+      --bg-panel: var(--mono-bg);
+      --bg-elevated: var(--mono-panel);
+      --bg-row-sel: var(--mono-sel);
+      --bg-err-soft: var(--mono-sel);
+      --bg-warn-soft: var(--mono-sel);
+      --bg-ok-soft: transparent;
+      --bg-accent-soft: var(--mono-sel);
+      --ink-primary: var(--mono-ink);
+      --ink-secondary: var(--mono-dim);
+      --ink-muted: var(--mono-dim);
+      --accent-blue: var(--mono-ink);
+      --warn-amber: var(--mono-ink);
+      --err-red: var(--mono-ink);
+      --ok-green: var(--mono-ink);
+      --focus-ring: var(--mono-ink);
+      --rule-subtle: var(--mono-rule);
+      --rule-strong: var(--mono-ink);
+    }
+
+    *, *::before, *::after {
+      box-sizing: border-box;
+    }
+
+    html, body {
+      margin: 0;
+      padding: 0;
+      width: 100%;
+      max-width: 100%;
+      background-color: var(--bg-canvas);
+      color: var(--ink-primary);
+      font-family: var(--font-mono);
+      font-size: 12.5px;
+      line-height: 1.45;
+      font-variant-numeric: tabular-nums;
+      -webkit-font-smoothing: antialiased;
+    }
+
+    .skip-link {
+      position: absolute;
+      top: -56px;
+      left: 12px;
+      z-index: 100;
+      padding: 8px 14px;
+      background-color: var(--accent-blue);
+      color: var(--bg-canvas);
+      font-family: var(--font-mono);
+      font-size: 12px;
+      font-weight: 700;
+      text-decoration: none;
+      border: 2px solid var(--ink-primary);
+    }
+
+    .skip-link:focus,
+    .skip-link:focus-visible {
+      top: 10px;
+    }
+
+    :focus-visible {
+      outline: 3px solid var(--focus-ring);
+      outline-offset: 2px;
+    }
+
+    .sr-only {
+      position: absolute;
+      width: 1px;
+      height: 1px;
+      padding: 0;
+      margin: -1px;
+      overflow: hidden;
+      clip: rect(0, 0, 0, 0);
+      white-space: nowrap;
+      border: 0;
+    }
+
+    .workbench-shell {
+      max-width: 1440px;
+      margin: 0 auto;
+      padding: 12px 18px 28px;
+      display: flex;
+      flex-direction: column;
+      gap: 12px;
+    }
+
+    /* Studio Top Bar */
+    .studio-topbar {
+      display: flex;
+      flex-wrap: wrap;
+      align-items: center;
+      justify-content: space-between;
+      gap: 10px 16px;
+      padding: 9px 14px;
+      background-color: var(--bg-surface);
+      border: 1px solid var(--rule-subtle);
+    }
+
+    .brand-group {
+      display: flex;
+      flex-wrap: wrap;
+      align-items: center;
+      gap: 8px 12px;
+      min-width: 0;
+    }
+
+    .brand-mark {
+      display: inline-flex;
+      align-items: center;
+      justify-content: center;
+      padding: 2px 7px;
+      background-color: var(--bg-accent-soft);
+      border: 1px solid var(--accent-blue);
+      color: var(--accent-blue);
+      font-size: 11px;
+      font-weight: 700;
+      letter-spacing: 0.04em;
+    }
+
+    .brand-title {
+      margin: 0;
+      font-family: var(--font-sans);
+      font-size: 15px;
+      font-weight: 700;
+      letter-spacing: 0.02em;
+      color: var(--ink-primary);
+    }
+
+    .meta-pill {
+      display: inline-flex;
+      align-items: center;
+      gap: 5px;
+      padding: 2px 8px;
+      border: 1px solid var(--rule-strong);
+      background-color: var(--bg-panel);
+      color: var(--ink-secondary);
+      font-size: 11px;
+    }
+
+    .meta-pill.fixture-note {
+      border-style: dashed;
+      color: var(--ink-primary);
+    }
+
+    /* Interactive Canary & Mode Controls */
+    .studio-controls {
+      display: flex;
+      flex-wrap: wrap;
+      align-items: center;
+      gap: 8px;
+      min-width: 0;
+    }
+
+    .ctrl-cluster {
+      display: inline-flex;
+      flex-wrap: wrap;
+      align-items: center;
+      gap: 4px;
+      padding: 3px 6px;
+      background-color: var(--bg-panel);
+      border: 1px solid var(--rule-subtle);
+    }
+
+    .ctrl-label {
+      font-size: 11px;
+      color: var(--ink-secondary);
+      padding: 0 4px;
+    }
+
+    .tui-btn {
+      appearance: none;
+      background-color: var(--bg-canvas);
+      color: var(--ink-secondary);
+      border: 1px solid var(--rule-strong);
+      font-family: var(--font-mono);
+      font-size: 11.5px;
+      line-height: 1.2;
+      padding: 5px 9px;
+      min-height: 28px;
+      cursor: pointer;
+      font-variant-numeric: tabular-nums;
+      transition: background-color 110ms ease, color 110ms ease, border-color 110ms ease;
+    }
+
+    .tui-btn:hover:not(:disabled) {
+      background-color: var(--bg-row-hover);
+      color: var(--ink-primary);
+      border-color: var(--ink-secondary);
+    }
+
+    .tui-btn[aria-pressed="true"],
+    .tui-btn.is-active {
+      background-color: var(--bg-accent-soft);
+      color: var(--accent-blue);
+      border-color: var(--accent-blue);
+      font-weight: 500;
+    }
+
+    html[data-no-color="true"] .tui-btn[aria-pressed="true"],
+    html[data-no-color="true"] .tui-btn.is-active {
+      text-decoration: underline;
+    }
+
+    .tui-btn.btn-danger {
+      border-color: var(--err-red);
+      color: var(--err-red);
+      background-color: var(--bg-err-soft);
+    }
+
+    .tui-btn.btn-danger:hover:not(:disabled) {
+      background-color: var(--err-red);
+      color: var(--bg-canvas);
+    }
+
+    .tui-btn.btn-ok {
+      border-color: var(--ok-green);
+      color: var(--ok-green);
+      background-color: var(--bg-ok-soft);
+      opacity: 1;
+    }
+
+    .tui-btn:disabled:not(.btn-ok) {
+      opacity: 0.48;
+      cursor: not-allowed;
+    }
+
+    .tui-btn.btn-ok:disabled {
+      cursor: default;
+    }
+
+    .kbd-tag {
+      color: var(--accent-blue);
+      font-weight: 700;
+    }
+
+    /* Primary Dual-Terminal Stage (fits cleanly in 1440x900 above-the-fold) */
+    .terminal-stage {
+      display: grid;
+      grid-template-columns: minmax(0, 1.38fr) minmax(564px, 1fr);
+      gap: 14px;
+      align-items: stretch;
+    }
+
+    .term-window {
+      display: flex;
+      flex-direction: column;
+      min-width: 0;
+      background-color: var(--bg-surface);
+      border: 1px solid var(--rule-strong);
+    }
+
+    .term-window.is-pane-focused {
+      border-color: var(--accent-blue);
+    }
+
+    .term-chrome {
+      display: flex;
+      flex-wrap: wrap;
+      align-items: center;
+      justify-content: space-between;
+      gap: 6px 12px;
+      padding: 8px 12px;
+      background-color: var(--bg-panel);
+      border-bottom: 1px solid var(--rule-subtle);
+      font-size: 11.5px;
+    }
+
+    .term-chrome-title {
+      display: flex;
+      align-items: center;
+      gap: 8px;
+      font-weight: 500;
+      color: var(--ink-primary);
+    }
+
+    .term-spec-tag {
+      padding: 1px 6px;
+      font-size: 10.5px;
+      background-color: var(--bg-canvas);
+      border: 1px solid var(--rule-strong);
+      color: var(--accent-blue);
+    }
+
+    .term-chrome-meta {
+      color: var(--ink-secondary);
+      font-size: 11px;
+    }
+
+    /* Ratatui 120x36 Interior */
+    .ratatui-canvas {
+      flex: 1;
+      display: flex;
+      flex-direction: column;
+      gap: 10px;
+      padding: 10px 12px;
+      min-width: 0;
+    }
+
+    .ratatui-status-strip {
+      display: flex;
+      flex-wrap: wrap;
+      align-items: center;
+      justify-content: space-between;
+      gap: 6px 12px;
+      padding: 6px 10px;
+      background-color: var(--bg-canvas);
+      border: 1px solid var(--rule-subtle);
+      font-size: 11.5px;
+    }
+
+    .cluster-health-badge {
+      display: inline-block;
+      font-weight: 700;
+      padding: 1px 6px;
+    }
+
+    .cluster-health-badge.is-err {
+      color: var(--err-red);
+      background-color: var(--bg-err-soft);
+      border: 1px solid var(--err-red);
+    }
+
+    .cluster-health-badge.is-ok {
+      color: var(--ok-green);
+      background-color: var(--bg-ok-soft);
+      border: 1px solid var(--ok-green);
+    }
+
+    .canary-meter-inline {
+      display: inline-flex;
+      align-items: center;
+      gap: 6px;
+      color: var(--ink-secondary);
+    }
+
+    .canary-bar-glyphs {
+      color: var(--accent-blue);
+      letter-spacing: 0.02em;
+    }
+
+    .ratatui-pane {
+      border: 1px solid var(--rule-subtle);
+      background-color: var(--bg-canvas);
+      display: flex;
+      flex-direction: column;
+      min-width: 0;
+    }
+
+    .ratatui-pane.has-focus {
+      border-color: var(--accent-blue);
+    }
+
+    .pane-header {
+      display: flex;
+      flex-wrap: wrap;
+      align-items: center;
+      justify-content: space-between;
+      gap: 6px;
+      padding: 5px 10px;
+      background-color: var(--bg-panel);
+      border-bottom: 1px solid var(--rule-subtle);
+      font-size: 11px;
+      color: var(--ink-secondary);
+    }
+
+    .ratatui-pane.has-focus .pane-header-label {
+      color: var(--accent-blue);
+      font-weight: 700;
+    }
+
+    .table-scroll-wrap {
+      width: 100%;
+      max-width: 100%;
+      overflow-x: auto;
+      -webkit-overflow-scrolling: touch;
+    }
+
+    .svc-table {
+      width: 100%;
+      min-width: 540px;
+      border-collapse: collapse;
+      font-size: 12px;
+      font-variant-numeric: tabular-nums;
+    }
+
+    .svc-table th {
+      text-align: left;
+      font-weight: 500;
+      color: var(--ink-secondary);
+      padding: 6px 8px;
+      border-bottom: 1px solid var(--rule-subtle);
+      white-space: nowrap;
+    }
+
+    .svc-table th.num,
+    .svc-table td.num {
+      text-align: right;
+    }
+
+    .svc-row {
+      cursor: pointer;
+      border-bottom: 1px solid var(--bg-panel);
+      transition: background-color 90ms ease;
+    }
+
+    .svc-row:hover {
+      background-color: var(--bg-row-hover);
+    }
+
+    .svc-row[aria-selected="true"] {
+      background-color: var(--bg-row-sel);
+    }
+
+    .svc-row td {
+      padding: 6.5px 8px;
+      white-space: nowrap;
+    }
+
+    .svc-row-btn {
+      appearance: none;
+      background: none;
+      border: 0;
+      padding: 0;
+      margin: 0;
+      color: inherit;
+      font: inherit;
+      cursor: pointer;
+      text-align: left;
+      display: inline-flex;
+      align-items: center;
+      gap: 4px;
+    }
+
+    .svc-row[aria-selected="true"] .svc-row-btn {
+      color: var(--accent-blue);
+      font-weight: 700;
+    }
+
+    html[data-no-color="true"] .svc-row[aria-selected="true"] .svc-row-btn {
+      text-decoration: underline;
+    }
+
+    .sel-marker {
+      display: inline-block;
+      width: 1.2ch;
+      font-weight: 700;
+      color: var(--accent-blue);
+    }
+
+    .badge-err {
+      color: var(--err-red);
+      font-weight: 700;
+    }
+
+    .badge-warn {
+      color: var(--warn-amber);
+      font-weight: 700;
+    }
+
+    .badge-ok {
+      color: var(--ok-green);
+      font-weight: 500;
+    }
+
+    /* Telemetry & Events Split Inside 120x36 Pane [2] */
+    .telemetry-strip {
+      display: grid;
+      grid-template-columns: repeat(3, minmax(0, 1fr));
+      gap: 8px;
+      padding: 8px 10px;
+      border-bottom: 1px solid var(--rule-subtle);
+      background-color: var(--bg-surface);
+    }
+
+    .metric-cell {
+      padding: 5px 8px;
+      background-color: var(--bg-canvas);
+      border: 1px solid var(--rule-subtle);
+      min-width: 0;
+    }
+
+    .metric-label {
+      display: flex;
+      justify-content: space-between;
+      gap: 4px;
+      font-size: 10.5px;
+      color: var(--ink-secondary);
+      margin-bottom: 3px;
+    }
+
+    .metric-val {
+      font-size: 12px;
+      font-weight: 500;
+      color: var(--ink-primary);
+      white-space: nowrap;
+      overflow: hidden;
+      text-overflow: ellipsis;
+    }
+
+    .spark-accent { color: var(--accent-blue); }
+    .spark-err { color: var(--err-red); }
+    .spark-warn { color: var(--warn-amber); }
+    .spark-ok { color: var(--ok-green); }
+
+    .pane-subtabs {
+      display: inline-flex;
+      gap: 4px;
+    }
+
+    .subtab-btn {
+      appearance: none;
+      background: transparent;
+      border: 1px solid var(--rule-subtle);
+      color: var(--ink-secondary);
+      font-family: var(--font-mono);
+      font-size: 10.5px;
+      padding: 2px 7px;
+      cursor: pointer;
+    }
+
+    .subtab-btn[aria-selected="true"] {
+      border-color: var(--accent-blue);
+      color: var(--accent-blue);
+      background-color: var(--bg-accent-soft);
+      font-weight: 700;
+    }
+
+    .events-list {
+      margin: 0;
+      padding: 8px 10px;
+      list-style: none;
+      font-size: 11.5px;
+      line-height: 1.58;
+      color: var(--ink-secondary);
+    }
+
+    .events-list li {
+      padding: 2px 0;
+      word-break: break-word;
+    }
+
+    .events-list strong {
+      color: var(--ink-primary);
+      font-weight: 500;
+    }
+
+    .jsonl-pre {
+      margin: 0;
+      padding: 8px 10px;
+      font-family: var(--font-mono);
+      font-size: 11px;
+      line-height: 1.55;
+      color: var(--ink-primary);
+      background-color: var(--bg-canvas);
+      overflow-x: auto;
+      white-space: pre;
+    }
+
+    /* Right Pane: 80x24 NO_COLOR=1 Monochrome Parity Terminal */
+    .nocolor-window {
+      background-color: var(--mono-bg);
+      border: 1px solid var(--mono-rule);
+      color: var(--mono-ink);
+      display: flex;
+      flex-direction: column;
+      min-width: 0;
+    }
+
+    .nocolor-window.is-pane-focused {
+      border-color: var(--mono-ink);
+    }
+
+    .nocolor-window .term-chrome {
+      background-color: var(--mono-panel);
+      border-bottom: 1px solid var(--mono-rule);
+      color: var(--mono-dim);
+    }
+
+    .nocolor-window .term-chrome-title {
+      color: var(--mono-ink);
+    }
+
+    .nocolor-window .term-spec-tag {
+      background-color: var(--mono-bg);
+      border-color: var(--mono-rule);
+      color: var(--mono-ink);
+    }
+
+    .ruler-bar {
+      padding: 5px 12px;
+      background-color: var(--mono-panel);
+      border-bottom: 1px solid var(--mono-rule);
+      font-size: 10.5px;
+      color: var(--mono-dim);
+      display: flex;
+      flex-wrap: wrap;
+      justify-content: space-between;
+      gap: 6px;
+    }
+
+    .nocolor-scroll {
+      flex: 1;
+      padding: 10px 12px;
+      overflow-x: auto;
+      -webkit-overflow-scrolling: touch;
+      display: flex;
+      flex-direction: column;
+      gap: 6px;
+    }
+
+    .col-ruler-pre {
+      margin: 0;
+      font-family: var(--font-mono);
+      font-size: 10.75px;
+      line-height: 1.25;
+      color: var(--mono-dim);
+      white-space: pre;
+      user-select: none;
+    }
+
+    .nocolor-pre {
+      margin: 0;
+      font-family: var(--font-mono);
+      font-size: 10.75px;
+      line-height: 1.5;
+      color: var(--mono-ink);
+      white-space: pre;
+    }
+
+    .nocolor-row-btn {
+      appearance: none;
+      display: block;
+      width: 100%;
+      text-align: left;
+      background: transparent;
+      border: 0;
+      padding: 0;
+      margin: 0;
+      color: var(--mono-ink);
+      font-family: var(--font-mono);
+      font-size: 10.75px;
+      line-height: 1.5;
+      white-space: pre;
+      cursor: pointer;
+    }
+
+    .nocolor-row-btn:hover {
+      background-color: var(--mono-sel);
+    }
+
+    .nocolor-row-btn[aria-selected="true"] {
+      background-color: var(--mono-sel);
+      font-weight: 700;
+      text-decoration: underline;
+    }
+
+    .nocolor-parity-note {
+      padding: 8px 12px;
+      border-top: 1px solid var(--mono-rule);
+      background-color: var(--mono-panel);
+      font-size: 11px;
+      color: var(--mono-dim);
+      line-height: 1.45;
+    }
+
+    /* Persistent Keyboard Action Legend Footer */
+    .key-legend-bar {
+      display: flex;
+      flex-wrap: wrap;
+      align-items: center;
+      justify-content: space-between;
+      gap: 8px 16px;
+      padding: 8px 14px;
+      background-color: var(--bg-panel);
+      border: 1px solid var(--rule-strong);
+      font-size: 11.5px;
+    }
+
+    .key-items {
+      display: flex;
+      flex-wrap: wrap;
+      align-items: center;
+      gap: 8px 14px;
+    }
+
+    .key-item kbd {
+      display: inline-block;
+      padding: 1px 5px;
+      background-color: var(--bg-canvas);
+      border: 1px solid var(--rule-strong);
+      color: var(--accent-blue);
+      font-family: var(--font-mono);
+      font-size: 11px;
+      font-weight: 700;
+    }
+
+    .live-status-banner {
+      color: var(--ink-primary);
+      font-size: 11.5px;
+    }
+
+    /* Below-the-Fold Studio Verification Ledger: check-tui.mjs + Drop Panic-Hook Inspector */
+    .inspector-grid {
+      display: grid;
+      grid-template-columns: minmax(0, 1.15fr) minmax(0, 1fr);
+      gap: 14px;
+      margin-top: 2px;
+    }
+
+    .studio-card {
+      background-color: var(--bg-surface);
+      border: 1px solid var(--rule-subtle);
+      display: flex;
+      flex-direction: column;
+      min-width: 0;
+    }
+
+    .studio-card-head {
+      display: flex;
+      flex-wrap: wrap;
+      align-items: center;
+      justify-content: space-between;
+      gap: 8px;
+      padding: 9px 14px;
+      background-color: var(--bg-panel);
+      border-bottom: 1px solid var(--rule-subtle);
+    }
+
+    .studio-card-head h2 {
+      margin: 0;
+      font-family: var(--font-sans);
+      font-size: 13.5px;
+      font-weight: 700;
+      letter-spacing: 0.02em;
+      color: var(--ink-primary);
+    }
+
+    .evidence-badge {
+      padding: 2px 7px;
+      font-size: 10.5px;
+      border: 1px solid var(--ok-green);
+      background-color: var(--bg-ok-soft);
+      color: var(--ok-green);
+      font-weight: 700;
+    }
+
+    .studio-card-body {
+      padding: 12px 14px;
+      display: flex;
+      flex-direction: column;
+      gap: 10px;
+      min-width: 0;
+    }
+
+    .audit-metrics-row {
+      display: grid;
+      grid-template-columns: repeat(4, minmax(0, 1fr));
+      gap: 8px;
+    }
+
+    .audit-stat {
+      padding: 7px 9px;
+      background-color: var(--bg-canvas);
+      border: 1px solid var(--rule-subtle);
+    }
+
+    .audit-stat-k {
+      display: block;
+      font-size: 10.5px;
+      color: var(--ink-secondary);
+      margin-bottom: 2px;
+    }
+
+    .audit-stat-v {
+      font-size: 13px;
+      font-weight: 700;
+      color: var(--ok-green);
+    }
+
+    .ledger-table {
+      width: 100%;
+      min-width: 440px;
+      border-collapse: collapse;
+      font-size: 11.5px;
+    }
+
+    .ledger-table th,
+    .ledger-table td {
+      text-align: left;
+      padding: 6px 8px;
+      border-bottom: 1px solid var(--rule-subtle);
+      vertical-align: top;
+    }
+
+    .ledger-table th {
+      color: var(--ink-secondary);
+      font-weight: 500;
+      background-color: var(--bg-canvas);
+    }
+
+    .teardown-log {
+      margin: 0;
+      padding: 9px 11px;
+      background-color: var(--bg-canvas);
+      border: 1px solid var(--rule-subtle);
+      font-size: 11px;
+      line-height: 1.55;
+      color: var(--ink-primary);
+      overflow-x: auto;
+      white-space: pre;
+    }
+
+    /* Accessible Rollback Confirmation Modal */
+    .dialog-backdrop {
+      position: fixed;
+      inset: 0;
+      z-index: 80;
+      background-color: var(--bg-backdrop);
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      padding: 16px;
+    }
+
+    .dialog-backdrop[hidden] {
+      display: none;
+    }
+
+    .tui-dialog {
+      width: 100%;
+      max-width: 540px;
+      background-color: var(--bg-surface);
+      border: 2px solid var(--warn-amber);
+      padding: 0;
+    }
+
+    .tui-dialog-head {
+      padding: 10px 14px;
+      background-color: var(--bg-panel);
+      border-bottom: 1px solid var(--rule-subtle);
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      gap: 8px;
+    }
+
+    .tui-dialog-head h2 {
+      margin: 0;
+      font-size: 13px;
+      color: var(--warn-amber);
+    }
+
+    .tui-dialog-body {
+      padding: 14px;
+      display: flex;
+      flex-direction: column;
+      gap: 10px;
+      font-size: 12px;
+      color: var(--ink-primary);
+    }
+
+    .diff-box {
+      padding: 8px 10px;
+      background-color: var(--bg-canvas);
+      border: 1px solid var(--rule-subtle);
+      font-family: var(--font-mono);
+      font-size: 11px;
+      line-height: 1.55;
+      white-space: pre-wrap;
+    }
+
+    .tui-dialog-actions {
+      display: flex;
+      flex-wrap: wrap;
+      justify-content: flex-end;
+      gap: 8px;
+      padding: 10px 14px;
+      border-top: 1px solid var(--rule-subtle);
+      background-color: var(--bg-panel);
+    }
+
+    @media (max-width: 1120px) {
+      .terminal-stage,
+      .inspector-grid {
+        grid-template-columns: minmax(0, 1fr);
+      }
+    }
+
+    @media (max-width: 680px) {
+      .workbench-shell {
+        padding: 10px 10px 22px;
+      }
+      .telemetry-strip {
+        grid-template-columns: minmax(0, 1fr);
+      }
+      .audit-metrics-row {
+        grid-template-columns: repeat(2, minmax(0, 1fr));
+      }
+      .svc-table {
+        min-width: 460px;
+      }
+    }
+
+    @media (prefers-reduced-motion: reduce) {
+      *, *::before, *::after {
+        animation-duration: 0.01ms !important;
+        animation-iteration-count: 1 !important;
+        transition-duration: 0.01ms !important;
+        scroll-behavior: auto !important;
+      }
+    }
+
+    @media (forced-colors: active) {
+      .term-window,
+      .nocolor-window,
+      .ratatui-pane,
+      .studio-card,
+      .tui-btn,
+      .tui-dialog {
+        forced-color-adjust: auto;
+        border-color: CanvasText;
+      }
+      .svc-row[aria-selected="true"],
+      .nocolor-row-btn[aria-selected="true"],
+      .tui-btn[aria-pressed="true"] {
+        outline: 2px solid Highlight;
+        outline-offset: -2px;
+      }
+    }
+
+    @media print {
+      body {
+        background: transparent;
+        color: CanvasText;
+      }
+      .studio-controls,
+      .dialog-backdrop,
+      .skip-link {
+        display: none !important;
+      }
+      .terminal-stage,
+      .inspector-grid {
+        grid-template-columns: 1fr;
+      }
+      .term-window,
+      .nocolor-window,
+      .studio-card {
+        break-inside: avoid;
+        border: 1px solid CanvasText;
+      }
+    }
+  
+  .svc-row-btn, .subtab-btn, .nocolor-row-btn { min-height: 26px; display: inline-flex; align-items: center; }
+  .nocolor-row-btn { display: flex; width: 100%; }
 </style>
 </head>
 <body>
-  <header class="meta-bar">
-    <strong>KESTREL-DEPLOY · RUST RATATUI 0.29</strong>
-    <span>Rendered cell grid · 120×36 color + 80×24 NO_COLOR=1 parity · Illustrative fixture</span>
-  </header>
-  <main class="stage">
-    <section class="tui-frame" aria-label="Primary 120 by 36 terminal viewport">
-      <div class="tui-head">
-        <b>kestrel prod-us-east</b>
-        <span>14:40:12 UTC · 1/4 degraded · 120×36</span>
-      </div>
-      <div class="tui-body">
-        <div class="pane focus">
-          <p class="pane-title">[1] Services (sorted by health, failing first)</p>
-          <table>
-            <thead>
-              <tr><th scope="col">Service</th><th scope="col">Status</th><th scope="col">Release</th><th scope="col" class="num">Ready</th><th scope="col" class="num">p95</th></tr>
-            </thead>
-            <tbody>
-              <tr class="selected"><td>&gt; billing-worker</td><td class="st-err">[ERR] OOMKilled</td><td>v2.18.4</td><td class="num">2/4</td><td class="num">—</td></tr>
-              <tr><td>  search-indexer</td><td class="st-warn">[WRN] Draining</td><td>v2.18.3</td><td class="num">3/4</td><td class="num">184 ms</td></tr>
-              <tr><td>  api-gateway</td><td class="st-ok">[OK]  Healthy</td><td>v2.18.4</td><td class="num">6/6</td><td class="num">12 ms</td></tr>
-              <tr><td>  auth-tokens</td><td class="st-ok">[OK]  Healthy</td><td>v2.18.4</td><td class="num">4/4</td><td class="num">8 ms</td></tr>
-            </tbody>
-          </table>
-        </div>
-        <div class="pane">
-          <p class="pane-title">[2] Selected service: billing-worker (pod-4c2d1e8a)</p>
-          <ul class="events">
-            <li><span class="tag-err">[ERR]</span> <strong>14:39:48</strong> container exited code 137 (memory limit 2048 MiB exceeded)</li>
-            <li><span class="tag-err">[ERR]</span> <strong>14:39:52</strong> readiness probe failed on :8080/healthz (3/3)</li>
-            <li><span class="tag-ok">[INF]</span> <strong>14:40:01</strong> last healthy revision: <strong>v2.18.3</strong> (peak mem 780 MiB)</li>
-            <li><span class="tag-ok">[ACT]</span> Press <strong>r</strong> to preview rollback v2.18.4 → v2.18.3 (requires confirm)</li>
-          </ul>
-        </div>
-      </div>
-      <div class="tui-keys">
-        <span><kbd>↑/↓</kbd> Move</span>
-        <span><kbd>Tab</kbd> Pane</span>
-        <span><kbd>r</kbd> Rollback</span>
-        <span><kbd>l</kbd> Logs</span>
-        <span><kbd>/</kbd> Filter</span>
-        <span><kbd>?</kbd> Keys</span>
-        <span><kbd>q</kbd> Quit (restores terminal)</span>
-      </div>
-    </section>
+  <a class="skip-link" href="#main-workbench">Skip to main content</a>
 
-    <aside class="nocolor" aria-label="80 by 24 monochrome NO_COLOR fallback">
-      <div class="tui-head">
-        <b>NO_COLOR=1 · 80×24</b>
-        <span>TERM=dumb / SSH safe</span>
+  <div class="workbench-shell">
+    <header class="studio-topbar" aria-label="Kestrel Deploy workbench header and rollout controls">
+      <div class="brand-group">
+        <span class="brand-mark">RATATUI 0.29</span>
+        <h1 class="brand-title">Kestrel Deploy</h1>
+        <span class="meta-pill">prod-us-east · 120×36 + 80×24 NO_COLOR=1</span>
+        <span class="meta-pill fixture-note">Illustrative fixture</span>
       </div>
-      <div class="tui-body">
-<pre>+- kestrel prod-us-east [1/4 degraded] --------+
-| SERVICE          STATUS         READY    p95 |
-| &gt; billing-worker [ERR] OOMKill    2/4      - |
-|   search-indexer [WRN] Draining   3/4  184ms |
-|   api-gateway    [OK]  Healthy    6/6   12ms |
-|   auth-tokens    [OK]  Healthy    4/4    8ms |
-+----------------------------------------------+
-| billing-worker: exited 137 (2048 MiB limit)  |
-| Last healthy: v2.18.3 (780 MiB peak)         |
-| Action: [r] Rollback  [l] Logs  [q] Quit     |
-+----------------------------------------------+</pre>
+
+      <div class="studio-controls" role="toolbar" aria-label="Canary weight, rollback, and terminal capability controls">
+        <div class="ctrl-cluster" role="group" aria-label="Canary traffic gate weight">
+          <span class="ctrl-label">Canary:</span>
+          <button type="button" class="tui-btn canary-btn" data-weight="10" aria-pressed="false">10%</button>
+          <button type="button" class="tui-btn canary-btn" data-weight="25" aria-pressed="true">25%</button>
+          <button type="button" class="tui-btn canary-btn" data-weight="50" aria-pressed="false">50%</button>
+          <button type="button" class="tui-btn canary-btn" data-weight="100" aria-pressed="false">100%</button>
+        </div>
+
+        <button type="button" id="btn-rollback" class="tui-btn btn-danger">
+          <span class="kbd-tag">[r]</span> Rollback checkout-worker
+        </button>
+
+        <button type="button" id="btn-nocolor" class="tui-btn" aria-pressed="false">
+          <span class="kbd-tag">[n]</span> NO_COLOR=1: OFF
+        </button>
+
+        <button type="button" id="btn-termdumb" class="tui-btn" aria-pressed="false">
+          <span class="kbd-tag">[d]</span> TERM=dumb: OFF
+        </button>
+
+        <button type="button" id="btn-reset" class="tui-btn" hidden>
+          Reset incident
+        </button>
       </div>
-      <p class="note">Status tokens ([ERR]/[WRN]/[OK]) and selection marker (&gt;) keep full meaning without ANSI color or Unicode box-drawing glyphs. Non-TTY pipe outputs clean JSON lines.</p>
-    </aside>
-  </main>
+    </header>
+
+    <main id="main-workbench" tabindex="-1">
+      <div id="live-announcer" class="sr-only" aria-live="polite" aria-atomic="true"></div>
+
+      <section class="terminal-stage" aria-label="Dual terminal comparison: 120x36 ANSI color and 80x24 NO_COLOR=1 monochrome">
+        <!-- Left Pane: 120x36 ANSI Color Ratatui Buffer -->
+        <section id="pane-color" class="term-window is-pane-focused" aria-label="120 by 36 ANSI color Ratatui terminal viewport">
+          <div class="term-chrome">
+            <div class="term-chrome-title">
+              <span>kestrel-deploy · prod-us-east</span>
+              <span class="term-spec-tag" id="color-spec-badge">120×36 · COLORTERM=truecolor · DEC ?2026h</span>
+            </div>
+            <span class="term-chrome-meta" id="cluster-clock-meta">14:40:12 UTC · Tokio 120ms tick</span>
+          </div>
+
+          <div class="ratatui-canvas">
+            <div class="ratatui-status-strip">
+              <div>
+                <span>Cluster status: </span>
+                <span id="cluster-summary-badge" class="cluster-health-badge is-err">[ERR] 1/5 OOMKilled · 1 Draining</span>
+              </div>
+              <div class="canary-meter-inline">
+                <span>Gate:</span>
+                <span id="canary-bar-visual" class="canary-bar-glyphs">███░░░░░░░</span>
+                <strong id="canary-weight-readout">25% traffic → v2.19.0-rc2</strong>
+              </div>
+            </div>
+
+            <div id="subpane-services" class="ratatui-pane has-focus">
+              <div class="pane-header">
+                <span class="pane-header-label">[1] Services (sorted failing-service first · Constraint::Fill)</span>
+                <span id="service-row-pos">row 1/5 · ↑/↓ or j/k</span>
+              </div>
+              <div class="table-scroll-wrap">
+                <table class="svc-table" aria-label="Production services sorted by health">
+                  <thead>
+                    <tr>
+                      <th scope="col">Service</th>
+                      <th scope="col">Health Badge</th>
+                      <th scope="col">Release</th>
+                      <th scope="col" class="num">Ready</th>
+                      <th scope="col" class="num">Canary</th>
+                      <th scope="col" class="num">P95</th>
+                    </tr>
+                  </thead>
+                  <tbody id="color-svc-tbody">
+                    <!-- Populated & synced deterministically -->
+                  </tbody>
+                </table>
+              </div>
+            </div>
+
+            <div id="subpane-inspector" class="ratatui-pane">
+              <div class="pane-header">
+                <span class="pane-header-label" id="inspector-pane-title">[2] Selected: checkout-worker (pod-4c2d1e8a)</span>
+                <div class="pane-subtabs" role="tablist" aria-label="Inspector view mode">
+                  <button type="button" role="tab" class="subtab-btn" id="tab-events" data-mode="events" aria-selected="true">[e] Events</button>
+                  <button type="button" role="tab" class="subtab-btn" id="tab-logs" data-mode="logs" aria-selected="false">[l] Non-TTY JSONL</button>
+                </div>
+              </div>
+
+              <div class="telemetry-strip" aria-label="Selected service live telemetry">
+                <div class="metric-cell">
+                  <div class="metric-label"><span>Replica Readiness</span><span id="tel-ready-tag">[DEGRADED]</span></div>
+                  <div class="metric-val" id="tel-ready-val">███░░░ 2/4 pods ready</div>
+                </div>
+                <div class="metric-cell">
+                  <div class="metric-label"><span>P95 Latency (5m)</span><span id="tel-p95-delta">+340ms</span></div>
+                  <div class="metric-val"><span id="tel-p95-spark" class="spark-err">▂▃▄▆█▇██</span> <span id="tel-p95-val">timeout</span></div>
+                </div>
+                <div class="metric-cell">
+                  <div class="metric-label"><span>Memory RSS / Limit</span><span id="tel-mem-pct">100%</span></div>
+                  <div class="metric-val" id="tel-mem-val">2048 / 2048 MiB (exit 137)</div>
+                </div>
+              </div>
+
+              <div id="panel-events-view" role="tabpanel" aria-labelledby="tab-events">
+                <ul class="events-list" id="color-events-list"></ul>
+              </div>
+              <div id="panel-logs-view" role="tabpanel" aria-labelledby="tab-logs" hidden>
+                <pre class="jsonl-pre" id="color-jsonl-pre"></pre>
+              </div>
+            </div>
+          </div>
+        </section>
+
+        <!-- Right Pane: 80x24 NO_COLOR=1 Monochrome Parity Terminal -->
+        <aside id="pane-mono" class="nocolor-window" aria-label="80 by 24 monochrome NO_COLOR=1 parity viewport">
+          <div class="term-chrome">
+            <div class="term-chrome-title">
+              <span>NO_COLOR=1 PARITY</span>
+              <span class="term-spec-tag" id="mono-spec-badge">80×24 · FORCE_COLOR=0 · ASCII box</span>
+            </div>
+            <span class="term-chrome-meta" id="mono-width-live">max 76/80 cols · 0 ESC</span>
+          </div>
+
+          <div class="ruler-bar">
+            <span>check-tui.mjs live cell ruler (80-col ceiling)</span>
+            <span id="ruler-pass-tag">[PASS] 0 wrap overflow</span>
+          </div>
+
+          <div class="nocolor-scroll" role="region" aria-label="80 column monochrome character grid">
+            <pre class="col-ruler-pre" aria-hidden="true">1·······10········20········30········40········50········60········70········80</pre>
+            <div id="mono-grid-container" role="listbox" aria-label="80x24 monochrome service rows (synced)"></div>
+            <pre class="nocolor-pre" id="mono-detail-pre"></pre>
+          </div>
+
+          <div class="nocolor-parity-note">
+            Bracketed tokens (<code>[ERR]</code>, <code>[WRN]</code>, <code>[OK]</code>), ASCII borders (<code>+-|</code>), and cursor marker (<code>&gt;</code>) preserve 100% operational meaning under <code>NO_COLOR=1</code>, <code>TERM=dumb</code>, and SSH serial consoles.
+          </div>
+        </aside>
+      </section>
+
+      <!-- Persistent Footer Documenting Keyboard Actions -->
+      <footer class="key-legend-bar" aria-label="Persistent Ratatui keyboard shortcut legend">
+        <div class="key-items">
+          <span class="key-item"><kbd>↑/↓</kbd> or <kbd>j/k</kbd> Select service</span>
+          <span class="key-item"><kbd>Tab</kbd> Focus pane</span>
+          <span class="key-item"><kbd>1-4</kbd> Canary %</span>
+          <span class="key-item"><kbd>r</kbd> Rollback</span>
+          <span class="key-item"><kbd>l</kbd> Logs / Events</span>
+          <span class="key-item"><kbd>n</kbd> NO_COLOR=1</span>
+          <span class="key-item"><kbd>q</kbd> Quit teardown</span>
+        </div>
+        <div class="live-status-banner" id="footer-teardown-status">
+          TTY guard: <code>ratatui::init()</code> + panic hook armed
+        </div>
+      </footer>
+
+      <!-- Studio Verification Panels: check-tui.mjs Audit Ledger & Drop Teardown Inspector -->
+      <section class="inspector-grid" aria-label="Terminal verification and teardown guarantees">
+        <article class="studio-card" aria-labelledby="audit-card-heading">
+          <div class="studio-card-head">
+            <h2 id="audit-card-heading">check-tui.mjs Audit Ledger &amp; Capability Matrix</h2>
+            <span class="evidence-badge" id="audit-overall-badge">PASS · static + rendered</span>
+          </div>
+          <div class="studio-card-body">
+            <div class="audit-metrics-row">
+              <div class="audit-stat">
+                <span class="audit-stat-k">Column Ceiling</span>
+                <span class="audit-stat-v" id="stat-max-cols">76 / 80 cols</span>
+              </div>
+              <div class="audit-stat">
+                <span class="audit-stat-k">Wrap Overflow</span>
+                <span class="audit-stat-v" id="stat-overflow">0 lines</span>
+              </div>
+              <div class="audit-stat">
+                <span class="audit-stat-k">Leaked ESC (NO_COLOR)</span>
+                <span class="audit-stat-v" id="stat-ansi-leaks">0 sequences</span>
+              </div>
+              <div class="audit-stat">
+                <span class="audit-stat-k">Buffer Guard</span>
+                <span class="audit-stat-v" id="stat-teardown-pair">1049h == 1049l</span>
+              </div>
+            </div>
+
+            <div class="table-scroll-wrap">
+              <table class="ledger-table" aria-label="Environment capability degradation contract">
+                <thead>
+                  <tr>
+                    <th scope="col">Environment Signal</th>
+                    <th scope="col">Kestrel Deploy Output Contract</th>
+                    <th scope="col">Evidence</th>
+                  </tr>
+                </thead>
+                <tbody>
+                  <tr>
+                    <td><code>NO_COLOR=1</code></td>
+                    <td>Strips all SGR foreground/background escapes; keeps <code>[ERR]</code>, <code>[WRN]</code>, <code>[OK]</code>, and <code>&gt;</code>.</td>
+                    <td><code>rendered</code></td>
+                  </tr>
+                  <tr>
+                    <td><code>TERM=dumb</code></td>
+                    <td>Replaces Unicode box/sparkline glyphs with 7-bit ASCII (<code>+-|</code>, <code>#..</code>); disables cursor addressing.</td>
+                    <td><code>rendered</code></td>
+                  </tr>
+                  <tr>
+                    <td><code>!isatty(stdout)</code></td>
+                    <td>Skips alternate screen; emits newline-delimited JSON objects on <code>stdout</code>, human progress on <code>stderr</code>.</td>
+                    <td><code>static</code></td>
+                  </tr>
+                  <tr>
+                    <td><code>COLUMNS=80 LINES=24</code></td>
+                    <td>Collapses optional release SHA column via <code>Constraint::Fill</code>; zero horizontal wrap corruption.</td>
+                    <td><code>rendered</code></td>
+                  </tr>
+                </tbody>
+              </table>
+            </div>
+          </div>
+        </article>
+
+        <article class="studio-card" aria-labelledby="teardown-card-heading">
+          <div class="studio-card-head">
+            <h2 id="teardown-card-heading">Ratatui 0.29 Drop &amp; Panic-Hook Teardown Guarantee</h2>
+            <div class="pane-subtabs">
+              <button type="button" class="tui-btn" id="btn-sim-quit"><span class="kbd-tag">[q]</span> Test Quit</button>
+              <button type="button" class="tui-btn" id="btn-sim-panic">Simulate Panic</button>
+            </div>
+          </div>
+          <div class="studio-card-body">
+            <pre class="teardown-log" id="teardown-sequence-log">fn main() -&gt; color_eyre::Result&lt;()&gt; {
+    let mut terminal = ratatui::init(); // installs panic hook + raw mode + ?1049h
+    let result = app_loop(&amp;mut terminal);
+    ratatui::restore();                 // guarantees ?2026l, CSI &lt; u, ?25h, ?1049l
+    result
+}
+// [READY] Active session: raw_mode=ON · alt_screen=?1049h · sync_out=?2026h · cursor=?25l</pre>
+            <div class="table-scroll-wrap">
+              <table class="ledger-table" aria-label="Terminal protocol restoration sequence">
+                <thead>
+                  <tr>
+                    <th scope="col">Step</th>
+                    <th scope="col">Escape Sequence</th>
+                    <th scope="col">Shell Recovery Guarantee</th>
+                  </tr>
+                </thead>
+                <tbody>
+                  <tr>
+                    <td>1. End Sync</td>
+                    <td><code>ESC [ ? 2026 l</code></td>
+                    <td>Unfreezes DEC Mode 2026 atomic frame batching immediately.</td>
+                  </tr>
+                  <tr>
+                    <td>2. Pop Keys</td>
+                    <td><code>ESC [ &lt; u</code></td>
+                    <td>Pops Kitty keyboard protocol flags so Enter/Backspace work in shell.</td>
+                  </tr>
+                  <tr>
+                    <td>3. Clear Tab</td>
+                    <td><code>OSC 9 ; 4 ; 0 ST</code></td>
+                    <td>Clears stuck taskbar/tab progress indicator on exit or SIGINT.</td>
+                  </tr>
+                  <tr>
+                    <td>4. Restore TTY</td>
+                    <td><code>ESC [ ? 25 h · ? 1049 l</code></td>
+                    <td>Shows cursor, exits alternate buffer, disables crossterm raw mode.</td>
+                  </tr>
+                </tbody>
+              </table>
+            </div>
+          </div>
+        </article>
+      </section>
+    </main>
+  </div>
+
+  <!-- Accessible Staged Rollback Confirmation Dialog -->
+  <div class="dialog-backdrop" id="rollback-backdrop" hidden>
+    <div class="tui-dialog" role="dialog" aria-modal="true" aria-labelledby="rollback-dialog-title" aria-describedby="rollback-dialog-desc">
+      <div class="tui-dialog-head">
+        <h2 id="rollback-dialog-title">[CONFIRM ROLLBACK] checkout-worker · prod-us-east</h2>
+        <span class="meta-pill">Esc to cancel</span>
+      </div>
+      <div class="tui-dialog-body">
+        <p id="rollback-dialog-desc" style="margin:0;">
+          Drain failing canary pods on <strong>checkout-worker</strong> (<code>[ERR] OOMKilled</code>, exit code 137) and shift 100% traffic back to pinned digest <strong>v2.18.4</strong>?
+        </p>
+        <div class="diff-box" id="rollback-diff-preview">
+- current: v2.19.0-rc2 (2/4 ready · RSS 2048/2048 MiB · OOMKilled)
++ target:  v2.18.4     (4/4 ready · peak RSS 742 MiB  · verified healthy)
++ traffic: canary gate 25% -&gt; 0% (100% stable revision)</div>
+      </div>
+      <div class="tui-dialog-actions">
+        <button type="button" class="tui-btn" id="btn-cancel-rollback">Cancel [Esc]</button>
+        <button type="button" class="tui-btn btn-danger" id="btn-confirm-rollback">Confirm Rollback to v2.18.4 [Enter]</button>
+      </div>
+    </div>
+  </div>
+
+  <script>
+    (function () {
+      "use strict";
+
+      function cloneInitialServices() {
+        return [
+          {
+            id: "checkout-worker",
+            pod: "pod-4c2d1e8a",
+            health: "ERR",
+            badgeColor: "[ERR] OOMKilled",
+            badgeMono: "[ERR] OOMKilled",
+            release: "v2.19.0-rc2",
+            readyCount: 2,
+            totalCount: 4,
+            canaryEligible: true,
+            baseP95Ms: null,
+            sparkUnicode: "▂▃▄▆█▇██",
+            sparkAscii: "..-+*###",
+            sparkClass: "spark-err",
+            p95Delta: "+340ms",
+            memPct: "100%",
+            memText: "2048 / 2048 MiB (exit 137)",
+            readyTag: "[DEGRADED]",
+            monoSummary1: "checkout-worker: exited 137 (2048 MiB cgroup limit)",
+            monoSummary2: "Last healthy digest: v2.18.4 (peak RSS 742 MiB)",
+            events: [
+              { tag: "[ERR]", cls: "badge-err", ts: "14:39:48", msg: "container terminated code 137 (OOMKilled: 2048 MiB cgroup v2 limit exceeded)" },
+              { tag: "[ERR]", cls: "badge-err", ts: "14:39:52", msg: "readiness probe failed on :8080/healthz (attempt 3/3, connection reset)" },
+              { tag: "[INF]", cls: "badge-ok", ts: "14:40:01", msg: "last verified healthy revision: v2.18.4 (peak RSS 742 MiB, p95 19 ms)" },
+              { tag: "[ACT]", cls: "spark-accent", ts: "14:40:12", msg: "press [r] to stage rollback v2.19.0-rc2 -> v2.18.4 (confirmation required)" }
+            ],
+            jsonl: [
+              '{"ts":"2026-11-25T14:39:48Z","svc":"checkout-worker","pod":"pod-4c2d1e8a","lvl":"ERROR","exit":137,"reason":"OOMKilled","rss_mib":2048}',
+              '{"ts":"2026-11-25T14:39:52Z","svc":"checkout-worker","pod":"pod-4c2d1e8a","lvl":"ERROR","probe":":8080/healthz","ready":"2/4"}',
+              '{"ts":"2026-11-25T14:40:01Z","svc":"checkout-worker","lvl":"INFO","rollback_candidate":"v2.18.4","baseline_rss_mib":742}'
+            ]
+          },
+          {
+            id: "search-indexer",
+            pod: "pod-9b1f7a3c",
+            health: "WRN",
+            badgeColor: "[WRN] Draining",
+            badgeMono: "[WRN] Draining ",
+            release: "v2.18.4",
+            readyCount: 3,
+            totalCount: 4,
+            canaryEligible: true,
+            baseP95Ms: 184,
+            sparkUnicode: "▂▃▄▅▆▅▄▃",
+            sparkAscii: ".-+*+=-.",
+            sparkClass: "spark-warn",
+            p95Delta: "+46ms",
+            memPct: "80%",
+            memText: "1640 / 2048 MiB (shard rebalance)",
+            readyTag: "[DRAINING]",
+            monoSummary1: "search-indexer: draining node us-east-1c (lag 1,420)",
+            monoSummary2: "Shard lease handoff in progress (ETA 18s, 0 drops)",
+            events: [
+              { tag: "[WRN]", cls: "badge-warn", ts: "14:38:19", msg: "cordoned node us-east-1c; draining 1 replica with PodDisruptionBudget minAvailable=3" },
+              { tag: "[INF]", cls: "badge-ok", ts: "14:39:11", msg: "consumer partition lag 1,420 docs (draining rate 85 docs/s)" },
+              { tag: "[INF]", cls: "badge-ok", ts: "14:40:04", msg: "3/4 replicas serving read queries within 200 ms SLO budget" }
+            ],
+            jsonl: [
+              '{"ts":"2026-11-25T14:38:19Z","svc":"search-indexer","pod":"pod-9b1f7a3c","lvl":"WARN","state":"Draining","pdb_min":3}',
+              '{"ts":"2026-11-25T14:40:04Z","svc":"search-indexer","lvl":"INFO","ready":"3/4","p95_ms":184,"lag_docs":1420}'
+            ]
+          },
+          {
+            id: "api-gateway",
+            pod: "pod-8f7a9c4b",
+            health: "OK",
+            badgeColor: "[OK]  Healthy",
+            badgeMono: "[OK]  Healthy  ",
+            release: "v2.18.4",
+            readyCount: 6,
+            totalCount: 6,
+            canaryEligible: true,
+            baseP95Ms: 12,
+            sparkUnicode: "▂▂▃▂▂▂▂▂",
+            sparkAscii: "..-.....",
+            sparkClass: "spark-ok",
+            p95Delta: "-1ms",
+            memPct: "25%",
+            memText: "512 / 2048 MiB (steady)",
+            readyTag: "[HEALTHY]",
+            monoSummary1: "api-gateway: 6/6 pods ready (TLS 1.3 edge pool)",
+            monoSummary2: "Upstream circuit breaker protecting checkout route",
+            events: [
+              { tag: "[OK]", cls: "badge-ok", ts: "14:36:02", msg: "6/6 Envoy + Rust axum ingress workers passing readiness checks" },
+              { tag: "[INF]", cls: "badge-ok", ts: "14:39:55", msg: "adaptive retry budget isolating checkout-worker 503 responses" },
+              { tag: "[OK]", cls: "badge-ok", ts: "14:40:10", msg: "p95 ingress latency steady at 12 ms across 4,820 req/s" }
+            ],
+            jsonl: [
+              '{"ts":"2026-11-25T14:40:10Z","svc":"api-gateway","pod":"pod-8f7a9c4b","lvl":"INFO","ready":"6/6","p95_ms":12,"rps":4820}'
+            ]
+          },
+          {
+            id: "auth-tokens",
+            pod: "pod-2a6e8d5f",
+            health: "OK",
+            badgeColor: "[OK]  Healthy",
+            badgeMono: "[OK]  Healthy  ",
+            release: "v2.18.4",
+            readyCount: 4,
+            totalCount: 4,
+            canaryEligible: false,
+            baseP95Ms: 8,
+            sparkUnicode: "▁▁▂▁▁▁▂▁",
+            sparkAscii: "........",
+            sparkClass: "spark-ok",
+            p95Delta: "0ms",
+            memPct: "13%",
+            memText: "256 / 2048 MiB (Ed25519 KMS)",
+            readyTag: "[HEALTHY]",
+            monoSummary1: "auth-tokens: 4/4 pods ready (JWKS rotation valid)",
+            monoSummary2: "Zero token verification errors in last 60 minutes",
+            events: [
+              { tag: "[OK]", cls: "badge-ok", ts: "14:30:00", msg: "Ed25519 signing keyset kid=2026-11-b rotated cleanly across 4/4 pods" },
+              { tag: "[OK]", cls: "badge-ok", ts: "14:40:09", msg: "p95 token mint/verify 8 ms; cache hit ratio 99.6%" }
+            ],
+            jsonl: [
+              '{"ts":"2026-11-25T14:40:09Z","svc":"auth-tokens","pod":"pod-2a6e8d5f","lvl":"INFO","ready":"4/4","p95_ms":8,"jwks":"valid"}'
+            ]
+          },
+          {
+            id: "billing-ledger",
+            pod: "pod-7d3c5b1e",
+            health: "OK",
+            badgeColor: "[OK]  Healthy",
+            badgeMono: "[OK]  Healthy  ",
+            release: "v2.18.4",
+            readyCount: 4,
+            totalCount: 4,
+            canaryEligible: false,
+            baseP95Ms: 15,
+            sparkUnicode: "▂▂▃▂▃▂▂▂",
+            sparkAscii: "..-.-...",
+            sparkClass: "spark-ok",
+            p95Delta: "+1ms",
+            memPct: "31%",
+            memText: "640 / 2048 MiB (WAL synced)",
+            readyTag: "[HEALTHY]",
+            monoSummary1: "billing-ledger: 4/4 pods ready (idempotent outbox)",
+            monoSummary2: "Postgres serializable commit p95 15 ms (0 deadlocks)",
+            events: [
+              { tag: "[OK]", cls: "badge-ok", ts: "14:37:44", msg: "outbox journal checkpoint #99418 committed with zero duplicate charges" },
+              { tag: "[OK]", cls: "badge-ok", ts: "14:40:11", msg: "4/4 replicas healthy on v2.18.4; awaiting checkout-worker recovery" }
+            ],
+            jsonl: [
+              '{"ts":"2026-11-25T14:40:11Z","svc":"billing-ledger","pod":"pod-7d3c5b1e","lvl":"INFO","ready":"4/4","p95_ms":15}'
+            ]
+          }
+        ];
+      }
+
+      let services = cloneInitialServices();
+      let selectedIndex = 0;
+      let canaryWeight = 25;
+      let rolledBack = false;
+      let inspectorMode = "events";
+      let noColor = false;
+      let termDumb = false;
+      let lastDialogTrigger = null;
+
+      const tbodyEl = document.getElementById("color-svc-tbody");
+      const monoGridEl = document.getElementById("mono-grid-container");
+      const monoDetailPre = document.getElementById("mono-detail-pre");
+      const announcerEl = document.getElementById("live-announcer");
+      const btnRollback = document.getElementById("btn-rollback");
+      const btnReset = document.getElementById("btn-reset");
+      const btnNoColor = document.getElementById("btn-nocolor");
+      const btnTermDumb = document.getElementById("btn-termdumb");
+      const canaryBtns = Array.from(document.querySelectorAll(".canary-btn"));
+      const dialogBackdrop = document.getElementById("rollback-backdrop");
+      const btnConfirmRollback = document.getElementById("btn-confirm-rollback");
+      const btnCancelRollback = document.getElementById("btn-cancel-rollback");
+      const tabEvents = document.getElementById("tab-events");
+      const tabLogs = document.getElementById("tab-logs");
+      const teardownLogEl = document.getElementById("teardown-sequence-log");
+
+      function announce(msg) {
+        announcerEl.textContent = "";
+        window.requestAnimationFrame(function () {
+          announcerEl.textContent = msg;
+        });
+      }
+
+      function padRight(str, len) {
+        const s = String(str);
+        return s.length >= len ? s.slice(0, len) : s + " ".repeat(len - s.length);
+      }
+
+      function padLeft(str, len) {
+        const s = String(str);
+        return s.length >= len ? s.slice(0, len) : " ".repeat(len - s.length) + s;
+      }
+
+      function makeBar(filled, total, useAscii) {
+        const onChar = useAscii ? "#" : "█";
+        const offChar = useAscii ? "." : "░";
+        return onChar.repeat(filled) + offChar.repeat(Math.max(0, total - filled));
+      }
+
+      function computeP95Label(svc) {
+        if (svc.baseP95Ms === null) {
+          return canaryWeight >= 50 ? "ERR 503" : "timeout";
+        }
+        const bump = svc.canaryEligible && !rolledBack ? Math.round((canaryWeight - 25) * 0.28) : 0;
+        const val = Math.max(4, svc.baseP95Ms + bump);
+        return val + " ms";
+      }
+
+      function computeMonoP95(svc) {
+        if (svc.baseP95Ms === null) {
+          return canaryWeight >= 50 ? "503!" : "   -";
+        }
+        const bump = svc.canaryEligible && !rolledBack ? Math.round((canaryWeight - 25) * 0.28) : 0;
+        const val = Math.max(4, svc.baseP95Ms + bump);
+        return val + "ms";
+      }
+
+      function formatBoxLine(inner72) {
+        return "| " + padRight(inner72, 72) + " |";
+      }
+
+      function renderAll() {
+        const border76 = "+" + "-".repeat(74) + "+";
+        const useAscii = termDumb || noColor;
+
+        // Top cluster status & canary bar
+        const summaryBadge = document.getElementById("cluster-summary-badge");
+        if (rolledBack) {
+          summaryBadge.textContent = "[OK] Rolled back to v2.18.4 · 0 OOMKilled";
+          summaryBadge.className = "cluster-health-badge is-ok";
+        } else {
+          summaryBadge.textContent = "[ERR] 1/5 OOMKilled · 1 Draining";
+          summaryBadge.className = "cluster-health-badge is-err";
+        }
+
+        const filledCells = rolledBack ? 0 : Math.round(canaryWeight / 10);
+        document.getElementById("canary-bar-visual").textContent = makeBar(filledCells, 10, termDumb);
+        document.getElementById("canary-weight-readout").textContent = rolledBack
+          ? "0% canary (pinned v2.18.4)"
+          : canaryWeight + "% traffic -> v2.19.0-rc2";
+
+        document.getElementById("color-spec-badge").textContent = noColor
+          ? "120×36 · NO_COLOR=1 · SGR stripped"
+          : termDumb
+            ? "120×36 · TERM=dumb · 7-bit ASCII"
+            : "120×36 · COLORTERM=truecolor · DEC ?2026h";
+
+        document.getElementById("mono-spec-badge").textContent = termDumb
+          ? "80×24 · TERM=dumb · pure ASCII"
+          : "80×24 · NO_COLOR=1 · ASCII box";
+
+        document.getElementById("service-row-pos").textContent =
+          "row " + (selectedIndex + 1) + "/" + services.length + " · ↑/↓ or j/k";
+
+        // Render 120x36 Service Table
+        tbodyEl.innerHTML = "";
+        services.forEach(function (svc, idx) {
+          const isSel = idx === selectedIndex;
+          const tr = document.createElement("tr");
+          tr.className = "svc-row";
+          tr.setAttribute("aria-selected", isSel ? "true" : "false");
+          tr.addEventListener("click", function () {
+            selectService(idx, false);
+          });
+
+          const tdName = document.createElement("td");
+          const rowBtn = document.createElement("button");
+          rowBtn.type = "button";
+          rowBtn.className = "svc-row-btn";
+          rowBtn.setAttribute("aria-label", "Select service " + svc.id + ", status " + svc.badgeColor);
+          rowBtn.addEventListener("click", function (ev) {
+            ev.stopPropagation();
+            selectService(idx, false);
+          });
+          const marker = document.createElement("span");
+          marker.className = "sel-marker";
+          marker.setAttribute("aria-hidden", "true");
+          marker.textContent = isSel ? ">" : " ";
+          const nameSpan = document.createElement("span");
+          nameSpan.textContent = svc.id;
+          rowBtn.appendChild(marker);
+          rowBtn.appendChild(nameSpan);
+          tdName.appendChild(rowBtn);
+
+          const tdStatus = document.createElement("td");
+          tdStatus.className = svc.health === "ERR" ? "badge-err" : svc.health === "WRN" ? "badge-warn" : "badge-ok";
+          tdStatus.textContent = svc.badgeColor;
+
+          const tdRel = document.createElement("td");
+          tdRel.textContent = svc.release;
+
+          const tdReady = document.createElement("td");
+          tdReady.className = "num";
+          tdReady.textContent = svc.readyCount + "/" + svc.totalCount;
+
+          const tdCanary = document.createElement("td");
+          tdCanary.className = "num";
+          tdCanary.textContent = (!rolledBack && svc.canaryEligible) ? canaryWeight + "%" : "0%";
+
+          const tdP95 = document.createElement("td");
+          tdP95.className = "num";
+          tdP95.textContent = computeP95Label(svc);
+
+          tr.appendChild(tdName);
+          tr.appendChild(tdStatus);
+          tr.appendChild(tdRel);
+          tr.appendChild(tdReady);
+          tr.appendChild(tdCanary);
+          tr.appendChild(tdP95);
+          tbodyEl.appendChild(tr);
+        });
+
+        // Selected service inspector (120x36 pane [2])
+        const active = services[selectedIndex];
+        document.getElementById("inspector-pane-title").textContent =
+          "[2] Selected: " + active.id + " (" + active.pod + ")";
+
+        const readyRatio = Math.round((active.readyCount / active.totalCount) * 6);
+        document.getElementById("tel-ready-tag").textContent = active.readyTag;
+        document.getElementById("tel-ready-val").textContent =
+          makeBar(readyRatio, 6, termDumb) + " " + active.readyCount + "/" + active.totalCount + " pods ready";
+
+        document.getElementById("tel-p95-delta").textContent = active.p95Delta;
+        const sparkEl = document.getElementById("tel-p95-spark");
+        sparkEl.textContent = useAscii ? active.sparkAscii : active.sparkUnicode;
+        sparkEl.className = active.sparkClass;
+        document.getElementById("tel-p95-val").textContent = computeP95Label(active);
+
+        document.getElementById("tel-mem-pct").textContent = active.memPct;
+        document.getElementById("tel-mem-val").textContent = active.memText;
+
+        const eventsListEl = document.getElementById("color-events-list");
+        eventsListEl.innerHTML = "";
+        active.events.forEach(function (ev) {
+          const li = document.createElement("li");
+          const tagSpan = document.createElement("span");
+          tagSpan.className = ev.cls;
+          tagSpan.textContent = ev.tag;
+          const tsStrong = document.createElement("strong");
+          tsStrong.textContent = " " + ev.ts + " ";
+          const msgNode = document.createTextNode(ev.msg);
+          li.appendChild(tagSpan);
+          li.appendChild(tsStrong);
+          li.appendChild(msgNode);
+          eventsListEl.appendChild(li);
+        });
+
+        document.getElementById("color-jsonl-pre").textContent = active.jsonl.join("\n");
+        document.getElementById("panel-events-view").hidden = inspectorMode !== "events";
+        document.getElementById("panel-logs-view").hidden = inspectorMode !== "logs";
+        tabEvents.setAttribute("aria-selected", inspectorMode === "events" ? "true" : "false");
+        tabLogs.setAttribute("aria-selected", inspectorMode === "logs" ? "true" : "false");
+
+        // Render 80x24 NO_COLOR=1 Monochrome Parity Grid (strictly 76 visible cols per line <= 80 ceiling)
+        const allMonoLines = [];
+        const clusterStateToken = rolledBack ? "[OK]  v2.18.4 stable" : "[ERR] 1/5 degraded";
+        const topHeaderLine = "+- kestrel prod-us-east " + clusterStateToken + " [canary:" + padLeft((rolledBack ? 0 : canaryWeight) + "%", 4) + "] ";
+        const paddedTop = topHeaderLine + "-".repeat(Math.max(1, 75 - topHeaderLine.length)) + "+";
+        const colHead = formatBoxLine(
+          padRight("SEL SERVICE", 18) + " " +
+          padRight("STATUS", 25) + " " +
+          padRight("REL", 11) + " " +
+          padLeft("RDY", 5) + " " +
+          padLeft("P95", 9)
+        );
+
+        monoGridEl.innerHTML = "";
+
+        const preTop = document.createElement("pre");
+        preTop.className = "nocolor-pre";
+        preTop.textContent = paddedTop + "\n" + colHead;
+        monoGridEl.appendChild(preTop);
+        allMonoLines.push(paddedTop, colHead);
+
+        services.forEach(function (svc, idx) {
+          const isSel = idx === selectedIndex;
+          const prefix = (isSel ? "> " : "  ") + svc.id;
+          const rowLine = formatBoxLine(
+            padRight(prefix, 18) + " " +
+            padRight(svc.badgeMono, 25) + " " +
+            padRight(svc.release, 11) + " " +
+            padLeft(svc.readyCount + "/" + svc.totalCount, 5) + " " +
+            padLeft(computeMonoP95(svc), 9)
+          );
+          allMonoLines.push(rowLine);
+
+          const btn = document.createElement("button");
+          btn.type = "button";
+          btn.role = "option";
+          btn.className = "nocolor-row-btn";
+          btn.setAttribute("aria-selected", isSel ? "true" : "false");
+          btn.textContent = rowLine;
+          btn.addEventListener("click", function () {
+            selectService(idx, false);
+          });
+          monoGridEl.appendChild(btn);
+        });
+
+        const detailLines = [
+          border76,
+          formatBoxLine("INSPECTOR: " + active.id + " (" + active.pod + ") · mem " + active.memPct),
+          formatBoxLine(active.monoSummary1),
+          formatBoxLine(active.monoSummary2),
+          border76,
+          formatBoxLine("KEYS: [Up/Dn] Select [1-4] Gate [r] Rollback [l] JSONL [n] Mono [q] Quit"),
+          border76
+        ];
+        detailLines.forEach(function (l) { allMonoLines.push(l); });
+        monoDetailPre.textContent = detailLines.join("\n");
+
+        // Live check-tui.mjs column width verification
+        let maxMeasuredCols = 0;
+        let overflowCount = 0;
+        allMonoLines.forEach(function (line) {
+          const w = Array.from(line).length;
+          if (w > maxMeasuredCols) maxMeasuredCols = w;
+          if (w > 80) overflowCount += 1;
+        });
+
+        document.getElementById("mono-width-live").textContent =
+          "max " + maxMeasuredCols + "/80 cols · 0 ESC";
+        document.getElementById("ruler-pass-tag").textContent =
+          overflowCount === 0 ? "[PASS] 0 wrap overflow" : "[FAIL] " + overflowCount + " overflow";
+        document.getElementById("stat-max-cols").textContent = maxMeasuredCols + " / 80 cols";
+        document.getElementById("stat-overflow").textContent = overflowCount + " lines";
+
+        // Rollback & canary button state
+        canaryBtns.forEach(function (btn) {
+          btn.disabled = rolledBack;
+          btn.setAttribute("aria-pressed", (!rolledBack && Number(btn.dataset.weight) === canaryWeight) ? "true" : "false");
+        });
+        btnRollback.disabled = rolledBack;
+        btnRollback.className = rolledBack ? "tui-btn btn-ok" : "tui-btn btn-danger";
+        btnRollback.innerHTML = rolledBack
+          ? '<span class="kbd-tag">[OK]</span> Rolled back to v2.18.4'
+          : '<span class="kbd-tag">[r]</span> Rollback checkout-worker';
+        btnReset.hidden = !rolledBack && canaryWeight === 25;
+      }
+
+      function selectService(idx, moveFocusToTable) {
+        if (idx < 0 || idx >= services.length) return;
+        selectedIndex = idx;
+        renderAll();
+        if (moveFocusToTable) {
+          const btns = tbodyEl.querySelectorAll(".svc-row-btn");
+          if (btns[selectedIndex]) btns[selectedIndex].focus();
+        }
+        const s = services[selectedIndex];
+        announce("Selected " + s.id + ", " + s.badgeColor + ", " + s.readyCount + " of " + s.totalCount + " replicas ready.");
+      }
+
+      function setCanaryWeight(weight) {
+        canaryWeight = weight;
+        canaryBtns.forEach(function (btn) {
+          const match = Number(btn.dataset.weight) === weight;
+          btn.setAttribute("aria-pressed", match ? "true" : "false");
+        });
+        renderAll();
+        announce("Canary traffic gate set to " + weight + " percent.");
+      }
+
+      function openRollbackDialog(triggerEl) {
+        if (rolledBack) return;
+        lastDialogTrigger = triggerEl || document.activeElement;
+        document.getElementById("rollback-diff-preview").textContent =
+          "- current: v2.19.0-rc2 (2/4 ready · RSS 2048/2048 MiB · OOMKilled)\n" +
+          "+ target:  v2.18.4     (4/4 ready · peak RSS 742 MiB  · verified healthy)\n" +
+          "+ traffic: canary gate " + canaryWeight + "% -> 0% (100% stable revision)";
+        dialogBackdrop.hidden = false;
+        btnConfirmRollback.focus();
+      }
+
+      function closeRollbackDialog() {
+        dialogBackdrop.hidden = true;
+        if (lastDialogTrigger && typeof lastDialogTrigger.focus === "function") {
+          lastDialogTrigger.focus();
+        }
+      }
+
+      function executeRollback() {
+        rolledBack = true;
+        const cw = services[0];
+        cw.health = "OK";
+        cw.badgeColor = "[OK] Rolled back to v2.18.4";
+        cw.badgeMono = "[OK] Rolled back v2.18.4";
+        cw.release = "v2.18.4";
+        cw.readyCount = 4;
+        cw.totalCount = 4;
+        cw.baseP95Ms = 19;
+        cw.sparkUnicode = "▆▄▃▂▂▂▂▂";
+        cw.sparkAscii = "*=-.....";
+        cw.sparkClass = "spark-ok";
+        cw.p95Delta = "-321ms";
+        cw.memPct = "36%";
+        cw.memText = "742 / 2048 MiB (stable v2.18.4)";
+        cw.readyTag = "[RECOVERED]";
+        cw.monoSummary1 = "checkout-worker: [OK] Rolled back to v2.18.4 (4/4 ready)";
+        cw.monoSummary2 = "RSS stabilized at 742 MiB; canary gate closed (0%)";
+        cw.events = [
+          { tag: "[OK]", cls: "badge-ok", ts: "14:40:28", msg: "Rolled back checkout-worker to v2.18.4; 4/4 pods ready (0 OOMKills)" },
+          { tag: "[OK]", cls: "badge-ok", ts: "14:40:26", msg: "canary traffic gate drained from " + canaryWeight + "% to 0% without dropped requests" },
+          { tag: "[INF]", cls: "badge-ok", ts: "14:40:21", msg: "terminated failing v2.19.0-rc2 pods cleanly; cgroup RSS steady at 742 MiB" }
+        ];
+        cw.jsonl = [
+          '{"ts":"2026-11-25T14:40:28Z","svc":"checkout-worker","lvl":"INFO","event":"rollback_complete","release":"v2.18.4","ready":"4/4","rss_mib":742}'
+        ];
+
+        selectedIndex = 0;
+        dialogBackdrop.hidden = true;
+        renderAll();
+        btnReset.focus();
+        announce("Cluster rolled back: checkout-worker status is now [OK] Rolled back to v2.18.4 with 4 of 4 pods ready.");
+      }
+
+      function resetIncident() {
+        services = cloneInitialServices();
+        rolledBack = false;
+        canaryWeight = 25;
+        selectedIndex = 0;
+        canaryBtns.forEach(function (btn) {
+          btn.setAttribute("aria-pressed", Number(btn.dataset.weight) === 25 ? "true" : "false");
+        });
+        renderAll();
+        btnRollback.focus();
+        announce("Reset incident fixture: checkout-worker restored to [ERR] OOMKilled at 25 percent canary weight.");
+      }
+
+      function toggleNoColor() {
+        noColor = !noColor;
+        document.documentElement.setAttribute("data-no-color", noColor ? "true" : "false");
+        btnNoColor.setAttribute("aria-pressed", noColor ? "true" : "false");
+        btnNoColor.innerHTML = '<span class="kbd-tag">[n]</span> NO_COLOR=1: ' + (noColor ? "ON" : "OFF");
+        renderAll();
+        announce("NO_COLOR=1 mode " + (noColor ? "enabled" : "disabled") + ".");
+      }
+
+      function toggleTermDumb() {
+        termDumb = !termDumb;
+        document.documentElement.setAttribute("data-term", termDumb ? "dumb" : "xterm-256color");
+        btnTermDumb.setAttribute("aria-pressed", termDumb ? "true" : "false");
+        btnTermDumb.innerHTML = '<span class="kbd-tag">[d]</span> TERM=dumb: ' + (termDumb ? "ON" : "OFF");
+        renderAll();
+        announce("TERM=dumb ASCII degradation " + (termDumb ? "enabled" : "disabled") + ".");
+      }
+
+      function simulateTeardown(kind) {
+        const footerBanner = document.getElementById("footer-teardown-status");
+        if (kind === "panic") {
+          teardownLogEl.textContent =
+            "// [PANIC HOOK TRIGGERED] thread 'main' panicked at src/poller.rs:84\n" +
+            "// 1. write_all(b\"\\x1b[?2026l\\x1b[<u\\x1b]9;4;0\\x1b\\\\\") -> sync/keys/progress cleared\n" +
+            "// 2. crossterm::terminal::LeaveAlternateScreen (?1049l) + ShowCursor (?25h)\n" +
+            "// 3. crossterm::terminal::disable_raw_mode() -> canonical shell echo restored\n" +
+            "// 4. color_eyre prints human backtrace to primary stderr buffer cleanly.";
+          footerBanner.innerHTML = "TTY guard: <code>panic_hook</code> restored ?1049l + ?25h + raw_mode=OFF (exit 101)";
+          announce("Simulated panic hook teardown: alternate screen and raw mode cleanly restored before printing backtrace.");
+        } else {
+          teardownLogEl.textContent =
+            "// [QUIT KEY 'q'] Graceful teardown via ratatui::restore()\n" +
+            "// 1. CancellationToken::cancel() -> Tokio stream pollers stopped cleanly\n" +
+            "// 2. write_all(b\"\\x1b[?2026l\\x1b[<u\\x1b]9;4;0\\x1b\\\\\") -> protocols popped\n" +
+            "// 3. LeaveAlternateScreen (?1049l) + ShowCursor (?25h) + disable_raw_mode()\n" +
+            "// [CLEAN EXIT 0] User shell prompt restored with zero leaked escape bytes.";
+          footerBanner.innerHTML = "TTY guard: <code>ratatui::restore()</code> verified (?1049l, ?25h, exit 0)";
+          announce("Simulated graceful quit: ratatui restore completed with exit code 0.");
+        }
+      }
+
+      // Wire Controls
+      canaryBtns.forEach(function (btn) {
+        btn.addEventListener("click", function () {
+          setCanaryWeight(Number(btn.dataset.weight));
+        });
+      });
+
+      btnRollback.addEventListener("click", function () {
+        openRollbackDialog(btnRollback);
+      });
+
+      btnConfirmRollback.addEventListener("click", executeRollback);
+      btnCancelRollback.addEventListener("click", closeRollbackDialog);
+      dialogBackdrop.addEventListener("click", function (ev) {
+        if (ev.target === dialogBackdrop) closeRollbackDialog();
+      });
+
+      btnReset.addEventListener("click", resetIncident);
+      btnNoColor.addEventListener("click", toggleNoColor);
+      btnTermDumb.addEventListener("click", toggleTermDumb);
+
+      tabEvents.addEventListener("click", function () {
+        inspectorMode = "events";
+        renderAll();
+      });
+      tabLogs.addEventListener("click", function () {
+        inspectorMode = "logs";
+        renderAll();
+      });
+
+      document.getElementById("btn-sim-quit").addEventListener("click", function () {
+        simulateTeardown("quit");
+      });
+      document.getElementById("btn-sim-panic").addEventListener("click", function () {
+        simulateTeardown("panic");
+      });
+
+      // Sync visual pane focus ring when keyboard Tab moves across panes
+      document.addEventListener("focusin", function (ev) {
+        const inMono = document.getElementById("pane-mono").contains(ev.target);
+        const inColor = document.getElementById("pane-color").contains(ev.target);
+        if (inMono || inColor) {
+          document.getElementById("pane-color").classList.toggle("is-pane-focused", inColor);
+          document.getElementById("pane-mono").classList.toggle("is-pane-focused", inMono);
+        }
+        const inInspector = document.getElementById("subpane-inspector").contains(ev.target);
+        const inServices = document.getElementById("subpane-services").contains(ev.target);
+        if (inInspector || inServices) {
+          document.getElementById("subpane-services").classList.toggle("has-focus", inServices);
+          document.getElementById("subpane-inspector").classList.toggle("has-focus", inInspector);
+        }
+      });
+
+      // Global Keyboard-First Ratatui Shortcuts
+      document.addEventListener("keydown", function (ev) {
+        if (!dialogBackdrop.hidden) {
+          if (ev.key === "Escape") {
+            ev.preventDefault();
+            closeRollbackDialog();
+          } else if (ev.key === "Tab") {
+            const focusables = [btnCancelRollback, btnConfirmRollback];
+            const idx = focusables.indexOf(document.activeElement);
+            if (ev.shiftKey && (idx <= 0)) {
+              ev.preventDefault();
+              btnConfirmRollback.focus();
+            } else if (!ev.shiftKey && idx === focusables.length - 1) {
+              ev.preventDefault();
+              btnCancelRollback.focus();
+            }
+          }
+          return;
+        }
+
+        if (ev.metaKey || ev.ctrlKey || ev.altKey) return;
+
+        if (ev.key === "ArrowDown" || ev.key === "j") {
+          ev.preventDefault();
+          selectService((selectedIndex + 1) % services.length, true);
+        } else if (ev.key === "ArrowUp" || ev.key === "k") {
+          ev.preventDefault();
+          selectService((selectedIndex - 1 + services.length) % services.length, true);
+        } else if (ev.key === "r") {
+          if (!rolledBack) {
+            ev.preventDefault();
+            openRollbackDialog(document.activeElement);
+          }
+        } else if (ev.key === "l") {
+          ev.preventDefault();
+          inspectorMode = inspectorMode === "logs" ? "events" : "logs";
+          renderAll();
+          announce("Inspector switched to " + (inspectorMode === "logs" ? "non-TTY JSON lines" : "container events") + ".");
+        } else if (ev.key === "e") {
+          ev.preventDefault();
+          inspectorMode = "events";
+          renderAll();
+        } else if (ev.key === "n") {
+          ev.preventDefault();
+          toggleNoColor();
+        } else if (ev.key === "d") {
+          ev.preventDefault();
+          toggleTermDumb();
+        } else if (ev.key === "q") {
+          ev.preventDefault();
+          simulateTeardown("quit");
+        } else if (ev.key === "1") {
+          setCanaryWeight(10);
+        } else if (ev.key === "2") {
+          setCanaryWeight(25);
+        } else if (ev.key === "3") {
+          setCanaryWeight(50);
+        } else if (ev.key === "4") {
+          setCanaryWeight(100);
+        }
+      });
+
+      renderAll();
+    })();
+  </script>
 </body>
 </html>

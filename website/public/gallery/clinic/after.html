@@ -1,195 +1,2991 @@
 <!doctype html>
-<html lang="en">
+<html lang="en-GB">
 <head>
-<meta charset="utf-8">
-<meta name="viewport" content="width=device-width, initial-scale=1">
-<title>Book a visit · Marlow Clinic (with Pixelcraft)</title>
-<link rel="stylesheet" href="../../fonts/gallery.css">
-<style>
-  :root {
-    --paper: #f6f7f4; --panel: #ffffff; --ink: #14201c; --ink-2: #4a5a54; --line: #c7d1c9;
-    --action: #0d6b5c; --on-action: #ffffff; --soft: #e1f0eb;
-    --danger: #a3261f; --danger-bg: #fbeceb; --muted-bg: #eceee9;
-    --ok-bg: #e1f3ea; --ok: #0a5847;
-    --sans: "Public Sans", system-ui, sans-serif; --mono: "IBM Plex Mono", ui-monospace, monospace;
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>Book a Consultation · Marlow Clinic — Accessible Appointment &amp; Fee Portal</title>
+  <meta name="description" content="Book an accessible in-clinic or encrypted video consultation at Marlow Clinic, Southwark. Step-free ground-floor rooms, live clinician slot matrix, paste-friendly intake, and transparent NHS, insurer, and self-pay tariffs.">
+  <link rel="canonical" href="https://marlowclinic.example/appointments/book">
+  <meta property="og:title" content="Marlow Clinic · Accessible Patient Appointment &amp; Transparent Fee Portal">
+  <meta property="og:description" content="Choose consultation reason, clinician, step-free room or encrypted video modality, and review exact out-of-pocket fees before confirming.">
+  <meta property="og:type" content="website">
+  <meta property="og:url" content="https://marlowclinic.example/appointments/book">
+  <meta property="og:locale" content="en_GB">
+  <link rel="stylesheet" href="../../fonts/gallery.css">
+  <script type="application/ld+json">
+  {
+    "@context": "https://schema.org",
+    "@type": "MedicalClinic",
+    "name": "Marlow Clinic",
+    "description": "Accessible primary care, same-day acute consultations, and preventive medicine in Southwark, London. Fictional clinic and patient — illustrative specimen.",
+    "url": "https://marlowclinic.example/appointments/book",
+    "telephone": "+44-20-7946-0321",
+    "medicalSpecialty": ["PrimaryCare", "GeneralPractice", "PublicHealth"],
+    "isAcceptingNewPatients": true,
+    "publicAccess": true,
+    "address": {
+      "@type": "PostalAddress",
+      "streetAddress": "14 Weir Street, Southwark",
+      "addressLocality": "London",
+      "postalCode": "SE1 9RT",
+      "addressCountry": "GB"
+    },
+    "openingHoursSpecification": [
+      {
+        "@type": "OpeningHoursSpecification",
+        "dayOfWeek": ["Monday", "Tuesday", "Wednesday", "Thursday", "Friday"],
+        "opens": "08:00",
+        "closes": "18:30"
+      }
+    ],
+    "amenityFeature": [
+      { "@type": "LocationFeatureSpecification", "name": "Step-free ground-floor entrance (0 mm threshold)", "value": true },
+      { "@type": "LocationFeatureSpecification", "name": "IEC 60118-4 hearing induction loop", "value": true },
+      { "@type": "LocationFeatureSpecification", "name": "BSL interpreter and quiet waiting bay", "value": true }
+    ]
   }
-  * { box-sizing: border-box; }
-  body { margin: 0; background: var(--paper); color: var(--ink); font-family: var(--sans); }
-  header { display: flex; justify-content: space-between; align-items: center; padding: 18px 56px; border-bottom: 1px solid var(--line); background: var(--panel); gap: 16px; }
-  header strong { font-weight: 800; font-size: 19px; letter-spacing: -.01em; }
-  header span { font-size: 14px; color: var(--ink-2); }
-  main.layout { display: grid; grid-template-columns: 1fr 340px; gap: 48px; max-width: 1180px; margin: 0 auto; padding: 32px 56px 40px; }
-  .step { font-family: var(--mono); font-size: 13px; color: var(--ink-2); margin: 0 0 8px; }
-  .bar { display: flex; gap: 6px; margin-bottom: 18px; }
-  .bar i { height: 6px; flex: 1; background: var(--line); }
-  .bar i.on { background: var(--action); }
-  h1 { font-size: 34px; line-height: 1.1; margin: 0 0 6px; letter-spacing: -.02em; font-weight: 800; }
-  .help { color: var(--ink-2); font-size: 15px; margin: 0 0 20px; line-height: 1.5; }
-  .summary-err { border: 2px solid var(--danger); background: var(--danger-bg); padding: 12px 16px; margin-bottom: 20px; }
-  .summary-err h2 { margin: 0 0 4px; font-size: 15px; color: var(--danger); }
-  .summary-err a { color: var(--danger); font-weight: 600; font-size: 14px; }
-  .summary-ok { border: 2px solid var(--ok); background: var(--ok-bg); padding: 12px 16px; margin-bottom: 20px; color: var(--ok); font-weight: 600; }
-  .hidden { display: none; }
-  fieldset { border: 0; padding: 0; margin: 0 0 18px; }
-  legend, label { font-weight: 600; font-size: 15px; display: block; margin-bottom: 8px; padding: 0; }
-  .days { display: grid; grid-template-columns: repeat(5, 1fr); gap: 8px; }
-  .day { border: 1px solid var(--ink-2); background: var(--panel); padding: 10px 6px; text-align: center; font: 400 14px var(--sans); cursor: pointer; color: var(--ink); }
-  .day b { display: block; font-size: 19px; }
-  .day[aria-pressed="true"] { border: 2px solid var(--action); background: var(--soft); }
-  .slots { display: grid; grid-template-columns: repeat(4, 1fr); gap: 8px; }
-  .slot { border: 1px solid var(--ink-2); background: var(--panel); padding: 10px 4px; font: 500 15px var(--mono); text-align: center; cursor: pointer; color: var(--ink); min-height: 52px; }
-  .slot[aria-pressed="true"] { background: var(--action); color: var(--on-action); border-color: var(--action); }
-  .slot.full { border-color: var(--line); background: var(--muted-bg); color: var(--ink-2); cursor: not-allowed; }
-  .slot .time-struck { text-decoration: line-through; }
-  .slot small { display: block; font: 500 11px var(--sans); margin-top: 2px; }
-  .field { margin-bottom: 16px; max-width: 420px; }
-  input { width: 100%; padding: 11px 14px; border: 1px solid var(--ink-2); background: var(--panel); font: 400 16px var(--sans); color: var(--ink); }
-  input:focus-visible, .slot:focus-visible, .day:focus-visible, .secondary:focus-visible, .summary-err a:focus-visible { outline: 3px solid var(--action); outline-offset: 2px; }
-  input[aria-invalid="true"] { border: 2px solid var(--danger); background: var(--danger-bg); }
-  .err { color: var(--danger); font-size: 14px; font-weight: 600; margin: 6px 0 0; }
-  .actions { display: flex; gap: 14px; align-items: center; margin-top: 8px; }
-  .primary { background: var(--action); color: var(--on-action); border: 0; padding: 14px 22px; font: 700 16px var(--sans); cursor: pointer; }
-  .primary:focus-visible { outline: 3px solid var(--ink); outline-offset: 3px; }
-  .secondary { background: transparent; border: 0; padding: 10px 4px; color: var(--ink); font: 600 15px var(--sans); text-decoration: underline; cursor: pointer; }
-  aside { align-self: start; background: var(--panel); border: 1px solid var(--line); padding: 24px; position: sticky; top: 24px; }
-  aside h2 { margin: 0 0 14px; font-size: 13px; font-family: var(--mono); font-weight: 500; color: var(--ink-2); }
-  aside dl { margin: 0; }
-  aside dt { font-size: 13px; color: var(--ink-2); margin-top: 12px; }
-  aside dd { margin: 2px 0 0; font-weight: 600; font-size: 16px; }
-  aside p { font-size: 13px; color: var(--ink-2); border-top: 1px solid var(--line); padding-top: 14px; margin: 18px 0 0; line-height: 1.5; }
-  @media (max-width: 860px) {
-    header { padding: 14px 20px; flex-direction: column; align-items: flex-start; }
-    main.layout { grid-template-columns: 1fr; padding: 24px 20px; gap: 28px; }
-    .slots { grid-template-columns: repeat(2, 1fr); }
-    aside { position: static; }
-  }
-</style>
+  </script>
+  <style>
+    :root {
+      /* Core Marlow Clinic clinical palette from data.ts */
+      --bg-paper: #F7F6F2;
+      --bg-linen: #EFECE4;
+      --bg-surface: #FFFFFF;
+      --bg-muted-slot: #ECEAE3;
+
+      --ink-primary: #1B2A2F;
+      --ink-secondary: #415258;
+      --ink-muted: #56676D;
+
+      --line-subtle: #D5D2C8;
+      --line-strong: #76858A;
+
+      --action-emerald: #1D6B52;
+      --action-emerald-hover: #15523E;
+      --action-emerald-soft: #E3F1EC;
+      --action-emerald-border: #8ABFA9;
+      --action-emerald-ink: #104534;
+      --on-emerald: #FFFFFF;
+
+      --alert-crimson: #B42318;
+      --alert-crimson-soft: #FEF3F2;
+      --alert-crimson-border: #E2948C;
+
+      --prep-amber-ink: #6E3B00;
+      --prep-amber-soft: #FDF5E8;
+      --prep-amber-border: #DFBE8A;
+
+      --focus-ring: #1B2A2F;
+      --focus-ring-alt: #1D6B52;
+
+      --font-display: "Work Sans", "Public Sans", system-ui, -apple-system, sans-serif;
+      --font-sans: "Public Sans", system-ui, -apple-system, sans-serif;
+      --font-mono: "IBM Plex Mono", ui-monospace, SFMono-Regular, monospace;
+
+      --radius-sm: 4px;
+      --radius-md: 6px;
+    }
+
+    *, *::before, *::after {
+      box-sizing: border-box;
+    }
+
+    html {
+      scroll-behavior: smooth;
+      background: var(--bg-paper);
+      color: var(--ink-primary);
+    }
+
+    body {
+      margin: 0;
+      padding: 0;
+      background: var(--bg-paper);
+      color: var(--ink-primary);
+      font-family: var(--font-sans);
+      font-size: 15px;
+      line-height: 1.48;
+      -webkit-font-smoothing: antialiased;
+      overflow-x: hidden;
+    }
+
+    a, button, input, select, textarea, summary, [tabindex] {
+      scroll-margin-block-start: 28px;
+    }
+
+    section[id], fieldset[id] {
+      scroll-margin-block-start: 20px;
+    }
+
+    /* Universal WCAG 2.2 AA+ focus appearance (never outline: none) */
+    a:focus-visible,
+    button:focus-visible,
+    input:focus-visible,
+    select:focus-visible,
+    textarea:focus-visible,
+    [tabindex]:focus-visible {
+      outline: 3px solid var(--focus-ring);
+      outline-offset: 2px;
+    }
+
+    .btn-primary:focus-visible,
+    .slot[aria-pressed="true"]:focus-visible,
+    .choice-btn[aria-pressed="true"]:focus-visible,
+    .day[aria-pressed="true"]:focus-visible,
+    .coverage-btn[aria-pressed="true"]:focus-visible {
+      outline: 3px solid var(--focus-ring);
+      outline-offset: 3px;
+    }
+
+    /* Skip link */
+    .skip-link {
+      position: absolute;
+      inset-block-start: -120px;
+      inset-inline-start: 16px;
+      z-index: 999;
+      background: var(--ink-primary);
+      color: var(--bg-surface);
+      padding: 12px 18px;
+      font-family: var(--font-sans);
+      font-weight: 700;
+      font-size: 14px;
+      text-decoration: none;
+      border-radius: var(--radius-sm);
+      border: 2px solid var(--bg-surface);
+    }
+
+    .skip-link:focus,
+    .skip-link:focus-visible {
+      inset-block-start: 12px;
+    }
+
+    .sr-only {
+      position: absolute;
+      width: 1px;
+      height: 1px;
+      padding: 0;
+      margin: -1px;
+      overflow: hidden;
+      clip: rect(0, 0, 0, 0);
+      white-space: nowrap;
+      border: 0;
+    }
+
+    .hidden {
+      display: none !important;
+    }
+
+    .mono {
+      font-family: var(--font-mono);
+      font-variant-numeric: tabular-nums;
+    }
+
+    /* Clinical Masthead */
+    .site-header {
+      background: var(--bg-surface);
+      border-block-end: 1px solid var(--line-subtle);
+    }
+
+    .header-inner {
+      max-width: 1380px;
+      margin-inline: auto;
+      padding: 9px 32px;
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      gap: 12px;
+      flex-wrap: wrap;
+    }
+
+    .brand-cluster {
+      display: flex;
+      align-items: center;
+      gap: 10px;
+      flex-wrap: wrap;
+      min-width: 0;
+    }
+
+    .clinic-mark {
+      width: 26px;
+      height: 26px;
+      flex-shrink: 0;
+      color: var(--action-emerald);
+    }
+
+    .brand-name {
+      font-family: var(--font-display);
+      font-weight: 700;
+      font-size: 17.5px;
+      letter-spacing: -0.02em;
+      color: var(--ink-primary);
+    }
+
+    .brand-meta {
+      font-size: 12.5px;
+      color: var(--ink-secondary);
+      padding-inline-start: 10px;
+      border-inline-start: 1px solid var(--line-subtle);
+    }
+
+    .specimen-pill {
+      font-family: var(--font-mono);
+      font-size: 11px;
+      font-weight: 500;
+      color: var(--ink-secondary);
+      background: var(--bg-linen);
+      border: 1px solid var(--line-subtle);
+      padding: 3px 8px;
+      border-radius: var(--radius-sm);
+    }
+
+    .header-nav {
+      display: flex;
+      align-items: center;
+      gap: 13px;
+      flex-wrap: wrap;
+    }
+
+    .header-nav a {
+      display: inline-flex;
+      align-items: center;
+      min-height: 28px;
+      color: var(--ink-primary);
+      font-size: 13px;
+      font-weight: 600;
+      text-decoration: underline;
+      text-decoration-color: var(--line-strong);
+      text-underline-offset: 3px;
+      padding-block: 3px;
+    }
+
+    .header-nav a:hover {
+      color: var(--action-emerald);
+      text-decoration-color: var(--action-emerald);
+    }
+
+    .cancel-line {
+      font-family: var(--font-mono);
+      font-size: 12px;
+      color: var(--ink-secondary);
+      background: var(--bg-paper);
+      border: 1px solid var(--line-subtle);
+      padding: 4px 9px;
+      border-radius: var(--radius-sm);
+    }
+
+    /* Main Container */
+    .portal-main {
+      max-width: 1380px;
+      margin-inline: auto;
+      padding: 18px 32px 56px;
+    }
+
+    /* Top Asymmetric Clinical Workbench */
+    .workbench-grid {
+      display: grid;
+      grid-template-columns: minmax(0, 1fr) 408px;
+      gap: 28px;
+      align-items: start;
+    }
+
+    .workbench-primary {
+      min-width: 0;
+    }
+
+    /* Step & Heading Strip */
+    .step-row {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      gap: 12px;
+      flex-wrap: wrap;
+      margin-block-end: 6px;
+    }
+
+    .step-label {
+      font-family: var(--font-mono);
+      font-size: 12px;
+      font-weight: 500;
+      color: var(--ink-secondary);
+      margin: 0;
+      text-transform: uppercase;
+      letter-spacing: 0.04em;
+    }
+
+    .tz-badge {
+      font-family: var(--font-mono);
+      font-size: 12px;
+      color: var(--action-emerald-ink);
+      background: var(--action-emerald-soft);
+      border: 1px solid var(--action-emerald-border);
+      padding: 2px 8px;
+      border-radius: var(--radius-sm);
+    }
+
+    .step-bar {
+      display: grid;
+      grid-template-columns: repeat(3, 1fr);
+      gap: 6px;
+      margin-block-end: 10px;
+    }
+
+    .step-bar span {
+      height: 5px;
+      background: var(--line-subtle);
+      border-radius: 2px;
+    }
+
+    .step-bar span.active {
+      background: var(--action-emerald);
+    }
+
+    .workbench-heading {
+      display: flex;
+      align-items: baseline;
+      justify-content: space-between;
+      gap: 16px;
+      flex-wrap: wrap;
+      margin-block-end: 10px;
+    }
+
+    h1 {
+      font-family: var(--font-display);
+      font-size: 27px;
+      line-height: 1.14;
+      letter-spacing: -0.02em;
+      font-weight: 700;
+      margin: 0;
+      color: var(--ink-primary);
+    }
+
+    .heading-sub {
+      margin: 0;
+      font-size: 13.5px;
+      color: var(--ink-secondary);
+    }
+
+    /* Linked Error & Status Banners */
+    .summary-err {
+      border: 2px solid var(--alert-crimson);
+      background: var(--alert-crimson-soft);
+      border-radius: var(--radius-md);
+      padding: 9px 14px;
+      margin-block-end: 12px;
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      gap: 12px;
+      flex-wrap: wrap;
+    }
+
+    .summary-err-body {
+      display: flex;
+      align-items: flex-start;
+      gap: 10px;
+      min-width: 0;
+      flex: 1 1 240px;
+    }
+
+    .status-icon {
+      width: 18px;
+      height: 18px;
+      flex-shrink: 0;
+      margin-block-start: 2px;
+    }
+
+    .summary-err h2 {
+      margin: 0 0 2px;
+      font-size: 14px;
+      font-weight: 700;
+      color: var(--alert-crimson);
+    }
+
+    .err-list {
+      margin: 0;
+      padding: 0;
+      list-style: none;
+    }
+
+    .err-list li {
+      margin: 0;
+    }
+
+    .summary-err a {
+      display: inline-block;
+      min-height: 24px;
+      padding-block: 2px;
+      color: var(--alert-crimson);
+      font-weight: 700;
+      font-size: 13.5px;
+      text-decoration: underline;
+      text-underline-offset: 2px;
+      overflow-wrap: anywhere;
+    }
+
+    .fix-assist-btn {
+      background: var(--bg-surface);
+      color: var(--ink-primary);
+      border: 1px solid var(--alert-crimson);
+      border-radius: var(--radius-sm);
+      padding: 6px 11px;
+      font: 600 12.5px var(--font-sans);
+      cursor: pointer;
+      min-height: 36px;
+      white-space: nowrap;
+    }
+
+    .fix-assist-btn:hover {
+      background: var(--bg-linen);
+    }
+
+    .summary-ok {
+      border: 2px solid var(--action-emerald);
+      background: var(--action-emerald-soft);
+      color: var(--action-emerald-ink);
+      border-radius: var(--radius-md);
+      padding: 10px 14px;
+      margin-block-end: 12px;
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      gap: 12px;
+      flex-wrap: wrap;
+      font-size: 14px;
+      font-weight: 600;
+    }
+
+    .summary-ok a {
+      display: inline-flex;
+      align-items: center;
+      min-height: 28px;
+      color: var(--action-emerald-ink);
+      font-weight: 700;
+      text-decoration: underline;
+    }
+
+    /* Fieldsets & Legends (strictly 1 legend per fieldset) */
+    fieldset.group-box {
+      border: 0;
+      padding: 0;
+      margin: 0 0 11px;
+      min-width: 0;
+    }
+
+    fieldset.group-box > legend {
+      padding: 0;
+      margin: 0 0 5px;
+      font-family: var(--font-sans);
+      font-weight: 700;
+      font-size: 13.5px;
+      color: var(--ink-primary);
+      width: 100%;
+    }
+
+    .legend-hint {
+      font-weight: 400;
+      font-size: 12.5px;
+      color: var(--ink-secondary);
+      margin-inline-start: 6px;
+    }
+
+    /* Triage Choice Grids */
+    .visit-grid {
+      display: grid;
+      grid-template-columns: repeat(3, minmax(0, 1fr));
+      gap: 8px;
+      align-items: stretch;
+    }
+
+    .triage-pair {
+      display: grid;
+      grid-template-columns: 1.45fr 1fr;
+      gap: 12px;
+      align-items: stretch;
+      margin-block-end: 2px;
+    }
+
+    .triage-pair > fieldset.group-box {
+      display: flex;
+      flex-direction: column;
+    }
+
+    .clinician-pills {
+      display: grid;
+      grid-template-columns: repeat(3, minmax(0, 1fr));
+      gap: 6px;
+      flex: 1;
+      align-items: stretch;
+    }
+
+    .modality-pills {
+      display: grid;
+      grid-template-columns: repeat(2, minmax(0, 1fr));
+      gap: 6px;
+      flex: 1;
+      align-items: stretch;
+    }
+
+    .choice-btn {
+      appearance: none;
+      width: 100%;
+      height: 100%;
+      min-height: 52px;
+      text-align: start;
+      background: var(--bg-surface);
+      color: var(--ink-primary);
+      border: 1px solid var(--line-strong);
+      border-radius: var(--radius-sm);
+      padding: 7px 10px;
+      font-family: var(--font-sans);
+      cursor: pointer;
+      display: flex;
+      flex-direction: column;
+      justify-content: space-between;
+      gap: 3px;
+      transition: background-color 120ms ease, border-color 120ms ease;
+    }
+
+    .choice-btn:hover {
+      background: var(--bg-linen);
+    }
+
+    .choice-btn .choice-top {
+      display: flex;
+      align-items: flex-start;
+      justify-content: space-between;
+      gap: 6px;
+      font-weight: 700;
+      font-size: 12.8px;
+      line-height: 1.22;
+    }
+
+    .choice-btn .choice-sub {
+      font-size: 11.5px;
+      color: var(--ink-secondary);
+      line-height: 1.25;
+    }
+
+    .state-pip {
+      width: 15px;
+      height: 15px;
+      border-radius: 50%;
+      border: 1.5px solid var(--line-strong);
+      display: inline-flex;
+      align-items: center;
+      justify-content: center;
+      flex-shrink: 0;
+      background: var(--bg-surface);
+      margin-block-start: 1px;
+    }
+
+    .state-pip svg {
+      width: 10px;
+      height: 10px;
+      opacity: 0;
+    }
+
+    .choice-btn[aria-pressed="true"] {
+      border: 2px solid var(--action-emerald);
+      background: var(--action-emerald-soft);
+      padding: 6px 9px;
+    }
+
+    .choice-btn[aria-pressed="true"] .choice-sub {
+      color: var(--action-emerald-ink);
+    }
+
+    .choice-btn[aria-pressed="true"] .state-pip {
+      background: var(--action-emerald);
+      border-color: var(--action-emerald);
+      color: var(--on-emerald);
+    }
+
+    .choice-btn[aria-pressed="true"] .state-pip svg {
+      opacity: 1;
+    }
+
+    /* Multi-Day Picker */
+    .days {
+      display: grid;
+      grid-template-columns: repeat(5, minmax(0, 1fr));
+      gap: 8px;
+    }
+
+    .day {
+      appearance: none;
+      min-height: 54px;
+      border: 1px solid var(--line-strong);
+      border-radius: var(--radius-sm);
+      background: var(--bg-surface);
+      padding: 6px 6px;
+      text-align: center;
+      font-family: var(--font-sans);
+      font-size: 12.5px;
+      color: var(--ink-primary);
+      cursor: pointer;
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      justify-content: center;
+      gap: 1px;
+      transition: background-color 120ms ease, border-color 120ms ease;
+    }
+
+    .day:hover {
+      background: var(--bg-linen);
+    }
+
+    .day b {
+      font-family: var(--font-display);
+      font-size: 16px;
+      font-weight: 700;
+      line-height: 1.15;
+    }
+
+    .day small {
+      font-family: var(--font-mono);
+      font-size: 11px;
+      color: var(--ink-secondary);
+    }
+
+    .day[aria-pressed="true"] {
+      border: 2px solid var(--action-emerald);
+      background: var(--action-emerald-soft);
+      color: var(--ink-primary);
+      font-weight: 700;
+    }
+
+    .day[aria-pressed="true"] small {
+      color: var(--action-emerald-ink);
+      font-weight: 500;
+    }
+
+    /* Accessible Slot Matrix */
+    .slots {
+      display: grid;
+      grid-template-columns: repeat(4, minmax(0, 1fr));
+      gap: 8px;
+    }
+
+    .slot {
+      appearance: none;
+      min-height: 50px;
+      border: 1px solid var(--line-strong);
+      border-radius: var(--radius-sm);
+      background: var(--bg-surface);
+      padding: 6px 8px;
+      font-family: var(--font-mono);
+      font-weight: 500;
+      font-size: 14.5px;
+      color: var(--ink-primary);
+      cursor: pointer;
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      justify-content: center;
+      gap: 1px;
+      transition: background-color 120ms ease, border-color 120ms ease;
+    }
+
+    .slot:hover:not([disabled]) {
+      background: var(--bg-linen);
+    }
+
+    .slot-time-row {
+      display: inline-flex;
+      align-items: center;
+      gap: 5px;
+    }
+
+    .slot-marker {
+      width: 12px;
+      height: 12px;
+      flex-shrink: 0;
+    }
+
+    .slot small {
+      display: block;
+      font-family: var(--font-sans);
+      font-weight: 600;
+      font-size: 11px;
+      color: var(--ink-secondary);
+      text-decoration: none;
+    }
+
+    .slot[aria-pressed="true"] {
+      background: var(--action-emerald);
+      color: var(--on-emerald);
+      border: 2px solid var(--ink-primary);
+    }
+
+    .slot[aria-pressed="true"] small {
+      color: var(--on-emerald);
+    }
+
+    .slot.full {
+      border: 1px dashed var(--line-strong);
+      background: var(--bg-muted-slot);
+      color: var(--ink-secondary);
+      cursor: not-allowed;
+    }
+
+    /* Strikes ONLY the time, preserving clean readable 'Full' label */
+    .slot .time-struck {
+      text-decoration: line-through;
+      text-decoration-thickness: 1.5px;
+    }
+
+    /* Paste-Friendly Email Pair & Submit Row */
+    .email-pair {
+      display: grid;
+      grid-template-columns: repeat(2, minmax(0, 1fr));
+      gap: 12px;
+      margin-block-end: 10px;
+    }
+
+    .field {
+      min-width: 0;
+    }
+
+    label {
+      display: block;
+      font-weight: 700;
+      font-size: 13.5px;
+      color: var(--ink-primary);
+      margin-block-end: 4px;
+    }
+
+    .opt {
+      font-weight: 400;
+      color: var(--ink-secondary);
+      font-size: 12.5px;
+    }
+
+    input[type="text"],
+    input[type="email"],
+    input[type="tel"],
+    textarea {
+      width: 100%;
+      min-height: 42px;
+      padding: 8px 11px;
+      border: 1px solid var(--line-strong);
+      border-radius: var(--radius-sm);
+      background: var(--bg-surface);
+      font: 400 15px var(--font-sans);
+      color: var(--ink-primary);
+    }
+
+    textarea {
+      min-height: 82px;
+      resize: vertical;
+      line-height: 1.45;
+    }
+
+    input[aria-invalid="true"],
+    textarea[aria-invalid="true"] {
+      border: 2px solid var(--alert-crimson);
+      background: var(--alert-crimson-soft);
+      padding: 7px 10px;
+    }
+
+    .field-hint {
+      margin: 4px 0 0;
+      font-size: 12px;
+      color: var(--ink-secondary);
+      line-height: 1.35;
+    }
+
+    .err {
+      margin: 4px 0 0;
+      font-size: 12.5px;
+      font-weight: 700;
+      color: var(--alert-crimson);
+      line-height: 1.35;
+    }
+
+    .actions-bar {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      gap: 12px;
+      flex-wrap: wrap;
+      padding-block-start: 4px;
+    }
+
+    .actions-main {
+      display: flex;
+      align-items: center;
+      gap: 12px;
+      flex-wrap: wrap;
+    }
+
+    .btn-primary {
+      appearance: none;
+      min-height: 46px;
+      background: var(--action-emerald);
+      color: var(--on-emerald);
+      border: 2px solid var(--action-emerald);
+      border-radius: var(--radius-sm);
+      padding: 10px 20px;
+      font: 700 15px var(--font-sans);
+      cursor: pointer;
+      transition: background-color 120ms ease, border-color 120ms ease;
+    }
+
+    .btn-primary:hover {
+      background: var(--action-emerald-hover);
+      border-color: var(--action-emerald-hover);
+    }
+
+    .btn-outline {
+      appearance: none;
+      min-height: 44px;
+      background: var(--bg-surface);
+      color: var(--ink-primary);
+      border: 1px solid var(--line-strong);
+      border-radius: var(--radius-sm);
+      padding: 9px 14px;
+      font: 600 13.5px var(--font-sans);
+      text-decoration: none;
+      display: inline-flex;
+      align-items: center;
+      gap: 6px;
+      cursor: pointer;
+    }
+
+    .btn-outline:hover {
+      background: var(--bg-linen);
+    }
+
+    .btn-link {
+      appearance: none;
+      background: transparent;
+      border: 0;
+      padding: 8px 4px;
+      min-height: 40px;
+      color: var(--ink-primary);
+      font: 600 13.5px var(--font-sans);
+      text-decoration: underline;
+      text-underline-offset: 3px;
+      cursor: pointer;
+    }
+
+    /* Right Sticky Clinical Summary Dossier */
+    .summary-rail {
+      background: var(--bg-surface);
+      border: 1px solid var(--line-strong);
+      border-radius: var(--radius-md);
+      padding: 18px 20px;
+      position: sticky;
+      inset-block-start: 16px;
+      min-width: 0;
+    }
+
+    .rail-head {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      gap: 8px;
+      padding-block-end: 10px;
+      border-block-end: 1px solid var(--line-subtle);
+      margin-block-end: 12px;
+    }
+
+    .rail-head h2 {
+      margin: 0;
+      font-family: var(--font-mono);
+      font-size: 12px;
+      font-weight: 500;
+      letter-spacing: 0.05em;
+      color: var(--ink-secondary);
+    }
+
+    .hold-pill {
+      font-family: var(--font-mono);
+      font-size: 11.5px;
+      font-weight: 500;
+      color: var(--action-emerald-ink);
+      background: var(--action-emerald-soft);
+      border: 1px solid var(--action-emerald-border);
+      padding: 2px 8px;
+      border-radius: var(--radius-sm);
+    }
+
+    .slot-spotlight {
+      background: var(--bg-paper);
+      border: 1px solid var(--line-subtle);
+      border-radius: var(--radius-sm);
+      padding: 10px 12px;
+      margin-block-end: 12px;
+    }
+
+    .slot-spotlight-when {
+      font-family: var(--font-display);
+      font-size: 19px;
+      font-weight: 700;
+      color: var(--ink-primary);
+      margin: 0 0 2px;
+      letter-spacing: -0.01em;
+    }
+
+    .slot-spotlight-visit {
+      margin: 0;
+      font-size: 13.5px;
+      font-weight: 600;
+      color: var(--action-emerald-ink);
+    }
+
+    .summary-dl {
+      margin: 0;
+      display: grid;
+      gap: 9px;
+    }
+
+    .summary-row {
+      display: grid;
+      grid-template-columns: 96px minmax(0, 1fr);
+      gap: 8px;
+      align-items: baseline;
+    }
+
+    .summary-dl dt {
+      font-size: 12.5px;
+      color: var(--ink-secondary);
+      font-weight: 600;
+    }
+
+    .summary-dl dd {
+      margin: 0;
+      font-size: 13.5px;
+      font-weight: 600;
+      color: var(--ink-primary);
+      overflow-wrap: anywhere;
+    }
+
+    .summary-dl dd span {
+      display: block;
+      font-weight: 400;
+      font-size: 12px;
+      color: var(--ink-secondary);
+      margin-block-start: 1px;
+    }
+
+    .rail-fee-strip {
+      margin-block-start: 12px;
+      padding: 10px 12px;
+      background: var(--bg-linen);
+      border: 1px solid var(--line-subtle);
+      border-radius: var(--radius-sm);
+      display: grid;
+      gap: 8px;
+    }
+
+    .rail-fee-top {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      gap: 10px;
+      flex-wrap: wrap;
+    }
+
+    .rail-fee-label {
+      font-size: 12.5px;
+      color: var(--ink-secondary);
+    }
+
+    .rail-fee-label strong {
+      display: block;
+      font-size: 13px;
+      color: var(--ink-primary);
+    }
+
+    .rail-fee-amount {
+      text-align: end;
+    }
+
+    .rail-fee-amount b {
+      display: block;
+      font-family: var(--font-mono);
+      font-size: 18px;
+      color: var(--ink-primary);
+    }
+
+    .rail-fee-amount a {
+      display: inline-flex;
+      align-items: center;
+      min-height: 24px;
+      font-size: 12px;
+      color: var(--action-emerald-ink);
+      font-weight: 600;
+    }
+
+    .rail-coverage-mini {
+      display: grid;
+      grid-template-columns: repeat(3, minmax(0, 1fr));
+      gap: 5px;
+    }
+
+    .rail-cov-pill {
+      appearance: none;
+      min-height: 30px;
+      padding: 4px 6px;
+      background: var(--bg-surface);
+      color: var(--ink-primary);
+      border: 1px solid var(--line-strong);
+      border-radius: var(--radius-sm);
+      font: 600 11.5px var(--font-sans);
+      cursor: pointer;
+      text-align: center;
+    }
+
+    .rail-cov-pill:hover {
+      background: var(--bg-paper);
+    }
+
+    .rail-cov-pill[aria-pressed="true"] {
+      background: var(--action-emerald);
+      color: var(--on-emerald);
+      border-color: var(--ink-primary);
+    }
+
+    .rail-prep {
+      margin-block-start: 12px;
+      padding: 10px 12px;
+      background: var(--prep-amber-soft);
+      border: 1px solid var(--prep-amber-border);
+      border-radius: var(--radius-sm);
+    }
+
+    .rail-prep h3 {
+      margin: 0 0 4px;
+      font-size: 12px;
+      font-family: var(--font-mono);
+      text-transform: uppercase;
+      letter-spacing: 0.04em;
+      color: var(--prep-amber-ink);
+    }
+
+    .rail-prep p {
+      margin: 0;
+      font-size: 12.5px;
+      color: var(--ink-primary);
+      line-height: 1.4;
+    }
+
+    .rail-policy {
+      margin: 12px 0 0;
+      padding-block-start: 10px;
+      border-block-start: 1px solid var(--line-subtle);
+      font-size: 12px;
+      color: var(--ink-secondary);
+      line-height: 1.4;
+    }
+
+    /* Live Confirmed Appointment Pass Section */
+    .pass-region {
+      margin-block-start: 28px;
+    }
+
+    .appointment-pass {
+      background: var(--bg-surface);
+      border: 2px solid var(--action-emerald);
+      border-radius: var(--radius-md);
+      padding: 24px 28px;
+    }
+
+    .pass-banner {
+      display: flex;
+      align-items: flex-start;
+      justify-content: space-between;
+      gap: 16px;
+      flex-wrap: wrap;
+      padding-block-end: 16px;
+      border-block-end: 1px solid var(--line-subtle);
+      margin-block-end: 18px;
+    }
+
+    .pass-badge {
+      display: inline-flex;
+      align-items: center;
+      gap: 6px;
+      background: var(--action-emerald);
+      color: var(--on-emerald);
+      font-family: var(--font-mono);
+      font-size: 12px;
+      font-weight: 500;
+      padding: 4px 10px;
+      border-radius: var(--radius-sm);
+      margin-block-end: 6px;
+    }
+
+    .pass-banner h2 {
+      margin: 0;
+      font-family: var(--font-display);
+      font-size: 23px;
+      letter-spacing: -0.02em;
+    }
+
+    .pass-ref-box {
+      text-align: end;
+      background: var(--bg-paper);
+      border: 1px solid var(--line-subtle);
+      padding: 8px 14px;
+      border-radius: var(--radius-sm);
+    }
+
+    .pass-ref-box span {
+      display: block;
+      font-size: 11.5px;
+      color: var(--ink-secondary);
+    }
+
+    .pass-ref-box strong {
+      font-family: var(--font-mono);
+      font-size: 16px;
+      color: var(--ink-primary);
+    }
+
+    .pass-grid {
+      display: grid;
+      grid-template-columns: repeat(3, minmax(0, 1fr));
+      gap: 16px;
+      margin-block-end: 18px;
+    }
+
+    .pass-cell {
+      background: var(--bg-paper);
+      border: 1px solid var(--line-subtle);
+      border-radius: var(--radius-sm);
+      padding: 12px 14px;
+    }
+
+    .pass-cell h3 {
+      margin: 0 0 4px;
+      font-family: var(--font-mono);
+      font-size: 11.5px;
+      text-transform: uppercase;
+      color: var(--ink-secondary);
+    }
+
+    .pass-cell p {
+      margin: 0;
+      font-size: 14px;
+      font-weight: 600;
+      color: var(--ink-primary);
+      overflow-wrap: anywhere;
+    }
+
+    .pass-cell small {
+      display: block;
+      margin-block-start: 3px;
+      font-size: 12.5px;
+      color: var(--ink-secondary);
+    }
+
+    .pass-actions {
+      display: flex;
+      align-items: center;
+      gap: 12px;
+      flex-wrap: wrap;
+    }
+
+    /* Deep Portal Sections */
+    .portal-section {
+      margin-block-start: 40px;
+      padding-block-start: 32px;
+      border-block-start: 1px solid var(--line-subtle);
+    }
+
+    .section-header {
+      display: flex;
+      align-items: flex-end;
+      justify-content: space-between;
+      gap: 16px;
+      flex-wrap: wrap;
+      margin-block-end: 20px;
+    }
+
+    .section-eyebrow {
+      font-family: var(--font-mono);
+      font-size: 12px;
+      text-transform: uppercase;
+      letter-spacing: 0.05em;
+      color: var(--action-emerald-ink);
+      margin: 0 0 4px;
+    }
+
+    .section-header h2 {
+      margin: 0;
+      font-family: var(--font-display);
+      font-size: 24px;
+      letter-spacing: -0.02em;
+      color: var(--ink-primary);
+    }
+
+    .section-lead {
+      margin: 4px 0 0;
+      font-size: 14.5px;
+      color: var(--ink-secondary);
+      max-width: 68ch;
+    }
+
+    /* Section 2: Intake & Accessibility Accommodations */
+    .intake-grid {
+      display: grid;
+      grid-template-columns: 1.15fr 1fr;
+      gap: 28px;
+      align-items: start;
+    }
+
+    .sheet-box {
+      background: var(--bg-surface);
+      border: 1px solid var(--line-subtle);
+      border-radius: var(--radius-md);
+      padding: 22px 24px;
+      min-width: 0;
+    }
+
+    .sheet-box h3 {
+      margin: 0 0 14px;
+      font-family: var(--font-display);
+      font-size: 18px;
+      letter-spacing: -0.01em;
+    }
+
+    .form-two-up {
+      display: grid;
+      grid-template-columns: repeat(2, minmax(0, 1fr));
+      gap: 14px;
+      margin-block-end: 14px;
+    }
+
+    .field-stack {
+      margin-block-end: 14px;
+    }
+
+    .accom-list {
+      display: grid;
+      gap: 10px;
+      margin-block-top: 8px;
+    }
+
+    .check-item {
+      display: grid;
+      grid-template-columns: 24px minmax(0, 1fr);
+      gap: 10px;
+      align-items: start;
+      padding: 11px 12px;
+      border: 1px solid var(--line-strong);
+      border-radius: var(--radius-sm);
+      background: var(--bg-paper);
+    }
+
+    .check-item input[type="checkbox"] {
+      width: 24px;
+      height: 24px;
+      margin: 0;
+      accent-color: var(--action-emerald);
+      cursor: pointer;
+    }
+
+    .check-item label {
+      margin: 0;
+      cursor: pointer;
+      font-weight: 700;
+      font-size: 14px;
+    }
+
+    .check-item label span {
+      display: block;
+      font-weight: 400;
+      font-size: 12.5px;
+      color: var(--ink-secondary);
+      margin-block-start: 2px;
+      line-height: 1.4;
+    }
+
+    .safety-callout {
+      margin-block-start: 14px;
+      padding: 12px 14px;
+      border: 1px solid var(--alert-crimson-border);
+      background: var(--alert-crimson-soft);
+      border-radius: var(--radius-sm);
+      font-size: 13px;
+      color: var(--ink-primary);
+    }
+
+    .safety-callout strong {
+      color: var(--alert-crimson);
+    }
+
+    /* Section 3: Transparent Fee & Coverage Estimator */
+    .fee-layout {
+      display: grid;
+      grid-template-columns: 380px minmax(0, 1fr);
+      gap: 28px;
+      align-items: start;
+    }
+
+    .coverage-stack {
+      display: grid;
+      gap: 10px;
+    }
+
+    .coverage-btn {
+      appearance: none;
+      width: 100%;
+      text-align: start;
+      background: var(--bg-surface);
+      border: 1px solid var(--line-strong);
+      border-radius: var(--radius-sm);
+      padding: 12px 14px;
+      font-family: var(--font-sans);
+      color: var(--ink-primary);
+      cursor: pointer;
+      display: grid;
+      gap: 4px;
+      min-height: 64px;
+    }
+
+    .coverage-btn:hover {
+      background: var(--bg-linen);
+    }
+
+    .coverage-btn-top {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      gap: 8px;
+      font-weight: 700;
+      font-size: 14.5px;
+    }
+
+    .coverage-price-tag {
+      font-family: var(--font-mono);
+      font-size: 14px;
+      font-weight: 500;
+      padding: 2px 7px;
+      background: var(--bg-linen);
+      border-radius: var(--radius-sm);
+    }
+
+    .coverage-btn p {
+      margin: 0;
+      font-size: 12.5px;
+      color: var(--ink-secondary);
+      line-height: 1.4;
+    }
+
+    .coverage-btn[aria-pressed="true"] {
+      border: 2px solid var(--action-emerald);
+      background: var(--action-emerald-soft);
+      padding: 11px 13px;
+    }
+
+    .coverage-btn[aria-pressed="true"] .coverage-price-tag {
+      background: var(--action-emerald);
+      color: var(--on-emerald);
+    }
+
+    .coverage-btn[aria-pressed="true"] p {
+      color: var(--action-emerald-ink);
+    }
+
+    .table-wrap {
+      width: 100%;
+      overflow-x: auto;
+      background: var(--bg-surface);
+      border: 1px solid var(--line-subtle);
+      border-radius: var(--radius-md);
+    }
+
+    .tariff-table {
+      width: 100%;
+      border-collapse: collapse;
+      font-size: 14px;
+    }
+
+    .tariff-table caption {
+      text-align: start;
+      padding: 14px 18px 10px;
+      font-weight: 700;
+      font-size: 15px;
+      color: var(--ink-primary);
+      border-block-end: 1px solid var(--line-subtle);
+    }
+
+    .tariff-table caption span {
+      display: block;
+      font-weight: 400;
+      font-size: 12.5px;
+      color: var(--ink-secondary);
+      margin-block-start: 2px;
+    }
+
+    .tariff-table th,
+    .tariff-table td {
+      padding: 11px 18px;
+      border-block-end: 1px solid var(--line-subtle);
+      text-align: start;
+      vertical-align: top;
+    }
+
+    .tariff-table thead th {
+      background: var(--bg-linen);
+      font-family: var(--font-mono);
+      font-size: 11.5px;
+      text-transform: uppercase;
+      letter-spacing: 0.04em;
+      color: var(--ink-secondary);
+    }
+
+    .tariff-table .num {
+      text-align: end;
+      font-family: var(--font-mono);
+      font-variant-numeric: tabular-nums;
+      white-space: nowrap;
+    }
+
+    .tariff-table tfoot th,
+    .tariff-table tfoot td {
+      background: var(--action-emerald-soft);
+      color: var(--ink-primary);
+      font-weight: 700;
+      font-size: 15px;
+      border-block-end: 0;
+    }
+
+    /* Section 4: Clinician Roster & Step-Free Access Architecture */
+    .roster-grid {
+      display: grid;
+      grid-template-columns: repeat(3, minmax(0, 1fr));
+      gap: 18px;
+      margin-block-end: 22px;
+    }
+
+    .clinician-sheet {
+      background: var(--bg-surface);
+      border: 1px solid var(--line-subtle);
+      border-radius: var(--radius-md);
+      padding: 18px 20px;
+      display: flex;
+      flex-direction: column;
+      justify-content: space-between;
+      gap: 14px;
+    }
+
+    .clinician-sheet h3 {
+      margin: 0 0 2px;
+      font-family: var(--font-display);
+      font-size: 17px;
+    }
+
+    .clinician-reg {
+      margin: 0 0 8px;
+      font-family: var(--font-mono);
+      font-size: 12px;
+      color: var(--action-emerald-ink);
+    }
+
+    .clinician-bio {
+      margin: 0 0 10px;
+      font-size: 13.5px;
+      color: var(--ink-secondary);
+    }
+
+    .clinician-meta {
+      margin: 0;
+      padding: 0;
+      list-style: none;
+      font-size: 12.5px;
+      color: var(--ink-primary);
+      display: grid;
+      gap: 4px;
+    }
+
+    .access-specs {
+      display: grid;
+      grid-template-columns: repeat(4, minmax(0, 1fr));
+      gap: 14px;
+    }
+
+    .spec-item {
+      background: var(--bg-linen);
+      border: 1px solid var(--line-subtle);
+      border-radius: var(--radius-sm);
+      padding: 14px 16px;
+    }
+
+    .spec-item strong {
+      display: block;
+      font-family: var(--font-mono);
+      font-size: 13px;
+      color: var(--ink-primary);
+      margin-block-end: 4px;
+    }
+
+    .spec-item p {
+      margin: 0;
+      font-size: 13px;
+      color: var(--ink-secondary);
+      line-height: 1.42;
+    }
+
+    /* Footer */
+    .site-footer {
+      background: var(--bg-surface);
+      border-block-start: 1px solid var(--line-subtle);
+      padding: 24px 32px;
+    }
+
+    .footer-inner {
+      max-width: 1380px;
+      margin-inline: auto;
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      gap: 16px;
+      flex-wrap: wrap;
+      font-size: 13px;
+      color: var(--ink-secondary);
+    }
+
+    .footer-inner p {
+      margin: 0;
+    }
+
+    /* Responsive Breakpoints */
+    @media (max-width: 1080px) {
+      .workbench-grid,
+      .intake-grid,
+      .fee-layout {
+        grid-template-columns: minmax(0, 1fr);
+      }
+
+      .summary-rail {
+        position: static;
+      }
+
+      .roster-grid {
+        grid-template-columns: repeat(2, minmax(0, 1fr));
+      }
+
+      .access-specs {
+        grid-template-columns: repeat(2, minmax(0, 1fr));
+      }
+    }
+
+    @media (max-width: 760px) {
+      .header-inner,
+      .portal-main,
+      .site-footer {
+        padding-inline: 16px;
+      }
+
+      .brand-meta {
+        border-inline-start: 0;
+        padding-inline-start: 0;
+      }
+
+      .summary-err {
+        flex-direction: column;
+        align-items: stretch;
+      }
+
+      .summary-err-body {
+        flex: 1 1 auto;
+      }
+
+      .fix-assist-btn {
+        width: 100%;
+        min-height: 42px;
+        text-align: center;
+      }
+
+      .visit-grid,
+      .triage-pair,
+      .clinician-pills,
+      .modality-pills,
+      .email-pair,
+      .form-two-up,
+      .pass-grid,
+      .roster-grid,
+      .access-specs,
+      .rail-coverage-mini {
+        grid-template-columns: minmax(0, 1fr);
+      }
+
+      .days {
+        grid-template-columns: repeat(3, minmax(0, 1fr));
+      }
+
+      .slots {
+        grid-template-columns: repeat(2, minmax(0, 1fr));
+      }
+
+      .summary-row {
+        grid-template-columns: minmax(0, 1fr);
+        gap: 2px;
+      }
+
+      .sheet-box,
+      .summary-rail,
+      .appointment-pass {
+        padding: 16px;
+      }
+
+      .tariff-table th,
+      .tariff-table td {
+        padding: 9px 10px;
+        font-size: 13px;
+      }
+    }
+
+    @media (max-width: 400px) {
+      .days {
+        grid-template-columns: repeat(2, minmax(0, 1fr));
+      }
+
+      h1 {
+        font-size: 22px;
+      }
+    }
+
+    /* Reduced Motion */
+    @media (prefers-reduced-motion: reduce) {
+      html {
+        scroll-behavior: auto;
+      }
+      *, *::before, *::after {
+        animation-duration: 0.01ms !important;
+        animation-iteration-count: 1 !important;
+        transition-duration: 0.01ms !important;
+      }
+    }
+
+    /* Windows High Contrast / Forced Colors */
+    @media (forced-colors: active) {
+      .choice-btn[aria-pressed="true"],
+      .day[aria-pressed="true"],
+      .slot[aria-pressed="true"],
+      .coverage-btn[aria-pressed="true"],
+      .rail-cov-pill[aria-pressed="true"] {
+        forced-color-adjust: none;
+        background-color: Highlight;
+        color: HighlightText;
+        border: 3px solid ButtonText;
+      }
+
+      .choice-btn[aria-pressed="true"] .choice-sub,
+      .day[aria-pressed="true"] small,
+      .slot[aria-pressed="true"] small,
+      .coverage-btn[aria-pressed="true"] p {
+        color: HighlightText;
+      }
+
+      .slot.full {
+        border: 2px dashed GrayText;
+        color: GrayText;
+      }
+
+      .summary-err {
+        border: 3px solid LinkText;
+      }
+    }
+
+    /* Clean Printable Appointment Slip */
+    @media print {
+      body {
+        background: #FFFFFF;
+        color: #000000;
+        font-size: 12pt;
+      }
+
+      .skip-link,
+      .header-nav,
+      .workbench-primary,
+      #intake-details,
+      .coverage-fieldset,
+      #care-prep,
+      .pass-actions,
+      .rail-coverage-mini {
+        display: none !important;
+      }
+
+      .portal-main {
+        padding: 0;
+        max-width: 100%;
+      }
+
+      .workbench-grid,
+      .fee-layout {
+        display: block;
+      }
+
+      .summary-rail,
+      .appointment-pass,
+      .table-wrap {
+        position: static;
+        border: 2pt solid #000000;
+        margin-block-end: 14pt;
+        page-break-inside: avoid;
+      }
+
+      .pass-region.hidden {
+        display: block !important;
+      }
+    }
+  </style>
 </head>
 <body>
-  <header><strong>Marlow Clinic</strong><span>Need to cancel? Call 020 7946 0321</span></header>
-  <main class="layout">
-    <form id="booking-form" novalidate>
-      <p class="step">Step 2 of 3 · Choose a time</p>
-      <div class="bar" aria-hidden="true"><i class="on"></i><i class="on"></i><i></i></div>
-      <h1>When can you come in?</h1>
-      <p class="help">Standard check-up, 30 minutes. Times are in London time (BST).</p>
+  <a class="skip-link" href="#main-content">Skip to main content</a>
 
-      <div id="err-box" class="summary-err" role="alert">
-        <h2>Fix 1 thing to continue</h2>
-        <a href="#email2">The two email addresses do not match</a>
+  <header class="site-header">
+    <div class="header-inner">
+      <div class="brand-cluster">
+        <svg class="clinic-mark" viewBox="0 0 28 28" aria-hidden="true" focusable="false">
+          <rect x="1.5" y="1.5" width="25" height="25" rx="4" fill="none" stroke="currentColor" stroke-width="2"/>
+          <path d="M14 6.5v15M6.5 14h15" stroke="currentColor" stroke-width="3" stroke-linecap="square"/>
+        </svg>
+        <strong class="brand-name">Marlow Clinic</strong>
+        <span class="brand-meta">14 Weir St, SE1 · Step-Free</span>
+        <span class="specimen-pill">Fictional clinic and patient — illustrative specimen</span>
       </div>
-      <div id="ok-box" class="summary-ok hidden" role="status">
-        Appointment confirmed. A calendar invite would be sent in production.
+      <nav class="header-nav" aria-label="Appointment portal sections">
+        <a href="#workbench">1. Triage</a>
+        <a href="#intake-details">2. Intake</a>
+        <a href="#fee-estimator">3. Tariffs</a>
+        <a href="#care-prep">4. Access</a>
+        <span class="cancel-line">020 7946 0321</span>
+      </nav>
+    </div>
+  </header>
+
+  <main id="main-content" class="portal-main">
+    <!-- TOP WORKBENCH: Asymmetric Clinical Booking + Live Appointment Summary -->
+    <section id="workbench" class="workbench-grid" aria-label="Consultation booking workbench">
+      <div class="workbench-primary">
+        <form id="booking-form" novalidate>
+          <div class="step-row">
+            <p class="step-label">Step 2 of 3 · Triage, Slot &amp; Confirmation</p>
+            <span class="tz-badge">London time (BST · UTC+1)</span>
+          </div>
+          <div class="step-bar" aria-hidden="true">
+            <span class="active"></span>
+            <span class="active"></span>
+            <span id="step-three-bar"></span>
+          </div>
+
+          <div class="workbench-heading">
+            <h1>When can you come in?</h1>
+            <p class="heading-sub" id="visit-context-line">Annual Preventive Check · 30 min with Dr. Hannah Marlow, MD</p>
+          </div>
+
+          <!-- Live Linked Error Summary -->
+          <div id="err-box" class="summary-err" role="alert" tabindex="-1">
+            <div class="summary-err-body">
+              <svg class="status-icon" viewBox="0 0 20 20" fill="none" aria-hidden="true" focusable="false">
+                <circle cx="10" cy="10" r="8.5" stroke="currentColor" stroke-width="2" style="color: var(--alert-crimson)"/>
+                <path d="M10 5.5v5.5M10 14.2v.3" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" style="color: var(--alert-crimson)"/>
+              </svg>
+              <div>
+                <h2 id="err-heading">Fix 1 thing to continue</h2>
+                <ul class="err-list" id="err-list">
+                  <li><a href="#email2" id="err-primary-link">The two email addresses do not match — check “exmaple.com” in Confirm email</a></li>
+                </ul>
+              </div>
+            </div>
+            <button type="button" id="match-email-btn" class="fix-assist-btn">Copy primary email</button>
+          </div>
+
+          <!-- Live Polite Confirmation Status -->
+          <div id="ok-box" class="summary-ok hidden" role="status" aria-live="polite">
+            <span id="ok-box-text">Appointment confirmed. Your printable pass and .ics calendar invite are ready below.</span>
+            <a href="#appointment-pass-heading">View appointment pass</a>
+          </div>
+
+          <!-- 1. Visit Reason Selector -->
+          <fieldset class="group-box">
+            <legend>Visit reason &amp; duration</legend>
+            <div class="visit-grid">
+              <button type="button" class="choice-btn visit-opt" data-visit="preventive" aria-pressed="true">
+                <span class="choice-top">
+                  <span>Annual Preventive Check · 30 min</span>
+                  <span class="state-pip" aria-hidden="true"><svg viewBox="0 0 12 12" fill="none"><path d="M2.2 6.3L4.8 8.9L9.8 3.3" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/></svg></span>
+                </span>
+                <span class="choice-sub">Vitals, preventive bloods &amp; review</span>
+              </button>
+              <button type="button" class="choice-btn visit-opt" data-visit="acute" aria-pressed="false">
+                <span class="choice-top">
+                  <span>Same-Day Acute Care · 20 min</span>
+                  <span class="state-pip" aria-hidden="true"><svg viewBox="0 0 12 12" fill="none"><path d="M2.2 6.3L4.8 8.9L9.8 3.3" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/></svg></span>
+                </span>
+                <span class="choice-sub">New infection, fever, ear or acute pain</span>
+              </button>
+              <button type="button" class="choice-btn visit-opt" data-visit="lab" aria-pressed="false">
+                <span class="choice-top">
+                  <span>Lab Review &amp; Follow-Up · 15 min</span>
+                  <span class="state-pip" aria-hidden="true"><svg viewBox="0 0 12 12" fill="none"><path d="M2.2 6.3L4.8 8.9L9.8 3.3" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/></svg></span>
+                </span>
+                <span class="choice-sub">Pathology results &amp; repeat medication</span>
+              </button>
+            </div>
+          </fieldset>
+
+          <!-- 2. Clinician & Modality Selector Row -->
+          <div class="triage-pair">
+            <fieldset class="group-box">
+              <legend>Clinician</legend>
+              <div class="clinician-pills">
+                <button type="button" class="choice-btn clinician-opt" data-clinician="marlow" aria-pressed="true">
+                  <span class="choice-top">
+                    <span>Dr. Hannah Marlow, MD</span>
+                    <span class="state-pip" aria-hidden="true"><svg viewBox="0 0 12 12" fill="none"><path d="M2.2 6.3L4.8 8.9L9.8 3.3" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/></svg></span>
+                  </span>
+                  <span class="choice-sub">Lead GP · Room G-02</span>
+                </button>
+                <button type="button" class="choice-btn clinician-opt" data-clinician="vance" aria-pressed="false">
+                  <span class="choice-top">
+                    <span>Dr. Tariq Vance, MD</span>
+                    <span class="state-pip" aria-hidden="true"><svg viewBox="0 0 12 12" fill="none"><path d="M2.2 6.3L4.8 8.9L9.8 3.3" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/></svg></span>
+                  </span>
+                  <span class="choice-sub">Internal Med · Room G-04</span>
+                </button>
+                <button type="button" class="choice-btn clinician-opt" data-clinician="lin" aria-pressed="false">
+                  <span class="choice-top">
+                    <span>Clara Lin, NP</span>
+                    <span class="state-pip" aria-hidden="true"><svg viewBox="0 0 12 12" fill="none"><path d="M2.2 6.3L4.8 8.9L9.8 3.3" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/></svg></span>
+                  </span>
+                  <span class="choice-sub">Acute &amp; Preventive · G-01</span>
+                </button>
+              </div>
+            </fieldset>
+
+            <fieldset class="group-box">
+              <legend>Consultation modality</legend>
+              <div class="modality-pills">
+                <button type="button" class="choice-btn modality-opt" data-modality="in-clinic" aria-pressed="true">
+                  <span class="choice-top">
+                    <span>In-Clinic · Step-Free Ground Floor</span>
+                    <span class="state-pip" aria-hidden="true"><svg viewBox="0 0 12 12" fill="none"><path d="M2.2 6.3L4.8 8.9L9.8 3.3" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/></svg></span>
+                  </span>
+                  <span class="choice-sub">14 Weir St · 0 mm street threshold</span>
+                </button>
+                <button type="button" class="choice-btn modality-opt" data-modality="video" aria-pressed="false">
+                  <span class="choice-top">
+                    <span>Encrypted Video Consult</span>
+                    <span class="state-pip" aria-hidden="true"><svg viewBox="0 0 12 12" fill="none"><path d="M2.2 6.3L4.8 8.9L9.8 3.3" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/></svg></span>
+                  </span>
+                  <span class="choice-sub">Browser WebRTC · Live captions</span>
+                </button>
+              </div>
+            </fieldset>
+          </div>
+
+          <!-- 3. Multi-Day Selector -->
+          <fieldset class="group-box">
+            <legend>Day <span class="legend-hint">(October 2026 · open slot counts update live)</span></legend>
+            <div class="days" id="days-grid">
+              <button type="button" class="day" data-day="Mon 13 Oct" aria-pressed="false">Mon<b>13 Oct</b><small data-open-for="Mon 13 Oct">4 open</small></button>
+              <button type="button" class="day" data-day="Tue 14 Oct" aria-pressed="true">Tue<b>14 Oct</b><small data-open-for="Tue 14 Oct">5 open</small></button>
+              <button type="button" class="day" data-day="Wed 15 Oct" aria-pressed="false">Wed<b>15 Oct</b><small data-open-for="Wed 15 Oct">6 open</small></button>
+              <button type="button" class="day" data-day="Thu 16 Oct" aria-pressed="false">Thu<b>16 Oct</b><small data-open-for="Thu 16 Oct">5 open</small></button>
+              <button type="button" class="day" data-day="Fri 17 Oct" aria-pressed="false">Fri<b>17 Oct</b><small data-open-for="Fri 17 Oct">3 open</small></button>
+            </div>
+          </fieldset>
+
+          <!-- 4. Accessible Time Slot Matrix -->
+          <fieldset class="group-box">
+            <legend id="slot-legend">Time on Tue 14 Oct</legend>
+            <div class="slots" id="slots-grid">
+              <button type="button" class="slot full" disabled>
+                <span class="slot-time-row"><svg class="slot-marker" viewBox="0 0 12 12" fill="none" aria-hidden="true"><circle cx="6" cy="6" r="4.5" stroke="currentColor" stroke-width="1.3"/><path d="M3 9L9 3" stroke="currentColor" stroke-width="1.3"/></svg><span class="time-struck">09:00</span></span>
+                <small>Full</small>
+              </button>
+              <button type="button" class="slot full" disabled>
+                <span class="slot-time-row"><svg class="slot-marker" viewBox="0 0 12 12" fill="none" aria-hidden="true"><circle cx="6" cy="6" r="4.5" stroke="currentColor" stroke-width="1.3"/><path d="M3 9L9 3" stroke="currentColor" stroke-width="1.3"/></svg><span class="time-struck">09:30</span></span>
+                <small>Full</small>
+              </button>
+              <button type="button" class="slot" data-time="10:00" aria-pressed="false">
+                <span class="slot-time-row">
+                  <svg class="slot-marker" viewBox="0 0 12 12" fill="none" aria-hidden="true"><circle cx="6" cy="6" r="4.5" stroke="currentColor" stroke-width="1.4"/></svg>
+                  <span>10:00</span>
+                </span>
+                <small>Available</small>
+              </button>
+              <button type="button" class="slot" data-time="10:40" aria-pressed="true">
+                <span class="slot-time-row">
+                  <svg class="slot-marker" viewBox="0 0 12 12" fill="none" aria-hidden="true"><path d="M2 6.2L4.7 8.9L10 3.2" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/></svg>
+                  <span>10:40</span>
+                </span>
+                <small>Selected</small>
+              </button>
+              <button type="button" class="slot" data-time="11:20" aria-pressed="false">
+                <span class="slot-time-row">
+                  <svg class="slot-marker" viewBox="0 0 12 12" fill="none" aria-hidden="true"><circle cx="6" cy="6" r="4.5" stroke="currentColor" stroke-width="1.4"/></svg>
+                  <span>11:20</span>
+                </span>
+                <small>Available</small>
+              </button>
+              <button type="button" class="slot full" disabled>
+                <span class="slot-time-row"><svg class="slot-marker" viewBox="0 0 12 12" fill="none" aria-hidden="true"><circle cx="6" cy="6" r="4.5" stroke="currentColor" stroke-width="1.3"/><path d="M3 9L9 3" stroke="currentColor" stroke-width="1.3"/></svg><span class="time-struck">12:00</span></span>
+                <small>Full</small>
+              </button>
+              <button type="button" class="slot" data-time="14:00" aria-pressed="false">
+                <span class="slot-time-row">
+                  <svg class="slot-marker" viewBox="0 0 12 12" fill="none" aria-hidden="true"><circle cx="6" cy="6" r="4.5" stroke="currentColor" stroke-width="1.4"/></svg>
+                  <span>14:00</span>
+                </span>
+                <small>Available</small>
+              </button>
+              <button type="button" class="slot" data-time="14:40" aria-pressed="false">
+                <span class="slot-time-row">
+                  <svg class="slot-marker" viewBox="0 0 12 12" fill="none" aria-hidden="true"><circle cx="6" cy="6" r="4.5" stroke="currentColor" stroke-width="1.4"/></svg>
+                  <span>14:40</span>
+                </span>
+                <small>Available</small>
+              </button>
+            </div>
+          </fieldset>
+
+          <!-- 5. Paste-Friendly Confirmation Email Pair -->
+          <div class="email-pair">
+            <div class="field">
+              <label for="email">Email for confirmation</label>
+              <input id="email" name="email" type="email" autocomplete="email" enterkeyhint="next" value="amara.okoye@example.com" aria-describedby="email-hint" required>
+              <p class="field-hint" id="email-hint">Clipboard autofill and password managers supported; no portal password needed.</p>
+            </div>
+            <div class="field">
+              <label for="email2">Confirm email</label>
+              <input id="email2" name="email2" type="email" autocomplete="email" enterkeyhint="done" value="amara.okoye@exmaple.com" aria-invalid="true" aria-describedby="email2-err" required>
+              <p class="err" id="email2-err">Error: this does not match the email above. Check “example.com”.</p>
+            </div>
+          </div>
+
+          <div class="actions-bar">
+            <div class="actions-main">
+              <button type="submit" id="submit-btn" class="btn-primary">Confirm Tue 14 Oct, 10:40</button>
+              <a href="#intake-details" class="btn-outline">Intake &amp; access needs</a>
+              <button type="button" id="reset-typo-btn" class="btn-link">Reset typo specimen</button>
+            </div>
+          </div>
+        </form>
       </div>
 
-      <fieldset>
-        <legend>Day</legend>
-        <div class="days">
-          <button type="button" class="day" data-day="Mon 13 Oct" aria-pressed="false">Mon<b>13</b></button>
-          <button type="button" class="day" data-day="Tue 14 Oct" aria-pressed="true">Tue<b>14</b></button>
-          <button type="button" class="day" data-day="Wed 15 Oct" aria-pressed="false">Wed<b>15</b></button>
-          <button type="button" class="day" data-day="Thu 16 Oct" aria-pressed="false">Thu<b>16</b></button>
-          <button type="button" class="day" data-day="Fri 17 Oct" aria-pressed="false">Fri<b>17</b></button>
+      <!-- RIGHT RAIL: Live Clinical Booking & Fee Dossier -->
+      <aside class="summary-rail" aria-labelledby="sum">
+        <div class="rail-head">
+          <h2 id="sum">YOUR BOOKING SUMMARY</h2>
+          <span class="hold-pill">Held 10 min</span>
         </div>
-      </fieldset>
 
-      <fieldset>
-        <legend id="slot-legend">Time on Tue 14 Oct</legend>
-        <div class="slots">
-          <button type="button" class="slot full" disabled><span class="time-struck">09:00</span><small>Full</small></button>
-          <button type="button" class="slot full" disabled><span class="time-struck">09:30</span><small>Full</small></button>
-          <button type="button" class="slot" data-time="10:00" aria-pressed="false">10:00</button>
-          <button type="button" class="slot" data-time="10:40" aria-pressed="true">10:40</button>
-          <button type="button" class="slot" data-time="11:20" aria-pressed="false">11:20</button>
-          <button type="button" class="slot full" disabled><span class="time-struck">12:00</span><small>Full</small></button>
-          <button type="button" class="slot" data-time="14:00" aria-pressed="false">14:00</button>
-          <button type="button" class="slot" data-time="14:40" aria-pressed="false">14:40</button>
+        <div class="slot-spotlight">
+          <p class="slot-spotlight-when" id="summary-when">Tue 14 Oct, 10:40</p>
+          <p class="slot-spotlight-visit" id="summary-visit">Annual Preventive Check · 30 min</p>
         </div>
-      </fieldset>
 
-      <div class="field">
-        <label for="email">Email for confirmation</label>
-        <input id="email" type="email" autocomplete="email" value="amara.okoye@example.com">
-      </div>
-      <div class="field">
-        <label for="email2">Confirm email</label>
-        <input id="email2" type="email" autocomplete="email" value="amara.okoye@exmaple.com" aria-invalid="true" aria-describedby="email2-err">
-        <p class="err" id="email2-err">Error: this does not match the email above. Check “example”.</p>
+        <dl class="summary-dl">
+          <div class="summary-row">
+            <dt>Patient</dt>
+            <dd><strong id="summary-patient">Amara Okoye</strong><span id="summary-email">amara.okoye@example.com</span></dd>
+          </div>
+          <div class="summary-row">
+            <dt>Clinician</dt>
+            <dd><strong id="summary-clinician">Dr. Hannah Marlow, MD</strong><span id="summary-clinician-sub">MBBS, MRCGP · GMC 6148290</span></dd>
+          </div>
+          <div class="summary-row">
+            <dt>Modality</dt>
+            <dd><strong id="summary-modality">In-Clinic · Step-Free Ground Floor</strong><span id="summary-room">Room G-02 · 0 mm street threshold, IEC 60118-4 loop</span></dd>
+          </div>
+          <div class="summary-row">
+            <dt>Access</dt>
+            <dd><strong id="summary-accom">Quiet waiting area</strong><span>Interpreter &amp; adjustments always £0.00</span></dd>
+          </div>
+        </dl>
+
+        <div class="rail-fee-strip">
+          <div class="rail-fee-top">
+            <div class="rail-fee-label">
+              <span>Estimated patient out-of-pocket</span>
+              <strong id="summary-coverage-name">NHS / Public Coverage</strong>
+            </div>
+            <div class="rail-fee-amount">
+              <b id="summary-fee">£0.00</b>
+              <a href="#fee-estimator">Itemized tariff</a>
+            </div>
+          </div>
+          <div class="rail-coverage-mini" role="group" aria-label="Coverage pathway quick switcher">
+            <button type="button" class="rail-cov-pill" data-coverage="nhs" aria-pressed="true">NHS · £0</button>
+            <button type="button" class="rail-cov-pill" data-coverage="insurer" aria-pressed="false">Co-Pay · £35</button>
+            <button type="button" class="rail-cov-pill" data-coverage="self-pay" aria-pressed="false" id="rail-self-pill">Self-Pay · £120</button>
+          </div>
+        </div>
+
+        <div class="rail-prep">
+          <h3>Preparation &amp; room note</h3>
+          <p id="summary-prep">Bring current repeat medication list. Fast 8 hours (plain water permitted) only if requesting fasting lipid &amp; HbA1c bloods.</p>
+        </div>
+
+        <p class="rail-policy">Free rescheduling or cancellation up to 24 hours before your slot. All entered details stay preserved while you compare times or tariffs.</p>
+      </aside>
+    </section>
+
+    <!-- LIVE APPOINTMENT CONFIRMATION PASS (Polite Live Region) -->
+    <div id="pass-live-region" class="pass-region hidden" aria-live="polite">
+      <section class="appointment-pass" aria-labelledby="appointment-pass-heading">
+        <div class="pass-banner">
+          <div>
+            <span class="pass-badge">
+              <svg width="13" height="13" viewBox="0 0 12 12" fill="none" aria-hidden="true"><path d="M2 6.2L4.7 8.9L10 3.2" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/></svg>
+              CONFIRMED APPOINTMENT PASS
+            </span>
+            <h2 id="appointment-pass-heading">Confirmed: <span id="pass-when">Tue 14 Oct, 10:40</span></h2>
+          </div>
+          <div class="pass-ref-box">
+            <span>Check-in reference</span>
+            <strong id="pass-ref">MC-2610-1440</strong>
+          </div>
+        </div>
+
+        <div class="pass-grid">
+          <div class="pass-cell">
+            <h3>Patient &amp; Confirmation</h3>
+            <p id="pass-patient">Amara Okoye</p>
+            <small id="pass-email">amara.okoye@example.com · DOB 19 / 04 / 1988</small>
+          </div>
+          <div class="pass-cell">
+            <h3>Consultation &amp; Clinician</h3>
+            <p id="pass-visit">Annual Preventive Check · 30 min</p>
+            <small id="pass-clinician">Dr. Hannah Marlow, MD</small>
+          </div>
+          <div class="pass-cell">
+            <h3>Location / Telehealth</h3>
+            <p id="pass-modality">In-Clinic · Step-Free Ground Floor</p>
+            <small id="pass-room">14 Weir Street, SE1 9RT · Room G-02</small>
+          </div>
+          <div class="pass-cell">
+            <h3>Booked Accommodations</h3>
+            <p id="pass-accom">Quiet waiting area</p>
+            <small>Flagged on reception &amp; clinician chart</small>
+          </div>
+          <div class="pass-cell">
+            <h3>Tariff &amp; Due Today</h3>
+            <p id="pass-fee">£0.00 (NHS / Public Coverage)</p>
+            <small>Written zero-surprise fee guarantee</small>
+          </div>
+          <div class="pass-cell">
+            <h3>Preparation Checklist</h3>
+            <p id="pass-prep">Bring repeat medication list; water-only fast if fasting bloods requested.</p>
+          </div>
+        </div>
+
+        <div class="pass-actions">
+          <button type="button" id="download-ics-btn" class="btn-primary">Download .ics calendar invite</button>
+          <button type="button" id="print-pass-btn" class="btn-outline">Print appointment pass</button>
+          <button type="button" id="modify-pass-btn" class="btn-link">Modify time or accommodations (inputs preserved)</button>
+        </div>
+      </section>
+    </div>
+
+    <!-- SECTION 2: Patient Intake & Accessibility Accommodations -->
+    <section id="intake-details" class="portal-section" aria-labelledby="intake-heading">
+      <div class="section-header">
+        <div>
+          <p class="section-eyebrow">Step-Saving Pre-Visit Intake · WCAG 3.3.7 Redundant-Entry Safe</p>
+          <h2 id="intake-heading">Patient details &amp; accessibility accommodations</h2>
+          <p class="section-lead">Every field below stays preserved if you switch days, clinicians, or coverage pathways. Optional items can be left blank and completed at step-free reception.</p>
+        </div>
       </div>
 
-      <div class="actions">
-        <button type="submit" id="submit-btn" class="primary">Confirm Tue 14 Oct, 10:40</button>
-        <button type="button" id="back-btn" class="secondary">Back</button>
-      </div>
-    </form>
+      <div class="intake-grid">
+        <div class="sheet-box">
+          <h3>Patient identity &amp; clinical context</h3>
+          <div class="form-two-up">
+            <div class="field">
+              <label for="patient-name">Full name</label>
+              <input id="patient-name" name="patientName" form="booking-form" type="text" autocomplete="name" value="Amara Okoye" aria-describedby="name-err" required>
+              <p class="err hidden" id="name-err">Enter the patient's full name so reception can match your chart.</p>
+            </div>
+            <div class="field">
+              <label for="patient-dob">Date of birth <span class="opt">(DD / MM / YYYY)</span></label>
+              <input id="patient-dob" name="patientDob" form="booking-form" type="text" inputmode="numeric" autocomplete="bday" value="19 / 04 / 1988" aria-describedby="dob-hint">
+              <p class="field-hint" id="dob-hint">Used solely to match your clinical record and specimen labels.</p>
+            </div>
+          </div>
 
-    <aside aria-labelledby="sum">
-      <h2 id="sum">YOUR BOOKING</h2>
-      <dl>
-        <dt>Visit</dt><dd>Standard check-up · 30 min</dd>
-        <dt>When</dt><dd id="summary-when">Tue 14 Oct, 10:40</dd>
-        <dt>Where</dt><dd>Marlow Clinic, 14 Weir Street</dd>
-        <dt>Clinician</dt><dd>Dr Priya Nair</dd>
-      </dl>
-      <p>Held for you for 10 minutes. You can change or cancel free up to 24 hours before.</p>
-    </aside>
+          <div class="form-two-up">
+            <div class="field">
+              <label for="patient-phone">Mobile number for SMS reminder <span class="opt">(optional)</span></label>
+              <input id="patient-phone" name="patientPhone" form="booking-form" type="tel" autocomplete="tel" value="07700 900412" aria-describedby="phone-hint">
+              <p class="field-hint" id="phone-hint">Spaces accepted. One reminder 24h prior; never used for marketing.</p>
+            </div>
+            <div class="field">
+              <label for="patient-nhs">NHS number or insurer ID <span class="opt">(optional)</span></label>
+              <input id="patient-nhs" name="patientNhs" form="booking-form" type="text" value="485 777 3456" aria-describedby="nhs-hint">
+              <p class="field-hint" id="nhs-hint">10-digit NHS number or private policy code; spaces ignored.</p>
+            </div>
+          </div>
+
+          <div class="field-stack">
+            <label for="clinical-notes">Notes or questions for your clinician <span class="opt">(optional)</span></label>
+            <textarea id="clinical-notes" name="clinicalNotes" form="booking-form" aria-describedby="notes-hint">Routine annual blood pressure check, iron ferritin follow-up, and seasonal vaccination discussion.</textarea>
+            <p class="field-hint" id="notes-hint">Read by your clinician before calling you in. <span class="mono" id="notes-count">97 / 500 characters</span></p>
+          </div>
+
+          <div class="safety-callout" role="note">
+            <strong>Acute red-flag symptoms:</strong> Do not book online for chest pain, sudden shortness of breath, facial droop, or severe bleeding. Call <strong>999</strong> immediately, or call <strong>NHS 111</strong> for urgent 24-hour triage.
+          </div>
+        </div>
+
+        <div class="sheet-box">
+          <fieldset class="group-box">
+            <legend>Accessibility &amp; sensory accommodations <span class="legend-hint">(NHS DCB1605 Accessible Information Standard)</span></legend>
+            <div class="accom-list">
+              <div class="check-item">
+                <input type="checkbox" id="acc-bsl" name="accBsl" form="booking-form" value="BSL / Interpreter">
+                <label for="acc-bsl">
+                  BSL / Interpreter
+                  <span>NRCPD-registered British Sign Language or spoken-language medical interpreter booked at zero cost to you.</span>
+                </label>
+              </div>
+              <div class="check-item">
+                <input type="checkbox" id="acc-quiet" name="accQuiet" form="booking-form" value="Quiet waiting area" checked>
+                <label for="acc-quiet">
+                  Quiet waiting area
+                  <span>Direct seating in our low-sensory acoustic alcove (no broadcast screens, warm 2700K indirect lighting).</span>
+                </label>
+              </div>
+              <div class="check-item">
+                <input type="checkbox" id="acc-table" name="accTable" form="booking-form" value="Step-free exam table">
+                <label for="acc-table">
+                  Step-free exam table
+                  <span>Height-adjustable electric transfer couch (lowers to 46 cm) with 1500 mm wheelchair turning radius.</span>
+                </label>
+              </div>
+              <div class="check-item">
+                <input type="checkbox" id="acc-summary" name="accSummary" form="booking-form" value="Written plain-English summary">
+                <label for="acc-summary">
+                  Written plain-English summary
+                  <span>16 pt high-contrast printed recap of findings and next steps handed over before you leave.</span>
+                </label>
+              </div>
+            </div>
+          </fieldset>
+        </div>
+      </div>
+    </section>
+
+    <!-- SECTION 3: Transparent Fee & Coverage Estimator -->
+    <section id="fee-estimator" class="portal-section" aria-labelledby="fee-heading">
+      <div class="section-header">
+        <div>
+          <p class="section-eyebrow">Zero Surprise Billing · Itemized Clinical Tariff</p>
+          <h2 id="fee-heading">Transparent fee &amp; coverage estimator</h2>
+          <p class="section-lead">Switch between NHS public coverage, private insurer co-pay, and published self-pay tariffs. Estimates adjust automatically for your chosen consultation length and modality.</p>
+        </div>
+      </div>
+
+      <div class="fee-layout">
+        <fieldset class="group-box coverage-fieldset">
+          <legend>Coverage &amp; billing pathway</legend>
+          <div class="coverage-stack">
+            <button type="button" class="coverage-btn" data-coverage="nhs" aria-pressed="true">
+              <span class="coverage-btn-top">
+                <span>NHS / Public Coverage</span>
+                <span class="coverage-price-tag" id="tag-nhs">£0.00</span>
+              </span>
+              <p>Funded in full by NHS South East London ICB for registered catchment &amp; referred patients.</p>
+            </button>
+
+            <button type="button" class="coverage-btn" data-coverage="insurer" aria-pressed="false">
+              <span class="coverage-btn-top">
+                <span>Private Insurer Co-Pay</span>
+                <span class="coverage-price-tag" id="tag-insurer">£35.00</span>
+              </span>
+              <p>Direct EDI billing with Bupa, AXA Health, Aviva &amp; Vitality. Fixed policy excess; zero balance billing.</p>
+            </button>
+
+            <button type="button" class="coverage-btn" data-coverage="self-pay" aria-pressed="false">
+              <span class="coverage-btn-top">
+                <span>Self-Pay Transparent Tariff</span>
+                <span class="coverage-price-tag" id="tag-self">£120.00</span>
+              </span>
+              <p>Published all-inclusive fee (£15 lower for encrypted video). Any optional lab draw is quoted in writing first.</p>
+            </button>
+          </div>
+        </fieldset>
+
+        <div class="table-wrap">
+          <table class="tariff-table">
+            <caption>
+              Itemized estimate for <span id="table-visit-title" style="display:inline;font-weight:700;font-size:inherit;color:inherit">Annual Preventive Check · 30 min</span>
+              <span id="table-coverage-sub">Active pathway: NHS / Public Coverage · Prices in GBP (£)</span>
+            </caption>
+            <thead>
+              <tr>
+                <th scope="col">Clinical component</th>
+                <th scope="col" class="num">Published tariff</th>
+                <th scope="col" class="num">Plan / NHS credit</th>
+                <th scope="col" class="num">Patient pays</th>
+              </tr>
+            </thead>
+            <tbody>
+              <tr>
+                <th scope="row">
+                  <span id="row-consult-name">Clinician consultation (30 min)</span>
+                  <div class="field-hint" id="row-consult-desc">Resting vitals, clinical exam &amp; shared care letter</div>
+                </th>
+                <td class="num" id="cell-base-tariff">£120.00</td>
+                <td class="num" id="cell-base-credit">-£120.00</td>
+                <td class="num" id="cell-base-due">£0.00</td>
+              </tr>
+              <tr>
+                <th scope="row">
+                  Point-of-care baseline observations
+                  <div class="field-hint">Pulse oximetry, calibrated BP &amp; urinalysis dipstick</div>
+                </th>
+                <td class="num">Included</td>
+                <td class="num">—</td>
+                <td class="num">£0.00</td>
+              </tr>
+              <tr>
+                <th scope="row">
+                  BSL interpreter &amp; step-free room adjustments
+                  <div class="field-hint">Clinic-funded under Equality Act 2010 duty</div>
+                </th>
+                <td class="num">Clinic-funded</td>
+                <td class="num">—</td>
+                <td class="num">£0.00</td>
+              </tr>
+              <tr>
+                <th scope="row">
+                  Reschedule or cancel (&ge; 24h notice)
+                  <div class="field-hint">Modify online or by telephone without penalty</div>
+                </th>
+                <td class="num">£0.00</td>
+                <td class="num">—</td>
+                <td class="num">£0.00</td>
+              </tr>
+            </tbody>
+            <tfoot>
+              <tr>
+                <th scope="row" colspan="3">Estimated patient out-of-pocket today</th>
+                <td class="num" id="cell-total-due">£0.00</td>
+              </tr>
+            </tfoot>
+          </table>
+        </div>
+      </div>
+    </section>
+
+    <!-- SECTION 4: Clinician Roster & Step-Free Arrival Guide -->
+    <section id="care-prep" class="portal-section" aria-labelledby="prep-heading">
+      <div class="section-header">
+        <div>
+          <p class="section-eyebrow">Clinical Team &amp; Physical Access</p>
+          <h2 id="prep-heading">Clinician directory &amp; step-free ground-floor guide</h2>
+          <p class="section-lead">Select any clinician below to load their schedule into the booking workbench above while keeping all entered form fields intact.</p>
+        </div>
+      </div>
+
+      <div class="roster-grid">
+        <article class="clinician-sheet">
+          <div>
+            <h3>Dr. Hannah Marlow, MD</h3>
+            <p class="clinician-reg">MBBS, MRCGP · GMC 6148290</p>
+            <p class="clinician-bio">Lead GP focusing on preventive screening, women's health, and long-term cardiometabolic management.</p>
+            <ul class="clinician-meta">
+              <li><strong>Room:</strong> G-02 (Step-free, hearing loop, hydraulic couch)</li>
+              <li><strong>Languages:</strong> English, French</li>
+            </ul>
+          </div>
+          <button type="button" class="btn-outline roster-select-btn" data-select-clinician="marlow">Select Dr. Hannah Marlow, MD</button>
+        </article>
+
+        <article class="clinician-sheet">
+          <div>
+            <h3>Dr. Tariq Vance, MD</h3>
+            <p class="clinician-reg">MD, MRCP · GMC 7039184</p>
+            <p class="clinician-bio">Internal medicine clinician specialising in hypertension, endocrine pathology review, and complex diagnostics.</p>
+            <ul class="clinician-meta">
+              <li><strong>Room:</strong> G-04 (Quiet wing, 1500 mm wheelchair turn circle)</li>
+              <li><strong>Languages:</strong> English, Urdu, Arabic</li>
+            </ul>
+          </div>
+          <button type="button" class="btn-outline roster-select-btn" data-select-clinician="vance">Select Dr. Tariq Vance, MD</button>
+        </article>
+
+        <article class="clinician-sheet">
+          <div>
+            <h3>Clara Lin, NP</h3>
+            <p class="clinician-reg">MSc ANP, RN · NMC 14F0821E</p>
+            <p class="clinician-bio">Advanced Nurse Practitioner leading same-day acute triage, respiratory reviews, and immunization clinics.</p>
+            <ul class="clinician-meta">
+              <li><strong>Room:</strong> G-01 (Ground-floor acute bay near entrance)</li>
+              <li><strong>Languages:</strong> English, Mandarin, Cantonese</li>
+            </ul>
+          </div>
+          <button type="button" class="btn-outline roster-select-btn" data-select-clinician="lin">Select Clara Lin, NP</button>
+        </article>
+      </div>
+
+      <div class="access-specs" aria-label="Step-free building measurements">
+        <div class="spec-item">
+          <strong>0 mm street threshold</strong>
+          <p>Level pavement entry at 14 Weir Street with automatic 880 mm clear-opening sliding doors and tactile mat.</p>
+        </div>
+        <div class="spec-item">
+          <strong>IEC 60118-4 hearing loop</strong>
+          <p>Active at reception desk and inside Rooms G-01 and G-02 (switch hearing aid to T-coil position).</p>
+        </div>
+        <div class="spec-item">
+          <strong>Accessible WC &amp; hoist rail</strong>
+          <p>Ground-floor gender-neutral accessible restroom with dual transfer rails, emergency pull cord, and adult changing bench.</p>
+        </div>
+        <div class="spec-item">
+          <strong>Step-free transit</strong>
+          <p>240 m level route from Borough High Street bus stop D (routes 21, 35, 133); 480 m step-free from London Bridge station.</p>
+        </div>
+      </div>
+    </section>
   </main>
+
+  <footer class="site-footer">
+    <div class="footer-inner">
+      <p><strong>Marlow Clinic</strong> · 14 Weir Street, Southwark, London SE1 9RT · CQC Illustrative ID 1-4920184 · WCAG 2.2 AA+ &amp; EN 301 549 verified layout.</p>
+      <p><strong>Fictional clinic and patient — illustrative specimen.</strong> Not medical advice; in a real emergency dial 999.</p>
+    </div>
+  </footer>
+
   <script>
-    let chosenDay = "Tue 14 Oct";
-    let chosenTime = "10:40";
-    const summaryWhen = document.getElementById("summary-when");
-    const submitBtn = document.getElementById("submit-btn");
-    const slotLegend = document.getElementById("slot-legend");
-    const email1 = document.getElementById("email");
-    const email2 = document.getElementById("email2");
-    const errBox = document.getElementById("err-box");
-    const okBox = document.getElementById("ok-box");
-    const errInline = document.getElementById("email2-err");
-    function syncSummary() {
-      const label = `${chosenDay}, ${chosenTime}`;
-      summaryWhen.textContent = label;
-      submitBtn.textContent = `Confirm ${label}`;
-      slotLegend.textContent = `Time on ${chosenDay}`;
-    }
-    function validateEmails() {
-      const match = email1.value.trim().toLowerCase() === email2.value.trim().toLowerCase() && email1.value.includes("@");
-      email2.setAttribute("aria-invalid", match ? "false" : "true");
-      errBox.classList.toggle("hidden", match);
-      errInline.classList.toggle("hidden", match);
-      return match;
-    }
-    document.querySelectorAll(".day").forEach((btn) => {
-      btn.addEventListener("click", () => {
-        document.querySelectorAll(".day").forEach((b) => b.setAttribute("aria-pressed", "false"));
-        btn.setAttribute("aria-pressed", "true");
-        chosenDay = btn.dataset.day;
-        syncSummary();
-      });
-    });
-    document.querySelectorAll(".slot:not([disabled])").forEach((btn) => {
-      btn.addEventListener("click", () => {
-        document.querySelectorAll(".slot:not([disabled])").forEach((b) => b.setAttribute("aria-pressed", "false"));
-        btn.setAttribute("aria-pressed", "true");
-        chosenTime = btn.dataset.time;
-        syncSummary();
-      });
-    });
-    email1.addEventListener("input", validateEmails);
-    email2.addEventListener("input", validateEmails);
-    document.getElementById("booking-form").addEventListener("submit", (e) => {
-      e.preventDefault();
-      if (validateEmails()) {
-        okBox.textContent = `Confirmed ${chosenDay}, ${chosenTime} for ${email1.value.trim()} (demo fixture).`;
-        okBox.classList.remove("hidden");
-      } else {
-        okBox.classList.add("hidden");
-        email2.focus();
+    (function () {
+      const VISITS = {
+        preventive: {
+          label: "Annual Preventive Check · 30 min",
+          minutes: 30,
+          inClinicFee: 120,
+          videoFee: 105,
+          consultRow: "Clinician consultation (30 min)",
+          consultDesc: "Resting vitals, preventive exam & shared care summary",
+          prepClinic: "Bring current repeat medication list. Fast 8 hours (plain water permitted) only if requesting fasting lipid & HbA1c bloods.",
+          prepVideo: "Take a resting home blood pressure reading beforehand if available, and keep current medication boxes nearby."
+        },
+        acute: {
+          label: "Same-Day Acute Care · 20 min",
+          minutes: 20,
+          inClinicFee: 95,
+          videoFee: 80,
+          consultRow: "Same-day acute consultation (20 min)",
+          consultDesc: "Focused acute exam, rapid point-of-care screen & electronic Rx",
+          prepClinic: "Note symptom start time, peak temperature, and any pain relief taken in the past 12 hours. Masks available at entrance.",
+          prepVideo: "Join from a quiet, well-lit room and keep a thermometer or torch nearby if throat or skin inspection is needed."
+        },
+        lab: {
+          label: "Lab Review & Follow-Up · 15 min",
+          minutes: 15,
+          inClinicFee: 75,
+          videoFee: 60,
+          consultRow: "Pathology & follow-up consultation (15 min)",
+          consultDesc: "Line-by-line blood/imaging review & prescription titration",
+          prepClinic: "No fasting required. Your pathology report is pre-loaded on the clinician screen; note up to 3 priority questions.",
+          prepVideo: "Encrypted screen-sharing is enabled with live captions so your clinician can walk through lab reference ranges together."
+        }
+      };
+
+      const CLINICIANS = {
+        marlow: {
+          name: "Dr. Hannah Marlow, MD",
+          cred: "MBBS, MRCGP · GMC 6148290",
+          room: "Room G-02 · 0 mm street threshold, IEC 60118-4 loop",
+          passRoom: "14 Weir Street, SE1 9RT · Room G-02 (Ground Floor)"
+        },
+        vance: {
+          name: "Dr. Tariq Vance, MD",
+          cred: "MD, MRCP · GMC 7039184",
+          room: "Room G-04 · Quiet wing, 1500 mm wheelchair turn circle",
+          passRoom: "14 Weir Street, SE1 9RT · Room G-04 (Quiet Wing)"
+        },
+        lin: {
+          name: "Clara Lin, NP",
+          cred: "MSc ANP, RN · NMC 14F0821E",
+          room: "Room G-01 · Step-free ground-floor acute bay",
+          passRoom: "14 Weir Street, SE1 9RT · Room G-01 (Ground Floor)"
+        }
+      };
+
+      const DAY_ISO = {
+        "Mon 13 Oct": "20261013",
+        "Tue 14 Oct": "20261014",
+        "Wed 15 Oct": "20261015",
+        "Thu 16 Oct": "20261016",
+        "Fri 17 Oct": "20261017"
+      };
+
+      const BASE_SLOTS = {
+        "Mon 13 Oct": [
+          { time: "09:00", open: false },
+          { time: "09:30", open: true },
+          { time: "10:00", open: false },
+          { time: "10:40", open: true },
+          { time: "11:20", open: false },
+          { time: "12:00", open: false },
+          { time: "14:00", open: true },
+          { time: "14:40", open: true }
+        ],
+        "Tue 14 Oct": [
+          { time: "09:00", open: false },
+          { time: "09:30", open: false },
+          { time: "10:00", open: true },
+          { time: "10:40", open: true },
+          { time: "11:20", open: true },
+          { time: "12:00", open: false },
+          { time: "14:00", open: true },
+          { time: "14:40", open: true }
+        ],
+        "Wed 15 Oct": [
+          { time: "09:00", open: true },
+          { time: "09:30", open: true },
+          { time: "10:00", open: true },
+          { time: "10:40", open: false },
+          { time: "11:20", open: true },
+          { time: "12:00", open: true },
+          { time: "14:00", open: false },
+          { time: "14:40", open: true }
+        ],
+        "Thu 16 Oct": [
+          { time: "09:00", open: false },
+          { time: "09:30", open: true },
+          { time: "10:00", open: true },
+          { time: "10:40", open: true },
+          { time: "11:20", open: false },
+          { time: "12:00", open: true },
+          { time: "14:00", open: true },
+          { time: "14:40", open: false }
+        ],
+        "Fri 17 Oct": [
+          { time: "09:00", open: false },
+          { time: "09:30", open: false },
+          { time: "10:00", open: true },
+          { time: "10:40", open: false },
+          { time: "11:20", open: true },
+          { time: "12:00", open: false },
+          { time: "14:00", open: true },
+          { time: "14:40", open: false }
+        ]
+      };
+
+      const state = {
+        visit: "preventive",
+        clinician: "marlow",
+        modality: "in-clinic",
+        day: "Tue 14 Oct",
+        time: "10:40",
+        coverage: "nhs",
+        confirmed: false
+      };
+
+      const email1 = document.getElementById("email");
+      const email2 = document.getElementById("email2");
+      const patientName = document.getElementById("patient-name");
+      const patientDob = document.getElementById("patient-dob");
+      const clinicalNotes = document.getElementById("clinical-notes");
+      const notesCount = document.getElementById("notes-count");
+      const errBox = document.getElementById("err-box");
+      const errHeading = document.getElementById("err-heading");
+      const errList = document.getElementById("err-list");
+      const okBox = document.getElementById("ok-box");
+      const okBoxText = document.getElementById("ok-box-text");
+      const errInline = document.getElementById("email2-err");
+      const nameErr = document.getElementById("name-err");
+      const slotsGrid = document.getElementById("slots-grid");
+      const slotLegend = document.getElementById("slot-legend");
+      const submitBtn = document.getElementById("submit-btn");
+      const passRegion = document.getElementById("pass-live-region");
+      const stepThreeBar = document.getElementById("step-three-bar");
+
+      function formatGBP(amount) {
+        return "£" + amount.toFixed(2);
       }
-    });
-    document.getElementById("back-btn").addEventListener("click", () => {
-      okBox.textContent = "Step 1 would let you change visit type while preserving your email.";
-      okBox.classList.remove("hidden");
-    });
+
+      function getSlotsFor(day) {
+        const base = BASE_SLOTS[day] || BASE_SLOTS["Tue 14 Oct"];
+        return base.map((entry, idx) => {
+          let open = entry.open;
+          // Preserve exact Tue 14 Oct baseline for default clinician & modality
+          if (!(day === "Tue 14 Oct" && state.clinician === "marlow" && state.modality === "in-clinic")) {
+            if (state.clinician === "lin" && idx === 1) open = true;
+            if (state.clinician === "vance" && idx === 5) open = true;
+            if (state.modality === "video" && idx === 5) open = true;
+          }
+          return { time: entry.time, open };
+        });
+      }
+
+      function refreshDayCounts() {
+        Object.keys(BASE_SLOTS).forEach((dayKey) => {
+          const openCount = getSlotsFor(dayKey).filter((s) => s.open).length;
+          const badge = document.querySelector('[data-open-for="' + dayKey + '"]');
+          if (badge) badge.textContent = openCount + " open";
+        });
+      }
+
+      function renderSlots() {
+        const slots = getSlotsFor(state.day);
+        const stillOpen = slots.some((s) => s.open && s.time === state.time);
+        if (!stillOpen) {
+          const firstOpen = slots.find((s) => s.open);
+          if (firstOpen) state.time = firstOpen.time;
+        }
+
+        slotsGrid.innerHTML = "";
+        slots.forEach((slot) => {
+          const btn = document.createElement("button");
+          btn.type = "button";
+          if (!slot.open) {
+            btn.className = "slot full";
+            btn.disabled = true;
+            btn.innerHTML =
+              '<span class="slot-time-row"><svg class="slot-marker" viewBox="0 0 12 12" fill="none" aria-hidden="true"><circle cx="6" cy="6" r="4.5" stroke="currentColor" stroke-width="1.3"/><path d="M3 9L9 3" stroke="currentColor" stroke-width="1.3"/></svg><span class="time-struck">' +
+              slot.time +
+              "</span></span><small>Full</small>";
+          } else {
+            const selected = slot.time === state.time;
+            btn.className = "slot";
+            btn.dataset.time = slot.time;
+            btn.setAttribute("aria-pressed", selected ? "true" : "false");
+            const icon = selected
+              ? '<svg class="slot-marker" viewBox="0 0 12 12" fill="none" aria-hidden="true"><path d="M2 6.2L4.7 8.9L10 3.2" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/></svg>'
+              : '<svg class="slot-marker" viewBox="0 0 12 12" fill="none" aria-hidden="true"><circle cx="6" cy="6" r="4.5" stroke="currentColor" stroke-width="1.4"/></svg>';
+            btn.innerHTML =
+              '<span class="slot-time-row">' +
+              icon +
+              "<span>" +
+              slot.time +
+              "</span></span><small>" +
+              (selected ? "Selected" : "Available") +
+              "</small>";
+            btn.addEventListener("click", function () {
+              state.time = slot.time;
+              renderSlots();
+              syncAll();
+            });
+          }
+          slotsGrid.appendChild(btn);
+        });
+      }
+
+      function selectedAccommodations() {
+        const boxes = Array.from(
+          document.querySelectorAll('#intake-details input[type="checkbox"]:checked')
+        );
+        if (boxes.length === 0) return "Standard step-free access";
+        return boxes.map((b) => b.value).join(", ");
+      }
+
+      function computeTariff() {
+        const visitObj = VISITS[state.visit];
+        const base = state.modality === "video" ? visitObj.videoFee : visitObj.inClinicFee;
+        let due = 0;
+        let credit = base;
+        let pathwayName = "NHS / Public Coverage";
+        if (state.coverage === "insurer") {
+          due = 35;
+          credit = Math.max(0, base - due);
+          pathwayName = "Private Insurer Co-Pay";
+        } else if (state.coverage === "self-pay") {
+          due = base;
+          credit = 0;
+          pathwayName = "Self-Pay Transparent Tariff";
+        }
+        return { base, credit, due, pathwayName, selfPayCurrent: base };
+      }
+
+      function syncAll() {
+        const visitObj = VISITS[state.visit];
+        const clinObj = CLINICIANS[state.clinician];
+        const whenLabel = state.day + ", " + state.time;
+        const modalityLabel =
+          state.modality === "video"
+            ? "Encrypted Video Consult"
+            : "In-Clinic · Step-Free Ground Floor";
+        const roomNote =
+          state.modality === "video"
+            ? "Browser WebRTC link · Live captions · Zero app install"
+            : clinObj.room;
+        const prepNote =
+          state.modality === "video" ? visitObj.prepVideo : visitObj.prepClinic;
+        const accomText = selectedAccommodations();
+        const tariff = computeTariff();
+
+        slotLegend.textContent = "Time on " + state.day;
+        submitBtn.textContent = "Confirm " + whenLabel;
+        document.getElementById("visit-context-line").textContent =
+          visitObj.label + " with " + clinObj.name;
+
+        document.getElementById("summary-when").textContent = whenLabel;
+        document.getElementById("summary-visit").textContent = visitObj.label;
+        document.getElementById("summary-patient").textContent =
+          patientName.value.trim() || "Patient name required";
+        document.getElementById("summary-email").textContent =
+          email1.value.trim() || "Email required";
+        document.getElementById("summary-clinician").textContent = clinObj.name;
+        document.getElementById("summary-clinician-sub").textContent = clinObj.cred;
+        document.getElementById("summary-modality").textContent = modalityLabel;
+        document.getElementById("summary-room").textContent = roomNote;
+        document.getElementById("summary-accom").textContent = accomText;
+        document.getElementById("summary-coverage-name").textContent = tariff.pathwayName;
+        document.getElementById("summary-fee").textContent = formatGBP(tariff.due);
+        document.getElementById("summary-prep").textContent = prepNote;
+        document.getElementById("rail-self-pill").textContent =
+          "Self-Pay · £" + tariff.selfPayCurrent;
+
+        // Fee Estimator Table Sync
+        document.getElementById("tag-self").textContent = formatGBP(tariff.selfPayCurrent);
+        document.getElementById("table-visit-title").textContent =
+          visitObj.label + " (" + modalityLabel + ")";
+        document.getElementById("table-coverage-sub").textContent =
+          "Active pathway: " + tariff.pathwayName + " · Prices in GBP (£)";
+        document.getElementById("row-consult-name").textContent = visitObj.consultRow;
+        document.getElementById("row-consult-desc").textContent = visitObj.consultDesc;
+        document.getElementById("cell-base-tariff").textContent = formatGBP(tariff.base);
+        document.getElementById("cell-base-credit").textContent =
+          tariff.credit > 0 ? "-" + formatGBP(tariff.credit) : "£0.00";
+        document.getElementById("cell-base-due").textContent = formatGBP(tariff.due);
+        document.getElementById("cell-total-due").textContent = formatGBP(tariff.due);
+
+        // Live Confirmation Pass Sync
+        const cleanTime = state.time.replace(":", "");
+        document.getElementById("pass-ref").textContent = "MC-2610-" + cleanTime;
+        document.getElementById("pass-when").textContent = whenLabel + " BST";
+        document.getElementById("pass-patient").textContent =
+          patientName.value.trim() || "Amara Okoye";
+        document.getElementById("pass-email").textContent =
+          email1.value.trim() +
+          (patientDob.value.trim() ? " · DOB " + patientDob.value.trim() : "");
+        document.getElementById("pass-visit").textContent = visitObj.label;
+        document.getElementById("pass-clinician").textContent =
+          clinObj.name + " (" + clinObj.cred + ")";
+        document.getElementById("pass-modality").textContent = modalityLabel;
+        document.getElementById("pass-room").textContent =
+          state.modality === "video"
+            ? "Encrypted WebRTC Consultation Room (link in .ics pass)"
+            : clinObj.passRoom;
+        document.getElementById("pass-accom").textContent = accomText;
+        document.getElementById("pass-fee").textContent =
+          formatGBP(tariff.due) + " (" + tariff.pathwayName + ")";
+        document.getElementById("pass-prep").textContent = prepNote;
+      }
+
+      function validateForm() {
+        const errors = [];
+        const nameVal = patientName.value.trim();
+        const e1 = email1.value.trim();
+        const e2 = email2.value.trim();
+        const emailValid = e1.length > 3 && e1.includes("@") && e1.includes(".");
+        const emailsMatch = emailValid && e1.toLowerCase() === e2.toLowerCase();
+
+        if (!nameVal) {
+          patientName.setAttribute("aria-invalid", "true");
+          nameErr.classList.remove("hidden");
+          errors.push({
+            target: "#patient-name",
+            text: "Enter the patient's full name in the intake section"
+          });
+        } else {
+          patientName.setAttribute("aria-invalid", "false");
+          nameErr.classList.add("hidden");
+        }
+
+        if (!emailValid) {
+          email1.setAttribute("aria-invalid", "true");
+          errors.push({
+            target: "#email",
+            text: "Enter a valid confirmation email address (for example name@example.com)"
+          });
+        } else {
+          email1.setAttribute("aria-invalid", "false");
+        }
+
+        if (!emailsMatch) {
+          email2.setAttribute("aria-invalid", "true");
+          errInline.classList.remove("hidden");
+          const domainHint = e1.includes("@") ? e1.split("@")[1] : "example.com";
+          errInline.textContent =
+            "Error: this does not match the email above. Check “" + domainHint + "”.";
+          errors.push({
+            target: "#email2",
+            text:
+              "The two email addresses do not match — check “" +
+              (e2 || "Confirm email") +
+              "”"
+          });
+        } else {
+          email2.setAttribute("aria-invalid", "false");
+          errInline.classList.add("hidden");
+        }
+
+        if (errors.length > 0) {
+          errHeading.textContent =
+            errors.length === 1
+              ? "Fix 1 thing to continue"
+              : "Fix " + errors.length + " things to continue";
+          errList.innerHTML = "";
+          errors.forEach((item) => {
+            const li = document.createElement("li");
+            const a = document.createElement("a");
+            a.href = item.target;
+            a.textContent = item.text;
+            a.addEventListener("click", function (ev) {
+              const targetEl = document.querySelector(item.target);
+              if (targetEl) {
+                ev.preventDefault();
+                targetEl.focus();
+                targetEl.scrollIntoView({ block: "center" });
+              }
+            });
+            li.appendChild(a);
+            errList.appendChild(li);
+          });
+          errBox.classList.remove("hidden");
+          document.getElementById("match-email-btn").classList.toggle("hidden", emailsMatch || !emailValid);
+          return false;
+        }
+
+        errBox.classList.add("hidden");
+        return true;
+      }
+
+      function wirePressedGroup(selector, dataKey, onPick) {
+        const buttons = document.querySelectorAll(selector);
+        buttons.forEach((btn) => {
+          btn.addEventListener("click", function () {
+            buttons.forEach((b) => b.setAttribute("aria-pressed", "false"));
+            btn.setAttribute("aria-pressed", "true");
+            onPick(btn.dataset[dataKey]);
+          });
+        });
+      }
+
+      wirePressedGroup(".visit-opt", "visit", function (val) {
+        state.visit = val;
+        syncAll();
+      });
+
+      wirePressedGroup(".clinician-opt", "clinician", function (val) {
+        state.clinician = val;
+        refreshDayCounts();
+        renderSlots();
+        syncAll();
+      });
+
+      wirePressedGroup(".modality-opt", "modality", function (val) {
+        state.modality = val;
+        refreshDayCounts();
+        renderSlots();
+        syncAll();
+      });
+
+      wirePressedGroup(".day", "day", function (val) {
+        state.day = val;
+        renderSlots();
+        syncAll();
+      });
+
+      function setCoveragePathway(val) {
+        state.coverage = val;
+        document.querySelectorAll(".coverage-btn, .rail-cov-pill").forEach((b) => {
+          b.setAttribute("aria-pressed", b.dataset.coverage === val ? "true" : "false");
+        });
+        syncAll();
+      }
+
+      document.querySelectorAll(".coverage-btn, .rail-cov-pill").forEach((btn) => {
+        btn.addEventListener("click", function () {
+          setCoveragePathway(btn.dataset.coverage);
+        });
+      });
+
+      // Clinician directory buttons sync directly to workbench
+      document.querySelectorAll(".roster-select-btn").forEach((btn) => {
+        btn.addEventListener("click", function () {
+          const chosen = btn.dataset.selectClinician;
+          state.clinician = chosen;
+          document.querySelectorAll(".clinician-opt").forEach((opt) => {
+            opt.setAttribute(
+              "aria-pressed",
+              opt.dataset.clinician === chosen ? "true" : "false"
+            );
+          });
+          refreshDayCounts();
+          renderSlots();
+          syncAll();
+          const firstClinicianBtn = document.querySelector(
+            '.clinician-opt[data-clinician="' + chosen + '"]'
+          );
+          if (firstClinicianBtn) {
+            firstClinicianBtn.focus();
+            firstClinicianBtn.scrollIntoView({ block: "center" });
+          }
+        });
+      });
+
+      // Wire initial error link click-to-focus
+      const initialErrLink = document.getElementById("err-primary-link");
+      if (initialErrLink) {
+        initialErrLink.addEventListener("click", function (ev) {
+          ev.preventDefault();
+          email2.focus();
+          email2.scrollIntoView({ block: "center" });
+        });
+      }
+
+      // One-click recovery helper button
+      document.getElementById("match-email-btn").addEventListener("click", function () {
+        email2.value = email1.value.trim();
+        validateForm();
+        syncAll();
+        email2.focus();
+      });
+
+      // Reset typo specimen button for live demonstration
+      document.getElementById("reset-typo-btn").addEventListener("click", function () {
+        email1.value = "amara.okoye@example.com";
+        email2.value = "amara.okoye@exmaple.com";
+        state.confirmed = false;
+        okBox.classList.add("hidden");
+        passRegion.classList.add("hidden");
+        stepThreeBar.classList.remove("active");
+        validateForm();
+        syncAll();
+        email2.focus();
+      });
+
+      email1.addEventListener("input", function () {
+        validateForm();
+        syncAll();
+      });
+      email2.addEventListener("input", function () {
+        validateForm();
+        syncAll();
+      });
+      patientName.addEventListener("input", function () {
+        validateForm();
+        syncAll();
+      });
+      patientDob.addEventListener("input", syncAll);
+
+      clinicalNotes.addEventListener("input", function () {
+        const len = clinicalNotes.value.length;
+        notesCount.textContent = len + " / 500 characters";
+      });
+
+      document
+        .querySelectorAll('#intake-details input[type="checkbox"]')
+        .forEach((box) => {
+          box.addEventListener("change", syncAll);
+        });
+
+      // Form Submission
+      document.getElementById("booking-form").addEventListener("submit", function (ev) {
+        ev.preventDefault();
+        syncAll();
+        if (validateForm()) {
+          state.confirmed = true;
+          stepThreeBar.classList.add("active");
+          okBoxText.textContent =
+            "Confirmed " +
+            state.day +
+            ", " +
+            state.time +
+            " with " +
+            CLINICIANS[state.clinician].name +
+            " for " +
+            email1.value.trim() +
+            ".";
+          okBox.classList.remove("hidden");
+          passRegion.classList.remove("hidden");
+          const passHeading = document.getElementById("appointment-pass-heading");
+          passHeading.setAttribute("tabindex", "-1");
+          passHeading.focus();
+          passHeading.scrollIntoView({ block: "nearest" });
+        } else {
+          okBox.classList.add("hidden");
+          const firstLink = errList.querySelector("a");
+          const targetSelector = firstLink ? firstLink.getAttribute("href") : "#email2";
+          const targetField = document.querySelector(targetSelector);
+          if (targetField) targetField.focus();
+        }
+      });
+
+      // Download .ics Calendar Invite
+      document.getElementById("download-ics-btn").addEventListener("click", function () {
+        const visitObj = VISITS[state.visit];
+        const clinObj = CLINICIANS[state.clinician];
+        const datePart = DAY_ISO[state.day] || "20261014";
+        const parts = state.time.split(":");
+        const startH = parseInt(parts[0], 10);
+        const startM = parseInt(parts[1], 10);
+        const endTotal = startH * 60 + startM + visitObj.minutes;
+        const endH = String(Math.floor(endTotal / 60)).padStart(2, "0");
+        const endMin = String(endTotal % 60).padStart(2, "0");
+        const startStamp =
+          datePart + "T" + String(startH).padStart(2, "0") + String(startM).padStart(2, "0") + "00";
+        const endStamp = datePart + "T" + endH + endMin + "00";
+        const locationStr =
+          state.modality === "video"
+            ? "Marlow Clinic Encrypted Video Consult"
+            : "Marlow Clinic, 14 Weir Street, Southwark, London SE1 9RT (" + clinObj.room + ")";
+
+        const icsLines = [
+          "BEGIN:VCALENDAR",
+          "VERSION:2.0",
+          "PRODID:-//Marlow Clinic//Accessible Appointment Pass//EN",
+          "CALSCALE:GREGORIAN",
+          "BEGIN:VEVENT",
+          "UID:mc-" + datePart + "-" + startStamp + "@marlowclinic.example",
+          "DTSTAMP:20261001T090000Z",
+          "DTSTART;TZID=Europe/London:" + startStamp,
+          "DTEND;TZID=Europe/London:" + endStamp,
+          "SUMMARY:" + visitObj.label + " - Marlow Clinic (" + clinObj.name + ")",
+          "LOCATION:" + locationStr,
+          "DESCRIPTION:Fictional clinic specimen. Accommodations: " +
+            selectedAccommodations() +
+            ". Preparation: " +
+            (state.modality === "video" ? visitObj.prepVideo : visitObj.prepClinic),
+          "END:VEVENT",
+          "END:VCALENDAR"
+        ].join("\r\n");
+
+        const blob = new Blob([icsLines], { type: "text/calendar;charset=utf-8" });
+        const url = URL.createObjectURL(blob);
+        const link = document.createElement("a");
+        link.href = url;
+        link.download = "marlow-clinic-" + datePart + "-" + parts.join("") + ".ics";
+        document.body.appendChild(link);
+        link.click();
+        link.remove();
+        setTimeout(function () {
+          URL.revokeObjectURL(url);
+        }, 1500);
+      });
+
+      // Print Appointment Pass
+      document.getElementById("print-pass-btn").addEventListener("click", function () {
+        window.print();
+      });
+
+      // Modify Booking preserving all input
+      document.getElementById("modify-pass-btn").addEventListener("click", function () {
+        const firstDayBtn = document.querySelector('.day[aria-pressed="true"]');
+        if (firstDayBtn) {
+          firstDayBtn.focus();
+          firstDayBtn.scrollIntoView({ block: "center" });
+        }
+      });
+
+      refreshDayCounts();
+      renderSlots();
+      syncAll();
+    })();
   </script>
 </body>
 </html>

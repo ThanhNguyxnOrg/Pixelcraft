@@ -1,5 +1,22 @@
-import { useEffect, useRef, useState, type ReactNode } from "react";
+import {
+  createContext,
+  useContext,
+  useEffect,
+  useRef,
+  useState,
+  type ReactNode,
+} from "react";
 import type { EvidenceLabel } from "../data";
+
+/** Page-wide autonomous-motion switch, owned by the hero's pause control. */
+export const MotionPause = createContext<{
+  paused: boolean;
+  setPaused: (v: boolean) => void;
+}>({
+  paused: false,
+  setPaused: () => {},
+});
+export const useMotionPause = () => useContext(MotionPause);
 
 // 8×8 bitmaps. '#' is a lit pixel. One grid, one stroke logic, one metaphor system.
 const BITMAPS = {
@@ -31,6 +48,56 @@ const BITMAPS = {
     "#######.",
     "....##..",
     "....#...",
+    "........",
+  ],
+  chevronLeft: [
+    "....##..",
+    "...##...",
+    "..##....",
+    ".##.....",
+    ".##.....",
+    "..##....",
+    "...##...",
+    "....##..",
+  ],
+  chevronRight: [
+    "..##....",
+    "...##...",
+    "....##..",
+    ".....##.",
+    ".....##.",
+    "....##..",
+    "...##...",
+    "..##....",
+  ],
+  phone: [
+    "..####..",
+    ".#....#.",
+    ".#....#.",
+    ".#....#.",
+    ".#....#.",
+    ".#.##.#.",
+    "..####..",
+    "........",
+  ],
+  monitor: [
+    "########",
+    "#......#",
+    "#......#",
+    "#......#",
+    "########",
+    "...##...",
+    ".######.",
+    "........",
+  ],
+  pin: [
+    "..####..",
+    ".#....#.",
+    ".#.##.#.",
+    ".#....#.",
+    "..####..",
+    "...##...",
+    "...##...",
     "........",
   ],
   external: [
@@ -83,6 +150,16 @@ const BITMAPS = {
     "##....##",
     "........",
   ],
+  scan: [
+    "###..###",
+    "#......#",
+    "#......#",
+    "########",
+    "........",
+    "#......#",
+    "#......#",
+    "###..###",
+  ],
   reset: [
     "..####..",
     ".#....#.",
@@ -92,6 +169,26 @@ const BITMAPS = {
     "#.....##",
     ".#...#.#",
     "..###...",
+  ],
+  play: [
+    ".#......",
+    ".##.....",
+    ".###....",
+    ".####...",
+    ".####...",
+    ".###....",
+    ".##.....",
+    ".#......",
+  ],
+  pause: [
+    "........",
+    ".##..##.",
+    ".##..##.",
+    ".##..##.",
+    ".##..##.",
+    ".##..##.",
+    ".##..##.",
+    "........",
   ],
   drag: [
     "........",
@@ -103,6 +200,26 @@ const BITMAPS = {
     "..#..#..",
     "........",
   ],
+  chevron: [
+    "........",
+    "........",
+    "##....##",
+    ".##..##.",
+    "..####..",
+    "...##...",
+    "........",
+    "........",
+  ],
+  spark: [
+    "...##...",
+    "...##...",
+    "..####..",
+    "########",
+    "########",
+    "..####..",
+    "...##...",
+    "...##...",
+  ],
   star: [
     "...##...",
     "...##...",
@@ -111,26 +228,6 @@ const BITMAPS = {
     "..####..",
     ".##..##.",
     ".#....#.",
-    "........",
-  ],
-  code: [
-    "........",
-    "..#..#..",
-    ".#....#.",
-    "#......#",
-    "#......#",
-    ".#....#.",
-    "..#..#..",
-    "........",
-  ],
-  pin: [
-    "..####..",
-    ".#....#.",
-    ".#.##.#.",
-    ".#....#.",
-    "..####..",
-    "...##...",
-    "...##...",
     "........",
   ],
   // Evidence glyphs: distinct shapes so meaning never depends on color alone.
@@ -227,12 +324,13 @@ const EVIDENCE_TEXT: Record<EvidenceLabel, string> = {
   waived: "text-waived",
 };
 
+// Darker hues for the light table; each still has its own glyph, so meaning never rests on color alone.
 const EVIDENCE_PAPER: Record<EvidenceLabel, string> = {
-  rendered: "text-[#006865]",
-  static: "text-[#1655a4]",
-  "model-judgment": "text-[#5f3bc2]",
-  "not-checked": "text-[#8e4400]",
-  waived: "text-[#8e008b]",
+  rendered: "text-[#00706e]",
+  static: "text-[#1b5fb3]",
+  "model-judgment": "text-[#6a45cf]",
+  "not-checked": "text-[#a04e00]",
+  waived: "text-[#a2009f]",
 };
 
 export function EvidenceStamp({
@@ -246,7 +344,7 @@ export function EvidenceStamp({
 }) {
   return (
     <span
-      className={`inline-flex items-center gap-1.5 rounded-full border border-current/70 px-2.5 py-1 font-mono text-[0.75rem] leading-none whitespace-nowrap ${tone === "paper" ? EVIDENCE_PAPER[label] : EVIDENCE_TEXT[label]} ${className}`}
+      className={`inline-flex items-center gap-1.5 rounded-full border border-current/60 px-2.5 py-1 font-mono text-[0.75rem] leading-none whitespace-nowrap ${tone === "paper" ? EVIDENCE_PAPER[label] : EVIDENCE_TEXT[label]} ${className}`}
     >
       <PixelIcon name={label} size={10} />
       {label}
@@ -280,6 +378,7 @@ export function CopyCommand({
       await navigator.clipboard.writeText(text);
       setState("copied");
     } catch {
+      // Clipboard can be denied (permissions, iframes). Select the text so the user can copy manually.
       const node = codeRef.current;
       if (node) {
         const range = document.createRange();
@@ -296,9 +395,9 @@ export function CopyCommand({
 
   return (
     <div
-      className={`flex flex-wrap items-stretch gap-2 rounded-tile p-1.5 ${featured ? "surface-lit" : "surface"}`}
+      className={`gborder flex flex-wrap items-stretch gap-2 rounded-tile p-1.5 ${featured ? "surface-lit" : "surface"}`}
     >
-      <pre className="min-w-0 flex-[1_1_16rem] overflow-x-auto px-4 py-3 text-[0.875rem] leading-relaxed">
+      <pre className="min-w-0 flex-[1_1_18rem] overflow-x-auto px-4 py-3 text-[0.875rem] leading-relaxed">
         <code ref={codeRef}>
           {lines.map((l) => (
             <span
@@ -319,10 +418,11 @@ export function CopyCommand({
       <button
         type="button"
         onClick={copy}
-        className={`ms-auto flex min-h-11 min-w-[6.5rem] shrink-0 items-center justify-center gap-2 self-center rounded-full px-5 py-2.5 font-mono text-[0.8125rem] font-medium transition-colors duration-150 motion-reduce:transition-none ${
+        data-magnetic
+        className={`ms-auto flex min-w-[6.75rem] shrink-0 items-center justify-center gap-2 self-center rounded-full px-5 py-3 font-mono text-[0.8125rem] font-medium transition-[background-color,transform,box-shadow] duration-150 active:scale-[0.97] motion-reduce:transition-none ${
           featured
-            ? "bg-action text-on-action hover:bg-ink"
-            : "border border-line bg-raised text-ink hover:border-action hover:text-action"
+            ? "bg-action text-on-action shadow-glow-action hover:bg-ink"
+            : "bg-white/10 text-ink hover:bg-white/16"
         }`}
       >
         <PixelIcon name={state === "copied" ? "check" : "copy"} size={12} />
@@ -343,33 +443,138 @@ export function CopyCommand({
   );
 }
 
-export function SectionHead({
-  id,
-  meta,
-  title,
+export function PixelLabel({
   children,
+  tone = "action",
 }: {
-  id: string;
-  meta: string;
-  title: string;
-  children?: ReactNode;
+  children: ReactNode;
+  tone?: "action" | "faint";
 }) {
   return (
-    <div className="grid gap-6 lg:grid-cols-12 lg:items-end">
-      <div className="lg:col-span-8">
-        <p className="font-mono text-[0.8125rem] text-action">{meta}</p>
+    <p
+      className={`flex items-center gap-2.5 font-pixel text-[0.75rem] tracking-[0.06em] uppercase ${tone === "action" ? "text-action" : "text-ink-faint"}`}
+    >
+      <span
+        aria-hidden="true"
+        className="size-2 rounded-[3px] bg-current shadow-[0_0_14px_currentColor]"
+      />
+      <span data-scramble>{children}</span>
+    </p>
+  );
+}
+
+/** Block reveal. The motion itself lives in useGlobalMotion (GSAP batch); this only marks the element. */
+export function Reveal({
+  children,
+  className = "",
+}: {
+  children: ReactNode;
+  delay?: number;
+  className?: string;
+}) {
+  return (
+    <div data-reveal className={className}>
+      {children}
+    </div>
+  );
+}
+
+export function SectionHead({
+  id,
+  kicker,
+  title,
+  children,
+  align = "split",
+}: {
+  id: string;
+  kicker: string;
+  title: string;
+  children?: ReactNode;
+  align?: "split" | "stack";
+}) {
+  return (
+    <div
+      className={
+        align === "split"
+          ? "grid gap-8 lg:grid-cols-12 lg:items-end"
+          : "grid gap-8"
+      }
+    >
+      <div className={align === "split" ? "lg:col-span-8" : ""}>
+        <PixelLabel>{kicker}</PixelLabel>
         <h2
           id={id}
-          className="mt-3 max-w-[20ch] display-wide text-[clamp(2rem,4vw,3.5rem)] leading-[1.02] text-balance"
+          data-split
+          className="mt-6 max-w-[19ch] display-wide text-[clamp(2.25rem,4.4vw,4rem)] leading-[0.98] text-balance"
         >
           {title}
         </h2>
       </div>
       {children ? (
-        <div className="max-w-[46ch] text-[1.0625rem] leading-relaxed text-ink-muted lg:col-span-4 lg:pb-1">
-          {children}
-        </div>
+        <Reveal className={align === "split" ? "lg:col-span-4 lg:pb-2" : ""}>
+          <div className="max-w-[46ch] text-[1.0625rem] leading-relaxed text-ink-muted">
+            {children}
+          </div>
+        </Reveal>
       ) : null}
     </div>
+  );
+}
+
+/** A rounded panel with a gradient hairline. `lit` tints it with the action color. */
+export function PixelFrame({
+  children,
+  className = "",
+  innerClassName = "",
+  lit = false,
+}: {
+  children: ReactNode;
+  className?: string;
+  innerClassName?: string;
+  lit?: boolean;
+}) {
+  return (
+    <div
+      className={`gborder rounded-card ${lit ? "surface-lit" : "surface"} ${className}`}
+    >
+      <div className={`h-full overflow-hidden rounded-card ${innerClassName}`}>
+        {children}
+      </div>
+    </div>
+  );
+}
+
+/** A tile whose highlight follows the pointer. Decorative only: nothing depends on hover. */
+export function SpotTile({
+  children,
+  className = "",
+  as: Tag = "div",
+}: {
+  children: ReactNode;
+  className?: string;
+  as?: "div" | "li";
+}) {
+  const onMove = (e: React.PointerEvent<HTMLElement>) => {
+    const r = e.currentTarget.getBoundingClientRect();
+    e.currentTarget.style.setProperty("--mx", `${e.clientX - r.left}px`);
+    e.currentTarget.style.setProperty("--my", `${e.clientY - r.top}px`);
+  };
+  return (
+    <Tag
+      data-reveal
+      onPointerMove={onMove}
+      className={`group/spot surface relative overflow-hidden ${className}`}
+      style={{ ["--mx" as string]: "50%", ["--my" as string]: "0%" }}
+    >
+      <span
+        aria-hidden="true"
+        className="pointer-events-none absolute inset-0 opacity-0 transition-opacity duration-300 group-hover/spot:opacity-100 motion-reduce:transition-none"
+        style={{
+          background:
+            "radial-gradient(360px circle at var(--mx) var(--my), color-mix(in oklab, var(--color-action) 16%, transparent), transparent 60%)",
+        }}
+      />
+      <div className="relative h-full">{children}</div>
+    </Tag>
   );
 }

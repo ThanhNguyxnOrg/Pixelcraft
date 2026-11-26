@@ -3,6 +3,7 @@
   "npmPkg": "@thanhnguyxn/pixelcraft",
   "license": "MIT",
   "repoUrl": "https://github.com/ThanhNguyxnOrg/Pixelcraft",
+  "siteUrl": "https://thanhnguyxnorg.github.io/Pixelcraft/",
   "totalSkills": 26,
   "totalReferences": 247,
   "totalScripts": 9,
@@ -76,6 +77,120 @@
   "totalEvalCases": 72,
   "totalEvalFixtures": 66,
   "totalGalleryExhibits": 22,
+  "exhibitIds": [
+    "booking",
+    "clinic",
+    "coffee",
+    "compose",
+    "dashboard",
+    "desktop",
+    "document",
+    "email",
+    "flutter",
+    "gamehud",
+    "grid",
+    "kubetrace",
+    "learning",
+    "liveview",
+    "magazine",
+    "mobile",
+    "proposal",
+    "python",
+    "saas",
+    "store",
+    "swiftui",
+    "tui"
+  ],
+  "exhibitScores": {
+    "swiftui": {
+      "before": 209,
+      "after": 0
+    },
+    "compose": {
+      "before": 196,
+      "after": 0
+    },
+    "flutter": {
+      "before": 216,
+      "after": 0
+    },
+    "mobile": {
+      "before": 30,
+      "after": 0
+    },
+    "kubetrace": {
+      "before": 222,
+      "after": 0
+    },
+    "tui": {
+      "before": 22,
+      "after": 0
+    },
+    "desktop": {
+      "before": 190,
+      "after": 0
+    },
+    "python": {
+      "before": 176,
+      "after": 0
+    },
+    "dashboard": {
+      "before": 91,
+      "after": 0
+    },
+    "grid": {
+      "before": 6,
+      "after": 0
+    },
+    "liveview": {
+      "before": 200,
+      "after": 0
+    },
+    "saas": {
+      "before": 57,
+      "after": 0
+    },
+    "store": {
+      "before": 126,
+      "after": 0
+    },
+    "booking": {
+      "before": 89,
+      "after": 0
+    },
+    "learning": {
+      "before": 82,
+      "after": 0
+    },
+    "magazine": {
+      "before": 55,
+      "after": 0
+    },
+    "coffee": {
+      "before": 28,
+      "after": 0
+    },
+    "clinic": {
+      "before": 58,
+      "after": 0
+    },
+    "email": {
+      "before": 159,
+      "after": 0
+    },
+    "proposal": {
+      "before": 153,
+      "after": 0
+    },
+    "document": {
+      "before": 20,
+      "after": 0
+    },
+    "gamehud": {
+      "before": 215,
+      "after": 0
+    }
+  },
   "stacks": [
     "React 19",
     "Next.js",

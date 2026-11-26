@@ -4,6 +4,13 @@
 <meta charset="utf-8" />
 <meta name="viewport" content="width=device-width, initial-scale=1" />
 <title>Ampere Home &amp; EV · Smart EV &amp; Solar Load Scheduler (with Pixelcraft)</title>
+  <meta name="description" content="Ampere EV & Solar — Adaptive Flutter Impeller controller for home EV wallbox scheduling, rooftop PV surplus balancing, and 24-hour tariff curves." />
+  <link rel="canonical" href="https://thanhnguyxnorg.github.io/Pixelcraft/gallery/flutter/after.html" />
+  <meta property="og:type" content="website" />
+  <meta property="og:title" content="Ampere Home & EV · Smart EV & Solar Load Scheduler (with Pixelcraft)" />
+  <meta property="og:description" content="Ampere EV & Solar — Adaptive Flutter Impeller controller for home EV wallbox scheduling, rooftop PV surplus balancing, and 24-hour tariff curves." />
+  <meta property="og:url" content="https://thanhnguyxnorg.github.io/Pixelcraft/gallery/flutter/after.html" />
+  <script type="application/ld+json">{"@context":"https://schema.org","@type":"MobileApplication","name":"Ampere Home & EV · Smart EV & Solar Load Scheduler (with Pixelcraft)","description":"Ampere EV & Solar — Adaptive Flutter Impeller controller for home EV wallbox scheduling, rooftop PV surplus balancing, and 24-hour tariff curves.","url":"https://thanhnguyxnorg.github.io/Pixelcraft/gallery/flutter/after.html","isPartOf":{"@type":"WebSite","name":"Pixelcraft Multi-Stack UI Gallery","url":"https://thanhnguyxnorg.github.io/Pixelcraft/"},"operatingSystem":"iOS, Android, Embedded Tablet"}</script>
 <link rel="stylesheet" href="../../fonts/gallery.css" />
 <style>
   :root {
@@ -849,7 +856,7 @@
 
   @media (max-width: 1160px) {
     .tablet-shell {
-      grid-template-columns: 1fr;
+      grid-template-columns: minmax(0, 1fr);
     }
     .nav-rail {
       flex-direction: row;
@@ -863,7 +870,203 @@
       display: none;
     }
     .workbench-grid {
-      grid-template-columns: 1fr;
+      grid-template-columns: minmax(0, 1fr);
+    }
+  }
+
+  @media (max-width: 1024px) {
+    html,
+    body {
+      width: 100%;
+      min-width: 0;
+      overflow-x: clip;
+    }
+
+    .tablet-shell {
+      min-height: 100dvh;
+      width: 100%;
+      min-width: 0;
+    }
+
+    .nav-rail {
+      padding: 8px 12px;
+    }
+
+    .rail-stack {
+      display: grid;
+      grid-template-columns: repeat(4, minmax(0, 1fr));
+      width: 100%;
+      gap: 6px;
+    }
+
+    .rail-btn {
+      min-height: 48px;
+      font-size: 11px;
+    }
+
+    .instrument-topbar {
+      height: auto;
+      padding: 10px 16px;
+      flex-wrap: wrap;
+      gap: 10px 14px;
+    }
+
+    .brand-identity {
+      min-width: 0;
+      flex-wrap: wrap;
+    }
+
+    .workbench-grid {
+      padding: 12px 16px 18px;
+      grid-template-columns: minmax(0, 1fr);
+    }
+
+    .instrument-module,
+    .dial-housing,
+    .drum-readouts,
+    .chart-frame,
+    .scrubber-strip,
+    .breaker-row,
+    .breaker-bar-group,
+    .breaker-name-block {
+      min-width: 0;
+    }
+  }
+
+  @media (max-width: 640px) {
+    .nav-rail {
+      padding: 8px 12px;
+    }
+
+    .rail-btn {
+      min-height: 44px;
+      font-size: 10.5px;
+      padding: 4px 2px;
+    }
+
+    .instrument-topbar {
+      padding: 10px 12px;
+    }
+
+    .hardware-spec-tag {
+      white-space: normal;
+    }
+
+    .bus-telemetry {
+      gap: 6px 12px;
+    }
+
+    .bus-datum {
+      padding-right: 0;
+      border-right: none;
+      font-size: 12px;
+    }
+
+    .workbench-grid {
+      padding: 12px 12px 18px;
+      gap: 12px;
+    }
+
+    .instrument-module {
+      padding: 12px;
+    }
+
+    .module-header,
+    .control-header,
+    .bay-footer {
+      flex-wrap: wrap;
+      gap: 6px 8px;
+    }
+
+    .plug-badge,
+    .painter-tag,
+    .bay-footer {
+      white-space: normal;
+      max-width: 100%;
+    }
+
+    .dial-housing {
+      grid-template-columns: minmax(0, 1fr);
+      justify-items: center;
+      padding: 12px;
+    }
+
+    .rotary-dial-wrap {
+      width: 100%;
+    }
+
+    .rotary-svg {
+      width: 100%;
+      max-width: 210px;
+      height: auto;
+    }
+
+    .drum-readouts {
+      width: 100%;
+    }
+
+    .keybank.cols-4 {
+      grid-template-columns: repeat(2, minmax(0, 1fr));
+    }
+
+    .keybank.cols-3 {
+      grid-template-columns: minmax(0, 1fr);
+    }
+
+    .keybank.cols-3 .tactile-key {
+      flex-direction: row;
+      justify-content: space-between;
+      padding: 8px 12px;
+      min-height: 44px;
+    }
+
+    .keybank.cols-3 .key-pip {
+      display: none;
+    }
+
+    .trim-input-row {
+      grid-template-columns: minmax(0, 1fr) 76px;
+      gap: 8px;
+    }
+
+    .amp-number-input {
+      min-height: 40px;
+    }
+
+    .chart-frame {
+      padding: 8px;
+    }
+
+    .tariff-svg {
+      width: 100%;
+      height: auto;
+      aspect-ratio: 760 / 272;
+    }
+
+    .scrubber-strip {
+      grid-template-columns: minmax(0, 1fr);
+      gap: 6px;
+      padding: 8px 10px;
+    }
+
+    .scrubber-readout {
+      white-space: normal;
+      font-size: 12px;
+    }
+
+    .breaker-row {
+      grid-template-columns: minmax(0, 1fr) auto;
+      gap: 8px;
+      padding: 10px;
+    }
+
+    .breaker-bar-group {
+      grid-column: 1 / -1;
+      order: 3;
+    }
+
+    .breaker-detail {
+      font-size: 11.5px;
     }
   }
 
@@ -875,6 +1078,8 @@
       scroll-behavior: auto !important;
     }
   }
+
+  @media print { .pc-skip-link { display: none; } body { -webkit-print-color-adjust: exact; print-color-adjust: exact; } }
 </style>
 </head>
 <body>

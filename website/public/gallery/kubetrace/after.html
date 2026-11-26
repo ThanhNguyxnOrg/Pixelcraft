@@ -4,6 +4,13 @@
   <meta charset="utf-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1" />
   <title>KubeTrace TUI · Rust + Ratatui Pod &amp; Causal Latency Multiplexer</title>
+  <meta name="description" content="KubeTrace Multiplexer — Keyboard-first Rust Ratatui terminal UI for Kubernetes pod triage, causal span waterfalls, and NO_COLOR=1 monochrome parity." />
+  <link rel="canonical" href="https://thanhnguyxnorg.github.io/Pixelcraft/gallery/kubetrace/after.html" />
+  <meta property="og:type" content="website" />
+  <meta property="og:title" content="KubeTrace TUI · Rust + Ratatui Pod & Causal Latency Multiplexer" />
+  <meta property="og:description" content="KubeTrace Multiplexer — Keyboard-first Rust Ratatui terminal UI for Kubernetes pod triage, causal span waterfalls, and NO_COLOR=1 monochrome parity." />
+  <meta property="og:url" content="https://thanhnguyxnorg.github.io/Pixelcraft/gallery/kubetrace/after.html" />
+  <script type="application/ld+json">{"@context":"https://schema.org","@type":"SoftwareApplication","name":"KubeTrace TUI · Rust + Ratatui Pod & Causal Latency Multiplexer","description":"KubeTrace Multiplexer — Keyboard-first Rust Ratatui terminal UI for Kubernetes pod triage, causal span waterfalls, and NO_COLOR=1 monochrome parity.","url":"https://thanhnguyxnorg.github.io/Pixelcraft/gallery/kubetrace/after.html","isPartOf":{"@type":"WebSite","name":"Pixelcraft Multi-Stack UI Gallery","url":"https://thanhnguyxnorg.github.io/Pixelcraft/"},"operatingSystem":"Linux, macOS, POSIX TTY"}</script>
   <link rel="stylesheet" href="../../fonts/gallery.css" />
   <style>
     :root {
@@ -1003,12 +1010,223 @@
 
     @media (max-width: 1180px) {
       .mux-split {
-        grid-template-columns: 1fr;
+        grid-template-columns: minmax(0, 1fr);
       }
       .gauge-row-grid,
       .node-grid,
       .attr-grid {
-        grid-template-columns: 1fr;
+        grid-template-columns: minmax(0, 1fr);
+      }
+    }
+
+    @media (max-width: 1024px) {
+      html,
+      body {
+        width: 100%;
+        min-width: 0;
+        height: auto;
+        min-height: 100dvh;
+        overflow-x: clip;
+        overflow-y: visible;
+      }
+
+      .tty-screen {
+        width: 100%;
+        min-width: 0;
+        min-height: 100dvh;
+        padding: 8px 12px 12px;
+      }
+
+      .mux-split {
+        grid-template-columns: minmax(0, 1fr);
+      }
+
+      .box-title,
+      .box-title-amber,
+      .box-meta {
+        min-width: 0;
+        overflow: hidden;
+        text-overflow: ellipsis;
+      }
+
+      .box-rule-fill {
+        min-width: 0;
+      }
+
+      .box-line .box-meta,
+      .box-line .box-glyph:not(:first-child):not(:last-child) {
+        display: none;
+      }
+
+      .tui-btn {
+        font-size: 12px;
+        min-height: 36px;
+        padding: 6px 10px;
+      }
+
+      .filter-input {
+        font-size: 12px;
+        min-height: 32px;
+      }
+
+      #pod-table-region > .box-body:not(.fill-height) {
+        min-width: 0;
+        max-width: 100%;
+        overflow-x: auto;
+      }
+
+      .pod-table-head,
+      .pod-row {
+        min-width: 500px;
+      }
+
+      .waterfall-box {
+        min-width: 0;
+        max-width: 100%;
+        overflow-x: auto;
+      }
+
+      .waterfall-ruler,
+      .span-row {
+        min-width: 460px;
+      }
+
+      .attr-kv {
+        border-right: none;
+      }
+
+      .attr-kv:nth-last-child(2) {
+        border-bottom: 1px solid var(--cell-rule);
+      }
+    }
+
+    @media (max-width: 640px) {
+      .tty-screen {
+        padding: 8px 8px 14px;
+      }
+
+      .box-body {
+        margin-left: 0;
+        margin-right: 0;
+      }
+
+      .cluster-strip-inner {
+        padding: 8px;
+      }
+
+      .budget-cluster {
+        flex-wrap: wrap;
+        max-width: 100%;
+        font-size: 12px;
+      }
+
+      .top-right-controls {
+        width: 100%;
+      }
+
+      .filter-unit {
+        width: 100%;
+        min-width: 0;
+        max-width: 100%;
+      }
+
+      .filter-input {
+        width: 100%;
+        min-width: 0;
+        flex: 1;
+      }
+
+      .pressure-body,
+      .inspector-content {
+        padding: 8px;
+      }
+
+      .spark-strip {
+        grid-template-columns: minmax(0, 1fr) auto;
+        gap: 4px 8px;
+        font-size: 12px;
+      }
+
+      .spark-strip > :nth-child(2) {
+        grid-column: 1 / -1;
+        order: 3;
+        min-width: 0;
+        overflow: hidden;
+        text-overflow: ellipsis;
+      }
+
+      .event-ring-head,
+      .attr-head,
+      .diag-header,
+      .gauge-bar-line {
+        flex-wrap: wrap;
+        gap: 4px 8px;
+      }
+
+      .event-row {
+        grid-template-columns: auto minmax(0, 1fr);
+        gap: 2px 8px;
+        font-size: 12px;
+        white-space: normal;
+      }
+
+      .ev-msg {
+        grid-column: 1 / -1;
+        white-space: normal;
+        overflow-wrap: anywhere;
+      }
+
+      .pane-toolbar {
+        padding: 8px;
+      }
+
+      .tab-strip {
+        flex-wrap: wrap;
+      }
+
+      .trace-meta-pill {
+        white-space: normal;
+        overflow-wrap: anywhere;
+        font-size: 12px;
+      }
+
+      .attr-kv {
+        flex-wrap: wrap;
+        font-size: 12px;
+      }
+
+      .diag-grid {
+        grid-template-columns: minmax(0, 1fr);
+        gap: 2px;
+        font-size: 12px;
+      }
+
+      .diag-val {
+        margin-bottom: 6px;
+        overflow-wrap: anywhere;
+      }
+
+      .diag-cmd,
+      .mono-log-list,
+      .spec-pre {
+        min-width: 0;
+        max-width: 100%;
+        overflow-x: auto;
+        font-size: 12px;
+      }
+
+      .keybar {
+        font-size: 12px;
+        gap: 6px 10px;
+      }
+
+      .keybar-left {
+        gap: 8px 12px;
+      }
+
+      .keybar-right {
+        white-space: normal;
+        overflow-wrap: anywhere;
       }
     }
 
@@ -1022,7 +1240,13 @@
         scroll-behavior: auto !important;
       }
     }
-  </style>
+  
+  @media print { .pc-skip-link { display: none; } body { -webkit-print-color-adjust: exact; print-color-adjust: exact; } }
+
+  .pc-sr-only { position: absolute; width: 1px; height: 1px; padding: 0; margin: -1px; overflow: hidden; clip: rect(0, 0, 0, 0); white-space: nowrap; border: 0; }
+
+  .tui-btn, #pod-filter { min-height: 26px; }
+</style>
 </head>
 <body>
   <a class="skip-nav" href="#pod-table-region">Skip to pod table</a>
@@ -1030,6 +1254,7 @@
   <div class="tty-screen">
     <!-- Top Cluster Bar (Ratatui Rounded Box-Drawing Block: ╭─┬─╮ │ ╰─┴─╯) -->
     <header class="tui-block" aria-label="Cluster context and controls">
+      <h1 class="pc-sr-only">KubeTrace TUI v0.9.4 — Kubernetes Pod Triage &amp; Causal Span Multiplexer</h1>
       <div class="box-line" aria-hidden="true">
         <span class="box-glyph">╭─</span>
         <span class="box-title-amber">&nbsp;KUBETRACE TUI v0.9.4&nbsp;</span>

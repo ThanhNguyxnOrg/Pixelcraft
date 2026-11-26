@@ -4,6 +4,13 @@
   <meta charset="utf-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
   <title>MetroLine Pass · Urban Rail, Crowding &amp; Wear OS Companion (Jetpack Compose · M3E)</title>
+  <meta name="description" content="MetroLine Pass — Android Jetpack Compose Material 3 Expressive commuter rail pass with carriage crowding accessibility and synced Wear OS wrist tile." />
+  <link rel="canonical" href="https://thanhnguyxnorg.github.io/Pixelcraft/gallery/compose/after.html" />
+  <meta property="og:type" content="website" />
+  <meta property="og:title" content="MetroLine Pass · Urban Rail, Crowding & Wear OS Companion (Jetpack Compose · M3E)" />
+  <meta property="og:description" content="MetroLine Pass — Android Jetpack Compose Material 3 Expressive commuter rail pass with carriage crowding accessibility and synced Wear OS wrist tile." />
+  <meta property="og:url" content="https://thanhnguyxnorg.github.io/Pixelcraft/gallery/compose/after.html" />
+  <script type="application/ld+json">{"@context":"https://schema.org","@type":"MobileApplication","name":"MetroLine Pass · Urban Rail, Crowding & Wear OS Companion (Jetpack Compose · M3E)","description":"MetroLine Pass — Android Jetpack Compose Material 3 Expressive commuter rail pass with carriage crowding accessibility and synced Wear OS wrist tile.","url":"https://thanhnguyxnorg.github.io/Pixelcraft/gallery/compose/after.html","isPartOf":{"@type":"WebSite","name":"Pixelcraft Multi-Stack UI Gallery","url":"https://thanhnguyxnorg.github.io/Pixelcraft/"},"operatingSystem":"Android 16, Wear OS 5"}</script>
   <link rel="stylesheet" href="../../fonts/gallery.css" />
   <style>
     :root {
@@ -1401,6 +1408,304 @@
       color: var(--ink-muted);
     }
 
+    @media (max-width: 1024px) {
+      html,
+      body {
+        width: 100%;
+        min-width: 0;
+        min-height: 100dvh;
+        overflow-x: clip;
+      }
+
+      .workbench-header {
+        height: auto;
+        padding: 10px 16px;
+        flex-wrap: wrap;
+        gap: 10px 14px;
+      }
+
+      .brand-group,
+      .header-controls,
+      .station-lookup-field {
+        flex-wrap: wrap;
+        min-width: 0;
+      }
+
+      .station-lookup-field {
+        flex: 1 1 220px;
+      }
+
+      .station-lookup-field input {
+        width: 100%;
+        min-width: 0;
+        min-height: 40px;
+        font-size: 13px;
+      }
+
+      .sync-status-pill {
+        min-height: 40px;
+      }
+
+      .workbench-stage {
+        grid-template-columns: minmax(0, 1fr);
+        padding: 14px 16px 20px;
+        gap: 20px;
+      }
+
+      .phone-stage,
+      .watch-stage,
+      .spec-column {
+        width: 100%;
+        min-width: 0;
+        height: auto;
+      }
+
+      .pixel-chassis {
+        width: 100%;
+        max-width: 400px;
+        min-width: 0;
+        height: auto;
+        margin-inline: auto;
+      }
+
+      .pixel-screen {
+        gap: 12px;
+      }
+
+      .watch-stage {
+        max-width: 400px;
+        margin-inline: auto;
+        gap: 14px;
+      }
+
+      .stage-label-bar {
+        flex-wrap: wrap;
+        gap: 4px 8px;
+      }
+
+      .watch-hardware-wrap {
+        width: 100%;
+        max-width: 380px;
+        min-width: 0;
+        height: auto;
+        padding: 18px 0;
+        margin-inline: auto;
+      }
+
+      .watch-bezel {
+        width: 100%;
+        max-width: 360px;
+        min-width: 0;
+        height: auto;
+        aspect-ratio: 1 / 1;
+        margin-inline: auto;
+      }
+
+      .rotary-btn {
+        min-height: 40px;
+        padding: 6px 12px;
+        font-size: 12px;
+      }
+
+      .aod-toggle-wrap {
+        min-height: 40px;
+        font-size: 12px;
+      }
+
+      .aod-toggle-wrap input {
+        width: 24px;
+        height: 24px;
+        min-width: 24px;
+        min-height: 24px;
+        flex-shrink: 0;
+      }
+
+      .spec-block {
+        min-width: 0;
+        max-width: 100%;
+        overflow-x: auto;
+      }
+
+      .workbench-footer {
+        height: auto;
+        padding: 10px 16px;
+        flex-wrap: wrap;
+        gap: 6px 12px;
+      }
+    }
+
+    @media (max-width: 640px) {
+      .workbench-header {
+        padding: 10px 12px;
+      }
+
+      .header-controls {
+        width: 100%;
+      }
+
+      .station-lookup-field {
+        width: 100%;
+      }
+
+      .workbench-stage {
+        padding: 12px 12px 18px;
+        gap: 16px;
+      }
+
+      .pixel-chassis {
+        padding: 7px;
+        border-radius: 32px;
+      }
+
+      .pixel-chassis::after {
+        display: none;
+      }
+
+      .pixel-screen {
+        border-radius: 25px;
+        padding: 0 10px 10px;
+      }
+
+      .compose-topbar,
+      .departure-surface,
+      .consist-head,
+      .corridor-head,
+      .pass-row,
+      .pass-action-row,
+      .telemetry-head,
+      .wrist-controls-bar,
+      .spec-header,
+      .evidence-row {
+        flex-wrap: wrap;
+      }
+
+      .departure-right {
+        text-align: left;
+        align-items: flex-start;
+      }
+
+      .route-switcher {
+        grid-template-columns: minmax(0, 1fr);
+      }
+
+      .route-btn {
+        flex-direction: row;
+        align-items: center;
+        justify-content: space-between;
+        gap: 8px;
+        min-height: 44px;
+        padding: 8px 12px;
+      }
+
+      .consist-grid {
+        grid-template-columns: repeat(3, minmax(0, 1fr));
+        gap: 6px;
+      }
+
+      .car-unit {
+        min-height: 104px;
+      }
+
+      .corridor-stops {
+        grid-template-columns: minmax(0, 1fr);
+      }
+
+      .pass-activate-btn {
+        min-width: 0;
+        white-space: normal;
+        text-align: center;
+        line-height: 1.25;
+      }
+
+      .watch-crown,
+      .watch-side-key {
+        display: none;
+      }
+
+      .watch-band-top,
+      .watch-band-bottom {
+        width: 124px;
+        height: 20px;
+      }
+
+      .watch-hardware-wrap {
+        max-width: 310px;
+        padding: 14px 0;
+      }
+
+      .watch-bezel {
+        max-width: 296px;
+        min-height: 272px;
+        padding: 10px;
+      }
+
+      .watch-viewport {
+        padding: 14px 16px 12px;
+        gap: 4px;
+      }
+
+      .watch-timetext {
+        font-size: 11px;
+        gap: 6px;
+      }
+
+      .watch-glance-headline {
+        font-size: clamp(18px, 5.6vw, 23px);
+      }
+
+      .watch-car-pill {
+        max-width: 232px;
+        padding: 5px 10px;
+      }
+
+      .watch-car-primary {
+        font-size: 13.5px;
+      }
+
+      .watch-haptic-row {
+        max-width: 232px;
+        min-height: 40px;
+        padding: 4px 10px;
+      }
+
+      .watch-haptic-title {
+        font-size: 12px;
+      }
+
+      .watch-edge-btn {
+        width: 100%;
+        max-width: 190px;
+        min-height: 40px;
+        padding: 6px 10px;
+        font-size: 12px;
+      }
+
+      .dataclient-payload {
+        max-width: 100%;
+        overflow-x: auto;
+        font-size: 11.5px;
+      }
+
+      .spec-table th,
+      .spec-table td,
+      .mono-token {
+        overflow-wrap: anywhere;
+      }
+
+      .traversal-item {
+        grid-template-columns: 22px minmax(0, 1fr);
+      }
+
+      .traversal-target {
+        grid-column: 2;
+      }
+
+      .workbench-footer {
+        padding: 10px 12px;
+        font-size: 12px;
+      }
+    }
+
     @media (prefers-reduced-motion: reduce) {
       *,
       *::before,
@@ -1411,9 +1716,17 @@
         scroll-behavior: auto !important;
       }
     }
-  </style>
+  
+  .pc-skip-link { position: fixed; left: 12px; top: -120px; z-index: 9999; padding: 10px 16px; border-radius: 8px; background: #111827; color: #f9fafb; font: 600 13px/1.2 system-ui, sans-serif; text-decoration: none; border: 2px solid #96f2c6; }
+  .pc-skip-link:focus-visible { top: 12px; outline: 3px solid #96f2c6; outline-offset: 2px; }
+
+  @media print { .pc-skip-link { display: none; } body { -webkit-print-color-adjust: exact; print-color-adjust: exact; } }
+
+  #watch-aod-input { width: 24px; height: 24px; min-width: 24px; min-height: 24px; }
+</style>
 </head>
 <body>
+  <a class="pc-skip-link" href="#main-stage">Skip to main content</a>
   <header class="workbench-header">
     <div class="brand-group">
       <span class="brand-mark" aria-hidden="true">
@@ -1452,7 +1765,7 @@
     </div>
   </header>
 
-  <main class="workbench-stage">
+  <main id="main-stage" class="workbench-stage">
     <!-- COLUMN 1: Android Pixel 9 Frame (Jetpack Compose · Material 3 Expressive) -->
     <section class="phone-stage" aria-label="Android Pixel 9 Jetpack Compose Material 3 Expressive screen">
       <div class="pixel-chassis">

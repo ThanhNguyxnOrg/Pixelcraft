@@ -4,6 +4,13 @@
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width, initial-scale=1">
 <title>SORI — Sculptural Direct-Drive Audio Flagship (Nuxt 3)</title>
+  <meta name="description" content="SORI Reference Turntable — Nuxt 4 direct-drive audiophile hardware flagship store with acoustic plinth configurator, tonearm geometry specs, and transparent allocation." />
+  <link rel="canonical" href="https://thanhnguyxnorg.github.io/Pixelcraft/gallery/store/after.html" />
+  <meta property="og:type" content="website" />
+  <meta property="og:title" content="SORI — Sculptural Direct-Drive Audio Flagship (Nuxt 3)" />
+  <meta property="og:description" content="SORI Reference Turntable — Nuxt 4 direct-drive audiophile hardware flagship store with acoustic plinth configurator, tonearm geometry specs, and transparent allocation." />
+  <meta property="og:url" content="https://thanhnguyxnorg.github.io/Pixelcraft/gallery/store/after.html" />
+  <script type="application/ld+json">{"@context":"https://schema.org","@type":"Product","name":"SORI — Sculptural Direct-Drive Audio Flagship (Nuxt 3)","description":"SORI Reference Turntable — Nuxt 4 direct-drive audiophile hardware flagship store with acoustic plinth configurator, tonearm geometry specs, and transparent allocation.","url":"https://thanhnguyxnorg.github.io/Pixelcraft/gallery/store/after.html","isPartOf":{"@type":"WebSite","name":"Pixelcraft Multi-Stack UI Gallery","url":"https://thanhnguyxnorg.github.io/Pixelcraft/"}}</script>
 <link rel="stylesheet" href="../../fonts/gallery.css">
 <style>
   :root {
@@ -869,7 +876,12 @@
     }
 
     .split-stage {
-      grid-template-columns: 1fr;
+      grid-template-columns: minmax(0, 1fr);
+    }
+
+    .stage-cobalt,
+    .stage-gallery {
+      min-width: 0;
     }
 
     .stage-cobalt {
@@ -880,8 +892,14 @@
       padding: 24px 20px 32px;
     }
 
+    .turntable-plinth-stage,
+    .turntable-plinth-stage svg {
+      max-width: 100%;
+      height: auto;
+    }
+
     .object-grid {
-      grid-template-columns: repeat(auto-fit, minmax(220px, 1fr));
+      grid-template-columns: repeat(auto-fit, minmax(min(220px, 100%), 1fr));
     }
 
     .parcel-items {
@@ -890,10 +908,36 @@
   }
 
   @media (max-width: 600px) {
+    .gallery-header {
+      padding: 12px 14px;
+      gap: 10px;
+    }
+
+    .stage-cobalt,
+    .stage-gallery {
+      padding: 20px 14px 24px;
+      overflow-x: clip;
+    }
+
+    .stage-title {
+      font-size: clamp(24px, 7.5vw, 34px);
+      overflow-wrap: break-word;
+    }
+
+    .stage-eyebrow {
+      flex-wrap: wrap;
+    }
+
+    .turntable-svg {
+      overflow: hidden;
+    }
+
     .filter-bar {
       order: 3;
       width: 100%;
-      justify-content: space-between;
+      flex-wrap: wrap;
+      justify-content: center;
+      border-radius: 14px;
     }
 
     .filter-pill {
@@ -919,9 +963,15 @@
       scroll-behavior: auto !important;
     }
   }
+
+  .pc-skip-link { position: fixed; left: 12px; top: -120px; z-index: 9999; padding: 10px 16px; border-radius: 8px; background: #111827; color: #f9fafb; font: 600 13px/1.2 system-ui, sans-serif; text-decoration: none; border: 2px solid #96f2c6; }
+  .pc-skip-link:focus-visible { top: 12px; outline: 3px solid #96f2c6; outline-offset: 2px; }
+
+  @media print { .pc-skip-link { display: none; } body { -webkit-print-color-adjust: exact; print-color-adjust: exact; } }
 </style>
 </head>
 <body>
+  <a class="pc-skip-link" href="#main-stage">Skip to main content</a>
   <div class="flagship-shell">
     <header class="gallery-header">
       <div class="brand-cluster">
@@ -949,7 +999,7 @@
       </button>
     </header>
 
-    <main class="split-stage">
+    <main id="main-stage" class="split-stage">
       <!-- Left 48%: Yves Klein Cobalt Sculptural Flagship Stage -->
       <section class="stage-cobalt" id="stage-t01" data-finish="silver" aria-labelledby="t01-heading">
         <div class="stage-head">

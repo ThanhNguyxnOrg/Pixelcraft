@@ -342,18 +342,41 @@ async function main() {
 
   // Count live gallery exhibit pairs under website/public/gallery/*
   const galleryDir = resolve(websiteRoot, "public/gallery");
-  let totalGalleryExhibits = 0;
+  const exhibitIds = [];
   try {
     const entries = await readdir(galleryDir, { withFileTypes: true });
     for (const entry of entries) {
       if (!entry.isDirectory()) continue;
       const files = await listSorted(resolve(galleryDir, entry.name), ".html");
       if (files.includes("before.html") && files.includes("after.html")) {
-        totalGalleryExhibits += 1;
+        exhibitIds.push(entry.name);
       }
     }
   } catch {
-    totalGalleryExhibits = 0;
+    // ignore missing gallery directory
+  }
+  exhibitIds.sort((a, b) => a.localeCompare(b));
+  const totalGalleryExhibits = exhibitIds.length;
+
+  const siteOrigin = "https://thanhnguyxnorg.github.io/Pixelcraft/";
+
+  // Read compact before/after score summary from gallery.json if present (avoids bundling 343KB findings eagerly)
+  const exhibitScores = {};
+  try {
+    const rawGallery = JSON.parse(
+      await readFile(
+        resolve(websiteRoot, "src/generated/gallery.json"),
+        "utf8",
+      ),
+    );
+    for (const [id, pair] of Object.entries(rawGallery.items ?? {})) {
+      exhibitScores[id] = {
+        before: pair?.before?.score ?? 0,
+        after: pair?.after?.score ?? 0,
+      };
+    }
+  } catch {
+    // gallery.json may not exist yet before first capture
   }
 
   const meta = {
@@ -361,6 +384,7 @@ async function main() {
     npmPkg: pkg.name,
     license: pkg.license || "MIT",
     repoUrl,
+    siteUrl: siteOrigin,
     totalSkills: skills.length,
     totalReferences,
     totalScripts,
@@ -375,6 +399,8 @@ async function main() {
     totalEvalCases,
     totalEvalFixtures,
     totalGalleryExhibits,
+    exhibitIds,
+    exhibitScores,
     stacks,
     skills,
   };
@@ -383,8 +409,88 @@ async function main() {
   await mkdir(dirname(outPath), { recursive: true });
   await writeFile(outPath, `${JSON.stringify(meta, null, 2)}\n`, "utf8");
 
+  // Emit technical SEO & machine-readable discovery artifacts into public/
+  const publicDir = resolve(websiteRoot, "public");
+  const sitemapUrls = [
+    { loc: siteOrigin, priority: "1.0", changefreq: "weekly" },
+    ...exhibitIds.map((id) => ({
+      loc: `${siteOrigin}gallery/${id}/after.html`,
+      priority: "0.8",
+      changefreq: "monthly",
+    })),
+  ];
+  const sitemapXml = `<?xml version="1.0" encoding="UTF-8"?>
+<urlset xmlns="http://www.sitemaps.org/schemas/sitemap/0.9">
+${sitemapUrls
+  .map(
+    (u) => `  <url>
+    <loc>${u.loc}</loc>
+    <changefreq>${u.changefreq}</changefreq>
+    <priority>${u.priority}</priority>
+  </url>`,
+  )
+  .join("\n")}
+</urlset>
+`;
+  await writeFile(resolve(publicDir, "sitemap.xml"), sitemapXml, "utf8");
+
+  const robotsTxt = `User-agent: *
+Allow: /
+
+Sitemap: ${siteOrigin}sitemap.xml
+`;
+  await writeFile(resolve(publicDir, "robots.txt"), robotsTxt, "utf8");
+
+  const llmsTxt = `# Pixelcraft (v${meta.version})
+
+> Portable, open-source Agent Skills pack (${meta.license}) for distinctive, evidence-verified UI and rigorous UX across web, native mobile, desktop, TUI, data apps, email, documents, spatial, and game interfaces.
+
+- Canonical showcase: ${siteOrigin}
+- Repository: ${repoUrl}
+- Package: \`${meta.npmPkg}\`
+- Install (all skills): \`npx skills add ThanhNguyxnOrg/Pixelcraft\` or \`npm i -g ${meta.npmPkg} && pixelcraft add all --agent <host>\`
+- Supported coding agents (${meta.agentTargetCount}): ${canonicalAgents.join(", ")}
+- Verification metrics: ${meta.totalSkills} skills, ${meta.totalReferences} framework references, ${meta.totalScripts} zero-dependency Node QA scripts, ${meta.totalTokenFormats} DTCG token export targets, ${meta.totalEvalFixtures} offline eval fixtures, ${meta.totalGalleryExhibits} multi-stack proof exhibits.
+
+## Core Loop & Authority Order
+1. Explicit user brief outranks everything.
+2. Existing project tokens, conventions, and locks outrank Pixelcraft taste.
+3. Platform conventions, legal duties, and the WCAG 2.2 AA accessibility floor outrank stylistic ambition.
+4. Pixelcraft workflow: Plan & Grill-Me -> Frame -> Brainstorm & Diverge -> Specify -> Build -> Verify & Critique -> Report (with \`rendered\`, \`static\`, \`model-judgment\`, \`not-checked\`, or \`waived\` evidence labels).
+
+## Skills (${meta.totalSkills})
+${skills.map((s) => `- **${s.name}** (${s.category}): ${s.purpose}${s.scripts ? ` [Scripts: ${s.scripts.join(", ")}]` : ""}`).join("\n")}
+
+## Standalone Multi-Stack Proof Exhibits (${meta.totalGalleryExhibits})
+${exhibitIds.map((id) => `- ${siteOrigin}gallery/${id}/after.html`).join("\n")}
+`;
+  await writeFile(resolve(publicDir, "llms.txt"), llmsTxt, "utf8");
+
+  const webManifest = {
+    name: "Pixelcraft — Agent Skills for UI & UX Craft",
+    short_name: "Pixelcraft",
+    description: pkg.description,
+    start_url: "./",
+    scope: "./",
+    display: "standalone",
+    background_color: "#090d12",
+    theme_color: "#090d12",
+    icons: [
+      {
+        src: "favicon.png",
+        sizes: "64x64",
+        type: "image/png",
+      },
+    ],
+  };
+  await writeFile(
+    resolve(publicDir, "manifest.webmanifest"),
+    `${JSON.stringify(webManifest, null, 2)}\n`,
+    "utf8",
+  );
+
   console.log(
-    `Synced repo-meta.json: ${meta.totalSkills} skills, ${meta.totalReferences} references, ${meta.totalScripts} scripts, ${meta.totalTokenFormats} token targets, ${meta.totalScanRules} slop rules, ${meta.totalEvalFixtures} eval fixtures, ${meta.agentTargetCount} agent targets, ${meta.stacks.length} stack ticker items.`,
+    `Synced repo-meta.json + SEO manifests: ${meta.totalSkills} skills, ${meta.totalReferences} references, ${meta.totalScripts} scripts, ${meta.totalTokenFormats} token targets, ${meta.totalScanRules} slop rules, ${meta.totalEvalFixtures} eval fixtures, ${meta.agentTargetCount} agent targets, ${meta.totalGalleryExhibits} exhibits.`,
   );
 }
 

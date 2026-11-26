@@ -5,6 +5,13 @@
 <meta name="viewport" content="width=device-width, initial-scale=1" />
 <meta name="color-scheme" content="light dark" />
 <title>Helvetic Air LX-408 · Gate-Change MJML Email &amp; Client Inspector</title>
+  <meta name="description" content="Helvetic Air LX-408 Gate Slip — Resilient 640px MJML flight gate-change email (<20 KB) with Apple Mail Light, Gmail Dark Mode, Images-Off, and Plaintext MIME parity." />
+  <link rel="canonical" href="https://thanhnguyxnorg.github.io/Pixelcraft/gallery/email/after.html" />
+  <meta property="og:type" content="website" />
+  <meta property="og:title" content="Helvetic Air LX-408 · Gate-Change MJML Email & Client Inspector" />
+  <meta property="og:description" content="Helvetic Air LX-408 Gate Slip — Resilient 640px MJML flight gate-change email (<20 KB) with Apple Mail Light, Gmail Dark Mode, Images-Off, and Plaintext MIME parity." />
+  <meta property="og:url" content="https://thanhnguyxnorg.github.io/Pixelcraft/gallery/email/after.html" />
+  <script type="application/ld+json">{"@context":"https://schema.org","@type":"WebApplication","name":"Helvetic Air LX-408 · Gate-Change MJML Email & Client Inspector","description":"Helvetic Air LX-408 Gate Slip — Resilient 640px MJML flight gate-change email (<20 KB) with Apple Mail Light, Gmail Dark Mode, Images-Off, and Plaintext MIME parity.","url":"https://thanhnguyxnorg.github.io/Pixelcraft/gallery/email/after.html","isPartOf":{"@type":"WebSite","name":"Pixelcraft Multi-Stack UI Gallery","url":"https://thanhnguyxnorg.github.io/Pixelcraft/"},"operatingSystem":"Email Clients, Web"}</script>
 <link rel="stylesheet" href="../../fonts/gallery.css" />
 <style>
   :root {
@@ -961,12 +968,194 @@
 
   @media (max-width: 1360px) {
     .workbench-grid {
-      grid-template-columns: 1fr;
+      grid-template-columns: minmax(0, 1fr);
       justify-items: center;
     }
-    .inspector-rail {
+    .inspector-rail,
+    .email-stage {
       width: 640px;
       max-width: 100%;
+      min-width: 0;
+    }
+  }
+
+  @media (max-width: 1024px) {
+    .inspector-topbar {
+      flex-wrap: wrap;
+      padding: 10px 16px;
+      gap: 10px;
+    }
+    .spec-cluster {
+      flex-wrap: wrap;
+      white-space: normal;
+      min-width: 0;
+    }
+    .spec-filename {
+      overflow-wrap: anywhere;
+    }
+    .switcher-cluster {
+      flex-wrap: wrap;
+      white-space: normal;
+      width: 100%;
+      justify-content: space-between;
+      min-width: 0;
+    }
+    .mode-group {
+      flex-wrap: wrap;
+      max-width: 100%;
+    }
+  }
+
+  @media (max-width: 960px) {
+    .workbench-grid {
+      grid-template-columns: minmax(0, 1fr);
+      padding: 12px 14px 20px;
+      gap: 16px;
+    }
+    .inspector-rail,
+    .email-stage,
+    .stage-caption-bar,
+    .email-viewport-frame {
+      width: 100%;
+      max-width: 600px;
+      min-width: 0;
+    }
+    .email-viewport-frame[data-width="375"] {
+      width: 100%;
+      max-width: 375px;
+      min-width: 0;
+    }
+    .rail-section {
+      min-width: 0;
+    }
+    .code-peek {
+      max-width: 100%;
+    }
+    .email-plaintext-surface {
+      max-width: 100%;
+      overflow-wrap: anywhere;
+      word-break: break-word;
+    }
+  }
+
+  @media (max-width: 640px) {
+    .inspector-topbar {
+      padding: 10px 12px;
+    }
+    .mode-group {
+      display: grid;
+      grid-template-columns: repeat(2, minmax(0, 1fr));
+      width: 100%;
+    }
+    .mode-btn {
+      min-height: 36px;
+      padding: 6px 8px;
+      text-align: center;
+    }
+    .viewport-control {
+      width: 100%;
+      justify-content: space-between;
+    }
+    .viewport-select {
+      min-height: 34px;
+      padding: 5px 8px;
+    }
+    .workbench-grid {
+      padding: 10px 12px 18px;
+      gap: 14px;
+    }
+    .stage-caption-bar {
+      flex-wrap: wrap;
+      gap: 4px 8px;
+    }
+    .email-table {
+      table-layout: fixed;
+      width: 100%;
+    }
+    .carrier-strip-cell {
+      height: auto;
+      padding: 8px 12px;
+    }
+    .carrier-lockup {
+      flex-wrap: wrap;
+      gap: 4px 8px;
+    }
+    .gate-alert-cell {
+      padding: 10px 12px;
+    }
+    .gate-alert-heading {
+      font-size: 16px;
+      line-height: 1.2;
+    }
+    .route-section-cell {
+      padding: 12px;
+    }
+    .split-flap-route {
+      gap: 8px;
+    }
+    .iata-time {
+      font-size: clamp(16px, 5.2vw, 22px);
+    }
+    .day-offset {
+      font-size: 11px;
+    }
+    .station-meta {
+      font-size: 11px;
+    }
+    .route-arrow-glyph {
+      font-size: 18px;
+    }
+    .timetable-grid {
+      table-layout: auto;
+      width: 100%;
+    }
+    .timetable-grid th {
+      padding: 6px 4px 3px;
+      font-size: 9px;
+      letter-spacing: 0.02em;
+    }
+    .timetable-grid td {
+      padding: 3px 4px 8px;
+      font-size: 11px;
+      word-break: break-word;
+    }
+    .gate-old {
+      display: block;
+      margin-right: 0;
+      font-size: 10px;
+    }
+    .wayfinding-cell,
+    .stub-cell,
+    .email-footer-cell {
+      padding: 11px 12px;
+    }
+    .stub-grid {
+      grid-template-columns: minmax(0, 1fr);
+      gap: 12px;
+    }
+    .bulletproof-cta {
+      display: block;
+      width: 100%;
+      text-align: center;
+      min-height: 40px;
+    }
+    .barcode-frame svg {
+      max-width: 100%;
+      height: auto;
+    }
+    .email-plaintext-surface {
+      padding: 12px;
+      font-size: 10.5px;
+    }
+    .envelope-list {
+      grid-template-columns: 56px minmax(0, 1fr);
+    }
+    .qa-item {
+      grid-template-columns: 18px minmax(0, 1fr);
+    }
+    .qa-item .evidence-tag {
+      grid-column: 2;
+      justify-self: start;
     }
   }
 
@@ -980,6 +1169,12 @@
       scroll-behavior: auto !important;
     }
   }
+
+  @media print { .pc-skip-link { display: none; } body { -webkit-print-color-adjust: exact; print-color-adjust: exact; } }
+
+  #cta-map, #cta-sms, .email-footer a, footer a { display: inline-flex; align-items: center; min-height: 26px; padding-block: 3px; }
+
+  a[href="#notification-prefs"], td a { display: inline-flex; align-items: center; min-height: 26px; }
 </style>
 </head>
 <body>

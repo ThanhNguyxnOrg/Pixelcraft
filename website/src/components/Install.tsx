@@ -8,7 +8,7 @@ import {
   REQUIRED_SKILLS,
   SKILLS,
 } from "../data";
-import { CopyCommand, PixelIcon, SectionHead } from "./pixel";
+import { CopyCommand, PixelFrame, PixelIcon, SectionHead } from "./pixel";
 import { Tabs } from "./Tabs";
 
 function Step({
@@ -22,8 +22,8 @@ function Step({
 }) {
   return (
     <fieldset className="min-w-0 border-0 p-0">
-      <legend className="mb-3.5 flex items-center gap-2.5 font-mono text-[0.8125rem] text-ink">
-        <span className="grid size-6 place-items-center rounded-full bg-action font-bold text-on-action tabular">
+      <legend className="mb-4 flex items-center gap-3 font-pixel text-[0.75rem] tracking-[0.06em] text-ink-faint uppercase">
+        <span className="grid size-7 place-items-center rounded-full bg-action/12 text-action tabular">
           {n}
         </span>
         {title}
@@ -34,10 +34,10 @@ function Step({
 }
 
 const chip = (on: boolean) =>
-  `inline-flex min-h-10 items-center gap-2 rounded-full border px-3.5 font-mono text-[0.8125rem] whitespace-nowrap transition-colors duration-150 motion-reduce:transition-none ${
+  `inline-flex min-h-10 items-center gap-2 rounded-full border px-4 font-mono text-[0.8125rem] whitespace-nowrap transition-[background-color,border-color,transform] duration-150 active:scale-[0.97] motion-reduce:transition-none ${
     on
-      ? "border-action bg-action text-on-action"
-      : "border-line text-ink hover:border-action hover:bg-panel"
+      ? "border-action bg-action text-on-action shadow-[0_8px_24px_-10px_var(--color-action)]"
+      : "border-white/12 text-ink hover:border-white/30 hover:bg-white/6"
   }`;
 
 function Builder() {
@@ -50,7 +50,6 @@ function Builder() {
   ]);
   const [dry, setDry] = useState(false);
   const [force, setForce] = useState(false);
-  const [docsMcp, setDocsMcp] = useState(false);
 
   const toggle = (list: string[], v: string) =>
     list.includes(v) ? list.filter((x) => x !== v) : [...list, v];
@@ -61,23 +60,21 @@ function Builder() {
       ? names
       : names.filter((n) => picked.includes(n) || REQUIRED_SKILLS.includes(n));
   const ready = agents.length > 0;
+  // Leave core skills implicit for optional subsets so --force preserves the
+  // installer's auto-added-core protection. Core-only installs must name them.
   const target =
     mode === "all"
       ? "all"
       : (picked.length ? picked : REQUIRED_SKILLS).join(" ");
-  const command = `pixelcraft add ${target} --agent ${agents.join(",")}${
-    scope === "global" ? " --global" : ""
-  }${dry ? " --dry-run" : ""}${force ? " --force" : ""}${
-    docsMcp ? " --docs-mcp" : ""
-  }`;
+  const command = `pixelcraft add ${target} --agent ${agents.join(",")}${scope === "global" ? " --global" : ""}${dry ? " --dry-run" : ""}${force ? " --force" : ""}`;
 
   const targets = AGENT_TARGETS.filter((t) => agents.includes(t.id));
 
   return (
-    <div className="surface-lit overflow-hidden rounded-card">
+    <PixelFrame lit innerClassName="bg-void">
       <div className="grid lg:grid-cols-12">
-        <div className="grid gap-8 p-6 sm:p-8 lg:col-span-7">
-          <Step n={1} title="Target agent hosts">
+        <div className="grid gap-10 p-6 sm:p-9 lg:col-span-7">
+          <Step n={1} title="Which agents">
             <div className="flex flex-wrap gap-2">
               {AGENT_TARGETS.map((t) => (
                 <button
@@ -93,16 +90,16 @@ function Builder() {
             </div>
           </Step>
 
-          <Step n={2} title="Install scope">
+          <Step n={2} title="Where">
             <div
               role="group"
               aria-label="Scope"
-              className="inline-flex rounded-full border border-line bg-void/70 p-1"
+              className="inline-flex rounded-full bg-white/6 p-1"
             >
               {(
                 [
                   ["project", "This project"],
-                  ["global", "User account (--global)"],
+                  ["global", "My user account"],
                 ] as const
               ).map(([v, l]) => (
                 <button
@@ -110,11 +107,7 @@ function Builder() {
                   type="button"
                   aria-pressed={scope === v}
                   onClick={() => setScope(v)}
-                  className={`min-h-10 rounded-full px-4 font-mono text-[0.8125rem] transition-colors motion-reduce:transition-none ${
-                    scope === v
-                      ? "bg-action text-on-action"
-                      : "text-ink hover:bg-panel"
-                  }`}
+                  className={`min-h-10 rounded-full px-5 font-mono text-[0.8125rem] transition-colors motion-reduce:transition-none ${scope === v ? "bg-action text-on-action" : "text-ink hover:bg-white/8"}`}
                 >
                   {l}
                 </button>
@@ -122,16 +115,16 @@ function Builder() {
             </div>
           </Step>
 
-          <Step n={3} title="Skills to install">
+          <Step n={3} title="Which skills">
             <div
               role="group"
               aria-label="Skill selection"
-              className="inline-flex rounded-full border border-line bg-void/70 p-1"
+              className="inline-flex rounded-full bg-white/6 p-1"
             >
               {(
                 [
                   ["all", `All ${SKILLS.length}`],
-                  ["pick", "Pick subset"],
+                  ["pick", "Pick skills"],
                 ] as const
               ).map(([v, l]) => (
                 <button
@@ -139,21 +132,17 @@ function Builder() {
                   type="button"
                   aria-pressed={mode === v}
                   onClick={() => setMode(v)}
-                  className={`min-h-10 rounded-full px-4 font-mono text-[0.8125rem] transition-colors motion-reduce:transition-none ${
-                    mode === v
-                      ? "bg-action text-on-action"
-                      : "text-ink hover:bg-panel"
-                  }`}
+                  className={`min-h-10 rounded-full px-5 font-mono text-[0.8125rem] transition-colors motion-reduce:transition-none ${mode === v ? "bg-action text-on-action" : "text-ink hover:bg-white/8"}`}
                 >
                   {l}
                 </button>
               ))}
             </div>
             {mode === "pick" ? (
-              <div className="mt-5 grid gap-4">
+              <div className="mt-6 grid gap-5">
                 {CATEGORIES.map((c) => (
                   <div key={c.id}>
-                    <p className="mb-2 font-mono text-[0.75rem] text-ink-faint">
+                    <p className="mb-2.5 font-mono text-[0.75rem] text-ink-faint">
                       {c.id}
                     </p>
                     <div className="flex flex-wrap gap-1.5">
@@ -169,10 +158,10 @@ function Builder() {
                             onClick={() => setPicked(toggle(picked, s.name))}
                             className={`inline-flex min-h-9 items-center gap-1.5 rounded-full border px-3 font-mono text-[0.75rem] transition-colors disabled:cursor-default motion-reduce:transition-none ${
                               locked
-                                ? "border-line bg-raised text-ink-muted"
+                                ? "border-white/10 bg-white/8 text-ink-muted"
                                 : on
                                   ? "border-action bg-action text-on-action"
-                                  : "border-line text-ink hover:border-action hover:bg-panel"
+                                  : "border-white/12 text-ink hover:border-white/30 hover:bg-white/6"
                             }`}
                           >
                             {on ? <PixelIcon name="check" size={10} /> : null}
@@ -183,51 +172,45 @@ function Builder() {
                     </div>
                   </div>
                 ))}
-                <p className="font-mono text-[0.75rem] text-ink-faint">
-                  Subsets automatically include {REQUIRED_SKILLS.join(" and ")}{" "}
-                  when missing.
+                <p className="font-mono text-[0.75rem] leading-relaxed text-ink-faint">
+                  The installer always adds {REQUIRED_SKILLS.join(" and ")} when
+                  you pick a subset.
                 </p>
               </div>
             ) : null}
           </Step>
 
-          <Step n={4} title="CLI flags">
-            <div className="grid gap-3 sm:grid-cols-3">
+          <Step n={4} title="Options">
+            <div className="flex flex-wrap gap-x-8 gap-y-3">
               {(
                 [
                   [
                     dry,
                     setDry,
                     "--dry-run",
-                    "Print destination copies without writing files.",
+                    "Print what would be copied. Writes nothing.",
                   ],
                   [
                     force,
                     setForce,
                     "--force",
-                    "Replace explicitly requested existing skill folders (auto-added core skills stay protected).",
-                  ],
-                  [
-                    docsMcp,
-                    setDocsMcp,
-                    "--docs-mcp",
-                    "Print optional Context7 setup guidance without editing host configs.",
+                    "Overwrite existing skill folders and agent integration files, including custom slash commands.",
                   ],
                 ] as const
               ).map(([v, set, flag, hint]) => (
                 <label
                   key={flag}
-                  className="surface flex cursor-pointer items-start gap-2.5 rounded-tile p-3"
+                  className="flex max-w-[20rem] cursor-pointer items-start gap-3"
                 >
                   <input
                     type="checkbox"
                     checked={v}
                     onChange={(e) => set(e.target.checked)}
-                    className="mt-1 size-4 accent-[var(--color-action)]"
+                    className="mt-0.5 size-6 shrink-0 cursor-pointer accent-[var(--color-action)]"
                   />
                   <span>
-                    <code className="text-[0.8125rem] text-ink">{flag}</code>
-                    <span className="mt-0.5 block text-[0.75rem] leading-snug text-ink-faint">
+                    <code className="text-[0.875rem] text-ink">{flag}</code>
+                    <span className="mt-0.5 block text-[0.8125rem] leading-snug text-ink-faint">
                       {hint}
                     </span>
                   </span>
@@ -237,9 +220,9 @@ function Builder() {
           </Step>
         </div>
 
-        <div className="border-t border-line bg-void/85 p-6 sm:p-8 lg:col-span-5 lg:border-t-0 lg:border-s">
-          <p className="font-mono text-[0.8125rem] font-semibold text-action">
-            Generated command
+        <div className="m-2 rounded-[calc(var(--radius-card)-0.5rem)] bg-void/70 p-6 shadow-[inset_0_0_0_1px_rgb(255_255_255/0.06)] sm:p-9 lg:col-span-5">
+          <p className="font-pixel text-[0.75rem] tracking-[0.06em] text-action uppercase">
+            Your command
           </p>
           {ready ? (
             <div className="mt-4">
@@ -252,48 +235,43 @@ function Builder() {
           ) : null}
           <p
             role="status"
-            className="mt-3 font-mono text-[0.8125rem] text-ink-muted"
+            className="mt-4 font-mono text-[0.8125rem] text-ink-muted"
           >
             {ready
               ? `${effective.length} skills into ${agents.length} ${agents.length === 1 ? "agent" : "agents"}${dry ? ", dry run" : ""}.`
               : "Choose at least one agent to generate a command."}
           </p>
 
-          <p className="mt-7 font-mono text-[0.75rem] text-ink-faint">
-            Destination paths
+          <p className="mt-8 font-mono text-[0.75rem] text-ink-faint">
+            writes to
           </p>
-          <ul className="mt-3 grid gap-2.5">
+          <ul className="mt-3 grid gap-3">
             {targets.length === 0 ? (
-              <li className="text-[0.875rem] text-ink-faint">
+              <li className="text-[0.9375rem] text-ink-faint">
                 Nothing selected.
               </li>
             ) : null}
             {targets.map((t) => (
               <li key={t.id} className="surface rounded-tile px-4 py-3">
-                <p className="text-[0.875rem] font-medium text-ink">
-                  {t.label}
-                </p>
-                <code className="mt-1 block text-[0.75rem] break-all text-action">
+                <p className="text-[0.9375rem] text-ink">{t.label}</p>
+                <code className="mt-1 block text-[0.8125rem] break-all text-action">
                   {(scope === "project" ? t.project : t.global) + "/<skill>"}
                 </code>
                 {t.also ? (
-                  <p className="mt-1 text-[0.75rem] text-ink-faint">
+                  <p className="mt-1 text-[0.8125rem] text-ink-faint">
                     plus {t.also}
                   </p>
                 ) : null}
               </li>
             ))}
           </ul>
-          <p className="mt-6 border-t border-line pt-4 text-[0.8125rem] leading-relaxed text-ink-faint">
-            Never uses sudo. Refuses symlinked target directories. Also includes{" "}
-            <code className="text-ink">pixelcraft doctor</code>,{" "}
-            <code className="text-ink">init-router</code>,{" "}
-            <code className="text-ink">remove</code>, and{" "}
-            <code className="text-ink">check</code>.
+          <p className="mt-8 border-t border-line pt-5 text-[0.8125rem] leading-relaxed text-ink-faint">
+            Never uses sudo. Refuses symlinked target folders. Existing skill
+            folders are skipped unless you pass --force.
           </p>
         </div>
       </div>
-    </div>
+    </PixelFrame>
   );
 }
 
@@ -304,49 +282,49 @@ export function Install() {
     <section
       id="install"
       aria-labelledby="install-title"
-      className="border-b border-line bg-void"
+      className="relative overflow-hidden border-b border-line"
     >
-      <div className="mx-auto max-w-[84rem] px-5 py-20 sm:px-8 lg:py-28">
+      <div className="mx-auto max-w-[88rem] px-5 py-24 sm:px-8 lg:py-36">
         <SectionHead
           id="install-title"
-          meta="Zero-dependency installers"
-          title="Install in 30 seconds on any coding agent."
+          kicker="Install"
+          title="Build your install command."
         >
           <p>
-            Every flag and destination below mirrors{" "}
-            <code className="text-ink">pixelcraft --help</code>,{" "}
-            <code className="text-ink">install.sh</code>, and{" "}
-            <code className="text-ink">install.ps1</code>.
+            The installer is the <code className="text-ink">pixelcraft</code>{" "}
+            CLI from <code className="text-ink">{NPM_PKG}</code>. Every option
+            below is one of its real flags, and the paths come from its own{" "}
+            <code className="text-ink">--help</code>.
           </p>
         </SectionHead>
 
-        <div className="mt-12">
+        <div className="mt-16">
           <Builder />
         </div>
 
-        <div className="mt-16 grid gap-10 lg:grid-cols-12">
+        <div className="mt-24 grid gap-12 lg:grid-cols-12">
           <div className="min-w-0 lg:col-span-8">
-            <h3 className="mb-4 font-mono text-[0.8125rem] font-semibold text-ink">
-              Other install methods
+            <h3 className="mb-5 font-pixel text-[0.75rem] tracking-[0.06em] text-ink-faint uppercase">
+              Other ways to install
             </h3>
             <Tabs
               items={INSTALL}
               value={method}
               onChange={setMethod}
               label="Install method"
-              listClassName="flex flex-wrap gap-1.5"
+              listClassName="flex flex-wrap gap-1"
               tabClassName={(selected) =>
-                `min-h-10 rounded-full border px-3.5 font-mono text-[0.8125rem] transition-colors duration-150 motion-reduce:transition-none ${
+                `min-h-10 rounded-full border px-4 font-mono text-[0.8125rem] transition-colors duration-150 motion-reduce:transition-none ${
                   selected
                     ? "border-action bg-action text-on-action"
-                    : "border-line text-ink-muted hover:border-action hover:text-ink"
+                    : "border-white/12 text-ink-muted hover:border-white/30 hover:text-ink"
                 }`
               }
               renderTab={(m) => m.label}
               renderPanel={(m) => (
-                <div className="pt-5">
+                <div className="pt-6">
                   <CopyCommand lines={m.lines} />
-                  <p className="mt-3 text-[0.9375rem] text-ink-muted">
+                  <p className="mt-4 text-[0.9375rem] text-ink-muted">
                     {m.note}
                   </p>
                 </div>
@@ -354,23 +332,22 @@ export function Install() {
             />
           </div>
           <div className="lg:col-span-4">
-            <h3 className="font-mono text-[0.8125rem] font-semibold text-ink">
-              Documented agent hosts · {AGENTS.length}
+            <h3 className="font-pixel text-[0.75rem] tracking-[0.06em] text-ink-faint uppercase">
+              Documented hosts · {AGENTS.length}
             </h3>
-            <ul className="mt-4 flex flex-wrap gap-1.5">
+            <ul className="mt-5 flex flex-wrap gap-2">
               {AGENTS.map((a) => (
                 <li
                   key={a}
-                  className="surface rounded-full px-3 py-1 font-mono text-[0.75rem] text-ink-muted"
+                  className="surface rounded-full px-3.5 py-1.5 text-[0.875rem] text-ink-muted"
                 >
                   {a}
                 </li>
               ))}
             </ul>
-            <p className="mt-4 text-[0.8125rem] leading-relaxed text-ink-faint">
-              See <code className="text-ink">docs/INSTALL.md</code> in the repo
-              for per-host verification status, per-skill ZIP uploads, and
-              offline release archives.
+            <p className="mt-5 text-[0.875rem] leading-relaxed text-ink-faint">
+              The README labels install status per host. Some client discoveries
+              are marked not-checked there.
             </p>
           </div>
         </div>

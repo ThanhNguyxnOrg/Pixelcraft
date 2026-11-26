@@ -9,7 +9,7 @@ import { pipeline } from "node:stream";
 
 if (process.argv.includes("--help")) {
   console.log(
-    "Usage: node scripts/serve.mjs\nServe the Vite production dist folder (or an immutable export via SITE_ROOT). PORT defaults to 4321. Supports HEAD and media byte ranges.",
+    "Usage: node scripts/serve.mjs\nServe the Vite production dist folder (or an immutable export via SITE_ROOT). PORT defaults to 4321. Supports HEAD, gzip, HTTP security headers, and media byte ranges.",
   );
   process.exit(0);
 }
@@ -19,21 +19,52 @@ const mime = {
   ".html": "text/html; charset=utf-8",
   ".css": "text/css; charset=utf-8",
   ".js": "text/javascript; charset=utf-8",
-  ".json": "application/json",
+  ".json": "application/json; charset=utf-8",
+  ".xml": "application/xml; charset=utf-8",
   ".txt": "text/plain; charset=utf-8",
-  ".webmanifest": "application/manifest+json",
+  ".webmanifest": "application/manifest+json; charset=utf-8",
   ".png": "image/png",
   ".jpg": "image/jpeg",
   ".webp": "image/webp",
   ".svg": "image/svg+xml",
   ".ico": "image/x-icon",
+  ".woff": "font/woff",
   ".woff2": "font/woff2",
   ".mp4": "video/mp4",
   ".webm": "video/webm",
   ".vtt": "text/vtt; charset=utf-8",
 };
+
+const CSP = [
+  "default-src 'self'",
+  "script-src 'self' 'unsafe-inline'",
+  "style-src 'self' 'unsafe-inline'",
+  "img-src 'self' data: blob:",
+  "font-src 'self' data:",
+  "media-src 'self'",
+  "frame-src 'self'",
+  "connect-src 'self'",
+  "object-src 'none'",
+  "base-uri 'self'",
+  "form-action 'self'",
+  "frame-ancestors 'self'",
+].join("; ");
+
+function applySecurityHeaders(res) {
+  res.setHeader("X-Content-Type-Options", "nosniff");
+  res.setHeader("X-Frame-Options", "SAMEORIGIN");
+  res.setHeader("Referrer-Policy", "strict-origin-when-cross-origin");
+  res.setHeader("Cross-Origin-Opener-Policy", "same-origin");
+  res.setHeader(
+    "Permissions-Policy",
+    "camera=(), microphone=(), geolocation=(), payment=(), usb=(), interest-cohort=()",
+  );
+  res.setHeader("Content-Security-Policy", CSP);
+}
+
 const base = resolve(root);
 const server = http.createServer(async (req, res) => {
+  applySecurityHeaders(res);
   const finish = (status, message) => {
     res.writeHead(status, { "Content-Type": "text/plain; charset=utf-8" });
     res.end(message);
@@ -76,14 +107,15 @@ const server = http.createServer(async (req, res) => {
     "Content-Type",
     mime[extname(path)] ?? "application/octet-stream",
   );
-  res.setHeader("X-Content-Type-Options", "nosniff");
-  res.setHeader("Referrer-Policy", "strict-origin-when-cross-origin");
   res.setHeader("Accept-Ranges", "bytes");
   res.setHeader(
     "Cache-Control",
     pathname.startsWith("/assets/")
       ? "public, max-age=31536000, immutable"
-      : "no-cache",
+      : /^\/(?:fonts|gallery)\//.test(pathname) &&
+          /\.(?:woff2?|webp|png|jpg)$/.test(pathname)
+        ? "public, max-age=86400"
+        : "no-cache",
   );
   let start = 0;
   let end = info.size - 1;
@@ -128,7 +160,7 @@ const server = http.createServer(async (req, res) => {
     info.size > 0 &&
     gzipQuality > 0 &&
     gzipQuality <= 1 &&
-    /\.(?:html|css|js|json|webmanifest|svg|vtt)$/.test(path);
+    /\.(?:html|css|js|json|xml|txt|webmanifest|svg|vtt)$/.test(path);
   res.setHeader("Vary", "Accept-Encoding");
   if (gzip) res.setHeader("Content-Encoding", "gzip");
   else res.setHeader("Content-Length", end - start + 1);

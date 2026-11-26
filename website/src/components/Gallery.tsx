@@ -4,22 +4,55 @@ import {
   useRef,
   useState,
   type CSSProperties,
+  type PointerEvent as ReactPointerEvent,
 } from "react";
+import { REPO_URL } from "../data";
 import {
   GALLERY,
-  REPO_URL,
   type Ecosystem,
   type GalleryItem,
   type ScanFinding,
-} from "../data";
+} from "../galleryData";
 import galleryMeta from "../generated/gallery.json";
-import { EvidenceStamp, PixelIcon } from "./pixel";
+import { gsap, MOTION_OK, useGSAP } from "../lib/gsap";
+import { EvidenceStamp, PixelIcon, useMotionPause } from "./pixel";
 import { Tabs } from "./Tabs";
 
-type ViewMode = "compare" | "before" | "after" | "live";
-type WorkbenchTab = "visual" | "code" | "notes";
+function readParam(key: string): string | null {
+  if (typeof window === "undefined") return null;
+  try {
+    return new URLSearchParams(window.location.search).get(key);
+  } catch {
+    return null;
+  }
+}
+
+function writeParams(updates: Record<string, string | null>, hash?: string) {
+  if (typeof window === "undefined") return;
+  try {
+    const url = new URL(window.location.href);
+    for (const [k, v] of Object.entries(updates)) {
+      if (!v) url.searchParams.delete(k);
+      else url.searchParams.set(k, v);
+    }
+    if (hash) url.hash = hash;
+    window.history.replaceState(null, "", url.toString());
+  } catch {}
+}
+
+type StageTab = "compare" | "after" | "before" | "live" | "code" | "notes";
+type LiveViewport = "desktop" | "mobile";
 type EcosystemFilter = "All" | Ecosystem;
 type ModeFilter = "All" | GalleryItem["mode"];
+
+const VALID_STAGE_TABS = new Set<StageTab>([
+  "compare",
+  "after",
+  "before",
+  "live",
+  "code",
+  "notes",
+]);
 
 const ECOSYSTEMS: EcosystemFilter[] = [
   "All",
@@ -63,14 +96,25 @@ function groupedFindings(findings: ScanFinding[]) {
 }
 
 function ExhibitWorkbench({ item }: { item: GalleryItem }) {
-  const [workbench, setWorkbench] = useState<WorkbenchTab>("visual");
-  const [view, setView] = useState<ViewMode>("compare");
+  const [tab, setTab] = useState<StageTab>(() => {
+    const raw = readParam("view") as StageTab | null;
+    return raw && VALID_STAGE_TABS.has(raw) ? raw : "compare";
+  });
   const [liveSide, setLiveSide] = useState<"after" | "before">("after");
+  const [liveViewport, setLiveViewport] = useState<LiveViewport>(() =>
+    typeof window !== "undefined" && window.innerWidth < 640
+      ? "mobile"
+      : "desktop",
+  );
   const [split, setSplit] = useState(50);
-  const [showPins, setShowPins] = useState(true);
+  const [showPins, setShowPins] = useState(() =>
+    typeof window !== "undefined" ? window.innerWidth >= 640 : true,
+  );
   const [activeRule, setActiveRule] = useState<string | null>(null);
   const [copied, setCopied] = useState(false);
+  const [sharedLink, setSharedLink] = useState(false);
   const [scale, setScale] = useState(1);
+  const [dragging, setDragging] = useState(false);
   const stageRef = useRef<HTMLDivElement>(null);
 
   const w = galleryMeta.viewport.w;
@@ -87,7 +131,7 @@ function ExhibitWorkbench({ item }: { item: GalleryItem }) {
     const ro = new ResizeObserver(update);
     ro.observe(el);
     return () => ro.disconnect();
-  }, [w, view, item.id, workbench]);
+  }, [w, tab, item.id, liveViewport]);
 
   const grouped = useMemo(
     () => groupedFindings(item.scanBefore.findings),
@@ -107,9 +151,39 @@ function ExhibitWorkbench({ item }: { item: GalleryItem }) {
     );
   }, [activeRule, grouped, pinned]);
 
+  const isVisualStage =
+    tab === "compare" || tab === "after" || tab === "before" || tab === "live";
   const clipRight =
-    view === "before" ? "0%" : `${Math.max(0, Math.min(100, 100 - split))}%`;
-  const showBeforeLayer = view === "compare" || view === "before";
+    tab === "before" ? "0%" : `${Math.max(0, Math.min(100, 100 - split))}%`;
+  const showBeforeLayer = tab === "compare" || tab === "before";
+
+  const updateSplitFromPointer = (clientX: number) => {
+    const el = stageRef.current;
+    if (!el) return;
+    const rect = el.getBoundingClientRect();
+    if (rect.width <= 0) return;
+    const pct = Math.round(
+      Math.max(0, Math.min(100, ((clientX - rect.left) / rect.width) * 100)),
+    );
+    setSplit(pct);
+  };
+
+  const onStagePointerDown = (e: ReactPointerEvent<HTMLDivElement>) => {
+    if (tab !== "compare") return;
+    if ((e.target as HTMLElement).closest("button")) return;
+    e.currentTarget.setPointerCapture(e.pointerId);
+    setDragging(true);
+    updateSplitFromPointer(e.clientX);
+  };
+
+  const onStagePointerMove = (e: ReactPointerEvent<HTMLDivElement>) => {
+    if (!dragging || tab !== "compare") return;
+    updateSplitFromPointer(e.clientX);
+  };
+
+  const stopDragging = () => {
+    if (dragging) setDragging(false);
+  };
 
   const copyPrompt = async () => {
     try {
@@ -119,241 +193,324 @@ function ExhibitWorkbench({ item }: { item: GalleryItem }) {
     } catch {}
   };
 
+  const selectStageTab = (next: StageTab) => {
+    setTab(next);
+    writeParams({
+      exhibit: item.id,
+      view: next === "compare" ? null : next,
+    });
+  };
+
+  const shareDeepLink = async () => {
+    writeParams(
+      { exhibit: item.id, view: tab === "compare" ? null : tab },
+      "#gallery",
+    );
+    try {
+      await navigator.clipboard.writeText(window.location.href);
+      setSharedLink(true);
+      window.setTimeout(() => setSharedLink(false), 1600);
+    } catch {}
+  };
+
+  const stageTabs: [StageTab, string, string][] = [
+    ["compare", "Split", "Split"],
+    ["after", "Crafted", "Crafted"],
+    ["before", "Default", "Default"],
+    ["live", "Live UI", "Live UI"],
+    ["code", "Code", "Prompt & Code"],
+    ["notes", `Audit (${grouped.length})`, `Audit (${grouped.length})`],
+  ];
+
   return (
-    <div className="grid gap-8 lg:grid-cols-12 lg:items-start">
+    <div className="grid min-w-0 gap-6 lg:grid-cols-12 lg:items-start lg:gap-8">
       <div className="min-w-0 lg:col-span-8">
-        <div className="flex flex-wrap items-center justify-between gap-3 pb-4">
+        {/* Single unified mode toolbar — rounded-tile on container so multi-row mobile grids never warp into ovals */}
+        <div className="mb-3 flex flex-col gap-2.5 sm:flex-row sm:flex-wrap sm:items-center sm:justify-between">
           <div
             role="group"
-            aria-label="Workbench mode"
-            className="inline-flex flex-wrap rounded-full border border-paper-line bg-paper-2 p-1"
+            aria-label="Workbench view"
+            className="grid grid-cols-3 gap-1 rounded-tile border border-paper-line bg-paper-2 p-1 sm:inline-flex sm:flex-wrap"
           >
-            {(
-              [
-                ["visual", "Visual diff"],
-                ["code", `Prompt & code · ${item.stackShort}`],
-                ["notes", `Audit (${grouped.length})`],
-              ] as [WorkbenchTab, string][]
-            ).map(([tab, label]) => (
-              <button
-                key={tab}
-                type="button"
-                aria-pressed={workbench === tab}
-                onClick={() => setWorkbench(tab)}
-                className={`min-h-10 rounded-full px-3.5 font-mono text-[0.8125rem] transition-colors duration-150 motion-reduce:transition-none ${
-                  workbench === tab
-                    ? "bg-paper-ink text-paper"
-                    : "text-paper-ink hover:bg-paper"
-                }`}
-              >
-                {label}
-              </button>
-            ))}
+            {stageTabs.map(([id, mobileLabel, desktopLabel]) => {
+              const active = tab === id;
+              return (
+                <button
+                  key={id}
+                  type="button"
+                  aria-pressed={active}
+                  onClick={() => selectStageTab(id)}
+                  className={`min-h-10 rounded-ctl px-2.5 font-mono text-[0.75rem] font-medium transition-colors duration-150 sm:px-3.5 sm:text-[0.8125rem] motion-reduce:transition-none ${
+                    active
+                      ? "bg-paper-ink text-paper"
+                      : "text-paper-ink hover:bg-paper-card"
+                  }`}
+                >
+                  <span className="sm:hidden">{mobileLabel}</span>
+                  <span className="hidden sm:inline">{desktopLabel}</span>
+                </button>
+              );
+            })}
           </div>
 
-          <div className="flex flex-wrap items-center gap-2.5">
-            {workbench === "visual" ? (
+          <div className="flex flex-wrap items-center justify-between gap-2 sm:justify-end">
+            {tab === "live" ? (
               <>
                 <div
                   role="group"
-                  aria-label="Image view"
-                  className="inline-flex rounded-full border border-paper-line bg-paper-2 p-1"
+                  aria-label="Live preview viewport"
+                  className="inline-flex rounded-ctl border border-paper-line bg-paper-2 p-1 font-mono text-[0.75rem]"
                 >
                   {(
                     [
-                      ["compare", "Split"],
-                      ["before", "Default"],
-                      ["after", "Pixelcraft"],
-                      ["live", "Live"],
-                    ] as [ViewMode, string][]
-                  ).map(([mode, label]) => (
+                      ["mobile", "Mobile 390", "phone"],
+                      ["desktop", "Desktop 1440", "monitor"],
+                    ] as const
+                  ).map(([vp, label, icon]) => (
                     <button
-                      key={mode}
+                      key={vp}
                       type="button"
-                      aria-pressed={view === mode}
-                      onClick={() => setView(mode)}
-                      className={`min-h-9 rounded-full px-3 font-mono text-[0.75rem] transition-colors duration-150 motion-reduce:transition-none ${
-                        view === mode
+                      aria-pressed={liveViewport === vp}
+                      onClick={() => setLiveViewport(vp)}
+                      className={`inline-flex min-h-9 items-center gap-1.5 rounded-ctl px-2.5 font-medium transition-colors duration-150 motion-reduce:transition-none ${
+                        liveViewport === vp
                           ? "bg-paper-ink text-paper"
-                          : "text-paper-ink hover:bg-paper"
+                          : "text-paper-ink-2 hover:text-paper-ink"
+                      }`}
+                    >
+                      <PixelIcon name={icon} size={11} />
+                      {label}
+                    </button>
+                  ))}
+                </div>
+                <div
+                  role="group"
+                  aria-label="Live frame source"
+                  className="inline-flex rounded-ctl border border-paper-line bg-paper-2 p-1 font-mono text-[0.75rem]"
+                >
+                  {(
+                    [
+                      ["after", "Crafted"],
+                      ["before", "Default"],
+                    ] as const
+                  ).map(([side, label]) => (
+                    <button
+                      key={side}
+                      type="button"
+                      aria-pressed={liveSide === side}
+                      onClick={() => setLiveSide(side)}
+                      className={`min-h-9 rounded-ctl px-2.5 font-medium transition-colors duration-150 motion-reduce:transition-none ${
+                        liveSide === side
+                          ? "bg-paper-ink text-paper"
+                          : "text-paper-ink-2 hover:text-paper-ink"
                       }`}
                     >
                       {label}
                     </button>
                   ))}
                 </div>
-                {view === "live" ? (
-                  <div
-                    role="group"
-                    aria-label="Live frame source"
-                    className="inline-flex rounded-full border border-paper-line bg-paper-2 p-1 font-mono text-[0.75rem]"
-                  >
-                    {(
-                      [
-                        ["after", "Crafted"],
-                        ["before", "Default"],
-                      ] as const
-                    ).map(([side, label]) => (
-                      <button
-                        key={side}
-                        type="button"
-                        aria-pressed={liveSide === side}
-                        onClick={() => setLiveSide(side)}
-                        className={`min-h-8 rounded-full px-2.5 transition-colors duration-150 motion-reduce:transition-none ${
-                          liveSide === side
-                            ? "bg-paper-ink text-paper"
-                            : "text-paper-ink-2 hover:text-paper-ink"
-                        }`}
-                      >
-                        {label}
-                      </button>
-                    ))}
-                  </div>
-                ) : view !== "after" && pinned.length > 0 ? (
-                  <label className="flex min-h-9 cursor-pointer items-center gap-2 font-mono text-[0.75rem] text-paper-ink">
-                    <input
-                      type="checkbox"
-                      checked={showPins}
-                      onChange={(e) => setShowPins(e.target.checked)}
-                      className="size-4 accent-[var(--color-paper-ink)]"
-                    />
-                    Pins ({pinned.length})
-                  </label>
-                ) : null}
               </>
+            ) : showBeforeLayer && pinned.length > 0 ? (
+              <button
+                type="button"
+                aria-pressed={showPins}
+                onClick={() => setShowPins(!showPins)}
+                className={`inline-flex min-h-10 items-center gap-2 rounded-ctl border px-3 font-mono text-[0.75rem] font-medium transition-colors duration-150 motion-reduce:transition-none ${
+                  showPins
+                    ? "border-paper-ink bg-paper-ink text-paper"
+                    : "border-paper-line bg-paper-card text-paper-ink hover:border-paper-ink"
+                }`}
+              >
+                <PixelIcon name="pin" size={11} />
+                {showPins
+                  ? `Hide pins (${pinned.length})`
+                  : `Show pins (${pinned.length})`}
+              </button>
             ) : null}
-            <a
-              href={item.liveAfter}
-              target="_blank"
-              rel="noreferrer"
-              className="inline-flex min-h-9 items-center gap-1.5 rounded-full bg-paper-ink px-3.5 font-mono text-[0.75rem] font-medium text-paper transition-opacity duration-150 hover:opacity-90 motion-reduce:transition-none"
-            >
-              Open demo <PixelIcon name="external" size={10} />
-            </a>
           </div>
         </div>
 
-        {workbench === "visual" ? (
+        {isVisualStage ? (
           <div>
-            <div className="relative overflow-hidden rounded-card border border-paper-line bg-paper-ink">
-              <div
-                ref={stageRef}
-                className="relative overflow-hidden select-none"
-                style={{ aspectRatio: `${w} / ${h}` } as CSSProperties}
-              >
-                {view === "live" ? (
-                  <div className="absolute inset-0 overflow-hidden bg-void">
+            <div className="overflow-hidden rounded-card border border-paper-line bg-paper-ink">
+              {/* Dedicated non-overlapping score & standalone launch bar */}
+              <div className="flex flex-wrap items-center justify-between gap-2 border-b border-line bg-void px-3 py-2 text-ink sm:px-4 sm:py-2.5">
+                <div className="flex flex-wrap items-center gap-1.5 font-mono text-[0.6875rem] sm:gap-2 sm:text-[0.75rem]">
+                  <span
+                    data-comparison-label
+                    className="inline-flex items-center gap-1 rounded-full border border-line bg-panel px-2 py-0.5 text-p0 tabular sm:px-2.5 sm:py-1"
+                  >
+                    Default: <strong>{item.scanBefore.score}</strong>
+                  </span>
+                  <span aria-hidden="true" className="text-ink-faint">
+                    →
+                  </span>
+                  <span
+                    data-comparison-label
+                    className="inline-flex items-center gap-1 rounded-full bg-action px-2 py-0.5 font-semibold text-on-action tabular sm:px-2.5 sm:py-1"
+                  >
+                    Crafted: {item.scanAfter.score}
+                  </span>
+                </div>
+
+                <div className="flex items-center gap-1.5">
+                  <button
+                    type="button"
+                    onClick={shareDeepLink}
+                    className="inline-flex min-h-9 items-center gap-1.5 rounded-full border border-line bg-panel px-3 font-mono text-[0.75rem] text-ink-muted transition-colors hover:border-action hover:text-action motion-reduce:transition-none"
+                  >
+                    <PixelIcon name={sharedLink ? "check" : "copy"} size={11} />
+                    <span>{sharedLink ? "Link copied" : "Share"}</span>
+                  </button>
+                  <a
+                    href={item.liveAfter}
+                    target="_blank"
+                    rel="noreferrer"
+                    className="inline-flex min-h-9 items-center gap-1.5 rounded-full border border-action bg-raised px-3 font-mono text-[0.75rem] font-semibold text-action transition-colors duration-150 hover:bg-action hover:text-on-action sm:px-3.5 motion-reduce:transition-none"
+                  >
+                    Open demo <PixelIcon name="external" size={10} />
+                  </a>
+                </div>
+              </div>
+
+              {tab === "live" && liveViewport === "mobile" ? (
+                <div className="flex flex-col items-center justify-center bg-deep p-2 sm:p-5">
+                  <div className="w-full max-w-[390px] overflow-hidden rounded-[1.5rem] border-2 border-line-strong bg-void shadow-lift">
+                    <div className="flex items-center justify-between border-b border-line bg-panel px-3.5 py-2 font-mono text-[0.6875rem] text-ink-muted">
+                      <span>390 × 680 mobile viewport</span>
+                      <span className="text-action">
+                        {liveSide === "after" ? "Pixelcraft UI" : "Default UI"}
+                      </span>
+                    </div>
                     <iframe
-                      key={`${item.id}-${liveSide}`}
+                      key={`${item.id}-${liveSide}-mobile`}
                       src={
                         liveSide === "after" ? item.liveAfter : item.liveBefore
                       }
-                      title={`${item.title} (${liveSide === "after" ? "with Pixelcraft" : "default agent"})`}
+                      title={`${item.title} mobile view (${liveSide === "after" ? "with Pixelcraft" : "default agent"})`}
                       sandbox="allow-scripts"
-                      style={{
-                        width: `${w}px`,
-                        height: `${h}px`,
-                        transform: `scale(${scale})`,
-                        transformOrigin: "top left",
-                      }}
-                      className="block border-0"
+                      className="block h-[34rem] w-full border-0 bg-void sm:h-[40rem]"
                     />
                   </div>
-                ) : (
-                  <>
-                    <img
-                      src={item.after}
-                      alt={`${item.title}, built with Pixelcraft (${item.stackLabel})`}
-                      width={w}
-                      height={h}
-                      className="absolute inset-0 h-full w-full object-cover"
-                    />
+                </div>
+              ) : (
+                <div
+                  ref={stageRef}
+                  onPointerDown={onStagePointerDown}
+                  onPointerMove={onStagePointerMove}
+                  onPointerUp={stopDragging}
+                  onPointerCancel={stopDragging}
+                  className={`relative overflow-hidden select-none ${
+                    tab === "compare" ? "cursor-ew-resize touch-pan-y" : ""
+                  }`}
+                  style={{ aspectRatio: `${w} / ${h}` } as CSSProperties}
+                >
+                  {tab === "live" ? (
+                    <div className="absolute inset-0 overflow-hidden bg-void">
+                      <iframe
+                        key={`${item.id}-${liveSide}-desktop`}
+                        src={
+                          liveSide === "after"
+                            ? item.liveAfter
+                            : item.liveBefore
+                        }
+                        title={`${item.title} (${liveSide === "after" ? "with Pixelcraft" : "default agent"})`}
+                        sandbox="allow-scripts"
+                        style={{
+                          width: `${w}px`,
+                          height: `${h}px`,
+                          transform: `scale(${scale})`,
+                          transformOrigin: "top left",
+                        }}
+                        className="block border-0"
+                      />
+                    </div>
+                  ) : (
+                    <>
+                      <img
+                        src={item.after}
+                        alt={`${item.title}, built with Pixelcraft (${item.stackLabel})`}
+                        width={w}
+                        height={h}
+                        loading="lazy"
+                        decoding="async"
+                        draggable={false}
+                        className="absolute inset-0 h-full w-full object-cover"
+                      />
 
-                    {showBeforeLayer ? (
-                      <div
-                        className="absolute inset-0"
-                        style={{ clipPath: `inset(0 ${clipRight} 0 0)` }}
-                      >
-                        <img
-                          src={item.before}
-                          alt={`${item.title}, default agent output`}
-                          width={w}
-                          height={h}
-                          className="absolute inset-0 h-full w-full object-cover"
-                        />
-                      </div>
-                    ) : null}
+                      {showBeforeLayer ? (
+                        <div
+                          className="absolute inset-0"
+                          style={{ clipPath: `inset(0 ${clipRight} 0 0)` }}
+                        >
+                          <img
+                            src={item.before}
+                            alt={`${item.title}, default agent output`}
+                            width={w}
+                            height={h}
+                            loading="lazy"
+                            decoding="async"
+                            draggable={false}
+                            className="absolute inset-0 h-full w-full object-cover"
+                          />
+                        </div>
+                      ) : null}
 
-                    {view === "compare" ? (
-                      <div
-                        aria-hidden="true"
-                        className="pointer-events-none absolute inset-y-0 w-0.5 bg-action shadow-[0_0_0_1px_var(--color-paper-ink)]"
-                        style={{ left: `${split}%` }}
-                      >
-                        <span className="absolute top-1/2 left-1/2 grid size-10 -translate-x-1/2 -translate-y-1/2 place-items-center rounded-full border-2 border-paper-ink bg-action text-on-action">
-                          <PixelIcon name="drag" size={14} />
-                        </span>
-                      </div>
-                    ) : null}
+                      {tab === "compare" ? (
+                        <div
+                          aria-hidden="true"
+                          className="pointer-events-none absolute inset-y-0 w-0.5 bg-action shadow-[0_0_0_1px_var(--color-paper-ink)]"
+                          style={{ left: `${split}%` }}
+                        >
+                          <span className="absolute top-1/2 left-1/2 grid size-9 -translate-x-1/2 -translate-y-1/2 place-items-center rounded-full border-2 border-paper-ink bg-action text-on-action sm:size-10">
+                            <PixelIcon name="drag" size={14} />
+                          </span>
+                        </div>
+                      ) : null}
 
-                    {showPins && showBeforeLayer
-                      ? pinned.map(({ f }, idx) => {
-                          if (!f.pin) return null;
-                          const visibleInSplit =
-                            view === "before" || f.pin.x <= split - 2;
-                          if (!visibleInSplit) return null;
-                          const isSelected = selectedFinding?.f.rule === f.rule;
-                          return (
-                            <button
-                              key={f.rule}
-                              type="button"
-                              onClick={() => setActiveRule(f.rule)}
-                              aria-label={`Inspect finding ${idx + 1}: ${f.severity} ${f.rule}`}
-                              aria-pressed={isSelected}
-                              style={{
-                                left: `${Math.min(94, Math.max(6, f.pin.x))}%`,
-                                top: `${Math.min(92, Math.max(8, f.pin.y))}%`,
-                              }}
-                              className={`absolute z-10 grid size-7 -translate-x-1/2 -translate-y-1/2 place-items-center rounded-full border-2 border-paper font-mono text-[0.75rem] font-bold transition-transform duration-150 motion-reduce:transition-none ${PIN_BG[f.severity]} ${
-                                isSelected
-                                  ? "scale-125 ring-2 ring-paper-ink"
-                                  : ""
-                              }`}
-                            >
-                              {idx + 1}
-                            </button>
-                          );
-                        })
-                      : null}
-
-                    {view !== "after" ? (
-                      <span
-                        data-comparison-label
-                        className="pointer-events-none absolute start-3 top-3 rounded-full bg-paper-ink px-3 py-1 font-pixel text-[0.6875rem] text-paper uppercase"
-                      >
-                        Default agent · score {item.scanBefore.score}
-                      </span>
-                    ) : null}
-                    {view !== "before" ? (
-                      <span
-                        data-comparison-label
-                        className="pointer-events-none absolute end-3 top-3 rounded-full bg-action px-3 py-1 font-pixel text-[0.6875rem] text-on-action uppercase"
-                      >
-                        With Pixelcraft · score {item.scanAfter.score}
-                      </span>
-                    ) : null}
-                  </>
-                )}
-              </div>
+                      {showPins && showBeforeLayer
+                        ? pinned.map(({ f }, idx) => {
+                            if (!f.pin) return null;
+                            const visibleInSplit =
+                              tab === "before" || f.pin.x <= split - 2;
+                            if (!visibleInSplit) return null;
+                            const isSelected =
+                              selectedFinding?.f.rule === f.rule;
+                            return (
+                              <button
+                                key={f.rule}
+                                type="button"
+                                onClick={() => setActiveRule(f.rule)}
+                                aria-label={`Inspect finding ${idx + 1}: ${f.severity} ${f.rule}`}
+                                aria-pressed={isSelected}
+                                style={{
+                                  left: `${Math.min(93, Math.max(7, f.pin.x))}%`,
+                                  top: `${Math.min(90, Math.max(10, f.pin.y))}%`,
+                                }}
+                                className={`absolute z-10 grid size-7 -translate-x-1/2 -translate-y-1/2 place-items-center rounded-full border-2 border-paper font-mono text-[0.75rem] font-bold transition-transform duration-150 motion-reduce:transition-none ${PIN_BG[f.severity]} ${
+                                  isSelected
+                                    ? "scale-125 ring-2 ring-paper-ink"
+                                    : ""
+                                }`}
+                              >
+                                {idx + 1}
+                              </button>
+                            );
+                          })
+                        : null}
+                    </>
+                  )}
+                </div>
+              )}
             </div>
 
-            {view === "compare" ? (
-              <div className="mt-3 flex items-center gap-4 rounded-tile border border-paper-line bg-paper-2 px-4 py-2.5">
+            {tab === "compare" ? (
+              <div className="mt-3 flex flex-wrap items-center gap-3 rounded-tile border border-paper-line bg-paper-2 px-3.5 py-2 sm:px-4">
                 <label
                   htmlFor={`split-${item.id}`}
-                  className="font-mono text-[0.75rem] whitespace-nowrap text-paper-ink"
+                  className="font-mono text-[0.75rem] font-medium whitespace-nowrap text-paper-ink"
                 >
-                  Split divider
+                  Drag or slide
                 </label>
                 <input
                   id={`split-${item.id}`}
@@ -363,11 +520,32 @@ function ExhibitWorkbench({ item }: { item: GalleryItem }) {
                   value={split}
                   onChange={(e) => setSplit(Number(e.target.value))}
                   aria-valuetext={`${split}% default agent, ${100 - split}% Pixelcraft`}
-                  className="h-2 w-full cursor-ew-resize accent-[var(--color-paper-ink)]"
+                  className="min-h-8 min-w-[8rem] flex-1 cursor-ew-resize accent-[var(--color-paper-ink)]"
                 />
-                <span className="w-10 text-end font-mono text-[0.75rem] text-paper-ink-2 tabular">
-                  {split}%
-                </span>
+                <div
+                  role="group"
+                  aria-label="Split presets"
+                  className="flex items-center gap-1 font-mono text-[0.75rem]"
+                >
+                  {[
+                    [0, "Crafted"],
+                    [50, "50/50"],
+                    [100, "Default"],
+                  ].map(([val, text]) => (
+                    <button
+                      key={text}
+                      type="button"
+                      onClick={() => setSplit(Number(val))}
+                      className={`min-h-8 rounded-ctl px-2.5 font-medium transition-colors motion-reduce:transition-none ${
+                        split === val
+                          ? "bg-paper-ink text-paper"
+                          : "bg-paper-card text-paper-ink hover:border-paper-ink"
+                      }`}
+                    >
+                      {text}
+                    </button>
+                  ))}
+                </div>
               </div>
             ) : null}
 
@@ -384,49 +562,51 @@ function ExhibitWorkbench({ item }: { item: GalleryItem }) {
                     before.html:{selectedFinding.f.line}
                   </span>
                 </div>
-                <p className="mt-2 text-[0.875rem] text-paper-ink">
+                <p className="mt-2 text-[0.875rem] leading-relaxed text-paper-ink">
                   <strong>Fix:</strong> {selectedFinding.f.fix}
                 </p>
                 {selectedFinding.f.snippet ? (
-                  <code className="mt-2 block overflow-x-auto rounded-ctl bg-paper-2 px-3 py-1.5 text-[0.75rem] text-paper-ink">
+                  <code className="mt-2 block overflow-x-auto rounded-ctl bg-paper-2 px-3 py-2 text-[0.75rem] text-paper-ink">
                     {selectedFinding.f.snippet}
                   </code>
                 ) : null}
               </div>
             ) : null}
 
-            <div className="mt-4 flex flex-wrap items-center justify-between gap-3 font-mono text-[0.75rem] text-paper-ink-2">
+            <div className="mt-3.5 flex flex-wrap items-center justify-between gap-2 font-mono text-[0.75rem] text-paper-ink-2">
               <span className="flex items-center gap-2">
                 <EvidenceStamp label="rendered" tone="paper" />{" "}
-                {view === "live"
-                  ? `Interactive HTML scaled from ${w} × ${h}`
+                {tab === "live"
+                  ? liveViewport === "mobile"
+                    ? "Interactive HTML at 390px mobile width"
+                    : `Interactive HTML scaled from ${w} × ${h}`
                   : `Captured in Chromium at ${w} × ${h}`}
               </span>
-              <span className="flex flex-wrap gap-4">
+              <span className="flex flex-wrap gap-2">
                 <a
                   href={item.liveBefore}
                   target="_blank"
                   rel="noreferrer"
-                  className="inline-flex items-center gap-1.5 text-paper-ink underline decoration-paper-line underline-offset-4 hover:decoration-paper-ink"
+                  className="inline-flex min-h-9 items-center gap-1.5 rounded-ctl border border-paper-line bg-paper-card px-3 text-paper-ink hover:border-paper-ink"
                 >
-                  Open default HTML <PixelIcon name="external" size={10} />
+                  Default HTML <PixelIcon name="external" size={10} />
                 </a>
                 <a
                   href={item.liveAfter}
                   target="_blank"
                   rel="noreferrer"
-                  className="inline-flex items-center gap-1.5 font-semibold text-paper-ink underline decoration-paper-ink underline-offset-4"
+                  className="inline-flex min-h-9 items-center gap-1.5 rounded-ctl border border-paper-ink bg-paper-ink px-3 font-semibold text-paper hover:opacity-90"
                 >
-                  Open Pixelcraft HTML <PixelIcon name="external" size={10} />
+                  Pixelcraft HTML <PixelIcon name="external" size={10} />
                 </a>
               </span>
             </div>
           </div>
         ) : null}
 
-        {workbench === "code" ? (
+        {tab === "code" ? (
           <div className="grid min-w-0 gap-4">
-            <div className="surface-paper rounded-card p-5">
+            <div className="surface-paper rounded-card p-4 sm:p-5">
               <div className="flex flex-wrap items-center justify-between gap-2">
                 <p className="font-mono text-[0.75rem] font-semibold text-paper-ink uppercase">
                   Shared user prompt
@@ -434,7 +614,7 @@ function ExhibitWorkbench({ item }: { item: GalleryItem }) {
                 <button
                   type="button"
                   onClick={copyPrompt}
-                  className="inline-flex items-center gap-1.5 rounded-full border border-paper-line bg-paper px-3 py-1 font-mono text-[0.75rem] text-paper-ink transition-colors duration-150 hover:border-paper-ink motion-reduce:transition-none"
+                  className="inline-flex min-h-9 items-center gap-1.5 rounded-full border border-paper-line bg-paper px-3.5 font-mono text-[0.75rem] font-medium text-paper-ink transition-colors duration-150 hover:border-paper-ink motion-reduce:transition-none"
                 >
                   <PixelIcon name={copied ? "check" : "copy"} size={10} />
                   {copied ? "Copied" : "Copy prompt"}
@@ -448,7 +628,9 @@ function ExhibitWorkbench({ item }: { item: GalleryItem }) {
             <div className="grid min-w-0 gap-4 md:grid-cols-2">
               <div className="min-w-0 overflow-hidden rounded-card border border-paper-line bg-void text-ink">
                 <div className="flex items-center justify-between border-b border-line px-4 py-2.5 font-mono text-[0.75rem]">
-                  <span className="text-p0">Default agent pattern</span>
+                  <span className="font-semibold text-p0">
+                    Default agent pattern
+                  </span>
                   <span className="text-ink-faint">
                     {item.codeDiff.language}
                   </span>
@@ -459,7 +641,9 @@ function ExhibitWorkbench({ item }: { item: GalleryItem }) {
               </div>
               <div className="min-w-0 overflow-hidden rounded-card border border-paper-ink bg-void text-ink">
                 <div className="flex items-center justify-between border-b border-line px-4 py-2.5 font-mono text-[0.75rem]">
-                  <span className="text-action">Idiomatic Pixelcraft</span>
+                  <span className="font-semibold text-action">
+                    Idiomatic Pixelcraft
+                  </span>
                   <span className="text-ink-faint">
                     {item.codeDiff.language}
                   </span>
@@ -468,16 +652,16 @@ function ExhibitWorkbench({ item }: { item: GalleryItem }) {
                   <code>{item.codeDiff.after}</code>
                 </pre>
               </div>
-              <p className="font-mono text-[0.75rem] text-paper-ink-2 md:col-span-2">
+              <p className="font-mono text-[0.75rem] leading-relaxed text-paper-ink-2 md:col-span-2">
                 {item.codeDiff.note}
               </p>
             </div>
           </div>
         ) : null}
 
-        {workbench === "notes" ? (
-          <div className="grid gap-4">
-            <div className="surface-paper rounded-card p-5">
+        {tab === "notes" ? (
+          <div className="grid min-w-0 gap-4">
+            <div className="surface-paper rounded-card p-4 sm:p-5">
               <div className="flex flex-wrap items-center justify-between gap-2">
                 <h4 className="font-mono text-[0.8125rem] font-semibold text-paper-ink">
                   slop-scan.mjs findings on default output
@@ -492,7 +676,7 @@ function ExhibitWorkbench({ item }: { item: GalleryItem }) {
                   >
                     <div className="flex flex-wrap items-center gap-2 font-mono">
                       <span
-                        className={`rounded-full border px-2 py-0.5 text-[0.6875rem] font-semibold ${SEV[f.severity]}`}
+                        className={`rounded-full border px-2 py-0.5 text-[0.75rem] font-semibold ${SEV[f.severity]}`}
                       >
                         {f.severity}
                       </span>
@@ -504,13 +688,15 @@ function ExhibitWorkbench({ item }: { item: GalleryItem }) {
                         line {f.line}
                       </span>
                     </div>
-                    <p className="mt-1.5 text-paper-ink-2">{f.fix}</p>
+                    <p className="mt-1.5 leading-relaxed text-paper-ink-2">
+                      {f.fix}
+                    </p>
                   </li>
                 ))}
               </ul>
             </div>
 
-            <div className="surface-paper rounded-card p-5">
+            <div className="surface-paper rounded-card p-4 sm:p-5">
               <div className="flex flex-wrap items-center justify-between gap-2">
                 <h4 className="font-mono text-[0.8125rem] font-semibold text-paper-ink">
                   Critique beyond static scanning
@@ -532,12 +718,12 @@ function ExhibitWorkbench({ item }: { item: GalleryItem }) {
         ) : null}
       </div>
 
-      <aside className="surface-paper grid min-w-0 gap-5 rounded-card p-6 lg:col-span-4">
+      <aside className="surface-paper grid min-w-0 gap-5 rounded-card p-5 sm:p-6 lg:col-span-4">
         <div>
-          <p className="font-mono text-[0.75rem] font-medium text-paper-ink-2">
+          <p className="font-mono text-[0.75rem] font-semibold text-paper-ink-2">
             {item.ecosystem} · {item.stackLabel} · {item.mode}
           </p>
-          <h3 className="mt-1.5 display-wide text-[1.625rem] leading-[1.06] text-paper-ink">
+          <h3 className="mt-1.5 display-wide text-[1.5rem] leading-[1.08] text-paper-ink sm:text-[1.625rem]">
             {item.title}
           </h3>
           <p className="mt-2 text-[0.9375rem] leading-relaxed text-paper-ink-2">
@@ -548,25 +734,25 @@ function ExhibitWorkbench({ item }: { item: GalleryItem }) {
         <div className="flex flex-wrap items-end justify-between gap-4 border-y border-paper-line py-4">
           <dl className="flex items-end gap-6">
             <div>
-              <dt className="font-mono text-[0.6875rem] text-paper-ink-2 uppercase">
+              <dt className="font-mono text-[0.75rem] font-medium text-paper-ink-2 uppercase">
                 Default scan
               </dt>
-              <dd className="mt-1 display-wide text-[2rem] leading-none text-paper-p0 tabular">
+              <dd className="mt-1 display-wide text-[1.875rem] leading-none text-paper-p0 tabular sm:text-[2rem]">
                 {item.scanBefore.score}
               </dd>
             </div>
             <div>
-              <dt className="font-mono text-[0.6875rem] text-paper-ink-2 uppercase">
-                Pixelcraft scan
+              <dt className="font-mono text-[0.75rem] font-medium text-paper-ink-2 uppercase">
+                Pixelcraft
               </dt>
-              <dd className="mt-1 display-wide text-[2rem] leading-none text-paper-ink tabular">
+              <dd className="mt-1 display-wide text-[1.875rem] leading-none text-paper-ink tabular sm:text-[2rem]">
                 {item.scanAfter.score}
               </dd>
             </div>
           </dl>
 
           <div>
-            <p className="font-mono text-[0.6875rem] text-paper-ink-2 uppercase text-end">
+            <p className="text-end font-mono text-[0.75rem] font-medium text-paper-ink-2 uppercase">
               Palette
             </p>
             <div
@@ -586,7 +772,7 @@ function ExhibitWorkbench({ item }: { item: GalleryItem }) {
         </div>
 
         <div>
-          <h4 className="font-mono text-[0.75rem] font-semibold text-paper-ink">
+          <h4 className="font-mono text-[0.8125rem] font-semibold text-paper-ink">
             Committed direction: {item.direction}
           </h4>
           <ul className="mt-3 grid gap-2 text-[0.875rem] leading-relaxed text-paper-ink-2">
@@ -604,7 +790,7 @@ function ExhibitWorkbench({ item }: { item: GalleryItem }) {
         </div>
 
         <div className="border-t border-paper-line pt-4">
-          <p className="font-mono text-[0.75rem] text-paper-ink-2">
+          <p className="font-mono text-[0.75rem] font-medium text-paper-ink-2">
             Skills routed
           </p>
           <ul className="mt-2 flex flex-wrap gap-1.5">
@@ -612,7 +798,7 @@ function ExhibitWorkbench({ item }: { item: GalleryItem }) {
               <li key={s}>
                 <a
                   href={`${REPO_URL}/tree/main/skills/${s}`}
-                  className="inline-block rounded-full border border-paper-line bg-paper px-2.5 py-1 font-mono text-[0.75rem] text-paper-ink transition-colors duration-150 hover:border-paper-ink hover:bg-paper-ink hover:text-paper motion-reduce:transition-none"
+                  className="inline-flex min-h-9 items-center rounded-full border border-paper-line bg-paper px-3 font-mono text-[0.75rem] font-medium text-paper-ink transition-colors duration-150 hover:border-paper-ink hover:bg-paper-ink hover:text-paper motion-reduce:transition-none"
                 >
                   {s}
                 </a>
@@ -622,7 +808,7 @@ function ExhibitWorkbench({ item }: { item: GalleryItem }) {
         </div>
 
         <div className="border-t border-paper-line pt-4">
-          <p className="flex items-center gap-2 font-mono text-[0.75rem] text-paper-ink-2">
+          <p className="flex items-center gap-2 font-mono text-[0.75rem] font-medium text-paper-ink-2">
             <EvidenceStamp label="not-checked" tone="paper" /> Scope limits
           </p>
           <ul className="mt-2 grid gap-1 text-[0.8125rem] leading-relaxed text-paper-ink-2">
@@ -639,8 +825,47 @@ function ExhibitWorkbench({ item }: { item: GalleryItem }) {
 export function Gallery() {
   const [ecoFilter, setEcoFilter] = useState<EcosystemFilter>("All");
   const [modeFilter, setModeFilter] = useState<ModeFilter>("All");
-  const [active, setActive] = useState(GALLERY[0].id);
+  const [active, setActive] = useState(() => {
+    const initial = readParam("exhibit");
+    return initial && GALLERY.some((g) => g.id === initial)
+      ? initial
+      : GALLERY[0].id;
+  });
+  const [showAllSheet, setShowAllSheet] = useState(false);
+  const sheet = useRef<HTMLElement>(null);
   const workbenchAnchor = useRef<HTMLDivElement>(null);
+  const { paused } = useMotionPause();
+
+  useGSAP(
+    () => {
+      if (paused) return;
+      const mm = gsap.matchMedia();
+      mm.add(MOTION_OK, () => {
+        gsap.fromTo(
+          sheet.current,
+          { scale: 0.975, borderRadius: 56 },
+          {
+            scale: 1,
+            borderRadius: 32,
+            ease: "none",
+            scrollTrigger: {
+              trigger: sheet.current,
+              start: "top bottom",
+              end: "top 38%",
+              scrub: 0.5,
+            },
+          },
+        );
+      });
+      return () => mm.revert();
+    },
+    { scope: sheet, dependencies: [paused], revertOnUpdate: true },
+  );
+
+  const pickActive = (nextId: string) => {
+    setActive(nextId);
+    writeParams({ exhibit: nextId });
+  };
 
   const visibleItems = useMemo(
     () =>
@@ -653,58 +878,77 @@ export function Gallery() {
   );
 
   const items = visibleItems.length > 0 ? visibleItems : GALLERY;
-  const activeId = items.some((g) => g.id === active) ? active : items[0].id;
+  const activeIndex = Math.max(
+    0,
+    items.findIndex((g) => g.id === active),
+  );
+  const activeItem = items[activeIndex] ?? items[0];
+  const activeId = activeItem.id;
 
   const ecoCount = (eco: EcosystemFilter) =>
     eco === "All"
       ? GALLERY.length
       : GALLERY.filter((g) => g.ecosystem === eco).length;
 
+  const stepExhibit = (delta: number) => {
+    const nextIdx = (activeIndex + delta + items.length) % items.length;
+    pickActive(items[nextIdx].id);
+  };
+
   const selectCard = (nextId: string) => {
-    setActive(nextId);
+    pickActive(nextId);
     workbenchAnchor.current?.scrollIntoView({
       behavior: "smooth",
       block: "nearest",
     });
   };
 
+  const isFiltered = ecoFilter !== "All" || modeFilter !== "All";
+
   return (
     <section
+      ref={sheet}
       id="gallery"
       aria-labelledby="gallery-title"
-      className="mx-2 my-6 rounded-sheet bg-paper text-paper-ink sm:mx-4"
+      className="relative z-10 mx-2 rounded-sheet will-change-transform bg-paper text-paper-ink shadow-[0_-30px_80px_-30px_rgba(3,240,237,0.25)] sm:mx-4"
     >
-      <div className="mx-auto max-w-[84rem] px-5 py-16 sm:px-8 lg:py-24">
-        <div className="grid gap-6 lg:grid-cols-12 lg:items-end">
-          <div className="lg:col-span-7">
-            <p className="font-mono text-[0.8125rem] font-medium text-paper-ink-2">
-              Multi-stack proof workbench · {GALLERY.length} surfaces · 5
-              ecosystems
+      <div className="mx-auto max-w-[88rem] px-5 py-20 sm:px-8 lg:py-32">
+        <div className="grid min-w-0 gap-8 lg:grid-cols-12 lg:items-end">
+          <div className="min-w-0 lg:col-span-8">
+            <p className="flex items-center gap-2.5 font-pixel text-[0.75rem] tracking-[0.06em] text-paper-ink-2 uppercase">
+              <span
+                aria-hidden="true"
+                className="size-2 rounded-[3px] bg-paper-ink"
+              />
+              <span data-scramble>
+                Gallery · same brief, two agents · {GALLERY.length} surfaces
+              </span>
             </p>
             <h2
               id="gallery-title"
-              className="mt-2 max-w-[18ch] display-wide text-[clamp(2rem,4vw,3.5rem)] leading-[1.02] text-paper-ink"
+              data-split
+              className="mt-6 max-w-[16ch] display-wide text-[clamp(2.25rem,5.4vw,4.75rem)] leading-[0.95] text-balance text-paper-ink"
             >
-              Not just React landing pages. {GALLERY.length} real surface diffs.
+              Same brief. A different instinct.
             </h2>
           </div>
-          <p className="max-w-[46ch] text-[1rem] leading-relaxed text-paper-ink-2 lg:col-span-5">
-            Compare default agent output against Pixelcraft across SwiftUI,
-            Jetpack Compose, Flutter, Rust Ratatui, Tauri v2, Python marimo,
-            Elixir LiveView, MJML email, Typst PDF, Godot 4.5 HUD, and modern
-            web frameworks — with live interactive stages, scan pins, and direct
-            demo links.
+          <p className="max-w-[46ch] text-[1rem] leading-relaxed text-paper-ink-2 lg:col-span-4">
+            Compare default agent output against Pixelcraft across{" "}
+            {GALLERY.length} real surfaces spanning SwiftUI, Jetpack Compose,
+            Flutter, Rust Ratatui, Tauri v2, Python marimo, Elixir LiveView,
+            MJML email, Typst PDF, Godot 4.5 HUD, and modern web frameworks.
           </p>
         </div>
 
+        {/* Clean single-line scrollable filter rail on mobile; individual pill buttons on desktop */}
         <div
           ref={workbenchAnchor}
-          className="mt-10 flex flex-wrap items-center justify-between gap-3 border-b border-paper-line pb-4"
+          className="mt-8 flex flex-col gap-3 border-b border-paper-line pb-4 lg:mt-10 lg:flex-row lg:items-center lg:justify-between"
         >
           <div
             role="group"
             aria-label="Filter exhibits by ecosystem"
-            className="flex flex-wrap gap-1 rounded-full border border-paper-line bg-paper-2 p-1"
+            className="rail-scroll flex items-center gap-1.5 pb-1 lg:flex-wrap lg:pb-0"
           >
             {ECOSYSTEMS.map((eco) => {
               const on = ecoFilter === eco;
@@ -726,14 +970,22 @@ export function Gallery() {
                       setModeFilter("All");
                     }
                   }}
-                  className={`min-h-9 rounded-full px-3.5 font-mono text-[0.75rem] transition-colors duration-150 motion-reduce:transition-none ${
+                  className={`inline-flex min-h-10 shrink-0 items-center gap-1.5 rounded-full border px-3.5 font-mono text-[0.75rem] font-medium transition-colors duration-150 motion-reduce:transition-none ${
                     on
-                      ? "bg-paper-ink font-medium text-paper"
-                      : "text-paper-ink-2 hover:bg-paper hover:text-paper-ink"
+                      ? "border-paper-ink bg-paper-ink text-paper"
+                      : "border-paper-line bg-paper-card text-paper-ink hover:border-paper-ink"
                   }`}
                 >
-                  {eco}{" "}
-                  <span className="opacity-65 tabular">{ecoCount(eco)}</span>
+                  <span>{eco}</span>
+                  <span
+                    className={`rounded-full px-1.5 py-0.5 text-[0.6875rem] font-semibold tabular ${
+                      on
+                        ? "bg-action text-on-action"
+                        : "bg-paper-2 text-paper-ink-2"
+                    }`}
+                  >
+                    {ecoCount(eco)}
+                  </span>
                 </button>
               );
             })}
@@ -742,7 +994,7 @@ export function Gallery() {
           <div
             role="group"
             aria-label="Filter exhibits by surface mode"
-            className="inline-flex flex-wrap gap-1 rounded-full border border-paper-line bg-paper-2 p-1"
+            className="rail-scroll flex items-center gap-1.5 pb-1 lg:pb-0"
           >
             {MODES.map((m) => {
               const on = modeFilter === m;
@@ -762,47 +1014,114 @@ export function Gallery() {
                       setActive(next[0].id);
                     }
                   }}
-                  className={`min-h-8 rounded-full px-3 font-mono text-[0.75rem] transition-colors duration-150 motion-reduce:transition-none ${
+                  className={`min-h-9 shrink-0 rounded-ctl border px-3 font-mono text-[0.75rem] font-medium transition-colors duration-150 motion-reduce:transition-none ${
                     on
-                      ? "bg-paper-ink font-medium text-paper"
-                      : "text-paper-ink-2 hover:bg-paper hover:text-paper-ink"
+                      ? "border-paper-ink bg-paper-ink text-paper"
+                      : "border-paper-line bg-paper-2 text-paper-ink-2 hover:bg-paper-card hover:text-paper-ink"
                   }`}
                 >
-                  {m}
+                  {m === "All" ? "All modes" : m}
                 </button>
               );
             })}
           </div>
         </div>
 
-        <div className="mt-6">
+        {/* Native picker + prev/next stepper for instant 1-tap exhibit switching on mobile & tablet */}
+        <div className="mt-4 flex items-center gap-2 md:hidden">
+          <button
+            type="button"
+            onClick={() => stepExhibit(-1)}
+            aria-label="Previous exhibit"
+            className="grid size-11 shrink-0 place-items-center rounded-ctl border border-paper-line bg-paper-card text-paper-ink hover:border-paper-ink"
+          >
+            <PixelIcon name="chevronLeft" size={13} />
+          </button>
+          <div className="min-w-0 flex-1">
+            <label htmlFor="mobile-exhibit-picker" className="sr-only">
+              Jump to exhibit ({activeIndex + 1} of {items.length})
+            </label>
+            <select
+              id="mobile-exhibit-picker"
+              value={activeId}
+              onChange={(e) => pickActive(e.target.value)}
+              className="min-h-11 w-full rounded-ctl border border-paper-ink bg-paper-card px-3 font-mono text-[0.8125rem] font-semibold text-paper-ink"
+            >
+              {items.map((g, idx) => (
+                <option key={g.id} value={g.id}>
+                  {String(idx + 1).padStart(2, "0")}/{items.length} · {g.title}{" "}
+                  ({g.stackShort})
+                </option>
+              ))}
+            </select>
+          </div>
+          <button
+            type="button"
+            onClick={() => stepExhibit(1)}
+            aria-label="Next exhibit"
+            className="grid size-11 shrink-0 place-items-center rounded-ctl border border-paper-line bg-paper-card text-paper-ink hover:border-paper-ink"
+          >
+            <PixelIcon name="chevronRight" size={13} />
+          </button>
+        </div>
+
+        <div className="mt-4 md:mt-6">
+          <div className="mb-3 hidden items-center justify-between gap-3 md:flex">
+            <p className="font-mono text-[0.75rem] font-medium text-paper-ink-2 tabular">
+              Surface {String(activeIndex + 1).padStart(2, "0")} of{" "}
+              {String(items.length).padStart(2, "0")} · {activeItem.stackLabel}
+            </p>
+            <div className="flex items-center gap-1.5">
+              <button
+                type="button"
+                onClick={() => stepExhibit(-1)}
+                aria-label="Previous exhibit"
+                className="inline-flex min-h-9 items-center gap-1.5 rounded-ctl border border-paper-line bg-paper-card px-3 font-mono text-[0.75rem] font-medium text-paper-ink hover:border-paper-ink"
+              >
+                <PixelIcon name="chevronLeft" size={10} /> Prev
+              </button>
+              <button
+                type="button"
+                onClick={() => stepExhibit(1)}
+                aria-label="Next exhibit"
+                className="inline-flex min-h-9 items-center gap-1.5 rounded-ctl border border-paper-line bg-paper-card px-3 font-mono text-[0.75rem] font-medium text-paper-ink hover:border-paper-ink"
+              >
+                Next <PixelIcon name="chevronRight" size={10} />
+              </button>
+            </div>
+          </div>
+
           <Tabs
             items={items}
             value={activeId}
-            onChange={setActive}
+            onChange={pickActive}
             label="Multi-stack gallery exhibits"
-            listClassName="mb-8 flex gap-2 overflow-x-auto pb-2"
+            listClassName="rail-scroll mb-6 hidden gap-2 pb-2 md:flex"
             tabClassName={(selected) =>
-              `inline-flex min-h-11 shrink-0 items-center gap-2.5 rounded-full border px-4 py-2 text-start whitespace-nowrap transition-colors duration-150 motion-reduce:transition-none ${
+              `inline-flex min-h-11 shrink-0 items-center gap-2 rounded-full border px-4 py-2 text-start whitespace-nowrap transition-colors duration-150 motion-reduce:transition-none ${
                 selected
                   ? "border-paper-ink bg-paper-ink text-paper"
-                  : "border-paper-line bg-paper-2 text-paper-ink hover:bg-paper"
+                  : "border-paper-line bg-paper-card text-paper-ink hover:border-paper-ink"
               }`
             }
             renderTab={(item, idx, selected) => (
               <>
-                <span className="font-mono text-[0.6875rem] opacity-60 tabular">
+                <span
+                  className={`font-mono text-[0.75rem] font-semibold tabular ${
+                    selected ? "text-action" : "text-paper-ink-2"
+                  }`}
+                >
                   {String(idx + 1).padStart(2, "0")}
                 </span>
-                <span className="font-medium text-[0.875rem]">
+                <span className="text-[0.875rem] font-semibold">
                   {item.title}
                 </span>
                 <span
                   className={`font-mono text-[0.75rem] ${
-                    selected ? "text-action" : "text-paper-ink-2"
+                    selected ? "text-paper" : "text-paper-ink-2"
                   }`}
                 >
-                  {item.stackShort}
+                  · {item.stackShort}
                 </span>
               </>
             )}
@@ -810,32 +1129,36 @@ export function Gallery() {
           />
         </div>
 
-        <div className="mt-14 border-t border-paper-line pt-10">
-          <div className="flex flex-wrap items-end justify-between gap-4">
+        <div className="mt-12 border-t border-paper-line pt-8 sm:mt-14 sm:pt-10">
+          <div className="flex flex-wrap items-end justify-between gap-3">
             <div>
-              <p className="font-mono text-[0.75rem] text-paper-ink-2 uppercase">
+              <p className="font-mono text-[0.75rem] font-semibold text-paper-ink-2 uppercase">
                 Contact sheet · {items.length} of {GALLERY.length} surfaces
               </p>
-              <h3 className="mt-1.5 display-wide text-[1.5rem] leading-tight text-paper-ink">
+              <h3 className="mt-1 display-wide text-[1.375rem] leading-tight text-paper-ink sm:text-[1.5rem]">
                 Browse every stack &amp; open standalone demos
               </h3>
             </div>
             <p className="font-mono text-[0.75rem] text-paper-ink-2">
-              Select a card to compare in the workbench above, or open the full
-              standalone page directly
+              Tap any card to load in workbench ↑ or open full standalone page
+              ↗
             </p>
           </div>
 
           <ul className="mt-6 grid gap-4 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4">
-            {items.map((g) => {
+            {items.map((g, idx) => {
               const selected = g.id === activeId;
+              const hiddenOnMobile =
+                !isFiltered && !showAllSheet && idx >= 6 && !selected;
               return (
                 <li
                   key={g.id}
-                  className={`flex h-full flex-col overflow-hidden rounded-card border transition-colors duration-150 motion-reduce:transition-none ${
+                  className={`${
+                    hiddenOnMobile ? "hidden sm:flex" : "flex"
+                  } h-full min-w-0 flex-col overflow-hidden rounded-card border transition-colors duration-150 motion-reduce:transition-none ${
                     selected
                       ? "border-paper-ink bg-paper-ink text-paper ring-2 ring-paper-ink"
-                      : "border-paper-line bg-paper-2 text-paper-ink hover:border-paper-ink hover:bg-paper"
+                      : "border-paper-line bg-paper-card text-paper-ink hover:border-paper-ink"
                   }`}
                 >
                   <button
@@ -854,10 +1177,10 @@ export function Gallery() {
                         decoding="async"
                         className="h-full w-full object-cover"
                       />
-                      <span className="absolute start-2.5 top-2.5 rounded-full bg-paper-ink px-2.5 py-1 font-mono text-[0.6875rem] font-medium text-paper">
+                      <span className="absolute start-2.5 top-2.5 rounded-full bg-paper-ink px-2.5 py-1 font-mono text-[0.6875rem] font-semibold text-paper">
                         {g.stackShort}
                       </span>
-                      <span className="absolute end-2.5 top-2.5 rounded-full bg-paper px-2 py-0.5 font-mono text-[0.6875rem] font-semibold text-paper-ink tabular">
+                      <span className="absolute end-2.5 top-2.5 rounded-full bg-paper-card px-2.5 py-0.5 font-mono text-[0.6875rem] font-bold text-paper-ink tabular">
                         {g.scanBefore.score} → {g.scanAfter.score}
                       </span>
                     </div>
@@ -865,72 +1188,85 @@ export function Gallery() {
                     <div className="flex flex-1 flex-col justify-between gap-2.5 p-4 pb-3">
                       <div>
                         <p
-                          className={`font-mono text-[0.6875rem] uppercase ${
-                            selected ? "text-paper/75" : "text-paper-ink-2"
+                          className={`font-mono text-[0.75rem] font-medium uppercase ${
+                            selected ? "text-action" : "text-paper-ink-2"
                           }`}
                         >
                           {g.ecosystem} · {g.mode}
                         </p>
-                        <p className="mt-1 font-semibold tracking-tight text-[0.98rem] leading-snug">
+                        <p className="mt-1 text-[1rem] leading-snug font-bold tracking-tight">
                           {g.title}
                         </p>
                       </div>
 
                       <div className="flex items-center justify-between gap-2 pt-1">
-                        <div className="flex items-center gap-1">
+                        <div className="flex items-center gap-1.5">
                           {g.palette.map((hex) => (
                             <span
                               key={hex}
                               style={{ backgroundColor: hex }}
-                              className="size-3.5 rounded-full border border-paper-line"
+                              className="size-4 rounded-full border border-paper-line"
                             />
                           ))}
                         </div>
                         <span
-                          className={`font-mono text-[0.6875rem] ${
-                            selected
-                              ? "text-action font-medium"
-                              : "text-paper-ink-2"
+                          className={`font-mono text-[0.75rem] font-semibold ${
+                            selected ? "text-action" : "text-paper-ink-2"
                           }`}
                         >
-                          {selected ? "● In stage" : "Compare ↑"}
+                          {selected ? "● Active" : "Compare ↑"}
                         </span>
                       </div>
                     </div>
                   </button>
 
                   <div
-                    className={`flex items-center justify-between gap-2 border-t px-4 py-2.5 font-mono text-[0.75rem] ${
+                    className={`flex items-center justify-between gap-2 border-t px-3.5 py-1.5 font-mono text-[0.75rem] ${
                       selected
-                        ? "border-paper/15 bg-paper/8"
-                        : "border-paper-line bg-paper"
+                        ? "border-line bg-void text-ink"
+                        : "border-paper-line bg-paper-2"
                     }`}
                   >
                     <a
                       href={g.liveAfter}
                       target="_blank"
                       rel="noreferrer"
-                      className={`inline-flex items-center gap-1.5 font-semibold underline-offset-4 hover:underline ${
+                      className={`inline-flex min-h-10 items-center gap-1.5 px-1 font-semibold underline-offset-4 hover:underline ${
                         selected ? "text-action" : "text-paper-ink"
                       }`}
                     >
-                      Open demo <PixelIcon name="external" size={9} />
+                      Open demo <PixelIcon name="external" size={10} />
                     </a>
                     <a
                       href={g.liveBefore}
                       target="_blank"
                       rel="noreferrer"
-                      className={`inline-flex items-center gap-1 underline-offset-4 hover:underline ${
-                        selected ? "text-paper/75" : "text-paper-ink-2"
+                      className={`inline-flex min-h-10 items-center gap-1.5 px-1 underline-offset-4 hover:underline ${
+                        selected ? "text-ink-muted" : "text-paper-ink-2"
                       }`}
                     >
-                      Default <PixelIcon name="external" size={9} />
+                      Default <PixelIcon name="external" size={10} />
                     </a>
                   </div>
                 </li>
               );
             })}
           </ul>
+
+          {!isFiltered && items.length > 6 ? (
+            <div className="mt-5 sm:hidden">
+              <button
+                type="button"
+                onClick={() => setShowAllSheet(!showAllSheet)}
+                className="flex min-h-12 w-full items-center justify-center gap-2 rounded-ctl border border-paper-ink bg-paper-card px-4 font-mono text-[0.8125rem] font-semibold text-paper-ink"
+              >
+                <PixelIcon name={showAllSheet ? "minus" : "plus"} size={12} />
+                {showAllSheet
+                  ? "Collapse contact sheet"
+                  : `Show all ${items.length} surfaces (+${items.length - 6} more)`}
+              </button>
+            </div>
+          ) : null}
         </div>
       </div>
     </section>

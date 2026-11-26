@@ -4,6 +4,13 @@
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width, initial-scale=1">
 <title>Vektor Edge · Midnight Avionics Telemetry Cockpit (with Pixelcraft)</title>
+  <meta name="description" content="Vektor Edge — SolidJS real-time avionics and edge telemetry board with direct-labeled sparklines, incident correlation, and WCAG contrast." />
+  <link rel="canonical" href="https://thanhnguyxnorg.github.io/Pixelcraft/gallery/dashboard/after.html" />
+  <meta property="og:type" content="website" />
+  <meta property="og:title" content="Vektor Edge · Midnight Avionics Telemetry Cockpit (with Pixelcraft)" />
+  <meta property="og:description" content="Vektor Edge — SolidJS real-time avionics and edge telemetry board with direct-labeled sparklines, incident correlation, and WCAG contrast." />
+  <meta property="og:url" content="https://thanhnguyxnorg.github.io/Pixelcraft/gallery/dashboard/after.html" />
+  <script type="application/ld+json">{"@context":"https://schema.org","@type":"WebApplication","name":"Vektor Edge · Midnight Avionics Telemetry Cockpit (with Pixelcraft)","description":"Vektor Edge — SolidJS real-time avionics and edge telemetry board with direct-labeled sparklines, incident correlation, and WCAG contrast.","url":"https://thanhnguyxnorg.github.io/Pixelcraft/gallery/dashboard/after.html","isPartOf":{"@type":"WebSite","name":"Pixelcraft Multi-Stack UI Gallery","url":"https://thanhnguyxnorg.github.io/Pixelcraft/"},"operatingSystem":"Web Browser"}</script>
 <link rel="stylesheet" href="../../fonts/gallery.css">
 <style>
   :root {
@@ -874,30 +881,119 @@
 
   /* Responsive below 1024px */
   @media (max-width: 1024px) {
+    .cockpit-shell {
+      grid-template-columns: minmax(0, 1fr);
+    }
     .upper-deck {
-      grid-template-columns: 1fr;
+      grid-template-columns: minmax(0, 1fr);
+    }
+    .pod,
+    .right-stack,
+    .scope-readout-block,
+    .scope-well,
+    .table-scroll {
+      min-width: 0;
+      max-width: 100%;
     }
     .scope-well {
       height: 248px;
     }
   }
 
-  @media (max-width: 680px) {
+  @media (max-width: 900px) {
+    .cockpit-shell {
+      grid-template-columns: minmax(0, 1fr);
+      padding: 12px 16px 18px;
+    }
+    .upper-deck {
+      grid-template-columns: minmax(0, 1fr);
+    }
+    .pod,
+    .right-stack,
+    .scope-well,
+    .scope-canvas,
+    .gauge-cell,
+    .table-scroll {
+      width: 100%;
+      max-width: 100%;
+      min-width: 0;
+    }
+    .command-strip,
+    .command-controls,
+    .switch-unit,
+    .segmented-rail {
+      flex-wrap: wrap;
+      max-width: 100%;
+      min-width: 0;
+    }
+  }
+
+  @media (max-width: 640px) {
     .command-strip {
-      padding: 10px 14px;
+      padding: 10px 12px;
+      gap: 8px 12px;
+    }
+    .brand-heading {
+      font-size: 18px;
+    }
+    .command-controls {
+      width: 100%;
+      gap: 8px 10px;
+    }
+    .live-cluster {
+      width: 100%;
+      justify-content: space-between;
+    }
+    .stream-toggle,
+    .seg-btn {
+      min-height: 34px;
     }
     .cockpit-shell {
-      padding: 12px 14px 18px;
+      padding: 10px 12px 18px;
+    }
+    .pod {
+      padding: 12px;
+    }
+    .scope-title-line {
+      flex-wrap: wrap;
+    }
+    .giant-readout {
+      font-size: 36px;
+    }
+    .freq-readout {
+      flex-wrap: wrap;
+      width: 100%;
+      justify-content: space-between;
+      gap: 8px;
+    }
+    .freq-item + .freq-item {
+      padding-left: 10px;
+    }
+    .scope-well {
+      height: 224px;
+    }
+    .pod-head-row {
+      flex-wrap: wrap;
     }
     .gauges-grid {
-      grid-template-columns: 1fr;
+      grid-template-columns: minmax(0, 1fr);
     }
     .pop-row {
-      grid-template-columns: 74px 98px 1fr 68px;
-      gap: 6px;
+      grid-template-columns: minmax(0, 1fr) auto auto;
+      gap: 8px 10px;
+    }
+    .pop-row .meter-track {
+      grid-column: 1 / -1;
+      order: 3;
+    }
+    .filter-bar {
+      width: 100%;
     }
     .filter-input {
       width: 100%;
+      flex: 1 1 180px;
+      min-width: 0;
+      min-height: 36px;
     }
   }
 
@@ -912,6 +1008,8 @@
       animation: none;
     }
   }
+
+  @media print { .pc-skip-link { display: none; } body { -webkit-print-color-adjust: exact; print-color-adjust: exact; } }
 </style>
 </head>
 <body>
@@ -1548,8 +1646,8 @@
   /* High-DPI Multi-Trace Oscilloscope Canvas Renderer */
   function drawOscilloscope() {
     const rect = canvas.parentElement.getBoundingClientRect();
-    const cssW = Math.max(320, Math.floor(rect.width));
-    const cssH = Math.max(200, Math.floor(rect.height));
+    const cssW = Math.max(220, Math.floor(rect.width));
+    const cssH = Math.max(180, Math.floor(rect.height));
     const dpr = Math.max(2, window.devicePixelRatio || 1);
 
     if (canvas.width !== cssW * dpr || canvas.height !== cssH * dpr) {
@@ -1561,11 +1659,12 @@
     ctx.scale(dpr, dpr);
 
     /* Plot geometry — reserve crisp right gutter for direct on-canvas trace labels */
-    const padL = 44;
-    const padR = 92;
+    const compact = cssW < 460;
+    const padL = compact ? 32 : 44;
+    const padR = compact ? 76 : 92;
     const padT = 18;
     const padB = 28;
-    const plotW = cssW - padL - padR;
+    const plotW = Math.max(60, cssW - padL - padR);
     const plotH = cssH - padT - padB;
     const maxMs = 100;
 
@@ -1591,13 +1690,13 @@
 
       ctx.fillStyle = ms === 80 ? TOKENS.statusFailing : TOKENS.inkSteel;
       ctx.textAlign = 'right';
-      ctx.fillText(`${ms}`, padL - 9, y);
+      ctx.fillText(`${ms}`, padL - (compact ? 6 : 9), y);
     }
 
     /* Y-axis unit tag */
     ctx.fillStyle = TOKENS.inkSteel;
     ctx.textAlign = 'left';
-    ctx.fillText('MS', 10, padT - 6);
+    ctx.fillText('MS', compact ? 6 : 10, padT - 6);
 
     /* Vertical time graticule & X-axis labels */
     const xLabels = WINDOW_LABELS[timeWindow()];
@@ -1611,6 +1710,7 @@
       ctx.lineWidth = 1;
       ctx.stroke();
 
+      if (compact && s > 0 && s < vSteps && s % 2 !== 0) continue;
       ctx.fillStyle = s === vSteps ? TOKENS.signalCyan : TOKENS.inkSteel;
       ctx.textAlign = s === 0 ? 'left' : s === vSteps ? 'right' : 'center';
       ctx.fillText(xLabels[s], x, cssH - 12);
@@ -1810,8 +1910,9 @@
 
   canvas.addEventListener('mousemove', (e) => {
     const rect = canvas.getBoundingClientRect();
-    const padL = 44;
-    const padR = 92;
+    const compact = rect.width < 460;
+    const padL = compact ? 32 : 44;
+    const padR = compact ? 76 : 92;
     const plotW = Math.max(1, rect.width - padL - padR);
     const relX = e.clientX - rect.left - padL;
     if (relX < 0 || relX > plotW) {
