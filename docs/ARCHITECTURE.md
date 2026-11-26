@@ -95,7 +95,7 @@ skills/<skill>/SKILL.md, references/, scripts/, assets/
 bin/pixelcraft.mjs             # zero-dependency CLI (add, list, doctor, remove, init-router, check, wizard)
 install.sh, install.ps1        # Node-free shell and PowerShell installers
 scripts/                       # validator, adapter builder, offline eval runner, and contract tests
-evals/                         # 26 behavioural eval guides + 71 multi-language JSON fixtures (26/26 skills)
+evals/                         # 26 behavioural eval guides + 72 multi-language JSON fixtures (26/26 skills)
 website/                       # multi-stack showcase site and 6-exhibit gallery capture scripts
 assets/                        # brand artwork and icons
 docs/ARCHITECTURE.md, docs/DESIGN-RATIONALE.md, docs/INSTALL.md

@@ -28,12 +28,12 @@ Python imports/entry points (`st.*`, `gr.*`, `rx.*`, NiceGUI `ui.*`, Dash callba
 
 ## Platform-wide rules
 
-- **Truthful freshness, timezone & SLA state**: every query/view exposes progress, cancellation/timeout recovery, **explicit display timezone (`UTC` vs local)**, and a **Data Freshness / SLA Staleness badge** (`Updated 12s ago` -> warning state when warehouse/stream lags SLA).
-- **Honest numeric & time-series fidelity**: enforce right-aligned `tabular-nums`, **True Minus `U+2212` (`−`)**, explicit unit headers (`$ USD`, `ms`, `%`), **strict visual separation between `0` (measured zero) and `null / — / N/A` (missing)**, and **`LTTB` / `Min-Max` envelope downsampling** (never naive `every-Nth` slicing) on `10k–1M+` time-series.
+- **Chart shell & interaction latency budgets**: render the **primary chart/dashboard shell in `< 1–2 s`** and keep **filter, hover, cross-filter, and brush responses within `100–200 ms`**; verify **concurrent multi-user session load** and **explicit query timeout + cancellation recovery** so slow warehouse queries never hang worker pools.
+- **Truthful freshness, source attribution & metric definitions**: every query/view exposes progress, **explicit display timezone (`UTC` vs local)**, a **Data Freshness / SLA Staleness badge** (`Updated 12s ago` -> warning when lagging SLA), **visible data source attribution**, and **inline/popover metric definitions** (formula, denominator, exclusions).
+- **Honest numeric, time-series & accessible chart fallbacks**: enforce right-aligned `tabular-nums`, **True Minus `U+2212` (`−`)**, explicit unit headers (`$ USD`, `ms`, `%`), **strict visual separation between `0` (measured zero) and `null / — / N/A` (missing)**, **`LTTB` / `Min-Max` envelope downsampling** on `10k–1M+` time-series, and a **screen-reader accessible data-table / text summary fallback + keyboard data-point navigation** for every chart.
 - **Enterprise grid & URL-serialized state**: drive large tables via **server-side indexed cursor/keyset pagination** (`WHERE (ts, id) < (:c_ts, :c_id)` rather than slow high-offset `OFFSET`) and serialize active filters, sorts, date windows, and views into **shareable URL query parameters**.
-- **OWASP CSV/XLSX export security & background streaming**: neutralize **CSV/XLSX Formula Injection** by escaping/prefixing string cells starting with `=`, `+`, `-`, `@`, `\t`, or `\r` before download so Excel/Sheets cannot trigger `DDE`/remote payload execution, and stream large exports asynchronously rather than blocking worker RAM.
-- **Safe internal-tool mutations**: enforce **RBAC + database Row-Level Security (RLS)**, require a **`Diff / Confirm` impact modal** (`Before -> After` field preview + affected row count) before bulk updates/deletes, and append every write to an immutable **Audit Log** (`actor`, `timestamp_utc`, `target`, `before -> after`).
-- **Strict session isolation**: secrets, uploaded files, warehouse results, and cache keys must never leak across concurrent sessions/users or into static client WASM bundles.
+- **OWASP CSV/XLSX security & PII masking/redaction**: neutralize **CSV/XLSX Formula Injection** by escaping/prefixing string cells starting with `=`, `+`, `-`, `@`, `\t`, or `\r`, **mask/redact PII by role on UI views, QA screenshots, and CSV/XLSX exports**, and stream large exports asynchronously rather than blocking worker RAM.
+- **Safe internal-tool mutations & session isolation**: enforce **RBAC + database Row-Level Security (RLS)**, require a **`Diff / Confirm` impact modal** (`Before -> After` field preview + affected row count) before bulk updates/deletes, append every write to an immutable **Audit Log** (`actor`, `timestamp_utc`, `target`, `before -> after`), and isolate session caches/uploads strictly across concurrent users.
 
 ## Anti-lazy-default & anti-slop guard
 
@@ -42,31 +42,31 @@ Python imports/entry points (`st.*`, `gr.*`, `rx.*`, NiceGUI `ui.*`, Dash callba
   - **Concurrent multi-user reactive apps & long-running tasks**: choose **Shiny** (`ExtendedTask`), **Panel** (HoloViz / Datashader million-point streaming), or **Dash** (enterprise AG Grid + clientside/background callbacks).
   - **Custom stateful web UI / full layout & auth control in Python**: choose **Reflex** or **NiceGUI**.
   - **Fast read-heavy BI reports & scheduled SQL publications**: choose **Observable Framework** or **Evidence** (static/pre-built SQL snapshots with instant loads).
-- **Reject untouched template slop**: do not ship default sidebar-filter dumps, unattributed KPI numbers without units/timezone/SLA freshness badges, naive `every-Nth` chart slicing, unescaped CSV exports, or unguarded bulk-delete buttons.
+- **Reject untouched template slop**: do not ship default sidebar-filter dumps, unattributed KPI numbers without units/source/metric definitions/SLA freshness badges, naive `every-Nth` chart slicing, unredacted PII exports, unescaped CSVs, or unguarded bulk-delete buttons.
 
 ## Common data-app failures
 
-- uncontrolled reruns or rebuilds wiping input and triggering expensive work;
+- uncontrolled reruns wiping input, primary chart shell stalling `> 2 s`, or concurrent multi-user load / slow queries exhausting workers without query timeouts;
 - hidden state keys or SQL parameters colliding across pages/users;
-- stale data presented without timezone or SLA freshness badge, or `null` coerced to `0`;
+- KPIs/charts missing source attribution, metric definitions, timezone, or SLA freshness badge, or `null` coerced to `0`;
+- canvas/SVG charts lacking screen-reader data-table/summary fallbacks or keyboard data-point traversal;
 - naive `every-Nth` downsampling hiding incident spikes, or `OFFSET 100000` pagination timing out;
-- CSV/XLSX exports vulnerable to `=CMD|...` formula injection in Excel/Sheets;
-- internal admin tools executing bulk SQL mutations without RBAC, `Diff / Confirm` preview, or Audit Log writes;
-- wide desktop layout unusable in narrow embedded contexts.
+- CSV/XLSX exports leaking unmasked PII or vulnerable to `=CMD|...` formula injection;
+- internal admin tools executing bulk SQL mutations without RBAC, `Diff / Confirm` preview, or Audit Log writes.
 
 ## Verification options
 
-DOM-backed frameworks can often be inspected in browser when the app runs, but visual verification requires actually launching them. Unit tests (`AppTest`, `nicegui.testing.User`, `testthat`, `pytest`) validate callbacks, SQL, CSV escaping, or RBAC (`static`) without proving rendering. Static data apps (Evidence, Observable, Shinylive, marimo/Panel WASM) need build inspection plus browser rendering (`rendered`). Label absence honestly.
+Unit tests (`AppTest`, `nicegui.testing.User`, `testthat`, `pytest`) validate callbacks, SQL, CSV escaping, PII masking, or RBAC (`static`) without proving visual or latency budgets (**Rule #0.3**: launch the app in a browser/runtime to measure `< 1–2 s` shell load, `100–200 ms` filter/brush response, keyboard/screen-reader table fallback, and concurrent/timeout behavior as `rendered` evidence). Label unavailable warehouse/load environments `not-checked`.
 
 ## Pre-submit checklist
 
 - [ ] zero `TODO`s, placeholder stubs, fabricated KPIs, or dead widget callbacks;
-- [ ] framework choice matches concurrency, rerun/DAG, and publishing needs (not a lazy Streamlit/Gradio default);
-- [ ] loading, empty, error, timeout/cancel, explicit timezone (`UTC`/local), and **Data Freshness / SLA Staleness badge** wired;
-- [ ] heavy filtering/downsampling runs lazily (SQL/DuckDB/Polars + **`LTTB` / `Min-Max`**) with **indexed keyset/cursor pagination** and **URL-serialized filters**;
-- [ ] numbers enforce right-aligned `tabular-nums`, **True Minus `U+2212` (`−`)**, unit headers, and strict **`0` vs `null / — / N/A`** separation;
-- [ ] CSV/XLSX exports neutralize formula injection (`=`, `+`, `-`, `@`, `\t`, `\r`), and internal writes enforce **RBAC/RLS**, **`Diff / Confirm` modal**, and immutable **Audit Log**;
-- [ ] live browser rendering (`rendered`) distinguished honestly from `AppTest`/`pytest`/build checks (`static`).
+- [ ] framework choice matches **concurrent multi-user load**, rerun/DAG, and publishing needs, with **`< 1–2 s` primary chart shell**, **`100–200 ms` filter/hover/brush response**, and **query timeout/cancel recovery** verified;
+- [ ] loading, empty, error, explicit timezone (`UTC`/local), **Data Freshness / SLA Staleness badge**, **visible data source attribution**, and **metric definitions** wired;
+- [ ] heavy filtering/downsampling runs lazily (`LTTB` / `Min-Max`) with **indexed keyset/cursor pagination**, **URL-serialized filters**, right-aligned `tabular-nums`, **True Minus `U+2212` (`−`)**, unit headers, and strict **`0` vs `null / — / N/A`** separation;
+- [ ] every chart provides a **screen-reader accessible data-table / text summary fallback + keyboard data-point navigation**;
+- [ ] **PII masking/redaction** verified on UI, QA screenshots, and exports; CSV/XLSX exports neutralize formula injection (`=`, `+`, `-`, `@`, `\t`, `\r`); internal writes enforce **RBAC/RLS**, **`Diff / Confirm` modal**, and immutable **Audit Log**;
+- [ ] **Checklist-Until-Passing Stop-Gate (`<HARD-GATE>`):** walk every checklist item above + run `slop-scan.mjs --fail-on p2`, `check-contrast.mjs`, runtime/query tests, and `check-acceptance.mjs .pixelcraft/acceptance.json` (`pixelcraft-review`) in a `Fix → Re-verify` loop until passing (`0` `fail`/`pending` rows, `rendered` evidence on visual/perf/a11y per `Rule #0.3`).
 
 ## Framework routing
 

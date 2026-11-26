@@ -35,12 +35,12 @@ No single rectangle is universally safe. Lock layout guides to exact pixel coord
 3. **YouTube `1280×720` thumbnails**: leave the bottom-right `~260×110 px` clear of words or faces for the duration timestamp badge;
 4. export a crop & overlay contact sheet (`1200×630` + `1000×500` box, `2:1`, `9:16` UI mask, and `25%` thumbnail scale) rather than inspecting only the raw 100% canvas.
 
-## Thumbnail legibility
+## Thumbnail legibility (`150–300 px` downscale check)
 
 Design at final dimensions, then verify scaled down:
 
-- one short headline or product name (typically <= 6–8 words);
-- test readability at **25–33% display size** (and ~160px width for YouTube/mobile feeds);
+- one short headline or product name (typically `<= 6–8` words);
+- test readability when downscaled to **`150–300 px` thumbnail width** (`25–33%` scale) in **both light and dark social feeds**;
 - prefer high x-height, sturdy weight, generous tracking, and strong foreground/background contrast;
 - avoid thin strokes, dense code screenshots, tiny chart axes, busy textures behind text, and legal footnotes;
 - use one dominant visual anchor: real product detail, simplified diagram, decisive metric, or recognizable mark;
@@ -62,10 +62,10 @@ Design at final dimensions, then verify scaled down:
 
 Anti-slop: centered logo over purple-blue gradient, floating glass browser chrome, random rocket/sparkle clip art, fake avatars, tiny feature checklists, and unrelated stock photos.
 
-## Verification matrix
+## Verification matrix & required deliverables
 
-- inspect exported file dimensions, MIME type, and exact byte count against target caps (WhatsApp <300 KB, GitHub <1 MB, YouTube <2 MB) (`static`);
-- inspect at 100%, 25–33% thumbnail scale, and light/dark feed backgrounds (`rendered`);
-- verify YouTube bottom-right safe zone and 2:1 / 1.91:1 / 1:1 crop overlays (`rendered`);
-- test target crawler/debugger previews (or explicitly label uninspected platforms `not-checked`);
+- inspect exported file dimensions, MIME type, exact byte count against target caps (WhatsApp/Zalo `< 300 KB`, GitHub `< 1 MB`, YouTube `< 2 MB`), and attach a complete **asset license table** (fonts, photos, icons, audio/music, AI provenance) (`static`);
+- inspect at `100%` and **`150–300 px` downscaled thumbnail width** on **both light and dark social feed backgrounds** (`rendered`);
+- verify YouTube bottom-right safe zone and `2:1` / `1.91:1` / `1:1` / `9:16` crop overlays (`rendered`);
+- capture **live share-debugger / unfurl previews (`Facebook`, `X`, `LinkedIn`, `Zalo`)** (`rendered`, or explicitly label unhosted/offline platforms `not-checked`);
 - confirm `og:image:alt`, `twitter:card`, absolute HTTPS URLs, and reproducible export preset (`static`).

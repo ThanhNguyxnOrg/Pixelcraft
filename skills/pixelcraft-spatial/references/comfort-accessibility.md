@@ -17,7 +17,7 @@ Use angular and physical ergonomics together (`physical size ≈ 2 × distance �
 | **Primary panel anchor** | **`1.2–2.0 m` depth**, angled **`5–15°` below the eye horizon** (natural resting neck/gaze posture; placing primary UI above horizon causes rapid cervical strain) |
 | **visionOS / spatial target floor** | **`>= 60×60 pt` (`dpt`)** interactive hit area with **`>= 12–16 pt` minimum edge spacing** (`>= 72–76 pt` center-to-center) for reliable eye-gaze + pinch targeting |
 | **"Gorilla-arm" prevention** | Support **relaxed lap-level indirect gaze-and-pinch / controller ray** for sustained sessions (`> 2 min`); reserve `0.4–0.6 m` direct mid-air poke strictly for brief optional physical manipulation |
-| **3-posture recentering** | Support **Seated**, **Standing**, **AND Lying-down / Reclined** (`up`-vector pitch tilt) recentering so users in bed, wheelchairs, or airplane seats can orient the workspace perpendicular to their gaze without fighting world gravity |
+| **4-posture recentering** | Support **Seated**, **Standing**, **Wheelchair** (reachable arm-arc & clearance without floor-crouch assumptions), **AND Lying-down / Reclined** (`up`-vector pitch tilt) recentering |
 | **Near boundary** | Keep sustained reading surfaces **`>= 0.5 m`** away to avoid vergence-accommodation conflict |
 
 ## Depth, layering, and real-room passthrough lighting QA
@@ -31,8 +31,9 @@ Use angular and physical ergonomics together (`physical size ≈ 2 × distance �
 - **Zero geometry or layout shift on eye-gaze hover**: when a user's eyes sweep across controls, **never scale, translate, expand, or reflow button bounds on hover**! Moving target edges under eye-gaze triggers involuntary corrective saccades, hover oscillation loops, and severe eye strain. Use **subtle OS-rendered specular/luminance `.hoverEffect()` highlights only**, deferring size/layout transitions until explicit pinch/click commit.
 - **Strict gaze privacy**: keep raw eye-tracking vectors inside the OS compositor hover boundary—never record covert gaze heatmaps or dwell biometrics without explicit opt-in clinical/research consent, and always provide controller/hand/voice parity when eye tracking is uncalibrated or denied.
 
-## Text legibility and XR accessibility
+## Interruption recovery, spatial captions & multi-user headset comfort QA
 
 - Use sturdy font weights (Regular/Medium+), generous leading, perpendicular/billboarded text planes, and native **compositor quad/cylinder layers** (`ViewAttachmentComponent`, `WebXR Layers`, `UStereoLayerComponent`) rather than double-sampled eye-buffer textures.
-- Provide **Seated / Standing / Reclined** posture modes, **one-handed** mode (never require simultaneous two-hand pinch-zoom as the only scale path), spatial audio **directional captions**, adjustable text/panel scale, and an always-reachable pause/exit action.
-- Label simulator-only checks honestly—stereo comfort, convergence, passthrough contrast, and `72/90/120 fps` thermal headroom require real headset `rendered` verification or `not-checked`.
+- **Accessibility & spatial audio cues**: provide **Seated / Standing / Wheelchair / Reclined** posture modes, **full one-handed mode** (zero mandatory two-hand chorded gestures without single-hand alternative), **world/lazy-anchored spatial captions AND directional visual edge/radar cues for spatial audio**, adjustable text/panel scale, and an always-reachable pause/exit action.
+- **Hardware & environment interruption states**: handle **tracking-lost, low-light hand-tracking fallback, small-room / stationary guardian boundary, and headset-removed / re-donned session pause & re-anchoring** cleanly without camera lurch or state loss.
+- **Multi-user physical headset comfort testing**: run comfort and legibility sessions across **multiple users spanning different heights, IPDs, glasses/prescription inserts, and motion-sensitivity profiles on physical headsets** (`rendered`—simulator previews never satisfy `Rule #0.3` for stereo comfort or thermal `72/90/120 fps` lock; mark unavailable hardware `not-checked`).

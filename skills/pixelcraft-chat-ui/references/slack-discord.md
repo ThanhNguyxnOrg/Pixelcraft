@@ -68,7 +68,8 @@ When a rich interactive experience (multiplayer canvas, collaborative board, gam
 
 | Do | Don't |
 |---|---|
-| Ack Slack & Discord interactions within 3 s and defer slow work | Wait on an LLM or DB call before sending HTTP 200 / defer |
+| Ack Slack & Discord interactions within `< 2–3 s`, defer slow work with async progress status, and deduplicate `X-Slack-Retry-Num` / `event_id` / `interaction.id` idempotently | Wait on an LLM/DB call before HTTP 200 or execute duplicate mutations on webhook retries |
+| Handle `message_changed` / `message_deleted` (`MESSAGE_UPDATE` / `MESSAGE_DELETE`) and return ephemeral usage guidance + pickers on invalid/missing command parameters | Crash when editing a deleted message or fail silently on incomplete slash/text commands |
 | Stream Slack AI Assistant replies with `chat.startStream`/`appendStream`/`stopStream` | Hammer `chat.update` on every token until rate-limited |
 | Use Slack native `table` and `rich_text` blocks + top-level fallback `text` | Render monospace ASCII tables that shatter on mobile |
 | Use Discord Components V2 `Section` + `Thumbnail` / `File` intentionally | Enable `IS_COMPONENTS_V2` and still pass ignored `content` / `embeds` |
@@ -76,4 +77,4 @@ When a rich interactive experience (multiplayer canvas, collaborative board, gam
 
 ## Verification
 
-Validate Block Kit / Discord JSON payloads before send, count UTF-8 characters accurately (especially localized labels approaching Slack's 75-char button limit), test 3 s timeout deferral and 15-minute expiry paths, and inspect desktop, mobile, light/dark themes, and fallback notifications (`rendered` where tested in real clients; `static` for JSON schema tests).
+Validate Block Kit / Discord JSON payloads before send, count UTF-8 characters accurately (especially localized labels approaching Slack's 75-char button limit), test `< 2–3 s` `ack` deferral, idempotent retry deduplication, edited/deleted message events, invalid-command guidance, and 15-minute expiry paths, and inspect desktop, mobile, light/dark themes, and fallback notifications (`rendered` where tested in real clients; `static` for JSON schema tests).

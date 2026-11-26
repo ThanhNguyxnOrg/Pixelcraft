@@ -18,10 +18,10 @@ Rules:
 
 ## Gmail / Google clients
 
-- **102 KB clipping ceiling (`< 80 KB` safety target)**: Gmail clips the `text/html` MIME part strictly at **102 KB** (`104,448` UTF-8 bytes including whitespace, MSO comments, and ESP click-tracking URL rewrites), replacing the bottom of the email with `[Message clipped] View entire message` and hiding legal/unsubscribe footers plus open pixels. Target **`< 80 KB` compiled HTML** before ESP link wrapping.
-- **`<style>` size limit (~8–16 KB)**: Gmail webmail drops `<style>` blocks exceeding ~16 KB (and Gmail mobile apps drop around ~8 KB); keep `<style>` minimal and inline critical properties.
-- **Full `<style>` stripping on syntax errors**: any unsupported rule or syntax error inside `<style>`—including Tailwind v4 `@layer`, native CSS nesting, `@property`, or unclosed declarations—causes Gmail to discard the **entire** `<style>` block.
-- **GANGA (Gmail Apps with Non-Google Accounts)**: IMAP/POP accounts opened in Gmail iOS/Android strip `<style>` blocks completely; layout, typography, spacing, and contrast must survive inline-only.
+- **102 KB clipping ceiling (`< 85–90 KB` pre-ESP target / `< 80 KB` ideal)**: Gmail clips the `text/html` MIME part strictly at **102 KB** (`104,448` UTF-8 bytes including whitespace, MSO comments, and ESP click-tracking URL rewrites), replacing the bottom of the email with `[Message clipped] View entire message` and hiding legal/unsubscribe footers plus open pixels. Keep **pre-ESP compiled HTML `< 85–90 KB`** so ESP link-wrapping never pushes final delivery over `102 KB`.
+- **`<style>` size limit (`<= 8–16 KB`)**: Gmail webmail drops `<style>` blocks exceeding `~16 KB` and Gmail mobile apps drop around `~8 KB`; keep `<style>` **`<= 8–16 KB`** and inline critical layout/color properties.
+- **Full `<style>` stripping on modern CSS (`@layer`, `@property`, CSS nesting)**: any unsupported at-rule or syntax inside `<style>`—specifically **`@layer`, `@property`, native CSS nesting (`& .child`), or unclosed declarations**—causes Gmail to discard the **entire** `<style>` block!
+- **`GANGA` (Gmail Non-Google Account IMAP/POP) survival**: IMAP/POP accounts opened in Gmail iOS/Android strip `<style>` blocks completely; verify by deleting `<style>` in QA that **layout structure AND `>= 4.5:1` contrast remain intact on inline CSS alone**.
 - **Image proxying & threading**: Gmail proxies remote images (requiring public HTTPS URLs) and groups threads; lead every message with clear subject, preheader, and opening live text.
 
 ## 3-Regime Dark Mode Matrix
@@ -82,7 +82,7 @@ Mailbox providers enforce strict protocol gates at the SMTP/inbox edge (especial
 | **Apple MPP analytics** | Apple Mail Privacy Protection pre-fetches tracking pixels via relay proxies regardless of whether the human opened the email | Measure **verified link clicks, conversions, and replies**; never trigger drip branches or purge lists solely from open pixels | Never use open pixels as delivery/read proof for legal or billing notices |
 | **BIMI (optional brand trust)** | Enforced `DMARC` (`p=quarantine` or `p=reject`), square **SVG Tiny-PS** logo over HTTPS, and **VMC** / **CMC** certificate | Recommended | Recommended |
 
-## Preheaders and interactive extensions
+## Preheaders, merge-tag fallbacks & interactive extensions
 
 - **Preheader zero-width padding (`50–90` repeats / `~140+` chars)**: keep preview text concise (`40–90` chars) and follow it with **50–90 repeats** of `&#847;&zwnj;&nbsp;` (`~150–270` invisible characters). Repeating only 3–5 times pads ~12 characters and leaks `"View in browser"` or header `alt` text into 120–140 character inbox snippets:
 
@@ -92,21 +92,22 @@ Mailbox providers enforce strict protocol gates at the SMTP/inbox edge (especial
 </div>
 ```
 
+- **Personalization merge-tag fallbacks**: guard every recipient variable (`{{ first_name | default: "there" }}`, Handlebars `{{#if firstName}}Hi {{firstName}},{{else}}Hello,{{/if}}`, or typed React Email props defaults) and test against a null/empty profile fixture so literal `{{name}}` or `"Hi ,"` never ships.
 - **AMP for Email (`text/x-amp-html`)**: optional third MIME part (`text/plain`, `text/html`, `text/x-amp-html`) for interactive state in Gmail/Yahoo/Mail.ru. Requires SPF/DKIM/DMARC + sender approval, expires after ~30 days, and is ignored by Apple Mail and Outlook—always preserve full functional parity in `text/html` and `text/plain`.
 
-## Email accessibility rules
+## Email accessibility & link-copy rules
 
 - Set `lang="en"` (or exact BCP-47 locale) and `dir="ltr"` / `"rtl"` on `<html>` AND repeat `dir` on the main container table (some webmail clients strip `<html>` attributes).
 - Include a descriptive `<title>` (announced by screen readers in webmail and browser views).
 - Add `role="presentation"` (or `role="none"`) to **every** layout `<table>` so assistive technologies do not announce table row/column grids; leave real tabular data tables with semantic `<th>` headers and no `role="presentation"`.
 - Mark decorative spacer cells, zero-width preheader blocks, and visual dividers with `aria-hidden="true"`, and set `alt=""` on purely decorative images.
-- Use real semantic headings (`<h1>`–`<h3>`) and `<p>` elements with inline typography instead of raw `<td>` text blocks or deprecated `<font>` tags.
+- Use real semantic headings (`<h1>`–`<h3>`), `<p>` elements with inline typography, and **descriptive anchor text (`"Download Invoice #2026-041"`, never `"click here"` or bare tracking URLs)**.
 
 ## Image blocking and plaintext parity
 
 - Assume images may never load: essential copy, CTA, dates, amounts, and links must be live HTML text; alt text must convey meaning rather than filenames.
-- Plaintext (`text/plain`) is a first-class surface: preserve reading order, absolute URLs, dates/time zones, legal/preference/unsubscribe links, and clear section breaks generated from the same data model as HTML.
+- Plaintext (`text/plain`) is a first-class surface: preserve reading order, absolute URLs, dates/time zones, merge-tag fallbacks, legal/preference/unsubscribe links, and clear section breaks generated from the same data model as HTML.
 
 ## Verification matrix
 
-Record: client/app/version (**New Outlook** vs **Classic Outlook**, Gmail Web/iOS/Android, Apple Mail), OS/device, all 3 dark-mode regimes, images on/off, viewport width, zoom/text size, HTML byte size vs `< 80 KB` target / `102 KB` cap, plaintext parity, forwarded/quoted behavior, `RFC 8058` / `SPF` / `DKIM` / `DMARC` headers, and accessibility inspection. Label untested clients `not-checked`; never claim universal compatibility.
+Record: client/app/version (**New Outlook** vs **Classic Outlook**, Gmail Web/iOS/Android + **`GANGA` `<style>`-stripped IMAP/POP**, Apple Mail), OS/device, all 3 dark-mode regimes, images on/off, null-merge-tag fallback test, viewport width, zoom/text size, pre-ESP HTML byte size vs **`< 85–90 KB` target** / `102 KB` cap, `<style>` `<= 8–16 KB` (`0` `@layer`/`@property`/nesting), plaintext parity, `RFC 8058` / `SPF` / `DKIM` / `DMARC` headers, and accessibility inspection (`rendered` vs `static` vs `not-checked`).

@@ -6,7 +6,7 @@
   "siteUrl": "https://thanhnguyxnorg.github.io/Pixelcraft/",
   "totalSkills": 26,
   "totalReferences": 247,
-  "totalScripts": 9,
+  "totalScripts": 10,
   "canonicalAgents": [
     "claude",
     "codex",
@@ -78,7 +78,7 @@
   "scanExtensionCount": 59,
   "totalEvalGuides": 26,
   "totalEvalCases": 72,
-  "totalEvalFixtures": 71,
+  "totalEvalFixtures": 72,
   "totalGalleryExhibits": 22,
   "exhibitIds": [
     "booking",
@@ -799,6 +799,7 @@
         "polish"
       ],
       "scripts": [
+        "check-acceptance.mjs",
         "slop-scan.mjs"
       ]
     },

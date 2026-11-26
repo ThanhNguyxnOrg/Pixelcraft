@@ -29,10 +29,10 @@ Inspect `package.json`, `Cargo.toml`, `go.mod`, `Gemfile`, `composer.json`, `pyp
 
 ## Platform-wide rules
 
-- **Post-tag mobile budgets**: verify **after** real analytics/GTM/pixels/chat scripts are active on simulated mid-tier mobile—Lighthouse Mobile **Perf ≥ 90, A11y ≥ 95, Best Practices ≥ 95, SEO ≥ 95**; Core Web Vitals **LCP < 2.5 s, INP < 200 ms, CLS < 0.10**. Isolate 3rd-party scripts off the main thread (Cloudflare Zaraz / Partytown) or behind interaction/Consent Mode v2 facades with zero banner CLS.
+- **Post-tag 3-run median budgets & initial payload caps**: verify **after** real analytics/GTM/pixels/chat scripts are active—**3-run median Lighthouse** under 4G throttling (**Perf ≥ 90, A11y ≥ 95, Best Practices ≥ 95, SEO ≥ 95**) on **both mobile and desktop for every primary template**, Core Web Vitals **LCP < 2.5 s, INP < 200 ms, CLS < 0.10**, **Long Animation Frames (`LoAF`)** clean on scroll/drag, **`<= 3 Hz` flash cap** (`WCAG 2.3.1`), and **Network waterfall capture on the heaviest page**. Enforce initial compressed JS+CSS payload budgets by surface class (**Content/editorial `<= 150–250 KB`**; **Dashboard/app `<= 250–450 KB`**; **Promotional/rich experience `<= 350–700 KB`**; **Embedded widget `<= 100–200 KB`**—noting the `~3.1 MB / 103 req` showcase median is a cost calibration benchmark, NOT an acceptable budget). Isolate 3rd-party scripts off the main thread (Cloudflare Zaraz / Partytown) or behind interaction/Consent Mode v2 facades with zero banner CLS.
 - **Typography, cascade & print/recovery**: self-host `<= 2–3` subsetted `.woff2` files with `@font-face` fallback metric overrides (`size-adjust`, `ascent-override`, `descent-override`, `line-gap-override`); structure CSS with `@layer` and logical properties (`margin-inline`, `inset-block`) without `!important` sprawl; render a first-focusable **Skip to main content** link; ship branded `404`/`500` recovery routes and a `@media print` stylesheet for articles, docs, receipts, and invoices.
-- **Viewport & short-laptop fold**: verify across `360 / 390 / 768 / 1024 / 1280 / 1440 / 1920+` (`svh`/`dvh`, `env(safe-area-inset-*)`, `clamp()`) **and** scaled 13–14" Windows laptops (`1280×620` / `1366×650` at `125%–150%` OS scale) so the above-the-fold headline + primary CTA stay visible without awkward clipping.
-- **SEO, migration, CDN & security headers**: ship per-route `<title>`/description/canonical, `sitemap.xml`, `robots.txt`, JSON-LD, `hreflang` + `x-default`, legacy redesign `301` redirect maps (`0` broken/orphan links), SSR/SSG semantic HTML + `/llms.txt`, `1200×630` HTTPS JPEG/PNG `og:image` cards (Zalo/Slack/iMessage/FB safe—never SVG/WebP-only), `immutable` asset caching (`private, no-store` on auth routes), and CSP/HSTS/`nosniff`/`Referrer-Policy`/`Permissions-Policy`/`frame-ancestors`.
+- **Viewport, short-laptop fold & cross-browser matrix**: verify across `360 / 390 / 768 / 1024 / 1280 / 1440 / 1920+` (`svh`/`dvh`, `env(safe-area-inset-*)`, `clamp()`), scaled 13–14" Windows laptops (`1280×620` / `1366×650` at `125%–150%` OS scale) so the above-the-fold headline + primary CTA stay visible without clipping, and attach deliverable evidence across **`Chrome`, `Firefox`, `Edge`, `Safari macOS`, real `Safari iOS`, and `Chrome Android`**.
+- **SEO, migration, CDN, security headers & deployment safety**: ship per-route `<title>`/description/canonical, `sitemap.xml`, `robots.txt`, JSON-LD, `hreflang` + `x-default`, legacy redesign `301` redirect maps (`0` broken/orphan links), SSR/SSG semantic HTML + `/llms.txt`, `1200×630` HTTPS JPEG/PNG `og:image` cards (Zalo/Slack/iMessage/FB safe—never SVG/WebP-only), `immutable` asset caching (`private, no-store` on auth routes), CSP/HSTS/`nosniff`/`Referrer-Policy`/`Permissions-Policy`/`frame-ancestors`, **PR preview deployments**, and a documented **production rollback plan**.
 - **SaaS, checkout & CMS resilience**: keep search/filter/sort/page/tab/drawer IDs in the URL; sync sign-out and workspace/tenant switches across tabs (`BroadcastChannel`/`storage`); cancel stale fetches (`AbortController`); lock mutations synchronously with `Idempotency-Key`; preserve dirty drafts across `401` session expiry; guard single-key hotkeys inside inputs/contenteditable/IME and use Safe-Triangle submenu corridors; sanitize Word/Docs CMS paste and auto-transcode `10–15 MB` uploads with focal-point crops + Draft Live Preview.
 
 ## Anti-lazy / do-not-hand-roll guard
@@ -49,24 +49,24 @@ Inspect `package.json`, `Cargo.toml`, `go.mod`, `Gemfile`, `composer.json`, `pyp
 
 - centered hero + eyebrow + two CTAs + three cards regardless of content, or primary CTA pushed below a `1280×620` scaled-laptop fold;
 - `div`/`span` buttons, missing **Skip to main content** link, or unguarded single-key hotkeys firing while typing in inputs/IME;
-- hydration delay, main-thread 3rd-party pixels/chat widgets tanking INP, or late cookie banners shifting CLS;
+- hydration delay, main-thread 3rd-party pixels/chat widgets tanking INP/`LoAF`, or late cookie banners shifting CLS;
 - infinite scroll without position recovery, trapped memory-only filters/drawers, or stale search responses overwriting newer queries;
 - multi-tab tenant drift after workspace switch/sign-out, double-charge submits without `Idempotency-Key`, or `401` redirects wiping form drafts;
 - modal/dropdown focus escaping, dark mode via CSS filter inversion, or untouched `shadcn/ui` defaults.
 
 ## Verification options
 
-Be explicit with evidence labels (`rendered`, `static`, `model-judgment`, `not-checked`, `waived`). Browser rendering, screenshots, DOM/accessibility trees, axe scans, Playwright/Vitest Browser Mode/Storybook tests, Lighthouse, responsive emulation, and network throttling provide `rendered` evidence; builds, typechecks, and `jsdom` tests are `static` (or DOM-unit) evidence only and cannot prove visual quality.
+Be explicit with evidence labels (`rendered`, `static`, `model-judgment`, `not-checked`, `waived`) and enforce **Evidence Rule #0.3** (`static`/`model-judgment` never counts as `pass` for visual, performance, or interactive-a11y rows). Browser rendering, screenshots, DOM/accessibility trees, axe scans, Playwright/Vitest Browser Mode/Storybook tests, 3-run Lighthouse, `LoAF`/Network waterfall traces, responsive emulation, and real devices provide `rendered` evidence; builds, typechecks, and `jsdom` tests are `static` (or DOM-unit) evidence only.
 
 ## Pre-submit checklist
 
 - [ ] zero `TODO`s, placeholder stubs, invented copy/metrics, or dead click/form handlers;
-- [ ] post-tag mobile Lighthouse (`Perf ≥ 90`, `A11y/BP/SEO ≥ 95`) and CWV (`LCP < 2.5s`, `INP < 200ms`, `CLS < 0.1`) met with 3rd-party facades/Consent Mode v2 and subsetted metric-matched `.woff2` fonts;
+- [ ] **3-run median Lighthouse** under 4G throttling (`Perf ≥ 90`, `A11y/BP/SEO ≥ 95`) on mobile + desktop per primary template, CWV (`LCP < 2.5s`, `INP < 200ms`, `CLS < 0.1`), `LoAF` scroll/drag trace, Network waterfall on heaviest page, and initial compressed JS+CSS budget (`<= 150–250 KB` content, `<= 250–450 KB` app, `<= 350–700 KB` rich, `<= 100–200 KB` widget) met;
 - [ ] all state-matrix rows wired (URL-synced filters/drawers, `AbortController` race cancellation, `BroadcastChannel` multi-tab auth/tenant sync, `Idempotency-Key` submit lock, `401` draft preservation);
-- [ ] Skip-to-main link, native HTML semantics, keyboard/focus restoration, single-key hotkey input/IME guard, logical properties, WCAG 2.2 AA contrast, branded `404`/`500`, and `@media print` verified;
-- [ ] `prefers-reduced-motion`, `prefers-color-scheme`, forced-colors, `360–1920+` widths, and `1280×620` / `1366×650` scaled-laptop fold checked;
-- [ ] SEO/canonical/JSON-LD/`hreflang`+`x-default`/`/llms.txt`/`301` redirect map, `1200×630` HTTPS JPEG/PNG OG cards, CDN cache headers, and HTTP security headers verified;
-- [ ] `slop-scan` (`pixelcraft-review`) and rendered browser QA (`pixelcraft-visual-qa`) run with honest evidence labels (`rendered`, `static`, `not-checked`).
+- [ ] Skip-to-main link, native HTML semantics, keyboard/focus restoration, single-key hotkey input/IME guard, `<= 3 Hz` flash cap, logical properties, WCAG 2.2 AA contrast, branded `404`/`500`, and `@media print` verified;
+- [ ] `prefers-reduced-motion`, `prefers-color-scheme`, `forced-colors`, `360–1920+` widths, `1280×620` / `1366×650` scaled-laptop fold, and cross-browser/device deliverables (`Chrome`, `Firefox`, `Edge`, `Safari macOS`, real `Safari iOS`, `Chrome Android`) verified or labeled `not-checked`;
+- [ ] SEO/canonical/JSON-LD/`hreflang`+`x-default`/`/llms.txt`/`301` redirect map, `1200×630` HTTPS JPEG/PNG OG cards, CDN cache & security headers, PR preview deployment, and rollback plan verified;
+- [ ] **Checklist-Until-Passing Stop-Gate (`<HARD-GATE>`):** walk every checklist item above + run `slop-scan.mjs --fail-on p2`, `check-contrast.mjs`, browser QA (`pixelcraft-visual-qa`), and `check-acceptance.mjs .pixelcraft/acceptance.json` (`pixelcraft-review`) in a `Fix → Re-verify` loop until passing (`0` `fail`/`pending` rows, `rendered` evidence on visual/perf/a11y per `Rule #0.3`).
 
 ## Framework and stack routing
 

@@ -38,23 +38,23 @@ Start with the judgment the reader must make and expose its comparison baseline,
 | Concern | Rule |
 |---|---|
 | truthfulness & downsampling | Never fabricate data, truncate magnitude bars, or downsample `10k–1M+` time-series with naive `every-Nth` slicing that erases incident spikes—use **`LTTB` (Largest-Triangle-Three-Buckets)** or **`Min-Max` pixel envelopes**, re-querying raw detail on zoom. |
+| latency & query resilience | Render the **primary chart shell in `< 1–2 s`**, keep **filter, hover, cross-filter, and brush responses within `100–200 ms`**, and handle **concurrent multi-user load + explicit query timeouts/cancellation** cleanly without frozen spinners. |
 | numeric semantics & `0` vs `null` | Enforce `font-variant-numeric: tabular-nums`, **True Minus `U+2212` (`−`)** on negative values, right-aligned numeric columns, explicit unit headers (`$ USD`, `ms`, `%`), and **strict visual separation between measured `0` and missing `null / — / N/A`** (break lines or render muted `—`; never coerce `null` to `0`). |
-| temporal truth & SLA freshness | Display explicit timezone (`UTC` vs local IANA zone) on every time axis/timestamp and surface a **Data Freshness / SLA Staleness badge** (`Updated 12s ago` escalating to warning/stale state when ingestion lags SLA). |
-| baseline | Bar/area magnitude charts include zero unless an explicit indexed/delta baseline is labeled; line charts may use nonzero scales only when labeled. |
-| color & monochrome | Color never carries meaning alone; pair Okabe–Ito / Viridis palettes with direct labels, dash style, shape, or pattern so charts survive grayscale/CVD. |
-| interaction & export safety | Hover/tooltips are progressive enhancement. Neutralize **OWASP CSV/XLSX formula injection** (`=`, `+`, `-`, `@`, `\t`, `\r` prefixes) on every downloadable table/chart export. |
-| accessibility | Every chart ships a concise text takeaway plus an accessible data table/summary and composite keyboard navigation (`<= 1` Tab stop + arrow keys). |
+| provenance, definitions & SLA freshness | Display **visible data source attribution**, **metric definitions** (formula, scope, exclusions), explicit timezone (`UTC` vs local IANA zone), and a **Data Freshness / SLA Staleness badge** (`Updated 12s ago` escalating to warning/stale state when ingestion lags SLA). |
+| baseline & monochrome | Bar/area magnitude charts include zero unless an explicit indexed/delta baseline is labeled; color never carries meaning alone—pair Okabe–Ito / Viridis palettes with direct labels, dash style, shape, or pattern so charts survive grayscale/CVD. |
+| PII redaction & export safety | Hover/tooltips are progressive enhancement. **Mask/redact PII on chart tooltips, QA screenshots, and downloadable CSV/XLSX exports**, and neutralize **OWASP CSV/XLSX formula injection** (`=`, `+`, `-`, `@`, `\t`, `\r` prefixes). |
+| accessibility | Every chart ships a **screen-reader accessible data-table / text summary fallback** plus **composite keyboard data-point navigation** (`<= 1` `Tab` stop + arrow keys across series/points). |
 
 ## Anti-slop warnings
 
-Avoid the default analytics collage: four KPI cards with invented deltas, a gradient area chart, a donut with unreadable slices, a purple-blue palette, unexplained "live" badges without SLA timestamps, naive `every-Nth` downsampled lines hiding outages, `null` plotted as `0`, and legends forcing constant eye travel. Distinctiveness belongs in editorial judgment, annotation quality, composition, and domain-specific emphasis—not in distorting evidence.
+Avoid the default analytics collage: four KPI cards with invented deltas, unattributed metrics without definitions or source provenance, a gradient area chart, a donut with unreadable slices, a purple-blue palette, unexplained "live" badges without SLA timestamps, naive `every-Nth` downsampled lines hiding outages, `null` plotted as `0`, and legends forcing constant eye travel. Distinctiveness belongs in editorial judgment, annotation quality, composition, and domain-specific emphasis—not in distorting evidence.
 
 ## Pre-submit checklist
 
-- [ ] analytical question, unit (`$ USD`, `ms`, `%`), population, filter, explicit timezone (`UTC` vs local), and **Data Freshness / SLA Staleness badge** are visible;
-- [ ] dense time-series (`10k–1M+` points) use **`LTTB`** or **`Min-Max` envelopes** rather than spike-erasing `every-Nth` slicing;
+- [ ] analytical question, unit (`$ USD`, `ms`, `%`), **visible data source attribution**, **metric definitions**, explicit timezone (`UTC` vs local), and **Data Freshness / SLA Staleness badge** are visible;
+- [ ] **primary chart shell `< 1–2 s`**, **filter/hover/brush response `100–200 ms`**, **concurrent multi-user load + query timeout recovery**, and **`LTTB` / `Min-Max`** dense downsampling verified;
 - [ ] numeric columns/labels enforce `tabular-nums`, right alignment, **True Minus `U+2212` (`−`)**, and strict **`0` vs `null / — / N/A`** distinction;
 - [ ] direct labels or annotations carry the primary reading path; palette is CVD/grayscale-safe with redundant non-color encoding;
-- [ ] CSV/XLSX data exports escape leading `=`, `+`, `-`, `@`, `\t`, `\r` against formula injection;
-- [ ] text alternative, synchronized data table, and composite keyboard/screen-reader paths exist;
-- [ ] final claims separate `rendered` evidence (at real cardinality) from `static` inspection or `not-checked`.
+- [ ] **PII masking/redaction** enforced on screenshots and exports, and CSV/XLSX exports escape leading `=`, `+`, `-`, `@`, `\t`, `\r` against formula injection;
+- [ ] **screen-reader accessible data-table / text summary fallback + keyboard data-point navigation** verified;
+- [ ] **Checklist-Until-Passing Stop-Gate (`<HARD-GATE>`):** walk every checklist item above + run `slop-scan.mjs --fail-on p2`, `check-contrast.mjs`, and `check-acceptance.mjs .pixelcraft/acceptance.json` (`pixelcraft-review`) in a `Fix → Re-verify` loop until passing (`0` `fail`/`pending` rows, `rendered` evidence at real cardinality per `Rule #0.3`).

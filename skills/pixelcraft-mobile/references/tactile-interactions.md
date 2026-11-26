@@ -21,16 +21,18 @@ Use this reference alongside the target mobile framework guide (`swiftui.md`, `u
 | **React Native / Expo** | `@gorhom/bottom-sheet` + `keyboardDismissMode="interactive"` + `react-native-keyboard-controller` | Reanimated 4 `withSpring(target, { velocity: event.velocityY, damping: 22, stiffness: 240 })` on UI thread |
 | **LynxJS** | Custom sheet `<view>` driven by MTS | Handle `main-thread:bindtouchmove` / `touchend` spring physics with release velocity on main thread; sync state via `runOnBackground` |
 
-## Performance physics: cold start & `120fps` ProMotion (`< 8.33 ms`/frame)
+## Performance physics: cold start, `120fps` ProMotion, memory leaks & energy
 
-- **Cold start budget**: target **`< 800 ms–1.2 s`** (hard ceiling `< 2.0 s` TTID) on mid-tier hardware via Android **Baseline Profiles** (`androidx.profileinstaller`), lazy TurboModules, and deferring non-essential analytics/attribution SDK boot until after first interactive frame.
+- **Cold start & install-size ceiling**: target **`< 800 ms–1.2 s`** (hard ceiling `< 2.0 s` TTID) on mid-tier hardware via Android **Baseline Profiles** (`androidx.profileinstaller`), lazy TurboModules, and deferred analytics/attribution SDK boot; enforce an agreed **install-size ceiling** (e.g., **`<= 50–80 MB`** store download via App Thinning, Android App Bundles `.aab`, and asset stripping).
 - **`120fps` ProMotion & high-refresh parity**: unlock `120 Hz` animations on iOS by setting `<key>CADisableMinimumFrameDurationOnPhone</key><true/>` in `Info.plist`, and keep all scroll, sheet, shared-element, and keyboard-tracking animations strictly on the native UI/Render/Impeller thread (`< 8.33 ms` frame budget)—never couple scroll or pan frames to JS-bridge round-trips or main-thread JSON parsing.
+- **20–30× flow repetition memory-leak & energy checks**: repeat the primary navigation/creation/sheet/camera flow **20–30× consecutively** under **`LeakCanary`** (Android) and **Xcode `Instruments` Allocations/Leaks** (iOS) verifying flat steady-state heap with zero retained `Activity`/`Fragment`/`UIViewController` leaks; verify **Xcode Energy Impact** and **Android Battery Historian / Studio Energy Profiler** show zero runaway wake locks, GPS polling, or background timer drain.
 
-## Thumb-zone ergonomics & gesture conflict avoidance
+## Thumb-zone ergonomics, gesture safety & cross-platform split
 
 - Place high-frequency navigation and primary commitment actions in the lower reachable third on tall phones, reserving top bars for orientation, back navigation, and secondary overflow actions.
-- Keep touch targets ≥ `44×44 pt` (iOS) / `48×48 dp` (Android) with ≥ `8 pt/dp` separation between destructive and safe sibling actions.
-- Never attach custom horizontal edge swipes inside the OS back-gesture zone (iOS left-edge swipe back, Android predictive back edges); inset horizontal carousels or provide explicit Previous/Next controls.
+- Keep touch targets ≥ `44×44 pt` (iOS) / `48×48 dp` (Android) with **`>= 8 pt/dp` minimum spacing** between destructive actions and safe sibling controls, and always provide an **explicit visible `Close` button on bottom sheets**.
+- **Zero custom horizontal swipe gestures inside OS back-gesture edge zones** (iOS left-edge swipe back, Android left+right predictive back edge gutters); inset horizontal carousels/sliders or provide explicit Previous/Next buttons.
+- **Documented shared-vs-platform-native UI split**: on cross-platform stacks (Flutter, React Native/Expo, Kotlin Multiplatform, `.NET MAUI`), explicitly document which surfaces share cross-platform UI and which render platform-native chrome (navigation bars, sheets, pickers, share/auth dialogs, haptics, Live Activities/Widgets) so neither OS feels like a foreign port.
 
 ## 4-tier contextual haptics (restraint over noise)
 
@@ -45,9 +47,9 @@ Trigger haptics strictly across four semantic tiers—**never** buzz on routine 
 
 Honor system haptic and reduced-motion preferences; degrade silently on hardware without a linear resonant actuator, and never use haptics as the sole confirmation without visible/accessible feedback.
 
-## Swipe-to-act, OS process-death restoration & production stability
+## Swipe-to-act, OS process-death, rollout gates & 3-tier device deliverables
 
 - Every swipe action on a list row (archive, pin, delete) must also be reachable via row detail, context menu, or accessibility custom actions (SwiftUI `.accessibilityAction(named:)`, Compose `CustomAccessibilityAction`, Flutter `Semantics(customSemanticsActions:)`, RN `accessibilityActions`), paired with an immediate `Undo` snackbar above the home indicator / tab bar.
 - **Survive OS background process death**: mobile OSes routinely evict backgrounded apps under camera/game RAM pressure. Test explicitly with `adb shell am kill <package>` (while backgrounded) and Xcode background termination—restoring route stack, selected entity IDs, scroll context, and dirty form drafts via `SavedStateHandle` + `rememberSaveable`, `@SceneStorage` / SwiftData, `NSUserActivity`, `RestorationMixin`, or persisted router state.
-- **Offline mutation queue & crash-free bar**: persist queued offline writes with visible `Pending sync` + retry/conflict UI; maintain **`>= 99.5%` crash-free sessions** and **`0` ANRs** backed by automated CI uploads of iOS **dSYMs** and Android **R8/ProGuard mappings + NDK symbols**.
-- **Real-device & Dynamic Type QA matrix**: verify at default and **`200%` (`AX3+`)** font scales (reflowing horizontal pairs into vertical stacks without fixed-height clipping) across **`>= 2` physical iOS devices** and **`>= 3` physical Android devices** spanning Pixel + OEM skins (Samsung One UI, Xiaomi HyperOS / OPPO ColorOS) with both **VoiceOver** and **TalkBack**.
+- **Offline queue, crash-free bar & staged rollout / force-update gate**: persist queued offline writes with visible `Pending sync` + retry/conflict UI; maintain **`>= 99.5%` crash-free sessions** and **`0` ANRs** backed by automated CI uploads of iOS **dSYMs** and Android **R8/ProGuard mappings + NDK symbols**; ship **staged store rollouts** (`1% → 5% → 20% → 100%`) plus a server-driven **force-update / minimum-supported-version gate** so breaking API migrations fail safely with an upgrade prompt rather than crashing older binaries.
+- **3-tier real-device matrix & required deliverables**: verify at default and **`200%` (`AX3+`)** font scales across **(iOS)** `compact 4.7–5.4"` + `standard` + `Pro Max/Plus` and **(Android)** `low-RAM 3–4 GB` + `mid-tier` + `flagship` (spanning Pixel + Samsung One UI + Xiaomi/OPPO OEM skins) across **both oldest and newest supported OS versions**, delivering frame/startup/memory/energy profiler traces, install-size report, crash-free symbolication proof, and **VoiceOver + TalkBack** screen-reader walkthrough recordings (`rendered`).

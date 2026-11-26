@@ -26,16 +26,16 @@ For browser audio/video players and Web Audio DSP (`hls.js`, Shaka, Vidstack, Me
 
 1. **Define placement.** Identify exact platforms/unfurlers, card type, feed context, static or animated media, localization, caption requirements, cache/update cadence, and click intent.
 2. **Lock frame and pixel safe zones.** Keep `1200×630` (`1.91:1`) headlines/logos inside the **center `1000×500` safe box**, and keep `1080×1920` (`9:16`) vertical video copy clear of **`top >= 150–220 px`, `bottom >= 320–420 px`, and `right >= 120–160 px`** host UI rails.
-3. **Reduce the message.** Use the minimum truthful content (`<= 6–8` words): product/name, one concrete claim or artifact, and recognizable visual evidence legible at `25%` thumbnail scale.
+3. **Reduce the message.** Use the minimum truthful content (`<= 6–8` words): product/name, one concrete claim or artifact, and recognizable visual evidence legible when downscaled to **`150–300 px` thumbnail width** in both light and dark social feeds.
 4. **Ship unfurler-safe formats & `0.0s` video posters.** Serve absolute `https://` **PNG or JPEG** (`< 300 KB` for WhatsApp/Zalo, `< 1 MB` general, fast crawl TTFB) because SVG (`og:image`) is rejected universally and WebP still fails in legacy enterprise/chat unfurlers; render a legible **`0.0s` poster frame** and normalize social/web audio to **`-14 LUFS` (`-1.5 dBTP`)**.
-5. **Verify in context.** Inspect at 100%, `25–33%` thumbnail scale, dark/light feed surrounds, crop overlays, `ffprobe` metadata (`static`), and rendered frames (`rendered`).
+5. **Verify in context & attach deliverables.** Inspect at `100%`, **`150–300 px` downscaled thumbnail crops** on both light and dark feed backgrounds, **live share-debugger preview captures (`Facebook`, `X`, `LinkedIn`, `Zalo`)**, `ffprobe` metadata (`static`), and an explicit **font/photo/music/footage asset license table**.
 
 ## Non-negotiable rules
 
 | Concern | Rule |
 |---|---|
-| truthfulness | No invented user counts, screenshots, awards, logos, testimonials, benchmarks, or product capabilities. |
-| unfurler compatibility | Use `1200×630` (`1.91:1`, center **`1000×500` safe zone**), absolute `https://`, fast crawl response (`< 300 KB` WhatsApp/Zalo, `< 1 MB` Slack/iMessage/X/LinkedIn), and **PNG/JPEG `og:image`** (never SVG; avoid WebP-only `og:image` where chat unfurlers drop it). |
+| truthfulness & asset licensing | No invented user counts, screenshots, awards, logos, testimonials, or benchmarks; deliver a complete **asset license table** (fonts, stock/custom photography, icons, music, SFX, AI provenance) clearing commercial social/paid-ad distribution. |
+| unfurler & `150–300 px` thumbnail legibility | Use `1200×630` (`1.91:1`, center **`1000×500` safe zone**), absolute `https://`, `< 300 KB` (WhatsApp/Zalo) / `< 1 MB` **PNG/JPEG `og:image`**, and verify headline/mark legibility at **`150–300 px` downscaled thumbnail width** in **both light and dark social feeds** + **live share-debugger previews (`Facebook`, `X`, `LinkedIn`, `Zalo`)**. |
 | `9:16` vertical exclusion zones | On `1080×1920` Reels/TikTok/Shorts, keep all titles, faces, and open captions clear of **`top >= 150–220 px`**, **`bottom >= 320–420 px`** (caption/CTA drawer), and **`right >= 120–160 px`** (like/comment/share rail). |
 | `0.0s` poster, captions & `-14 LUFS` | Frame `0` (`0.0s`) must render a legible poster immediately (never `opacity={0}` black frames); pair muted autoplay video with **burned-in safe-zone captions or synced `SRT`/`VTT`**, and normalize web/social audio to **`loudnorm=I=-14:TP=-1.5:LRA=11`** (`-16 LUFS` for podcasts only). |
 | anti-slop | Avoid purple-blue gradients, floating browser chrome mockups, generic rocket/sparkle art, unreadable code screenshots, and badge clutter unrelated to the subject. |
@@ -44,6 +44,6 @@ For browser audio/video players and Web Audio DSP (`hls.js`, Shaka, Vidstack, Me
 
 - [ ] `1200×630` (`1000×500` center safe zone) or `1080×1920` (`top >= 150–220 px`, `bottom >= 320–420 px`, `right >= 120–160 px` clear) geometry verified;
 - [ ] `og:image` uses absolute `https://`, **PNG/JPEG** unfurler-safe format, and `< 300 KB` (WhatsApp/Zalo) / `< 1 MB` byte budget with versioned cache-busting URL;
-- [ ] core headline (`<= 6–8` words) survives `25–33%` thumbnail scale on both light and dark feed backgrounds;
+- [ ] **`150–300 px` downscaled thumbnail legibility** verified in **both light and dark social feeds**, plus **live share-debugger preview captures (`Facebook`, `X`, `LinkedIn`, `Zalo`)** (or labeled `not-checked` when offline/unhosted) and **asset license table** delivered;
 - [ ] video exports render a legible **`0.0s` poster frame**, `yuv420p` + `+faststart`, **`-14 LUFS` (`-1.5 dBTP`)** audio, and **burned-in / `SRT` / `VTT` captions**;
-- [ ] `ffprobe`/byte checks (`static`) separated honestly from rendered thumbnail/frame inspection (`rendered`) and untested platform crawlers (`not-checked`).
+- [ ] **Checklist-Until-Passing Stop-Gate (`<HARD-GATE>`):** walk every checklist item above + run `slop-scan.mjs --fail-on p2`, `check-contrast.mjs`, rendered `150–300 px` / `0.0s` frame inspections, and `check-acceptance.mjs .pixelcraft/acceptance.json` (`pixelcraft-review`) in a `Fix → Re-verify` loop until passing (`0` `fail`/`pending` rows, `rendered` evidence on visual/media legibility per `Rule #0.3`).

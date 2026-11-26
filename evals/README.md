@@ -1,6 +1,6 @@
 # Pixelcraft evaluation corpus
 
-This directory contains behavioral evaluations for all 26 Pixelcraft skills. Each skill has one markdown guide named `evals/<skill-name>.md` containing 2–6 prompt cases, paired with machine-readable JSON fixtures under `evals/fixtures/` (71 fixtures covering all 26 skills, including non-JS/TS ecosystems and Grill-Me/Brainstorming gates). Each case records the prompt, expected behaviors, failure signals, and comparison criteria for a with-skill versus without-skill run.
+This directory contains behavioral evaluations for all 26 Pixelcraft skills. Each skill has one markdown guide named `evals/<skill-name>.md` containing 2–6 prompt cases, paired with machine-readable JSON fixtures under `evals/fixtures/` (72 fixtures covering all 26 skills, including non-JS/TS ecosystems and Grill-Me/Brainstorming gates). Each case records the prompt, expected behaviors, failure signals, and comparison criteria for a with-skill versus without-skill run.
 
 ## Automated offline contract & fixture checks
 
