@@ -7,7 +7,7 @@
 - Package: `@thanhnguyxn/pixelcraft`
 - Install (all skills): `npx skills add ThanhNguyxnOrg/Pixelcraft` or `npm i -g @thanhnguyxn/pixelcraft && pixelcraft add all --agent <host>`
 - Supported coding agents (14): claude, codex, agents, devin, cursor, gemini, copilot, windsurf, opencode, kiro, cline, roo, droid, antigravity
-- Verification metrics: 26 skills, 247 framework references, 9 zero-dependency Node QA scripts, 19 DTCG token export targets, 66 offline eval fixtures, 22 multi-stack proof exhibits.
+- Verification metrics: 26 skills, 247 framework references, 10 zero-dependency Node QA scripts, 19 DTCG token export targets, 72 offline eval fixtures, 22 multi-stack proof exhibits.
 
 ## Core Loop & Authority Order
 1. Explicit user brief outranks everything.
@@ -39,7 +39,7 @@
 - **pixelcraft-document** (Channels): Designs and verifies paginated documents, print output, reports, invoices, CVs, Office exports, and slide decks across web and document tooling.
 - **pixelcraft-media** (Channels): Designs and verifies social cards, Open Graph/Twitter images, YouTube thumbnails, repository banners, SVG posters, video frames, and motion graphics for external platforms.
 - **pixelcraft-chat-ui** (Channels): Designs and verifies conversational interfaces across two tracks—(A) host-constrained messaging platforms and mini apps (Slack Block Kit/AI Assistants, Discord Components V2/Activities, Telegram Bots/Mini Apps, Zalo Mini Apps/ZNS, WhatsApp Interactive Messages/Flows, Microsoft Teams Adaptive Cards/AI Library, LINE LIFF/Flex Messages, WeChat Mini Program) and (B) app-owned AI and agentic chat workspaces (Vercel AI SDK UI, assistant-ui, CopilotKit v2, AG-UI, MCP Apps/MCP-UI, OpenAI Apps SDK, Google A2UI, LangGraph useStream, streaming traces, branching, split artifacts, and approval gates).
-- **pixelcraft-review** (Verify): Audits, critiques, and polishes UI with evidence-backed findings. [Scripts: slop-scan.mjs]
+- **pixelcraft-review** (Verify): Audits, critiques, and polishes UI with evidence-backed findings. [Scripts: check-acceptance.mjs, slop-scan.mjs]
 - **pixelcraft-visual-qa** (Verify): Verifies interfaces through rendered evidence using a render → screenshot → self-critique → fix loop and finish gate. [Scripts: check-contrast.mjs, check-email.mjs, check-pdf.mjs, check-tui.mjs, finish-gate.mjs, shoot.mjs, style-inventory.mjs]
 - **pixelcraft-handoff** (Verify): Translates approved designs, Figma MCP context, Code Connect bindings, Dev Mode specs, Penpot files, screenshots, mockups, and motion handoff prototypes into faithful implementation without losing existing architecture.
 

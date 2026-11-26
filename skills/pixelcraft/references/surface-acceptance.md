@@ -1,26 +1,27 @@
-# Shared surface acceptance matrix
+# Shared surface acceptance matrix & 3-tier Studio rubric
 
-Use this reference when deciding what evidence a platform implementation must produce. It is the cross-surface contract; platform skills add native idioms and tooling. Do not treat every row as mandatory in every prototype: classify skipped rows as `not-checked` or `waived` with consequence.
+Use this reference when deciding what evidence a platform implementation must produce and when populating `.pixelcraft/acceptance.json` (`check-acceptance.mjs` in `pixelcraft-review`). It is the cross-surface contract; platform skills add native idioms, measurable thresholds, and required deliverable artifacts.
 
-## Acceptance dimensions
+## Golden Evidence Rule (`Rule #0.3`)
 
-| Dimension | Required design/implementation behavior | Acceptance evidence |
-|---|---|---|
-| layout ownership | the surface controls resize/reflow through constraints rather than fixed perfect pixels | smallest/typical/large geometry inspected without clipping or accidental two-dimensional scrolling |
-| navigation truth | back/escape/close/deep link/refresh/relaunch restore understandable state | primary forward/back task path exercised in the real runtime or labeled emulation |
-| input completeness | pointer/touch/keyboard/controller/remote/voice paths match platform expectations with forgiving hit areas and pointer capture | primary task completed without mouse-only, hover-only, precision-only, or hidden-command dependency |
-| IME and composition safety | active input-method composition (`Enter`/`Escape` during Telex/VNI, Kana-Kanji, Hangul, Pinyin) commits/cancels candidates without premature submit; `Unicode NFC` text preserved | search, chat, form, and inline-edit inputs verified with composed characters (`ư, ơ, ệ`, CJK, RTL) or labeled `not-checked` |
-| focus and restoration | focus/selection/scroll/input context survive dialogs, errors, route changes, interruption, and re-entry without sticky-chrome occlusion | focus path and restoration inspected across at least one interruption and smallest supported viewport |
-| state coverage | loading/empty/error/offline/permission/long-content/conflict/cancellation states are designed | representative non-happy-path states rendered or explicitly marked absent/not applicable |
-| accessibility exposure | native semantics/accessibility tree carry name, role, value, state, order, grouping, and status changes | automated scan plus manual keyboard/screen-reader or platform-equivalent inspection where available |
-| text scaling/localization | `+30–40%` prose and `+50–100%` short-label expansion, CJK contraction, line breaking, directionality, tabular numerals, plural forms, and diacritic glyph coverage survive | representative locale matrix or targeted stress case; zero fixed-height clipping or ransom-note fallback glyphs |
-| performance/interaction | frequency-calibrated motion, fast acknowledgment, responsive input, stable layout, proportionate media/asset cost | runtime measurement against surface budget or explicit `not-checked` |
-| safe geometry | safe areas, overscan, notches, system chrome, virtual keyboard, taskbar/menu bar, window minimums are respected | real device/simulator/windowed/terminal evidence where environment permits |
-| capture/verification | output can be captured meaningfully without hiding defects | screenshots/recordings/snapshots include edge cases and identify exact runtime/build |
-| data/privacy | user data, secrets, private media, and personal identifiers are protected in source, bundles, and artifacts | zero client-exposed secrets; captures redacted/synthetic; no fake metrics/proof/testimonials |
-| platform idiom | navigation, controls, feedback, scaling, lifecycle, packaging, and system integration feel native | idioms named in implementation notes; deviations deliberate and justified |
-| regulatory/store readiness | target distribution and legal gates (App Store, Google Play, browser `MV3`, EU `EAA` / `EN 301 549` accessibility statement, console/Steam Deck TRC, print `PDF/X-4`, bulk email `RFC 8058`) are addressed | store/regulatory checklist items verified in config/UI or explicitly scoped `not-checked`/`waived` |
-| commercial/engineering handoff | `< 10m` clean-clone setup, strict active-language static checks, isolated state previews where supported, verified font/icon/media commercial licenses, and owner-level account/key transfer | clean build/analyzer output, license manifest, and root billing/DNS/store/signing ownership boundaries documented |
+**`static` or `model-judgment` NEVER counts as `pass` / accepted for visual appearance, measured performance budgets, or interactive/assistive accessibility requirements.** Those rows require `rendered` evidence from a real runtime, device, simulator, or instrumented harness—or must be recorded honestly as `not-checked` (with concrete environment reason + next command) or `waived` (with explicit user authorization, scope, and consequence). `check-acceptance.mjs` mechanically rejects any `pass` claim backed only by `static` or `model-judgment` on `rendered`-required rows.
+
+## 12-Row Shared Surface Acceptance Matrix
+
+| # | Universal acceptance row | Required design & implementation behavior | Minimum acceptance evidence (`rendered` where visual/perf/interactive-a11y) |
+|---:|---|---|---|
+| 1 | **Responsive/adaptive layout** | Surface controls resize, orientation, split-pane, and breakpoint reflow through constraints rather than fixed perfect pixels | Smallest, typical, and large target geometries inspected (`rendered`) with zero clipping, overlap, or accidental 2D scrolling |
+| 2 | **Navigation & back** | Back, `Escape`, close, deep link, refresh, and relaunch restore understandable route and selection state without dead ends | Primary forward/back/dismiss task path exercised in the real runtime or labeled emulation (`rendered`) |
+| 3 | **Input modalities** | Pointer, touch, keyboard, controller, remote, or voice paths match platform expectations with forgiving hit areas, pointer capture, and active **IME composition safety** (`Enter`/`Escape` never prematurely submits) | Primary task completed without mouse-only, hover-only, or precision-only dependency + composed input (`ư, ơ, ệ`, CJK, RTL) checked (`rendered`) |
+| 4 | **Focus & state restoration** | Focus, selection, scroll, and dirty input survive dialogs, errors, route changes, OS interruptions, and re-entry without sticky-chrome occlusion (`WCAG 2.4.11`) | Focus traversal and restoration inspected across at least one interruption and smallest supported viewport (`rendered`) |
+| 5 | **Rendered state matrix** | `loading`, `empty` (first-use + no-results), `error`, `offline`, `permission-denied`, `404`/`500`, long-content, conflict, and cancellation states are implemented | Representative happy-path and non-happy-path states captured in the target runtime (`rendered`) |
+| 6 | **Accessibility & screen reader** | Native semantics/accessibility tree expose name, role, value, state, contrast, reduced-motion/transparency fallbacks, and live announcements | Automated accessibility/contrast scan plus keyboard and screen-reader (or platform assistive tree) walkthrough (`rendered`) |
+| 7 | **Text scaling & localization** | `+30–40%` prose and `+50–100%` short-label expansion, `200%` text zoom/Dynamic Type, CJK contraction, RTL mirroring, tabular numerals (`tnum` + `U+2212`), and `Unicode NFC` diacritic glyph coverage survive | Stress-locale / `200%` text-scale renders verified with zero fixed-height clipping or mid-word fallback glyphs (`rendered`) |
+| 8 | **Measured performance** | Meets the `<= 100 ms` direct-manipulation / `> 1 s` progress / `> 10 s` cancellable ladder plus platform startup, frame-time, payload, memory, and battery budgets | Instrumented runtime profiler / benchmark output against agreed numeric budgets (`rendered`) |
+| 9 | **Safe areas & frame geometry** | Safe areas, overscan, notches/cutouts, system bars, virtual keyboards, taskbar/menu bar, and window minimums are respected | Real device, simulator, windowed, print-trim, or terminal geometry captures (`rendered`) |
+| 10 | **Capture/recording artifacts** | Required deliverable screenshots, video walkthroughs, profiler traces, print proofs, or terminal recordings capture edge cases without hiding defects | Complete platform deliverable package attached with exact build/device/viewport metadata (`rendered`) |
+| 11 | **Data & privacy** | User data, PII, secrets, private media, and credentials are protected across source, bundles, staging/prod separation, exports, and QA captures | Secret/dependency audit (`static`) + redacted/synthetic captures and privacy/consent flows verified (`rendered`/`static`) |
+| 12 | **Platform idiom** | Navigation, chrome, feedback, packaging, store/regulatory compliance, `< 10m` setup, commercial licenses, and 30–90d warranty/owner handoff feel native and release-ready | Platform idioms, regulatory/store gates, clean build/audit logs, and handoff manifest verified (`rendered`/`static`) |
 
 ## Mode overlays
 
@@ -30,14 +31,22 @@ Use this reference when deciding what evidence a platform implementation must pr
 - **Experience/Play:** frame stability, input latency, comfort, HUD legibility, interruption recovery, and sensory-safe alternatives dominate.
 - **Communicate:** client degradation, plaintext/low-bandwidth equivalent, image blocking, ink/data cost, and locale robustness dominate.
 
+## 3-Tier Final Grading Rubric (`check-acceptance.mjs`)
+
+| Final tier | CLI verdict & exit code | Criteria & mandatory agent action |
+|---|---|---|
+| **1. `FAIL (Not Accepted)`** | `FAIL` (`exit 1`) | Any Baseline `A1–A8` row, 12-row Surface Matrix row, or platform threshold/checklist/deliverable item is `fail` or `pending`, OR claims `pass` via `static`/`model-judgment` where `rendered` evidence is required (`Rule #0.3`), OR marks `waived` without explicit user sign-off + scope + consequence. **Agent MUST NOT claim completion—keep fixing and re-verifying.** |
+| **2. `PASS (Studio $10k–$20k Bar)`** | `PASS_STUDIO_10K_20K` (`exit 0`) *(or `PENDING_RENDERED_ENV` `exit 2` when physical hardware/store runtime is genuinely unavailable here)* | All Baseline `A1–A8` + 12-row Surface Matrix + platform measurable thresholds, inspection items, and deliverable artifacts pass on agreed target environments (`rendered` where required), and any `not-checked` / `waived` row carries a concrete environment reason + next command or explicit user sign-off + scope + consequence. |
+| **3. `EXCEEDS`** | `EXCEEDS_STUDIO` (`exit 0`) | Meets every `PASS_STUDIO_10K_20K` requirement AND adds real-user research/usability sessions, live A/B experimentation, deep multi-locale native review, or high-scale systems/telemetry integration. |
+
 ## Minimum acceptance statement
 
-Every surface implementation must end with a matrix row summary:
+Every surface implementation must update `.pixelcraft/acceptance.json`, run `check-acceptance.mjs`, and end with a matrix summary:
 
 ```markdown
-| Dimension | Result | Evidence | Label |
+| Universal acceptance row | Result | Evidence | Label |
 |---|---|---|---|
-| layout ownership | pass/issue/not applicable | artifact/path/command | rendered/static/model-judgment/not-checked/waived |
+| 1. Responsive/adaptive layout | pass/not-checked/waived | artifact/path/command | rendered/static/not-checked/waived |
 ```
 
-A blank matrix means the implementation is unverified even if it compiles.
+A blank or `pending` matrix means the implementation is `FAIL (Not Accepted)` even if it compiles.

@@ -11,6 +11,7 @@
 ## Summary
 
 - P0: n · P1: n · P2: n · P3: n
+- Acceptance manifest (`check-acceptance.mjs`): `FAIL` (exit `1`) | `PENDING_RENDERED_ENV` (exit `2`) | `PASS_STUDIO_10K_20K` (exit `0`) | `EXCEEDS_STUDIO` (exit `0`)
 - Highest-risk unknown: <scope not checked>
 - Overall recommendation: <block/fix-before-release/fix-normal/polish>
 
@@ -30,18 +31,19 @@
 - Slop scan: <score/findings; note zero ≠ good design>.
 - Subject-derived commitment: <present/weak/absent + evidence>.
 
-## Studio-grade delivery gate (`references/polish.md`)
+## Studio-grade delivery & acceptance gate (`polish.md` + `check-acceptance.mjs`)
 
-| Pillar | Status (`pass`/`issue`/`not-checked`/`waived`) | Evidence & scope | Label |
+| Pillar | Status (`pass`/`fail`/`not-checked`/`waived`) | Evidence & scope | Label |
 |---|---|---|---|
 | 1. Art direction & 5-second hierarchy (`≤2` fonts+`1` mono, `45–75ch`, 1–2 CTAs) |  |  |  |
 | 2. Invisible craft (`B1` timing, `B2` optical/concentric, `B3` origin/exit, `B4` dark `L`/edge, `B5` hit-slop/Safe Triangle/capture, `B6` `tnum`/`U+2212`) |  |  |  |
-| 3. States, a11y (`2.4.11`/`EAA`), `IME` `Enter` guard & `+50–100%` short-label / `NFC` i18n |  |  |  |
-| 4. Stack-neutral engineering (`<10m` setup, strict checks, zero secrets) & license/owner handoff |  |  |  |
+| 3. States, latency (`<=100ms`/`>1s`/`>10s`), a11y (`2.4.11`/`EAA`), `IME` `Enter` guard & `+50–100%` short-label / `NFC` i18n |  |  |  |
+| 4. Stack-neutral engineering (`<10m` setup, strict checks, dep audit, staging split, zero secrets) & license/30–90d warranty handoff |  |  |  |
+| 5. `.pixelcraft/acceptance.json` (`A1–A8` + 12-row Surface Matrix + platform thresholds & deliverables) |  |  |  |
 
 ## Not checked / waived
 
-- `<label>` <scope> — reason/consequence.
+- `<label>` <scope> — concrete reason, explicit client sign-off (if `waived`), consequence, and next command.
 
 ## Recommended order
 
@@ -51,6 +53,14 @@
 ```
 
 Do not bury a blocker in prose. Do not convert absence of automated findings into conformance language.
+
+## Evidence Rule #0.3 & 3-tier Studio verdict rubric
+
+- **Golden Evidence Rule (`Rule #0.3`):** **`static` or `model-judgment` NEVER counts as `pass` / accepted for visual appearance, measured performance budgets, or interactive/assistive accessibility requirements.** Those rows require `rendered` evidence—or must be recorded honestly as `not-checked` (with concrete reason) or `waived` (with explicit user authorization, scope, and consequence).
+- **3-Tier Final Grading (`check-acceptance.mjs`):**
+  - **`FAIL` (`exit 1` — Not Accepted):** any Baseline `A1–A8`, 12-row Surface Matrix, or platform threshold/checklist/deliverable item is `fail` or `pending`, or relies on `static`/`model-judgment` where `rendered` evidence is required (`Rule #0.3`). **Do not approve or claim completion.**
+  - **`PASS_STUDIO_10K_20K` (`exit 0` — Studio $10k–$20k Bar)** *(or `PENDING_RENDERED_ENV` `exit 2` when physical hardware/store runtime is genuinely unavailable)*: all applicable rows pass on target environments (`rendered` where required) and any `not-checked`/`waived` row carries concrete justification or explicit user sign-off.
+  - **`EXCEEDS_STUDIO` (`exit 0` — Exceeds Bar):** meets `PASS_STUDIO_10K_20K` plus real-user usability testing, live A/B experimentation, deep multi-locale native review, or high-scale systems integration.
 
 ## Confidence calibration
 

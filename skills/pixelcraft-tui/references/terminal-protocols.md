@@ -37,41 +37,44 @@ Register a teardown hook covering normal exit, **`SIGINT`**, **`SIGTERM`**, **`S
 5. **Pop Kitty keyboard protocol flags**: `\x1b[<u`
 6. **Show cursor & exit raw mode**: `\x1b[?25h` + restore cooked `termios` / console mode.
 
-## Capability, stream hygiene, `SIGPIPE`, & 16-color light/dark themes
+## Capability, stream hygiene, `SIGPIPE`, color tiers & `--plain` screen-reader mode
 
 | Signal / Condition | Required behavior |
 |---|---|
+| **Startup latency & live resize (`80×24` + `120×36`)** | Boot in **`< 200 ms`** (`hyperfine`/`time`) for compact CLIs/TUIs via lazy subcommand/plugin imports; reflow cleanly with **zero tearing/flicker** across **`80×24`** and **`120×36`** live `SIGWINCH` resizes. |
 | **Stream separation (`stdout` vs `stderr`)** | Interactive TUI chrome, spinners, progress bars, and human warnings go strictly to `stderr` (or alternate screen only when `isatty(stdout)`). Machine-parseable payloads (`--json`, `--plain`, CSV) go strictly to `stdout`. |
 | **Downstream pipe close (`SIGPIPE` / `EPIPE` / `BrokenPipeError`)** | Piping into `head -n 5` or `jq` closes `stdout` early. Catch `BrokenPipe` / `EPIPE` / `BrokenPipeError` and exit `0` **silently**—never print uncaught stack traces or panic dumps! |
-| `NO_COLOR` (non-empty) / `TERM=dumb` / `CI=true` | Strip ANSI colors (`NO_COLOR`), disable all CSI/OSC escapes (`TERM=dumb`), disable interactive prompts (`CI=true`), and preserve text state markers (`[OK]`, `[ERR]`, `>`). |
-| **16-color dark & light ANSI themes** | **Never** hardcode `#ffffff` assuming a black terminal or `#000000` assuming a white terminal. Default primary text/surfaces to terminal `Reset`/`Default` + ANSI 16 semantic roles (or query background luminance before choosing light vs dark truecolor ramps). |
+| **`NO_COLOR=1` / `TERM=dumb` / `CI=true` / `--plain` screen-reader mode** | Strip ANSI colors (`NO_COLOR=1`), disable CSI/OSC escapes (`TERM=dumb`), disable interactive prompts (`CI=true`), and provide **`--plain`** (linear, non-animated, cursor-stable text output with explicit `[OK]`/`[ERR]` markers so terminal screen readers like NVDA, VoiceOver, and TDSR/Fenrir are never spammed by redrawing spinners). |
+| **`16-color` + `256-color` + truecolor themes** | **Never** hardcode `#ffffff` assuming a black terminal or `#000000` assuming a white terminal. Verify graceful downgrade across `COLORTERM=truecolor`, `TERM=xterm-256color` (`256-color` palette), and **`16-color` dark + light ANSI themes**. |
 
-## CLI & TUI distribution standards
+## CLI & TUI distribution, `SHA-256` integrity & deliverables
 
 Ship production terminal tools with complete operator ergonomics:
-- **Standard flags & semantic exit codes**: `-h`/`--help`, `-V`/`--version`, `--json`/`--plain`, `--no-color`, `--ascii`; exit **`0`** on success, **`1`** on runtime/API failure, **`2`** on CLI usage/flag error, and **`130`** on `SIGINT` (`Ctrl+C`).
+- **Standard flags & semantic exit codes**: `-h`/`--help`, `-V`/`--version`, `--json`, **`--plain`** (screen-reader non-animated mode), `--no-color`, `--ascii`; exit **`0`** on success, **`1`** on runtime/API failure, **`2`** on CLI usage/flag error, and **`130`** on `SIGINT` (`Ctrl+C`).
 - **Shell completions & `man` page**: generate completions for **`bash`, `zsh`, `fish`, and `pwsh`** (`mycli completions <shell>`) plus a `roff` **`man` page** (`man 1 mycli`).
-- **Native package channels**: distribute reproducible checksummed releases via **Homebrew**, **Winget**, **Scoop**, **Cargo** (`cargo-dist` / `crates.io`), **npm** (platform-specific binaries or clean Node/Bun bin), or **PyPI** (`uv tool install` / `pipx`).
+- **Checksums, signatures & clean uninstall**: publish **`SHA-256` (`SHA256SUMS`) checksums and cryptographic release signatures** (`cosign` / GPG / GitHub Attestations) across **Homebrew**, **Winget**, **Scoop**, **Cargo**, **npm**, or **PyPI**, paired with **documented uninstall instructions** removing binaries, completions, caches, and config files cleanly.
+- **Required deliverable captures**: attach **`asciinema` (`.cast`) or Charm `VHS` recordings** plus rendered verification across **`iTerm2` / `Terminal.app`, `Windows Terminal`, `GNOME Terminal`, `tmux`, and `SSH`**.
 
 ## Do/don't pairs
 
 | Do | Don't |
 |---|---|
-| Enable Bracketed Paste (`?2004h`) on input views and run the full 6-step teardown on panic/signal | Let multi-line paste fire `Enter` on every newline or leave `?1049h`/`?1003h`/`CSI u` stuck after a crash |
-| Measure columns with `UAX #29` grapheme + East Asian Width (`unicode-width`, `uniseg`, `string-width`, `wcwidth`) + `--ascii` fallback | Align borders with `.length`/`.len()`, breaking CJK, `👨‍👩‍👧‍👦`, `⚠️`, and Vietnamese diacritics |
-| Route spinners/logs to `stderr`, JSON/plain data to `stdout`, and exit silently on `SIGPIPE`/`EPIPE` | Leak spinner ANSI codes into `stdout` pipes or dump a stack trace on `mycli list \| head -n 5` |
-| Use terminal `Reset`/`Default` + 16-color-safe ANSI roles across both light and dark terminals | Hardcode `#ffffff` text invisible on Solarized/macOS Light terminals |
-| Ship `--help`, `--version`, `0/1/2/130` exit codes, `bash`/`zsh`/`fish`/`pwsh` completions, and a `man` page | Exit `0` on errors or ship an opaque binary with no `--version` or shell completions |
+| Boot in `< 200 ms` (`hyperfine`), enable `?2004h` Bracketed Paste, and run the 6-step teardown on panic/signal | Ship a `1.5 s` CLI cold start, fire `Enter` on multi-line paste, or leave `?1049h`/`?1003h`/`CSI u` stuck after a crash |
+| Measure columns with `UAX #29` grapheme + East Asian Width + `--ascii` fallback across `80×24` and `120×36` live resizes | Align borders with `.length`/`.len()`, breaking CJK, `👨‍👩‍👧‍👦`, `⚠️`, and Vietnamese diacritics |
+| Route spinners to `stderr`, JSON/plain data to `stdout`, support `--plain` screen-reader mode, and exit silently on `SIGPIPE` | Spam screen readers with `60 Hz` Braille spinner redraws or dump a stack trace on `mycli list \| head -n 5` |
+| Verify `16-color` (dark+light), `256-color`, and `NO_COLOR=1` legibility | Hardcode `#ffffff` text invisible on Solarized/macOS Light terminals |
+| Ship `--help`, `--version`, `0/1/2/130` exit codes, completions, `man` page, `SHA-256` checksums/signatures, and uninstall docs | Exit `0` on errors or ship unsigned archives with no checksums or uninstall cleanup |
 
 ## Verification commands
 
 ```sh
-# Test capability degradation, ASCII fallback, and silent SIGPIPE exit:
+# Benchmark < 200ms startup latency and test capability degradation / SIGPIPE:
+hyperfine --warmup 3 'your-cli --version'
 NO_COLOR=1 your-cli --help
-TERM=dumb your-cli --help
-your-cli --plain | head -n 5
+TERM=xterm-256color your-cli --help
+TERM=dumb your-cli --plain | head -n 5
 # Verify stdout remains free of ANSI escape sequences when piped:
-if your-cli --help | LC_ALL=C grep -q $'\x1b\['; then echo "FAIL: ANSI leaked"; exit 1; fi
+if your-cli --plain | LC_ALL=C grep -q $'\x1b\['; then echo "FAIL: ANSI leaked"; exit 1; fi
 ```
 
-Piped escape and `head -n 5` `SIGPIPE` checks provide deterministic `static`/output evidence. Inspect Bracketed Paste, `OSC 52` clipboard over SSH/`tmux`, `UAX #29` CJK/ZWJ/Vietnamese alignment, light+dark 16-color legibility, and 6-step signal/panic restoration in at least two real terminal emulators (`rendered`; label untested emulators `not-checked`).
+Piped escape, `SHA-256` checksum, and `head -n 5` `SIGPIPE` checks provide deterministic `static`/output evidence. Record **`hyperfine`/`time` (`< 200 ms`)**, **`asciinema`/`VHS` walkthroughs**, `80×24` + `120×36` live resize, `16-color`/`256-color`/`NO_COLOR=1`/`--plain` modes, and 6-step panic restoration across **`iTerm2`/`Terminal.app`, `Windows Terminal`, `GNOME Terminal`, `tmux`, and `SSH`** (`rendered`; label unavailable host OS emulators `not-checked`).

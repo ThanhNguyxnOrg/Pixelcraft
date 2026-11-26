@@ -1,0 +1,44 @@
+{
+  "schemaVersion": 1,
+  "id": "completion-gate-scan-until-clean",
+  "skill": "pixelcraft",
+  "title": "Enforce the Mandatory Completion Gate in .pixelcraft/plan.md and run Scan-Fix-Rescan until slop-scan, check-* CLIs, compiler, and Studio checklists pass cleanly",
+  "contextSnapshot": {
+    "surface": "Multi-screen SaaS workspace and transactional notification templates",
+    "platform": "Cross-stack UI workflow (orchestrator + plan + review + visual-qa)",
+    "mode": "Operate",
+    "states": ["initial build with P1/P2 scan findings", "repair round fixing IME Enter guard and focus ring", "rescan verification to exit 0", "checklist sign-off before final report"],
+    "constraints": [".pixelcraft/plan.md must lock in Definition-of-Done scan & checklist commands before Build", "Phase 5 -> Phase 6 <HARD-GATE> forbids stopping while deterministic scans or checklists fail", "fixes must be rescanned until exit 0 without suppressing rules or inventing waivers"]
+  },
+  "prompt": "Plan, implement, and verify an account security & notification settings flow. Ensure the plan defines a binding completion gate and do not finish until every applicable checklist and automated scanner passes cleanly.",
+  "expectedRouting": ["pixelcraft", "pixelcraft-plan", "pixelcraft-review", "pixelcraft-visual-qa", "references/workflow-checkpoints.md", "references/floor.md", "references/report-template.md"],
+  "forbiddenBehaviors": [
+    "writes .pixelcraft/plan.md with only vague verification notes instead of concrete scan, compiler/test, and checklist Definition-of-Done gates",
+    "stops immediately after Phase 4 Build or after a single scan pass while slop-scan --fail-on p2, check-* CLIs, compiler/tests, or checklist rows still fail",
+    "edits files to fix a reported finding and reports completion without re-running slop-scan, check-*, and build/test commands to confirm exit 0",
+    "adds unauthorized waivers, suppresses errors, or deletes required UI content just to force a zero scan score"
+  ],
+  "rubricDimensions": [
+    {
+      "dimension": "binding Definition-of-Done completion contract in .pixelcraft/plan.md",
+      "pass": "populates the Mandatory completion gate & scan-until-clean contract in .pixelcraft/plan.md with exact slop-scan --fail-on p2, applicable check-* CLIs, active-language compiler/linter/tests, rendered finish-gate, and floor/platform/polish checklists before coding",
+      "fail": "starts coding without an explicit exit gate or treats verification as optional post-hoc commentary"
+    },
+    {
+      "dimension": "Scan -> Fix -> Rescan execution and item-by-item checklist sign-off",
+      "pass": "executes all applicable scanners and compiler/tests, walks floor.md + platform Pre-submit + polish.md (B1-B6) row-by-row, repairs every deterministic failure, re-runs all scans until exit 0, and records commands + repair rounds + exit codes in the final report",
+      "fail": "stops with unfixed P0-P2 scan hits, skips rescanning after code edits, or skims checklists without verifying each applicable item"
+    }
+  ],
+  "negativeControls": [
+    {
+      "name": "fix applied without rescan",
+      "input": "slop-scan reports outline-removed and ime-enter-without-composing; agent patches CSS/JSX and immediately outputs final report without re-running slop-scan --fail-on p2 or compiler",
+      "mustNot": "claim Phase 5 Verify passed without re-executing the failing scans and confirming exit 0"
+    }
+  ],
+  "baseline": {
+    "withoutSkill": "writes code and stops immediately or stops after one partial check, leaving unverified regressions, unfixed P1/P2 scan findings, and skipped checklist items",
+    "withSkill": "locks a Definition-of-Done contract into .pixelcraft/plan.md, walks all applicable Studio checklists, loops Scan -> Fix -> Rescan until slop-scan --fail-on p2, check-*, and compiler/tests exit 0, and reports exact scan evidence"
+  }
+}

@@ -192,7 +192,20 @@ function inspectEmail(html, plaintextContent, plaintextProvided, headersContent 
   let m;
   while ((m = styleTagRe.exec(cleaned))) {
     const bodyStart = m.index + m[0].indexOf('>') + 1;
-    cssChunks.push({ text: stripCssComments(m[1]), offset: bodyStart });
+    const styleBytes = Buffer.byteLength(m[1], 'utf8');
+    if (styleBytes > 16 * 1024) {
+      add('style-block-too-large', 'P1', lineOf(html, m.index),
+        `<style> block is ${styleBytes} bytes (${(styleBytes / 1024).toFixed(1)} KB), exceeding the 16 KB safe ceiling before Gmail strips the entire stylesheet.`,
+        'Inline core layout/typography styles and keep embedded <style> media-query overrides compact (<= 8-16 KB).');
+    }
+    const strippedStyle = stripCssComments(m[1]);
+    const modernMatch = /@(?:layer|property)\b/i.exec(strippedStyle);
+    if (modernMatch) {
+      add('gmail-unsafe-modern-css', 'P1', lineOf(html, bodyStart + modernMatch.index),
+        `Unsupported modern at-rule '${modernMatch[0]}' inside <style>; Gmail's CSS parser drops the entire <style> block on unsupported syntax.`,
+        'Compile away @layer, @property, and CSS nesting into flat CSS2/media-query rules before sending.');
+    }
+    cssChunks.push({ text: strippedStyle, offset: bodyStart });
   }
   const inlineStyleRe = /\bstyle\s*=\s*(?:"([^"]*)"|'([^']*)')/gi;
   while ((m = inlineStyleRe.exec(cleaned))) {
@@ -216,6 +229,16 @@ function inspectEmail(html, plaintextContent, plaintextProvided, headersContent 
           'Use table-based layout and resolved hex colors instead of flex/grid/fixed/var(--) for Outlook Word engine compatibility.');
       }
     }
+  }
+
+  // Unreplaced personalization merge tags in visible body (e.g. {{name}}, <%= user %>)
+  const visible = visibleText(html);
+  const mergeMatch = /\{\{\s*[a-zA-Z_][a-zA-Z0-9_.-]*\s*\}\}|<%=\s*[^%]+\s*%>/.exec(visible);
+  if (mergeMatch) {
+    const rawIdx = cleaned.indexOf(mergeMatch[0]);
+    add('unfilled-merge-tag', 'P1', rawIdx >= 0 ? lineOf(html, rawIdx) : 1,
+      `Unresolved personalization placeholder '${mergeMatch[0]}' detected in rendered email copy.`,
+      'Render merge tags with safe fallback defaults (e.g. "Hello there" when first_name is missing) before inspecting final output.');
   }
 
   // <img> missing alt

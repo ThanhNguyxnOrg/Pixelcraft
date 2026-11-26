@@ -2,42 +2,43 @@
 
 Budgets are user-experience constraints, not score chasing. Set them during planning and measure in the real runtime whenever possible.
 
-## Core Web Vitals
+## Core Web Vitals & 3-run median Lighthouse
 
 | Metric | Good threshold | What it represents |
 |---|---:|---|
 | LCP | ≤ 2.5 s at p75 | largest contentful paint / perceived loading |
 | INP | ≤ 200 ms at p75 | interaction responsiveness |
 | CLS | ≤ 0.1 at p75 | visual stability |
+| **Lighthouse (3-run median)** | **Perf ≥ 90, A11y ≥ 95, BP ≥ 95, SEO ≥ 95** | **3-run median under 4G throttling on both mobile and desktop for every primary template** (with real tags active) |
 
-Use field data when available. Lighthouse/WebPageTest/local tracing are lab evidence and must be labeled as such. Do not optimize hidden test widgets at the expense of the real page.
+Use field data when available. Lighthouse/WebPageTest/local tracing are lab `rendered` evidence (never `static`—**Rule #0.3**). Always capture a **Network waterfall on the heaviest page** alongside the 3-run Lighthouse medians and cross-browser/device verification (`Chrome`, `Firefox`, `Edge`, `Safari macOS`, real `Safari iOS`, `Chrome Android`).
 
 ## Interaction and frame budgets
 
 | Surface | Budget |
 |---|---|
-| pointer/keyboard acknowledgment | visible feedback within 100 ms; preferably immediate |
+| pointer/keyboard acknowledgment | visible feedback within `<= 100 ms`; `> 1 s` progress indicator; `> 10 s` cancellable action |
 | ordinary 60 Hz frame | 16.7 ms total frame budget; leave main-thread headroom |
 | high-refresh/game frame | 11.1 ms at 90 Hz, 8.3 ms at 120 Hz; engine/platform dependent |
-| scrolling/dragging | no long task blocking input; virtualization for large lists |
+| scrolling/dragging (`LoAF` + flash safety) | zero blocking **Long Animation Frames (`LoAF`)** on scroll/drag; virtualization for large lists; `<= 3 Hz` luminance flash cap (`WCAG 2.3.1`) |
 | startup | meaningful skeleton/first useful surface before decorative assets |
 
-## Indicative web asset budgets
+## Initial web asset budgets by surface class
 
-Adjust by mode and document the choice.
+Adjust by surface class and lock the target in `.pixelcraft/plan.md` + `.pixelcraft/acceptance.json`:
 
-| Mode | Initial compressed JS+CSS | Notes |
+| Surface class | Initial compressed JS+CSS | Notes |
 |---|---:|---|
-| content/read | ≤ 150–250 KB | prioritize fonts/images and stable measure |
-| operate/dashboard | ≤ 250–450 KB | route-level splitting; avoid chart/map cost on unrelated routes |
-| persuade/experience | ≤ 350–700 KB | media-heavy work needs explicit loading/adaptive quality |
-| embedded/widget | ≤ 100–200 KB | host page pays additional cost |
+| Content / editorial | ≤ 150–250 KB | prioritize fonts/images and stable measure |
+| Dashboard / app | ≤ 250–450 KB | route-level splitting; avoid chart/map cost on unrelated routes |
+| Promotional / rich experience | ≤ 350–700 KB | media-heavy work needs explicit loading/adaptive quality |
+| Embedded widget | ≤ 100–200 KB | host page pays additional cost |
 
 Fonts: subset and limit families/weights; use `font-display` appropriate to content. Images: responsive sizes, modern formats when supported, explicit dimensions to prevent CLS. Video/3D: adaptive quality, poster/loading state, reduced-motion/data path.
 
 ## Measurement commands and signals
 
-- Browser: Performance panel, Lighthouse/WebPageTest, `performance.measure`, **INP** 3-phase breakdown (input delay + processing + presentation delay), **Long Animation Frames (`long-animation-frame` / LoAF)** for script-level jank attribution beyond legacy Long Tasks, coverage, and bundle analyzer.
+- Browser: Performance panel, **3-run median Lighthouse** (4G throttled mobile + desktop per primary template), **Network waterfall capture on the heaviest page**, `performance.measure`, **INP** 3-phase breakdown (input delay + processing + presentation delay), **Long Animation Frames (`long-animation-frame` / LoAF)** on scroll/drag for script-level jank attribution, coverage, and bundle analyzer.
 - Responsiveness engineering: break up long main-thread work with `scheduler.yield()` (fallback `setTimeout(..., 0)`) so user input paints within `≤ 200 ms`; on multi-page sites, evaluate the **Speculation Rules API** (`prefetch`/`prerender` with `eagerness: "moderate"`) for near-instant navigation while respecting data-saver and auth/logout exclusions.
 
 ```js

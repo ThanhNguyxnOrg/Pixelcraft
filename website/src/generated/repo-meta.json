@@ -6,7 +6,7 @@
   "siteUrl": "https://thanhnguyxnorg.github.io/Pixelcraft/",
   "totalSkills": 26,
   "totalReferences": 247,
-  "totalScripts": 9,
+  "totalScripts": 10,
   "canonicalAgents": [
     "claude",
     "codex",
@@ -57,8 +57,11 @@
     "generic-copy",
     "gradient-text-treatment",
     "hardcoded-color-literals",
+    "ime-enter-without-composing",
+    "important-override-sprawl",
     "lazy-diy-antipattern",
     "missing-reduced-motion",
+    "mv3-remote-script",
     "outline-removed",
     "paste-blocked",
     "placeholder-as-label",
@@ -71,11 +74,11 @@
     "uniform-shadow",
     "zoom-disabled"
   ],
-  "totalScanRules": 23,
+  "totalScanRules": 26,
   "scanExtensionCount": 59,
   "totalEvalGuides": 26,
   "totalEvalCases": 72,
-  "totalEvalFixtures": 66,
+  "totalEvalFixtures": 72,
   "totalGalleryExhibits": 22,
   "exhibitIds": [
     "booking",
@@ -796,6 +799,7 @@
         "polish"
       ],
       "scripts": [
+        "check-acceptance.mjs",
         "slop-scan.mjs"
       ]
     },

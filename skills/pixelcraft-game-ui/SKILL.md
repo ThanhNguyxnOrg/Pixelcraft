@@ -28,17 +28,17 @@ Unity `ProjectSettings/`, `.unity`, UXML/USS/UI Builder or uGUI `Canvas`/`TextMe
 
 ## Platform-wide rules
 
-- **Steam Deck Verified (`1280×800`, `16:10`) & distance legibility**: enforce **`>= 9px` absolute floor / `12–14px` body target at `1280×800`** handheld (`>= 24–28px` at `1080p` 10-foot TV distance), full gamepad navigation from boot with **zero external mouse-only launcher**, and automatic OS/Steam virtual keyboard invocation (`ShowFloatingGamepadTextInput`) whenever a text field receives controller focus.
+- **Steam Deck Verified (`1280×800`, `16:10`) & brightest/darkest HUD legibility**: enforce **`>= 9px` absolute floor / `12–14px` body target at `1280×800`** handheld (`>= 24–28px` at `1080p` 10-foot TV distance), full gamepad navigation from boot with **zero external mouse-only launcher**, automatic OS/Steam virtual keyboard invocation (`ShowFloatingGamepadTextInput`), and **HUD legibility verified on both the brightest (glare/snow/sky) AND darkest gameplay scenes** (using subtle dropplates/backings/keylines rather than bare floating glyphs).
 - **Safe areas & non-stretched ultrawide clamping**: keep critical HUD inside a **`90%` title-safe inset** (`5%` margin) and clamp peripheral HUD widgets to a centered **`16:9` anchor box** on `21:9` / `32:9` displays (with an edge-offset slider) **without stretching 2D sprites, radial reticles, or minimaps**.
-- **Console Lotcheck / TRC / XR compliance gates**:
-  - Immediately **auto-pause single-player gameplay + open a modal prompt** when the active controller disconnects;
+- **Console Lotcheck / TRC / XR, interruption states & store compliance**:
+  - Immediately **auto-pause single-player gameplay + open a modal prompt** on **controller disconnect** AND handle **OS interruption states** (**incoming mobile call, console Home/Quick Resume overlay, screen lock/suspend, and explicit `save-failed` / storage-full recovery**);
   - Display a persistent **active player profile / gamertag indicator** across account-bound menus;
   - Render an explicit **"Saving — do not turn off…" autosave indicator** before/during non-volatile writes without stalling the render thread;
-  - Cap full-screen/UI luminance flashes strictly **`<= 3 Hz`** (photosensitivity floor).
+  - Cap full-screen/UI luminance flashes strictly **`<= 3 Hz`** (photosensitivity floor), and satisfy **store age-rating (`ESRB` / `PEGI` / `IARC`), chat/UGC moderation, and child/player privacy compliance**.
 - **Zero-lag glyphs, input buffering, audio feel & `0 B/frame` GC**:
   - Hot-swap input glyphs (`Xbox <-> DualSense <-> Switch <-> Steam Deck <-> KB/Mouse`) in **`<= 1 frame` (`0` hysteresis lag on deliberate input)** using fixed-metrics inline icon slots so prompts **never layout-jump**;
   - Buffer menu/confirm inputs for **`100–150 ms`** across brief state transitions, modulate repeated UI SFX pitch by **`±3%`** (`0.97–1.03`), route UI audio to **decoupled buses** (`Master / Music / SFX / Voice / UI`), and hold steady-state UI heap allocations to **`0 B/frame`** (pooled floaters, `SetText` / preallocated buffers).
-- **Accessibility & customization**: ship independent **HUD Scale**, **Subtitle size + background opacity (`0–100%`)**, **Colorblind symbol + palette**, and **Full Input Remapping** (with conflict detection + hold-to-toggle).
+- **Accessibility & motor/vestibular customization**: ship independent **HUD Scale**, **Subtitle size + background opacity (`0–100%`)**, **Colorblind symbol + palette**, **Full Input Remapping** (with conflict detection + hold-to-toggle), **hold-instead-of-mash (`tap-assist` / hold-to-repeat)** for QTEs/rapid actions, and **camera/screen-shake + FOV motion reduction (`0–100%`)**.
 
 ## Anti-lazy / do-not-hand-roll & anti-slop guard
 
@@ -47,25 +47,25 @@ Unity `ProjectSettings/`, `.unity`, UXML/USS/UI Builder or uGUI `Canvas`/`TextMe
 
 ## Common game-UI failures
 
-- text shrinking below `9px` on Steam Deck (`1280×800`) or `24px` on `1080p` TV, or text inputs failing to summon the gamepad virtual keyboard;
-- gameplay continuing unpaused when the active wireless controller disconnects, or silent disk writes without an autosave notice;
+- text shrinking below `9px` on Steam Deck (`1280×800`) or `24px` on `1080p` TV, HUD washing out against snow/sky glare, or text inputs failing to summon the gamepad virtual keyboard;
+- gameplay continuing unpaused on wireless controller disconnect, incoming call, or console Home overlay, or silent `save-failed` disk errors;
+- mandatory button-mashing QTEs without `tap-assist` hold alternatives, or un-togglable camera/screen shake;
 - input-glyph swaps lagging multiple seconds or shifting surrounding text layout;
 - `21:9`/`32:9` ultrawide stretching 2D HUD sprites or pinning health bars at extreme screen edges;
-- per-frame UI string allocations (`$"HP: {hp}"`) triggering GC frame hitches;
-- color-only team/rarity/danger encoding, `> 3 Hz` flash transitions, or single-bus audio lacking a dedicated `UI` volume slider.
+- per-frame UI string allocations (`$"HP: {hp}"`) triggering GC frame hitches, `> 3 Hz` flashes, or single-bus audio lacking a dedicated `UI` slider.
 
 ## Verification options
 
-Engine editor preview is not runtime gameplay verification. Capture playmode/device screenshots at `1280×800` (`16:10`), `1920×1080` (`16:9`), and `3440×1440` (`21:9`), run controller-only boot-to-gameplay + controller-disconnect walkthroughs, profile steady-state `0 B/frame` UI allocations, and test pseudo-localized (+35–40%) + CJK/RTL glyph builds (`rendered`). Label unverified console TRC/Lotcheck/XR checklists `not-checked`.
+Engine editor preview is `static`, never runtime gameplay verification (**Rule #0.3**). Capture playmode/device screenshots at `1280×800` (`16:10`), `1920×1080` (`16:9`), and `3440×1440` (`21:9`) across **both brightest (glare/snow/sky) and darkest scenes**, run controller-only boot-to-gameplay + interruption walkthroughs (disconnect, call/overlay, lock, `save-failed`), profile steady-state `0 B/frame` UI allocations, and test pseudo-localized (+35–40%) + CJK/RTL builds (`rendered`). Label unverified console TRC/Lotcheck/XR items `not-checked`.
 
 ## Pre-submit checklist
 
 - [ ] zero `TODO`s, placeholder stubs, mouse-only boot launchers, or dead menu/remapping handlers;
-- [ ] **Steam Deck (`1280×800`, `16:10`)** text `>= 9px` floor (`12–14px` target), **10ft TV (`1080p`)** `>= 24–28px`, automatic gamepad virtual keyboard, `90%` safe zone, and non-stretched `16:9` ultrawide HUD clamp verified;
-- [ ] **TRC/Lotcheck/XR gates**: controller-disconnect auto-pause modal, active player profile/gamertag indicator, `"Saving — do not turn off…"` notice, and `<= 3 Hz` flash cap wired;
+- [ ] **Steam Deck (`1280×800`, `16:10`)** text `>= 9px` floor (`12–14px` target), **10ft TV (`1080p`)** `>= 24–28px`, gamepad virtual keyboard, `90%` safe zone, non-stretched `16:9` ultrawide HUD clamp, and **HUD legibility captures on both brightest (glare/snow/sky) and darkest scenes** verified;
+- [ ] **TRC/Lotcheck/XR, interruptions & store compliance**: controller-disconnect auto-pause modal, **incoming call / console Home overlay / screen-lock / `save-failed` interruption states**, active player profile indicator, `"Saving — do not turn off…"` notice, `<= 3 Hz` flash cap, and **store age-rating (`ESRB`/`PEGI`/`IARC`) & privacy compliance** wired;
 - [ ] **`<= 1 frame` input-glyph hot-swap** (zero layout jump), `100–150 ms` menu input buffer, `±3%` UI SFX pitch modulation, decoupled `Master/Music/SFX/Voice/UI` buses, and **`0 B/frame` steady-state UI GC** verified;
-- [ ] independent HUD Scale, Subtitle background opacity (`0–100%`), Colorblind symbol+palette, Full Input Remapping, and +35–40% / CJK / RTL localization verified;
-- [ ] live playmode/device evidence labeled `rendered` and unchecked console certification items labeled `not-checked`.
+- [ ] independent HUD Scale, Subtitle background opacity (`0–100%`), Colorblind symbol+palette, Full Input Remapping, **hold-instead-of-mash (`tap-assist` / hold-to-repeat)**, **camera/screen-shake reduction (`0–100%`)**, and +35–40% / CJK / RTL localization verified;
+- [ ] **Checklist-Until-Passing Stop-Gate (`<HARD-GATE>`):** walk every checklist item above + run `slop-scan.mjs --fail-on p2`, `check-contrast.mjs`, playmode/profiler checks, and `check-acceptance.mjs .pixelcraft/acceptance.json` (`pixelcraft-review`) in a `Fix → Re-verify` loop until passing (`0` `fail`/`pending` rows, `rendered` evidence on visual/perf/a11y per `Rule #0.3`).
 
 ## Framework routing
 

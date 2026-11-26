@@ -54,7 +54,7 @@ High-chroma screen primaries (`Display-P3` / `sRGB` electric blues, emerald gree
 
 Never ship auto-generated RGB-to-CMYK values on packaging, stationery, signage, or `PDF/X-4` collateral without soft-proofing under the target ICC profile (`FOGRA39` / `GRACoL 2013`).
 
-## Commercial Font & Asset License Manifest
+## Commercial Font & Asset License Manifest + Preliminary Trademark Screening
 
 Font EULAs restrict usage by **deployment surface**, not merely "commercial vs personal." A desktop `.otf` trial or basic webfont license frequently **forbids** bundling `.ttf` files inside an iOS/Android app binary, running headless server PDF invoices, or redistributing fonts in open-source repos! Ship an explicit **Commercial License Manifest** with every brand handoff:
 
@@ -63,19 +63,20 @@ Font EULAs restrict usage by **deployment surface**, not merely "commercial vs p
 | Primary UI / Display Font | e.g. `Inter` (`SIL OFL 1.1`) or Commercial Foundry | Verified (`Unlimited` / Tier cap) | Verified (`App License` or `OFL`) | Verified (`Server/CPU License` or `OFL`) | Verified (`Permitted` vs `Prohibited` in public Git) |
 | Brand Photography / 3D / Icons | Commissioned / Licensed Stock / Internal Vector | Verified | Verified | Verified (print run cap checked) | Verified (C2PA / AI provenance logged) |
 
-Do not give legal advice or claim a trademark is clear/registerable. Escalate trademark searches and EULA ambiguities to legal counsel or the project owner, marking unverified rights explicitly as `not-checked`.
+**Preliminary trademark-similarity screening:** Run a preliminary visual and verbal similarity check against direct category competitors and public trademark databases (`USPTO`, `EUIPO`, `WIPO`, or local registry) to surface obvious collisions early—**explicitly documenting in the handoff that preliminary design screening does NOT replace formal trademark counsel or legal clearance**.
 
-## Accessibility and implementation checks
+## Accessibility, `16–32 px` proofs & real-world application mockups
 
-Before implementation use:
+Before delivery:
 
 - verify approved foreground/background pairs (`WCAG 2.2 AA` + `APCA Lc`) across both `sRGB` and `Display-P3` light/dark tokens (`pixelcraft-tokens`);
-- inspect dedicated `16 px` / `24 px` / `32 px` small-size optical reductions, monochrome/reversed marks, and localized tagline expansion;
+- inspect dedicated **`16–32 px` (`16 px`, `24 px`, `32 px`) favicon & social avatar optical proofs**, monochrome/reversed marks, and localized tagline expansion (`rendered`);
+- validate system coherence across **real-world application mockups** (**business cards, letterhead, slide deck templates, social profiles/cards, and packaging or signage**);
 - confirm standalone logo SVGs convert wordmark type to paths while UI/document pipelines ship only EULA-verified fonts.
 
 ## Governance workflow
 
-1. Freeze the approved master vectors (hero lockup + `16/24/32 px` optical reductions) and record owner/date/version.
-2. Publish the **Dual Screen <-> Print Color Master** and compile multi-target **DTCG `tokens.json`** (`CSS`/Swift/Kotlin/Desktop).
-3. Complete and sign off the **Commercial Font & Asset License Manifest** across Web, Mobile, Server PDF, and Desktop channels.
+1. Freeze the approved master vectors (hero lockup + **`16/24/32 px` favicon/avatar optical reductions**) and record owner/date/version.
+2. Publish the **Dual Screen <-> Print Color Master**, real-world application mockups, and multi-target **DTCG `tokens.json`** (`CSS`/Swift/Kotlin/Desktop).
+3. Complete the **Commercial Font & Asset License Manifest** and **preliminary trademark-similarity screening note** (with explicit formal-counsel disclaimer).
 4. Validate contrast pairs, dark/light/monochrome modes, and prohibited-use rules before broad rollout.

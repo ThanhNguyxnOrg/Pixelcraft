@@ -57,10 +57,19 @@ Verify exact schema versions and host API availability against current official 
 - Authenticate via `wx.login()` -> send ephemeral `code` to your server -> exchange via `code2Session` (never expose `AppSecret` in Mini Program code); handle `wx.requestPayment` failures/cancellations idempotently.
 - Respect hard **2 MB main-package size budgets** via `subpackages` lazy loading, and use **Official Account / Subscription Message templates** strictly with explicit user opt-in (`wx.requestSubscribeMessage`) and truthful transactional content.
 
+## Cross-platform bot webhook & interaction reliability (`Slack`, `Discord`, `Telegram`, `Zalo`, `WhatsApp`, `Teams`, `LINE`, `WeChat`)
+
+- **Fast webhook `ack` (`< 2–3 s`) + async progress state**: acknowledge every incoming webhook, slash command, button tap, or callback query within **`< 2–3 s`** (`HTTP 200`, `deferReply`, `answerCallbackQuery`, or `Action.Execute` interim card), push heavy LLM/API work to an async queue, and update the placeholder message in place with progress/results so host timeouts never show `"This interaction failed"`.
+- **Idempotent event deduplication**: messaging hosts retry webhooks on transient `5xx` or slow edges (`X-Slack-Retry-Num`, Telegram `update_id`, WhatsApp `messages[].id`, LINE `webhookEventId`, WeChat `MsgId`). Deduplicate on a short-TTL idempotency key before executing mutations or sending replies so users never get double-charged or duplicate bot messages.
+- **Edited & deleted message handling**: subscribe to `message_changed`/`edited_message` and `message_deleted`/recall events—abort in-flight generations for deleted prompts, avoid crashing when editing/replying to a user-deleted message (`400 message to edit not found`), and clearly mark or refresh bot answers when the source prompt was edited.
+- **Invalid command & missing-parameter guidance**: when a slash/text command has malformed syntax or missing required arguments, reply ephemerally with concise usage examples, valid option chips/buttons, or pre-filled modal/Flow launchers—never dump raw parser tracebacks or stay silent.
+
 ## Do/don't pairs
 
 | Do | Don't |
 |---|---|
+| Return webhook `ack` in `< 2–3 s` + async progress state and deduplicate `update_id` / `webhookEventId` / `MsgId` idempotently | Run a `12 s` synchronous LLM call inside the webhook handler or execute duplicate mutations on host retries |
+| Handle edited/deleted user messages gracefully and show actionable usage examples + quick-reply pickers on invalid/incomplete commands | Crash on `message not found` when a user deletes a prompt or fail silently on missing command parameters |
 | Measure UTF-8 bytes for Telegram's 64-byte `callback_data` and always call `answerCallbackQuery` | Check `.length` on multibyte strings or leave Telegram buttons spinning |
 | Validate `initData` HMAC (Telegram), `getIDToken()` (LINE), and `wx.login` code (WeChat) server-side | Trust client-passed user IDs from Mini App JS globals |
 | Use WhatsApp Flows (with RSA/AES data-exchange encryption) for multi-field collection | Force 10 sequential free-text chat turns for a booking form |

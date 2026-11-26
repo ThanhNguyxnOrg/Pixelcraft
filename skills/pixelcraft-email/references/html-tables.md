@@ -77,31 +77,31 @@ Use robust websafe fallback stacks. Custom fonts are progressive enhancement onl
 
 Assume animation is unsupported or stripped. Never require animation to communicate state or meaning. Static fallback is the baseline.
 
-## Accessibility specifics
+## Accessibility & personalization specifics
 
 - Always set `lang` and `dir` on `<html>` and repeat `dir` on the root content table.
 - Always include `<title>` and `role="presentation"` on every layout table (never on real data tables).
 - Mark decorative spacers with `aria-hidden="true"` and decorative images with `alt=""`.
-- Use real `<h1>`–`<h3>` headings, `<p>` copy, descriptive links, 4.5:1+ contrast, padded CTA hit areas, and matching `text/plain` MIME parity.
+- Use real `<h1>`–`<h3>` headings, `<p>` copy, **descriptive link text (never `"click here"`)**, **merge-tag fallbacks** (never outputting raw `{{name}}` when fields are empty), `4.5:1+` inline contrast, padded CTA hit areas, and matching `text/plain` MIME parity.
 
 ## States and forms
 
-Critical email states are: images off, dark-mode inversion, Gmail 102 KB clipping, remote-content warning, plaintext-only, forwarded/quoted, print, narrow mobile viewport, and high-contrast mode. Do not depend on embedded HTML forms—link to a secure, context-preserving web destination instead.
+Critical email states are: images off, dark-mode inversion, **Gmail `GANGA` (IMAP/POP `<style>` stripped completely)**, Gmail `102 KB` clipping (`< 85–90 KB` pre-ESP target), null/empty personalization merge tags, remote-content warning, plaintext-only, forwarded/quoted, print, narrow mobile viewport, and high-contrast mode. Do not depend on embedded HTML forms—link to a secure, context-preserving web destination instead.
 
 ## Do/don't pairs
 
 | Do | Don't |
 |---|---|
-| Set `lang`, `dir`, `<title>`, and `role="presentation"` on every layout `<table>` | Omit `role="presentation"`, forcing screen readers to announce layout table rows/columns |
-| Inline 6-digit hex and `px` values on table cells and text elements | Rely on external stylesheets, CSS variables, `oklch()`, Flexbox, or Grid |
-| Use a Bulletproof Dual-Engine CTA (`<!--[if mso]><v:roundrect>` + `<!--[if !mso]><!--><table role="presentation"><tr><td bgcolor>` wrapping styled `<a>`) | Ship a bare `<a style="padding:...">` (loses padding/radius in Classic Outlook) or a VML-only button (invisible in New Outlook) |
+| Set `lang`, `dir`, `<title>`, descriptive link copy, and `role="presentation"` on every layout `<table>` | Omit `role="presentation"` or write vague `"click here"` anchors |
+| Inline 6-digit hex and `px` values so layout & contrast survive **`GANGA` (`<style>` stripped)**, keeping `<style>` **`<= 8–16 KB`** with **zero `@layer`, `@property`, or CSS nesting** | Emit `@layer` / `@property` / CSS nesting inside `<style>` (causing Gmail to strip the entire `<style>` block!) or rely on CSS variables, `oklch()`, Flexbox, or Grid |
+| Use a Bulletproof Dual-Engine CTA (`<!--[if mso]><v:roundrect>` + `<!--[if !mso]><!--><table role="presentation"><tr><td bgcolor>` wrapping styled `<a>`) and explicit **merge-tag fallbacks** | Ship a bare `<a style="padding:...">`, a VML-only button, or unguarded `{{name}}` tags that leak raw syntax |
 | Pad hidden preheaders with 50–90 repeats (`~140+` chars) of `&#847;&zwnj;&nbsp;` | Use 3–5 repeats that let `"View in browser"` or header alt text leak into 120-char inbox previews |
 | Add a `1–2px` light keyline/halo or translucent pill to dark logos alongside `.light-img`/`.dark-img` swaps | Export pure black transparent PNG logos that vanish on forced `#121212` dark backgrounds (`Gmail Android` / `Outlook Windows`) |
-| Keep compiled HTML `< 80 KB` (`< 102 KB` hard Gmail clip cap) and wire `RFC 8058` one-click unsubscribe on promotional mail | Ship bloated nested tables that clip legal/unsubscribe footers or gate unsubscribe behind a login wall |
+| Keep pre-ESP compiled HTML **`< 85–90 KB`** (`< 102 KB` post-ESP hard Gmail clip cap) and wire `RFC 8058` one-click unsubscribe on promotional mail | Ship bloated nested tables that clip legal/unsubscribe footers after ESP link wrapping or gate unsubscribe behind a login wall |
 
 ## Known traps
 
-New Outlook vs Classic Outlook divergence, Gmail 102 KB clipping (`< 80 KB` target before ESP tracking URLs) and `<style>` stripping on syntax errors, GANGA dropping `<style>`, forced dark-mode logo disappearance, Apple MPP proxy open inflation, forwarding mutations, and plaintext divergence.
+New Outlook vs Classic Outlook divergence, Gmail `102 KB` clipping (`< 85–90 KB` pre-ESP headroom before ESP tracking URLs), Gmail stripping the entire `<style>` block on `@layer`/`@property`/nesting or `> 8–16 KB`, `GANGA` dropping `<style>` completely, raw `{{merge_tag}}` leaks, `"click here"` links, forced dark-mode logo disappearance, Apple MPP proxy open inflation, and plaintext divergence.
 
 ## Verification commands
 
@@ -111,4 +111,4 @@ Run the repository's email build/template validation pipeline without suppressin
 npm run build
 ```
 
-Inspect compiled HTML byte size (`< 80 KB` target / `< 102 KB` cap, `static`), validate `lang`/`dir`/`role="presentation"` and plaintext parity (`static`), and test real client previews across New Outlook, Classic Outlook, Gmail (Web/iOS/Android), and Apple Mail across all 3 dark-mode regimes with images off (`rendered`).
+Inspect pre-ESP HTML byte size (`< 85–90 KB` target / `< 102 KB` cap) and `<style>` size (`<= 8–16 KB`, zero `@layer`/`@property`/nesting, `static`), validate `lang`/`dir`/`role="presentation"`, merge-tag fallbacks, descriptive links, and plaintext parity (`static`), and test real client previews across New Outlook, Classic Outlook, Gmail (Web/iOS/Android + `<style>`-stripped `GANGA`), and Apple Mail across all 3 dark-mode regimes with images off (`rendered`).

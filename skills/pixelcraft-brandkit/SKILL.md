@@ -82,7 +82,8 @@ Select the mode in `references/visual-modes.md` based on strategy rather than fa
 
 For production handoff:
 - Define a **Dual Screen (`OKLCH` + `sRGB HEX` + `Display-P3`) <-> Print (`CMYK` + `Pantone`) color master table**—**never auto-convert vibrant RGB/P3 neons into muddy 4-plate CMYK** without hand-tuned ink formulas (`TAC <= 300%`, `C0 M0 Y0 K100` body black).
-- Author **dedicated small-size optical reductions (`16 px`, `24 px`, `32 px` favicon & app icon)** with simplified stroke/counter geometry rather than mechanically shrinking a complex hero lockup.
+- Author **dedicated small-size optical reductions (`16 px`, `24 px`, `32 px` favicon & social avatar proofs)** with simplified stroke/counter geometry rather than mechanically shrinking a complex hero lockup, plus **real-world application mockups** spanning **business cards, letterhead, slide deck templates, social profiles/cards, and packaging or signage** relevant to the brand.
+- Run a **preliminary trademark & visual-similarity screening** across category competitors and public registries—**explicitly stating in the handoff that preliminary screening is a design-risk check only and does NOT replace formal trademark counsel or legal clearance**.
 - Use the `pixelcraft-tokens` skill to emit **multi-target DTCG `tokens.json` exports** (`CSS` / `Swift` / `Kotlin` / `Desktop`) and attach a **Commercial Font & Asset License Manifest** verifying Webfont pageviews, Mobile App embedding, Server PDF generation, and Desktop redistribution rights.
 
 ### 6. Prompt and generation
@@ -93,25 +94,25 @@ Use supplied references for rhythm, spacing, density, logo placement, image trea
 
 ### 7. QA before delivery
 
-Before presenting the result, perform the self-critique in `references/qa-checklist.md`. Check logo consistency across panels, dedicated `16/24/32 px` optical reductions, Dual Screen <-> Print color specs, sparse legible text, panel rhythm, no copied reference material, correct use of supplied assets, size/aspect honesty, and commercial license manifest completeness.
+Before presenting the result, perform the self-critique in `references/qa-checklist.md`. Check logo consistency across panels, dedicated **`16–32 px` favicon/avatar proofs**, **real-world application mockups** (business cards, letterhead, slides, social, packaging/signage), Dual Screen <-> Print color specs, preliminary trademark-similarity screening note, sparse legible text, panel rhythm, correct use of supplied assets, and commercial license manifest completeness.
 
 ## Hard rules
 
 - Never invent replacements for supplied logos, names, colors, typography, or assets.
 - Never generate long paragraphs, lorem ipsum, dense explanations, unreadable labels, fake tiny UI, or generic corporate slogans.
-- Never copy exact reference logos, names, compositions, slogans, or unique visual assets.
-- Never auto-convert `sRGB`/`Display-P3` screen neons into muddy auto-profile `CMYK`, and never shrink a complex multi-line hero lockup directly into a `16 px` favicon without an optical reduction asset.
-- Enforce measurable grid geometry, single-mark consistency, contrast-verified palettes, multi-target DTCG `tokens.json` export (`CSS`/Swift/Kotlin/Desktop), and a complete **Commercial Font & Asset License Manifest** (Webfont, Mobile App, Server PDF, Desktop redistribution).
+- Never copy exact reference logos, names, compositions, slogans, or unique visual assets, and never imply legal trademark clearance (always pair preliminary similarity screening with an explicit formal-counsel disclaimer).
+- Never auto-convert `sRGB`/`Display-P3` screen neons into muddy auto-profile `CMYK`, and never shrink a complex multi-line hero lockup directly into a `16–32 px` favicon/avatar without an optical reduction proof.
+- Enforce measurable grid geometry, single-mark consistency, real-world application mockups, contrast-verified palettes, multi-target DTCG `tokens.json` export (`CSS`/Swift/Kotlin/Desktop), and a complete **Commercial Font & Asset License Manifest** (Webfont, Mobile App, Server PDF, Desktop redistribution).
 - Report the actual output size/aspect ratio; never promise unsupported dimensions.
 
 ## Pre-submit checklist
 
 - [ ] Missing intake items resolved one focused question at a time (with concrete options + recommendation); supplied brand assets preserved verbatim.
 - [ ] 2–3 genuinely different brand worlds diverged and scored before generation; losing worlds documented.
-- [ ] Identical mark proportions across panels + **dedicated `16 px` / `24 px` / `32 px` small-size optical reduction** (simplified strokes/counters) verified or flagged `not-checked`.
+- [ ] Identical mark proportions across panels + **dedicated `16–32 px` (`16 px` / `24 px` / `32 px`) favicon & avatar optical proof** + **real-world application mockups** (business cards, letterhead, slides, social, packaging/signage) verified or flagged `not-checked`.
 - [ ] **Dual Screen (`OKLCH` + `sRGB HEX` + `Display-P3`) <-> Print (`CMYK` + `Pantone`) color master table** + **multi-target DTCG `tokens.json` export** (`CSS`/Swift/Kotlin/Desktop via `pixelcraft-tokens`) prepared.
-- [ ] **Commercial Font & Asset License Manifest** explicitly records Webfont pageview, Mobile App binary embedding, Server PDF generation, and Desktop redistribution rights (plus C2PA/AI provenance).
-- [ ] Anti-slop check passed and actual output dimensions + evidence labels (`rendered`/`static`/`model-judgment`/`not-checked`) honestly reported.
+- [ ] **Commercial Font & Asset License Manifest** (Webfont, Mobile App, Server PDF, Desktop redistribution + C2PA/AI provenance) and **preliminary trademark-similarity screening note** (explicitly noting it does not replace formal trademark counsel) included.
+- [ ] **Checklist-Until-Passing Stop-Gate (`<HARD-GATE>`):** walk every checklist item above (`references/qa-checklist.md`) + run `slop-scan.mjs --fail-on p2`, `check-contrast.mjs`, `export-tokens.mjs`, rendered `16–32 px` & board inspection, and `check-acceptance.mjs .pixelcraft/acceptance.json` (`pixelcraft-review`) in a `Fix → Re-verify` loop until passing (`0` `fail`/`pending` rows, `rendered` evidence on visual/contrast/small-size legibility per `Rule #0.3`).
 
 ## Reference routing
 

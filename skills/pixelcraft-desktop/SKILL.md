@@ -29,11 +29,11 @@ Organize persistent navigation, working content and one contextual inspector aro
 
 ## Platform-wide rules
 
-- **Startup & idle CPU envelope**: hit **`< 300–500 ms`** cold start on Native/Tauri/Rust/C++/Qt/AppKit/WinUI/GTK apps or **`< 1.0–1.2 s`** on Electron (explicitly justifying Chromium's memory footprint in the brief); hold **`~0%` idle CPU** when minimized or unfocused; offload heavy I/O to worker threads/processes.
-- **Window geometry & mixed-DPI clamping**: never trap users in fixed-size windows unless truly modal; preserve split ratios and window bounds across mixed-DPI (`100%` ↔ `200%`) monitors and **clamp off-screen coordinates** onto a connected display's work area if an external monitor was unplugged (respecting Wayland's size-only model).
-- **OS-standard paths & atomic persistence**: store config, caches, DBs, and logs in XDG / `~/Library/Application Support` / `%APPDATA%` (never beside the executable); write project/config files atomically (**write temp → `fsync` → atomic rename**) and run local SQLite in **`WAL` mode** with versioned schema migrations.
-- **Keyboard acceleration & multi-window hygiene**: every primary workflow completes without a mouse (`Tab`, `F6` pane cycle, platform `Cmd` vs `Ctrl` accelerators, `Escape`); guard dirty documents on close/quit; soften unfocused window chrome so active focus across multiple windows is unmistakable.
-- **2026 code signing, auto-updates & accessibility**: macOS Developer ID + Hardened Runtime + minimal Entitlements + `xcrun notarytool` + `xcrun stapler staple` (Universal `arm64 + x86_64` or explicit arch); Windows Authenticode via **Azure Artifact Signing (Trusted Signing)** or HSM OV/EV—noting that **since 2024 Microsoft removed instant EV SmartScreen bypass, so reputation must be built cleanly via consistent signed CI releases**; Linux `.deb`/`.rpm`/Flatpak/GPG-signed AppImage with AppStream metadata; `Ed25519`/`minisign`-signed delta auto-updates with background staging and crash rollback; screen-reader verification across **`NVDA`/`JAWS`/`Narrator`**, **`VoiceOver`**, and **`Orca`** (AT-SPI/AccessKit).
+- **Startup, idle CPU & 30-minute active RAM envelope**: hit **`< 300–500 ms`** cold start on Native/Tauri/Rust/C++/Qt/AppKit/WinUI/GTK apps or **`< 1.0–1.2 s`** on Electron (explicitly justifying Chromium's footprint in the brief); hold **`~0%` idle CPU** when minimized or unfocused; **measure RSS/private RAM after 30 minutes of active usage** against the agreed memory ceiling (verifying zero unbounded leaks); and offload heavy I/O to worker threads/processes.
+- **Full workspace session restoration & mixed-DPI clamping**: never trap users in fixed-size windows unless truly modal; restore the **full workspace session across restarts** (open windows, tabs, split ratios, scroll/cursor context, and active/unsaved documents), preserve bounds across mixed-DPI (`100%` ↔ `200%`) monitors, and **clamp off-screen coordinates** onto a connected display's work area when external monitors disconnect (respecting Wayland's size-only model).
+- **OS-standard paths, atomic persistence, clean uninstall & support logs**: store config, caches, DBs, and logs in XDG / `~/Library/Application Support` / `%APPDATA%` (never beside the executable); write files atomically (**write temp → `fsync` → atomic rename**) and run SQLite in **`WAL` mode** with versioned migrations; ship a **clean uninstaller** (leaving zero leftover daemons, LaunchAgents, Services, or registry bloat—with explicit user choice on keeping vs removing user data) and an **opt-in support/diagnostic log export** bundle (PII/token redacted).
+- **Keyboard acceleration, high-contrast modes & multi-window hygiene**: every primary workflow completes without a mouse (`Tab`, `F6` pane cycle, platform `Cmd` vs `Ctrl` accelerators, `Escape`); honor **Windows `forced-colors` / High Contrast themes and macOS `Increase Contrast` + `Reduce Transparency`**; guard dirty documents on close/quit; soften unfocused window chrome so active focus across multiple windows is unmistakable.
+- **2026 code signing, clean-VM install proof & live `v(N-1) -> vN` auto-update rollback**: macOS Developer ID + Hardened Runtime + `xcrun notarytool` + `stapler` + **clean-VM install screenshot** confirming zero Gatekeeper warning; Windows Authenticode via **Azure Artifact Signing (Trusted Signing)** or HSM OV/EV + **clean-VM SmartScreen/install capture** (noting EV certs no longer grant instant SmartScreen bypass since 2024); Linux `.deb`/`.rpm`/Flatpak/GPG AppImage; **`Ed25519`/`minisign`-signed delta auto-updates + rollback verified live across 2 consecutive versions (`v(N-1) -> vN`)**; screen-reader verification across **`NVDA`/`JAWS`/`Narrator`**, **`VoiceOver`**, and **`Orca`** (AT-SPI/AccessKit).
 
 ## The 8 WebView Giveaway Killers (mandatory for Tauri / Electron / Wails / WebView2)
 
@@ -56,22 +56,23 @@ Organize persistent navigation, working content and one contextual inspector aro
 
 - WebView shell leaking `cursor: pointer`, selectable button text, white dark-mode launch flash, `Ctrl+R` reload, or browser "Inspect Element" menus;
 - custom titlebar colliding with macOS traffic lights (`< 72 px` inset or stuck inset in fullscreen), swallowing button clicks, or breaking Windows Snap Layouts;
-- restoring a window at off-screen coordinates after an external monitor is unplugged or blurring across `100%` ↔ `200%` mixed-DPI displays;
-- writing `config.json`/SQLite next to the binary or truncating project files non-atomically without `fsync` + `rename`;
-- assuming Windows EV certs still grant instant SmartScreen bypass or shipping unsigned auto-updaters.
+- restoring a window at off-screen coordinates after an external monitor is unplugged, losing open tabs/documents on restart, or blurring across `100%` ↔ `200%` mixed-DPI displays;
+- writing `config.json`/SQLite next to the binary, leaving orphan background helpers/registry keys on uninstall, or truncating project files non-atomically without `fsync` + `rename`;
+- assuming Windows EV certs still grant instant SmartScreen bypass or shipping untested auto-updaters.
 
 ## Verification options
 
-Rendered verification requires running the actual app/windowing stack or platform-specific UI tests. Webview DOM inspection only covers inner content, not menus/titlebar/window integration. `Avalonia.Headless`, Qt test tools, XCUITest, Accessibility Insights for Windows (UIA), `NVDA`/`JAWS`/`Narrator`/`VoiceOver`/`Orca`, screenshot/golden tests, and manual resize/multi-monitor checks provide distinct evidence. Label untested OS/window-manager combinations `not-checked`.
+Rendered verification requires running the actual app/windowing stack or platform-specific UI tests (**Rule #0.3**: inner WebView DOM checks or compilation alone never count as `rendered` desktop verification). Attach 30-minute RAM/CPU profiler readings, clean-VM install screenshots, `v(N-1) -> vN` update/rollback logs, and `NVDA`/`JAWS`/`Narrator`/`VoiceOver`/`Orca` + High Contrast captures; label untested OSes `not-checked`.
 
 ## Pre-submit checklist
 
 - [ ] zero `TODO`s, placeholder stubs, invented copy, or dead menu/toolbar/shortcut handlers;
-- [ ] all 8 WebView Giveaway Killers enforced (if Tauri/Electron/Wails/WebView2), `< 300–500 ms` (`< 1.2 s` Electron) cold start, and `~0%` idle CPU when minimized/unfocused;
-- [ ] window geometry and pane splits restore safely across `100%` ↔ `200%` mixed-DPI monitors and clamp on-screen when monitors disconnect;
-- [ ] OS-standard storage paths (XDG / `Application Support` / `%APPDATA%`), atomic `temp → fsync → rename` file writes, SQLite `WAL` migrations, and dirty-close protection wired;
-- [ ] every primary workflow completes by keyboard (`Tab`, `F6` pane focus, `Cmd`/`Ctrl` menu shortcuts, `Escape`) with non-blocking worker I/O;
-- [ ] 2026 signing/notarization (`notarytool`+`stapler`, Azure Artifact Signing, AppStream/GPG, `Ed25519` delta updates with rollback) and `NVDA`/`JAWS`/`Narrator`/`VoiceOver`/`Orca` checked or honestly labeled `not-checked`.
+- [ ] all 8 WebView Giveaway Killers enforced (if Tauri/Electron/Wails/WebView2), `< 300–500 ms` (`< 1.2 s` Electron) cold start, `~0%` idle CPU when minimized/unfocused, and **RAM measured after 30 minutes of active usage** within budget;
+- [ ] **full workspace session restoration** (open windows, tabs, splits, active documents), `100%` ↔ `200%` mixed-DPI scaling, and unplugged-monitor on-screen clamping verified;
+- [ ] OS-standard storage paths (XDG / `Application Support` / `%APPDATA%`), atomic `temp → fsync → rename` writes, SQLite `WAL` migrations, dirty-close protection, **clean uninstaller** (zero leftover files/daemons/registry), and **opt-in redacted support log export** wired;
+- [ ] every primary workflow completes by keyboard (`Tab`, `F6` pane focus, `Cmd`/`Ctrl` menu shortcuts, `Escape`), and **Windows `forced-colors` / High Contrast + macOS `Increase Contrast`** render cleanly;
+- [ ] 2026 signing/notarization + **clean-VM Gatekeeper/SmartScreen install screenshot**, **live `v(N-1) -> vN` auto-update + rollback**, and `NVDA`/`JAWS`/`Narrator`/`VoiceOver`/`Orca` checked or honestly labeled `not-checked`;
+- [ ] **Checklist-Until-Passing Stop-Gate (`<HARD-GATE>`):** walk every checklist item above + run `slop-scan.mjs --fail-on p2`, `check-contrast.mjs`, desktop UI/build tests, and `check-acceptance.mjs .pixelcraft/acceptance.json` (`pixelcraft-review`) in a `Fix → Re-verify` loop until passing (`0` `fail`/`pending` rows, `rendered` evidence on visual/perf/a11y per `Rule #0.3`).
 
 ## Framework routing
 

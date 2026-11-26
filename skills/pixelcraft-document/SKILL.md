@@ -28,8 +28,8 @@ Build a reading sequence around repeated headers, explicit units and page bounda
 2. **Choose the rendering pipeline.** HTML/CSS when content is hypertext-like; React-PDF when React data components must emit controlled PDFs; Typst/LaTeX when programmatic typographic control matters; slides tooling when presentation state/navigation matters.
 3. **Design the page system.** Cover/body/back matter, named pages, margins, columns, running headers/footers, numbering, captions, tables, figures, blank pages, and error/missing-data states.
 4. **Control fragmentation.** Specify where breaks may/must happen before styling decoration. Tables, headings, figures, signatures, totals, and footnotes need explicit behavior.
-5. **Use physical typography.** Set real type sizes/leading/measure in pt/mm; verify script/font fallback, embedding/licensing, hyphenation, widows/orphans, and color contrast on paper/projector.
-6. **Verify the final artifact.** Inspect the actual PDF/print preview/slides at 100% and final size. Screen HTML is not evidence of correct pagination.
+5. **Use physical typography.** Set print body copy within **`9–12 pt`** (`1.35–1.5` leading, `45–75ch` measure) in explicit `pt`/`mm` units; verify script/font fallback, embedding/licensing, hyphenation, widows/orphans (`>= 2–3` lines), and color contrast on paper/projector.
+6. **Verify the final artifact.** Cross-check all calculations/clauses against source data, rasterize/inspect representative pages at `100%` zoom + grayscale/physical print proof (`rendered`—screen HTML or `static` PDF byte checks never satisfy **Rule #0.3** alone).
 
 ## Anti-lazy-default & anti-slop guard
 
@@ -40,19 +40,19 @@ Build a reading sequence around repeated headers, explicit units and page bounda
 
 | Concern | Rule |
 |---|---|
-| truthfulness | Totals, dates, references, legal text, names, and page numbers must be data-driven or explicitly marked draft/placeholder; never invent invoice/report content. |
-| fragmentation | Enforce `thead { display: table-header-group }`, `h1, h2, h3 { break-after: avoid; break-inside: avoid }`, and `break-inside: avoid` on `tr`, figures, signatures, and invoice totals; never split a total block from the rows it summarizes without repeating context. |
-| dual print profiles | Choose explicitly between **(A) Digital & Office Grayscale Proof** (`10–12mm` safe hardware margins, grayscale legibility without color ink, clickable TOC bookmarks, `PDF/UA` tags) and **(B) Commercial Prepress (`PDF/X-4`)** (`3mm` / `0.125"` bleed on all sides, `5mm` inner trim safety inset, `>= 300 effective DPI` photos, `FOGRA39`/`GRACoL` CMYK ICC, `TAC <= 300%`, and **body black text on single-plate `100% K` overprint `C0 M0 Y0 K100`** so small type never ghosts from 4-plate misregistration). |
+| truthfulness & source cross-check | **Cross-check totals, subtotals, tax/line-item math, dates, legal clauses, and signature blocks directly against source data**; never invent invoice/report figures or silently round mismatched totals. |
+| physical body scale & fragmentation | Keep print/PDF body typography in **`9–12 pt`**; enforce `thead { display: table-header-group }`, `h1, h2, h3 { break-after: avoid; break-inside: avoid }`, and `break-inside: avoid` on `tr`, figures, **signature blocks**, and **invoice totals** (never splitting totals or signatures onto an orphaned trailing page without context). |
+| dual print profiles | Choose explicitly between **(A) Digital & Office Grayscale Proof** (`10–12mm` safe hardware margins, grayscale legibility without color ink, clickable TOC bookmarks, `PDF/UA` tags) and **(B) Commercial Prepress (`PDF/X-4`)** (`3mm` / `0.125"` bleed on all sides, `5mm` inner trim safety inset, `>= 300 effective DPI` photos, `FOGRA39`/`GRACoL` CMYK ICC, `TAC <= 300%`, and **body black text on single-plate `100% K` overprint `C0 M0 Y0 K100`**). |
 | font subset & `ToUnicode` CMap | Verify via `pdffonts` (`emb=yes`, `uni=yes`) + `pdftotext` that subsetted fonts retain a valid `ToUnicode` CMap so copying Vietnamese, CJK, or ligatures (`fi`, `fl`) and running ATS/search parsers never yields tofu `□` or garbled bytes. |
 | vector vs raster | Emit charts, diagrams, and logos as **strict vector SVG / PDF primitives**; reserve `>= 300 effective DPI` raster strictly for photographs or `100k+`-point dense heatmaps. |
-| slide deck parity | Build on **Master Slide** layouts (`>= 24pt` room-projection body floor, `>= 18pt` dense leave-behind), embedded/universal fonts, pixel-snapped `16:9` assets (`< 25–30 MB` email-safe deck size), native editable `.pptx` objects (never rasterized Slidev PNG slides for executive handoff), and **`PPTX <-> PDF` visual parity verification**. |
-| accessibility | Ship `PDF/UA` tag trees (`H1`–`H6`, `Table`/`TH` scope, `Artifact` running headers/footers, `Figure` alt text), logical reading order, and non-color pattern/label differentiation. |
+| slide deck parity & speaker notes | Build on **Master Slide** layouts (`>= 24pt` room-projection body floor, `>= 18pt` dense leave-behind), include structured **speaker notes** when presenter delivery is in scope, embed/use universal fonts, keep `< 25–30 MB` email-safe deck size, emit native editable `.pptx` objects (never rasterized PNG slides), and verify **`PPTX <-> PDF` visual parity**. |
+| accessibility & deliverable proofs | Ship `PDF/UA` tag trees (`H1`–`H6`, `Table`/`TH` scope, `Artifact` running headers/footers, `Figure` alt text) and deliver **representative rendered page captures (first, middle, last, multi-page table break, and edge-case long dynamic fields)** plus a **grayscale / physical print proof**. |
 
 ## Pre-submit checklist
 
 - [ ] output profile explicit: **Digital/Office Grayscale (`PDF/UA`)** vs **Commercial Prepress (`PDF/X-4`, `3mm` bleed, `5mm` safety, `TAC <= 300%`, `100% K` body black)** vs **Slide Deck (`16:9`, `< 25–30 MB`)**;
-- [ ] `thead { display: table-header-group }`, `break-after: avoid` on headings, and page-break rules tested on short, multi-page, and worst-case data;
+- [ ] **`9–12 pt` print body typography**, **totals / line-item math / legal clauses / signature blocks cross-checked against source data**, `thead` repeat, and `break-after: avoid` / `break-inside: avoid` verified;
 - [ ] `pdffonts` confirms `emb=yes` and `uni=yes` (`ToUnicode` CMap intact—Vietnamese/CJK/ligatures `fi`/`fl` copy cleanly with zero `□`);
-- [ ] charts/logos are vector SVG/PDF primitives; office proofs pass **grayscale legibility** without red/green ink dependency;
-- [ ] slide decks enforce Master Slides, `>= 24pt` projection body (`>= 18pt` leave-behind), native editable `.pptx` primitives where editability is expected, and **`PPTX <-> PDF` parity**;
-- [ ] `check-pdf.mjs` (`--prepress` for commercial `PDF/X-4` `/TrimBox`, `/BleedBox`, `/OutputIntents`, `/ToUnicode` checks in `pixelcraft-visual-qa`) (`static`) separated honestly from 100%-zoom page/slide inspection (`rendered`) or `not-checked`.
+- [ ] charts/logos are vector SVG/PDF primitives; slide decks enforce Master Slides, `>= 24pt` projection (`>= 18pt` leave-behind), **speaker notes** (when in scope), native editable `.pptx` primitives, and **`PPTX <-> PDF` parity**;
+- [ ] **representative rendered page captures (first, middle, last, multi-page table break, edge-case long dynamic fields)** and **grayscale / physical print proof** inspected (`rendered`) alongside `check-pdf.mjs` (`--prepress` when print-targeted, `static`);
+- [ ] **Checklist-Until-Passing Stop-Gate (`<HARD-GATE>`):** walk every checklist item above + run `slop-scan.mjs --fail-on p2`, `check-pdf.mjs`, and `check-acceptance.mjs .pixelcraft/acceptance.json` (`pixelcraft-review`) in a `Fix → Re-verify` loop until passing (`0` `fail`/`pending` rows, `rendered` page/slide proofs per `Rule #0.3`).

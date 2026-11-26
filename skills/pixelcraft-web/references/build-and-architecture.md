@@ -153,13 +153,14 @@ serwist.addEventListeners();
 
 Measure production performance **after** analytics, GTM, ad pixels, A/B testing, and chat widgets are active—never solely on a clean dev build.
 
-### Mandatory production budgets (simulated mid-tier mobile, Slow 4G + 4× CPU throttle)
+### Mandatory production budgets (3-run median under 4G + 4× CPU throttle)
 
 | Metric / Audit | Studio-grade floor | Measurement rule |
 |---|---|---|
-| **Lighthouse Mobile** | **Perf ≥ 90**, **A11y ≥ 95**, **Best Practices ≥ 95**, **SEO ≥ 95** | Run against production build with real tags/consent state active |
+| **Lighthouse (Mobile + Desktop)** | **Perf ≥ 90**, **A11y ≥ 95**, **Best Practices ≥ 95**, **SEO ≥ 95** | **3-run median** on **every primary template** against production build with real tags/consent state active |
+| **Initial compressed JS+CSS payload** | Content/editorial **`<= 150–250 KB`** · Dashboard/app **`<= 250–450 KB`** · Promotional/rich experience **`<= 350–700 KB`** · Embedded widget **`<= 100–200 KB`** | Initial pre-`load` compressed transfer (`~3.1 MB / 103 req` showcase median is a cost calibration benchmark, **never** an acceptable target budget) + **Network waterfall capture on heaviest page** |
 | **Largest Contentful Paint (LCP)** | **< 2.5 s** (p75 field & lab) | Never lazy-load LCP hero media; set `fetchpriority="high"` + responsive `srcset` |
-| **Interaction to Next Paint (INP)** | **< 200 ms** (p75 field & lab) | Yield long tasks (`scheduler.yield()`), isolate 3rd-party scripts off main thread |
+| **Interaction to Next Paint (INP) & `LoAF`** | **< 200 ms** (p75 field & lab); clean **Long Animation Frames (`LoAF`)** on scroll/drag | Yield long tasks (`scheduler.yield()`), isolate 3rd-party scripts off main thread, cap luminance flashes **`<= 3 Hz`** (`WCAG 2.3.1`) |
 | **Cumulative Layout Shift (CLS)** | **< 0.10** (target `0.00` above fold) | Explicit media dimensions, metric-matched font fallbacks, zero-shift consent UI |
 
 ### Third-party tag, pixel, and chat widget isolation
@@ -168,7 +169,7 @@ Measure production performance **after** analytics, GTM, ad pixels, A/B testing,
 - **Interaction facades**: never boot heavy third-party embeds (YouTube/Vimeo iframes, Intercom/Crisp/Zendesk live chat, Calendly, heavy maps) on initial page load. Render a lightweight static button/thumbnail facade (`lite-youtube-embed` or a semantic `"Chat with support"` button) and dynamically import the vendor SDK on `pointerenter`, `focus`, or `click`.
 - **Consent Mode v2 without CLS**: initialize default consent state synchronously in `<head>` (`ad_storage`, `ad_user_data`, `ad_personalization`, `analytics_storage` set to `'denied'` before any tag script executes) and upgrade via `gtag('consent', 'update', ...)` after explicit user choice. Render cookie/consent UI as a fixed bottom sheet/banner (`position: fixed`) with keyboard non-trapping focus—never inject a flow banner at the top of `<body>` that pushes page content down after hydration.
 
-## CDN cache control & mandatory HTTP security headers
+## CDN cache control, HTTP security headers & deployment safety
 
 | Resource class | Recommended `Cache-Control` header | Rationale |
 |---|---|---|
@@ -176,7 +177,7 @@ Measure production performance **after** analytics, GTM, ad pixels, A/B testing,
 | Public SSG/ISR HTML & public JSON feeds | `public, max-age=0, s-maxage=60, stale-while-revalidate=86400` | Instant CDN edge response with background revalidation |
 | Authenticated, user-specific, checkout, or tenant-scoped HTML/API | `private, no-store` (+ `Vary: Cookie, Authorization` if shared proxy exists) | Prevents catastrophic cross-tenant/session cache poisoning at CDN edge |
 
-Ship these baseline HTTP security headers on every HTML response (via edge middleware, CDN rules, or reverse proxy):
+Ship these baseline HTTP security headers on every HTML response (via edge middleware, CDN rules, or reverse proxy) alongside **isolated PR preview deployments** and a tested **instant rollback plan** (previous immutable artifact alias or CDN/edge deployment promotion):
 
 - **`Content-Security-Policy`**: strict allowlist or per-request nonce (`script-src 'self' 'nonce-...' 'strict-dynamic'; object-src 'none'; base-uri 'self'; frame-ancestors 'none'`).
 - **`Strict-Transport-Security`**: `max-age=63072000; includeSubDomains; preload`.
@@ -198,16 +199,17 @@ Ship these baseline HTTP security headers on every HTML response (via edge middl
 | Use `oxc` and `build.rolldownOptions` on Vite 8+ | Copy legacy `esbuild` / `optimizeDeps.esbuildOptions` snippets into Vite 8 configs |
 | Mark `react` / `react-dom` as `singleton: true` in Module Federation | Load duplicate React runtimes across host and remote containers |
 | Gate 3rd-party pixels/chat behind Zaraz/Partytown, click-to-load facades, and fixed Consent Mode v2 UI | Load GTM, Intercom, and YouTube iframes synchronously on `<head>` or push layout down with a late cookie bar |
-| Serve `immutable` cache headers on hashed assets, `private, no-store` on auth routes, and CSP/HSTS/`nosniff` headers | Cache personalized responses at the CDN edge or ship HTML without `frame-ancestors` / CSP |
+| Serve `immutable` cache headers on hashed assets, `private, no-store` on auth routes, CSP/HSTS/`nosniff`, PR previews, and a rollback plan | Cache personalized responses at the CDN edge or ship production changes without preview isolation and rollback |
 | Ship a tested legacy `301` redirect map, `/llms.txt`, and `1200×630` HTTPS PNG/JPEG `og:image` tags | Drop old indexed URLs to `404` on redesign or use relative/WebP/SVG `og:image` URLs that break in Zalo/Slack |
 | Persist offline state in IndexedDB/Cache API and use Serwist/Workbox | Store state in Service Worker module globals that vanish when the worker sleeps |
-| Match rendering strategy (SSG/ISR/Islands/SSR/SPA) to route interactivity | Ship a full SPA bundle for a static marketing/docs site |
+| Match rendering strategy (SSG/ISR/Islands/SSR/SPA) and initial JS+CSS budget (`<= 150–700 KB` by class) to route interactivity | Ship a `3.1 MB` showcase-bloated SPA bundle for a content/marketing site |
 
 ## Verification commands
 
 ```sh
 npm run build
 npx lighthouse http://localhost:4173 --preset=perf --form-factor=mobile
+npx lighthouse http://localhost:4173 --preset=desktop
 ```
 
-Inspect generated bundle chunks, HTTP response/security/cache headers, `sitemap.xml`/`robots.txt`/`llms.txt`, and `301` redirect rules (`static`), and verify post-tag Lighthouse Mobile scores (`Perf >= 90`, `A11y/BP/SEO >= 95`), CWV (`LCP < 2.5s`, `INP < 200ms`, `CLS < 0.1`), Service Worker lifecycle, and OG card metadata in a real browser (`rendered`).
+Inspect generated bundle chunks against surface-class JS+CSS budgets, HTTP response/security/cache headers, `sitemap.xml`/`robots.txt`/`llms.txt`, PR preview/rollback config, and `301` redirect rules (`static`), and verify **3-run median** post-tag Lighthouse scores (`Perf >= 90`, `A11y/BP/SEO >= 95` on mobile + desktop per primary template), CWV (`LCP < 2.5s`, `INP < 200ms`, `CLS < 0.1`), `LoAF` scroll/drag traces, heaviest-page Network waterfall, and deliverable captures across **`Chrome`, `Firefox`, `Edge`, `Safari macOS`, real `Safari iOS`, and `Chrome Android`** (`rendered`).
