@@ -122,19 +122,22 @@ try {
   const goodHeaders = path.join(tmp, 'good-headers.eml');
   fs.writeFileSync(promoEmail, `<!doctype html>
 <html lang="en">
-<head><title>Spring Release</title></head>
+<head>
+  <title>Spring Release</title>
+  <style>@layer base { .btn { color: #111111; } } ${'/*p*/'.repeat(3500)}</style>
+</head>
 <body>
   <div style="display:none;max-height:0;overflow:hidden;">Preview copy &#847;&zwnj;&nbsp;&#847;&zwnj;&nbsp;</div>
   <table role="presentation" width="600">
-    <tr><td><a href="https://example.com/buy"><img src="https://example.com/cta.png" alt=""></a></td></tr>
+    <tr><td>Xin chao {{customer_name}}, <a href="https://example.com/buy"><img src="https://example.com/cta.png" alt=""></a></td></tr>
   </table>
 </body>
 </html>`);
   fs.writeFileSync(badHeaders, 'Subject: Spring Release\nList-Unsubscribe: <mailto:unsub@example.com>\n');
   const promoFail = runScript('check-email.mjs', [promoEmail, '--headers', badHeaders, '--json']);
-  assert.equal(promoFail.status, 1, 'image-only CTA + short preheader + missing RFC 8058 headers must fail');
+  assert.equal(promoFail.status, 1, 'image-only CTA + short preheader + @layer + >16KB style + merge tag + missing RFC 8058 headers must fail');
   const promoRules = new Set(JSON.parse(promoFail.stdout).findings.map((f) => f.rule));
-  for (const expected of ['image-only-link-empty-alt', 'short-preheader-spacer', 'missing-list-unsubscribe', 'missing-one-click-unsubscribe']) {
+  for (const expected of ['image-only-link-empty-alt', 'short-preheader-spacer', 'style-block-too-large', 'gmail-unsafe-modern-css', 'unfilled-merge-tag', 'missing-list-unsubscribe', 'missing-one-click-unsubscribe']) {
     assert.ok(promoRules.has(expected), `missing promo email finding '${expected}': ${[...promoRules]}`);
   }
 
@@ -142,7 +145,7 @@ try {
   const headerPass = runScript('check-email.mjs', [goodEmail, '--plaintext', goodText, '--headers', goodHeaders, '--json']);
   assert.equal(headerPass.status, 0, headerPass.stderr || headerPass.stdout);
   assert.equal(JSON.parse(headerPass.stdout).headersStatus, 'pass');
-  console.log('ok 3 - check-email.mjs catches Gmail 102KB clip, Outlook-unsafe CSS, image-only empty-alt CTAs, short preheaders, RFC 8058 headers, and plaintext gaps');
+  console.log('ok 3 - check-email.mjs catches Gmail 102KB/>16KB style/@layer, Outlook CSS, image-only CTAs, merge tags, RFC 8058 headers, and plaintext gaps');
 
   // 4. check-tui.mjs: clean capture & live NO_COLOR command pass; ZWJ/VS16/NFD grapheme width exact; ANSI/overflow/6-step teardown fail
   const goodTui = path.join(tmp, 'good-tui.txt');
@@ -258,6 +261,97 @@ try {
   assert.equal(fakePdfRes.status, 1);
   assert.equal(JSON.parse(fakePdfRes.stdout).findings[0].rule, 'invalid-pdf-header');
   console.log('ok 5 - check-pdf.mjs validates %PDF header, PDF/UA markers, embedded fonts, /ToUnicode CMap, and --prepress PDF/X gates');
+
+  // 6. check-acceptance.mjs: all 14 platforms initialize cleanly, pending/static-on-rendered fail (Rule #0.3), PASS_STUDIO_10K_20K & EXCEEDS_STUDIO pass
+  const acceptanceCli = path.join(root, 'skills/pixelcraft-review/scripts/check-acceptance.mjs');
+  const runAcc = (args) => spawnSync(process.execPath, [acceptanceCli, ...args], { encoding: 'utf8' });
+
+  const accHelp = runAcc(['--help']);
+  assert.equal(accHelp.status, 0);
+  assert.match(accHelp.stdout, /Rule #0\.3/);
+
+  const listRes = JSON.parse(runAcc(['--list-platforms', '--json']).stdout);
+  assert.equal(listRes.platforms.length, 14, `expected 14 platforms, got ${listRes.platforms.length}`);
+
+  // Unwalked initialized template must exit 1 (FAIL) so agents cannot stop without filling it
+  const accPath = path.join(tmp, 'web-acceptance.json');
+  const initRes = runAcc(['--init', 'web', '--out', accPath]);
+  assert.equal(initRes.status, 0, initRes.stderr);
+  const rawFail = runAcc([accPath, '--json']);
+  assert.equal(rawFail.status, 1, 'unwalked pending template must fail');
+  assert.equal(JSON.parse(rawFail.stdout).grade, 'FAIL');
+
+  // Fill every row, intentionally violating Rule #0.3 (marking A4-accessibility pass with static!)
+  const manifest = JSON.parse(fs.readFileSync(accPath, 'utf8'));
+  manifest.target = 'https://billing.example.com/checkout';
+  manifest.sowThresholds = {
+    devicesAndEnvironments: 'Chrome/Firefox/Safari macOS + iPhone 15 Safari + Galaxy S23 Chrome under 4G throttle',
+    numericBudgets: 'LCP <= 2.5s, INP <= 200ms, CLS <= 0.1, initial JS+CSS <= 220 KB gzip',
+  };
+  for (const sec of [manifest.baseline, manifest.surfaceMatrix, manifest.platformGates]) {
+    for (const item of Object.values(sec)) {
+      item.result = 'pass';
+      item.label = item.requiresRendered ? 'rendered' : 'static';
+      item.evidence = item.requiresRendered
+        ? 'visual-qa/checkout-390-768-1440.png + Lighthouse 3-run median Perf 94 / A11y 98'
+        : 'slop-scan score 0 + tsc --noEmit exit 0 + package-lock.json audit clean';
+    }
+  }
+  manifest.baseline['A4-accessibility-floor'].label = 'static'; // Violates Rule #0.3!
+  fs.writeFileSync(accPath, JSON.stringify(manifest, null, 2));
+  const rule03Fail = runAcc([accPath, '--json']);
+  assert.equal(rule03Fail.status, 1, 'Rule #0.3 violation (static on requiresRendered) must exit 1');
+  const rule03Json = JSON.parse(rule03Fail.stdout);
+  assert.equal(rule03Json.grade, 'FAIL');
+  assert.equal(rule03Json.issues[0].rule, 'static-or-model-judgment-insufficient');
+
+  // Fix Rule #0.3, test PENDING_RENDERED_ENV (exit 2 without flag, exit 0 with --allow-not-checked)
+  manifest.baseline['A4-accessibility-floor'].label = 'rendered';
+  manifest.platformGates['WEB-6-deliverable-bundle'] = {
+    ...manifest.platformGates['WEB-6-deliverable-bundle'],
+    result: 'not-checked',
+    label: 'not-checked',
+    reason: 'Physical iPhone Safari device unavailable in headless Linux CI container',
+  };
+  fs.writeFileSync(accPath, JSON.stringify(manifest, null, 2));
+  const envBlocked = runAcc([accPath, '--json']);
+  assert.equal(envBlocked.status, 2, 'PENDING_RENDERED_ENV must exit 2 by default');
+  assert.equal(JSON.parse(envBlocked.stdout).grade, 'PENDING_RENDERED_ENV');
+  const envAllowed = runAcc([accPath, '--allow-not-checked', '--json']);
+  assert.equal(envAllowed.status, 0, '--allow-not-checked should exit 0 while keeping PENDING_RENDERED_ENV grade');
+  assert.equal(JSON.parse(envAllowed.stdout).grade, 'PENDING_RENDERED_ENV');
+
+  // Full rendered pass + valid client waiver -> PASS_STUDIO_10K_20K (exit 0)
+  manifest.platformGates['WEB-6-deliverable-bundle'] = {
+    title: manifest.platformGates['WEB-6-deliverable-bundle'].title,
+    requiresRendered: true,
+    result: 'pass',
+    label: 'rendered',
+    evidence: 'qa/lighthouse-median-3runs.json + qa/safari-ios18-recording.mp4 + qa/voiceover-notes.md',
+  };
+  manifest.surfaceMatrix['M7-text-scale-and-localization'] = {
+    title: manifest.surfaceMatrix['M7-text-scale-and-localization'].title,
+    requiresRendered: true,
+    result: 'pass',
+    label: 'waived',
+    approvedBy: 'Client SOW §4.2 (2026-11-25)',
+    scope: 'RTL Arabic mirroring deferred to Phase 2; 200% zoom & EN/VI verified',
+    consequence: 'RTL locales remain unsupported in v1.0 launch',
+  };
+  fs.writeFileSync(accPath, JSON.stringify(manifest, null, 2));
+  const studioPass = runAcc([accPath, '--json']);
+  assert.equal(studioPass.status, 0, studioPass.stderr || studioPass.stdout);
+  assert.equal(JSON.parse(studioPass.stdout).grade, 'PASS_STUDIO_10K_20K');
+
+  // Adding verified usability study -> EXCEEDS_STUDIO (exit 0)
+  manifest.exceeds = [
+    { id: 'usability-study-8-users', result: 'pass', label: 'rendered', evidence: 'research/moderated-checkout-study-n8.md (8/8 task completion)' },
+  ];
+  fs.writeFileSync(accPath, JSON.stringify(manifest, null, 2));
+  const exceedsPass = runAcc([accPath, '--json']);
+  assert.equal(exceedsPass.status, 0);
+  assert.equal(JSON.parse(exceedsPass.stdout).grade, 'EXCEEDS_STUDIO');
+  console.log('ok 6 - check-acceptance.mjs enforces all 14 platform checklists, Rule #0.3 rendered-evidence law, waivers, and 3-tier Studio grading');
 
   console.log('cross-platform QA CLI tests passed');
 } finally {

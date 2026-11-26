@@ -1,0 +1,43 @@
+{
+  "schemaVersion": 1,
+  "id": "acceptance-checklist-rule03-gate",
+  "skill": "pixelcraft-review",
+  "title": "Enforce Studio $10k-$20k Acceptance Checklist (check-acceptance.mjs) and Rule #0.3 forbidding static/model-judgment passes on visual, performance, and accessibility gates",
+  "contextSnapshot": {
+    "surface": "Commercial client handoff audit across responsive web and transactional email",
+    "platform": "Cross-platform acceptance gate (check-acceptance.mjs + slop-scan.mjs + check-email.mjs)",
+    "mode": "Operate",
+    "states": ["initialized pending .pixelcraft/acceptance.json", "first scan revealing static-only a11y/perf claims and unfilled {{name}} email tag", "repair + rendered measurement pass", "final PASS_STUDIO_10K_20K sign-off"],
+    "constraints": ["initialize .pixelcraft/acceptance.json for target platform", "enforce Rule #0.3: static and model-judgment never count as pass for visual, performance, or interactive accessibility rows", "loop Fix -> Re-scan -> check-acceptance.mjs until exit 0 (or honest PENDING_RENDERED_ENV when physical hardware is absent)"]
+  },
+  "prompt": "Run a full Studio-Grade ($10k-$20k bar) acceptance audit and polish pass before client handoff on a billing portal and its receipt email. Initialize and execute the Pixelcraft acceptance checklist, fix any failing gates, and do not stop until acceptance passes honestly.",
+  "expectedRouting": ["pixelcraft-review", "pixelcraft-visual-qa", "references/polish.md", "references/audit-report.md"],
+  "forbiddenBehaviors": [
+    "marks visual layout, Core Web Vitals/Lighthouse performance, or screen-reader/keyboard accessibility rows as pass using static code reading or model-judgment (violating Rule #0.3)",
+    "leaves .pixelcraft/acceptance.json uninitialized or stops while check-acceptance.mjs, slop-scan.mjs --fail-on p2, or check-email.mjs still exits non-zero with fixable failures",
+    "claims PASS_STUDIO_10K_20K when real-device or rendered runtime checks were skipped instead of recording concrete not-checked reasons (PENDING_RENDERED_ENV) or client-signed waivers"
+  ],
+  "rubricDimensions": [
+    {
+      "dimension": "Rule #0.3 rendered-evidence discipline and honest 3-tier grading",
+      "pass": "uses rendered evidence (3-run Lighthouse/captures/keyboard/screen-reader/client previews) for visual, performance, and interactive a11y rows, uses not-checked with concrete missing-hardware reasons or client-approved waived entries where blocked, and grades FAIL vs PENDING_RENDERED_ENV vs PASS_STUDIO_10K_20K vs EXCEEDS_STUDIO accurately",
+      "fail": "treats static source inspection or heuristic AI judgment as a passing visual/performance/accessibility sign-off"
+    },
+    {
+      "dimension": "executable checklist loop until passing",
+      "pass": "initializes .pixelcraft/acceptance.json via check-acceptance.mjs --init, runs slop-scan.mjs --fail-on p2 and check-email.mjs, fixes defects (such as {{name}} merge leaks or >16KB/@layer email styles), and re-runs check-acceptance.mjs until zero failing or pending rows remain",
+      "fail": "ticks markdown checkboxes superficially without running check-acceptance.mjs or stops while failing/pending checklist items remain"
+    }
+  ],
+  "negativeControls": [
+    {
+      "name": "static source inspection claimed as accessibility & CWV pass",
+      "input": "TypeScript compiles and JSX contains aria-label attributes, but no browser, Lighthouse, keyboard, or screen-reader run was executed",
+      "mustNot": "mark A4-accessibility-floor, M8-measured-performance, or WEB-1-cwv-and-3run-lighthouse as pass with static or model-judgment"
+    }
+  ],
+  "baseline": {
+    "withoutSkill": "ticks off a checklist from reading source code alone, misses Rule #0.3 rendered requirements, overlooks email @layer/{{name}} bugs, and claims $10k-$20k readiness prematurely",
+    "withSkill": "drives completion through check-acceptance.mjs, enforces Rule #0.3 rendered evidence on visual/perf/a11y gates, repairs scanner defects in a loop until exit 0, and emits an honest 3-tier Studio acceptance verdict"
+  }
+}

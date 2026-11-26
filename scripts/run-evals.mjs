@@ -309,6 +309,34 @@ function runContractChecks() {
       expect(fail.status === 1, 'untagged PDF should fail');
       return 'tagged PDF with embedded font PASS; untagged PDF FAIL';
     });
+
+    // 8. check-acceptance contract
+    record('check-acceptance', 'static', () => {
+      const accFile = path.join(tmp, 'acceptance.json');
+      const init = runNode('skills/pixelcraft-review/scripts/check-acceptance.mjs', ['--init', 'desktop', '--out', accFile]);
+      expect(init.status === 0, `check-acceptance --init failed: ${init.stderr}`);
+      const pending = runNode('skills/pixelcraft-review/scripts/check-acceptance.mjs', [accFile, '--json']);
+      expect(pending.status === 1 && JSON.parse(pending.stdout).grade === 'FAIL', 'unwalked checklist must exit 1 FAIL');
+      const doc = JSON.parse(fs.readFileSync(accFile, 'utf8'));
+      doc.target = 'Northwind Studio Desktop v1.2';
+      doc.sowThresholds = {
+        devicesAndEnvironments: 'macOS 15 arm64 + Windows 11 24H2 @ 100%/150%/200% DPI',
+        numericBudgets: 'Cold start < 500ms, idle CPU < 0.5%, 30m RAM < 180 MB',
+      };
+      for (const sec of [doc.baseline, doc.surfaceMatrix, doc.platformGates]) {
+        for (const item of Object.values(sec)) {
+          item.result = 'pass';
+          item.label = item.requiresRendered ? 'rendered' : 'static';
+          item.evidence = item.requiresRendered
+            ? 'qa/desktop-100-200dpi-dark.png + Activity Monitor 30m trace + VoiceOver/NVDA log'
+            : 'cargo clippy -- -D warnings + cargo audit + slop-scan score 0';
+        }
+      }
+      fs.writeFileSync(accFile, JSON.stringify(doc, null, 2));
+      const clean = runNode('skills/pixelcraft-review/scripts/check-acceptance.mjs', [accFile, '--json']);
+      expect(clean.status === 0 && JSON.parse(clean.stdout).grade === 'PASS_STUDIO_10K_20K', 'completed checklist should exit 0 PASS_STUDIO_10K_20K');
+      return '14-platform checklist init=FAIL(exit 1) -> Rule #0.3 verified -> PASS_STUDIO_10K_20K(exit 0)';
+    });
   } finally {
     fs.rmSync(tmp, { recursive: true, force: true });
   }
