@@ -449,7 +449,12 @@ function visibleReplacement(decls, outline) {
   });
 }
 
-function scanRuleList(text, baseOffset, sourceText, visit, inherited) {
+function isDesktopMediaPrelude(prelude) {
+  return /^@media\b/i.test(prelude)
+    && (/\bmin-width\s*:/i.test(prelude) || /\bwidth\s*>=/i.test(prelude) || /\bhover\s*:\s*hover\b/i.test(prelude));
+}
+
+function scanRuleList(text, baseOffset, sourceText, visit, inherited, inDesktopMedia = false) {
   let i = 0;
   while (i < text.length) {
     while (i < text.length && /\s/.test(text[i])) i += 1;
@@ -482,20 +487,22 @@ function scanRuleList(text, baseOffset, sourceText, visit, inherited) {
       body: text.slice(i + 1, end),
       selectorIndex: baseOffset + start + rawPrelude.length - rawPrelude.trimStart().length,
       bodyIndex: baseOffset + i + 1
-    }, sourceText, visit, inherited);
+    }, sourceText, visit, inherited, inDesktopMedia);
     i = end + 1;
   }
 }
 
-function scanRule(rule, sourceText, visit, inherited) {
+function scanRule(rule, sourceText, visit, inherited, inDesktopMedia = false) {
   const parts = extractNestedBlocks(rule.body);
   let childInherited = inherited;
+  const nextDesktopMedia = inDesktopMedia || isDesktopMediaPrelude(rule.prelude);
   if (rule.prelude && !rule.prelude.startsWith('@')) {
     const contexts = selectorContexts(rule.prelude, inherited);
     visit(rule.prelude, declarations(parts.declarationText), {
       selectorIndex: rule.selectorIndex,
       bodyIndex: rule.bodyIndex,
-      sourceText
+      sourceText,
+      inDesktopMedia: nextDesktopMedia,
     }, contexts);
     childInherited = contexts;
   }
@@ -505,12 +512,12 @@ function scanRule(rule, sourceText, visit, inherited) {
       body: nested.body,
       selectorIndex: rule.bodyIndex + nested.selectorIndex,
       bodyIndex: rule.bodyIndex + nested.bodyIndex
-    }, sourceText, visit, childInherited);
+    }, sourceText, visit, childInherited, nextDesktopMedia);
   }
 }
 
 function scanRules(segment, baseOffset, sourceText, visit) {
-  scanRuleList(segment.text, baseOffset, sourceText, visit, [{ positive: false, excludesFocusVisible: false }]);
+  scanRuleList(segment.text, baseOffset, sourceText, visit, [{ positive: false, excludesFocusVisible: false }], false);
 }
 
 const aiDefaultFonts = new Set(['inter', 'roboto', 'geist', 'arial']);
@@ -964,6 +971,100 @@ function scanMv3RemoteCode(file, masked, text, ext, add) {
   }
 }
 
+const nonZoomInputTypesRe = /\[type\s*=\s*["']?(?:checkbox|radio|range|hidden|color|file|submit|button|reset|image)["']?\]/i;
+const nonZoomInputAttrRe = /\btype\s*=\s*(?:["'](?:checkbox|radio|range|hidden|color|file|submit|button|reset|image)["']|\{\s*["'](?:checkbox|radio|range|hidden|color|file|submit|button|reset|image)["']\s*\})/i;
+
+function selectorTargetsEditableField(selectorText) {
+  return splitSelectorList(selectorText).some((sel) => {
+    if (sel.includes('::')) return false;
+    const stripped = stripNotContents(sel).trim();
+    const parts = stripped.split(/[\s>+~]+/).filter(Boolean);
+    const tail = parts[parts.length - 1] || '';
+    if (!/^(?:input|select|textarea)(?=$|[.#:\[])/i.test(tail)) return false;
+    if (nonZoomInputTypesRe.test(tail)) return false;
+    return true;
+  });
+}
+
+function isSub16pxFontSize(value) {
+  const clean = cleanValue(value);
+  const px = /^(\d+(?:\.\d+)?)px$/i.exec(clean);
+  if (px) return Number.parseFloat(px[1]) > 0 && Number.parseFloat(px[1]) < 16;
+  const rem = /^(\d+(?:\.\d+)?)rem$/i.exec(clean);
+  if (rem) return Number.parseFloat(rem[1]) > 0 && Number.parseFloat(rem[1]) < 1;
+  return false;
+}
+
+function scanInteractiveMarkupGuards(masked, text, add) {
+  const tagRe = /<([a-zA-Z][a-zA-Z0-9:_-]*)(?=[\s/>])/g;
+  let m;
+  while ((m = tagRe.exec(masked))) {
+    const tag = m[1].toLowerCase();
+    const end = findTagEnd(masked, m.index + m[0].length);
+    if (end < 0) continue;
+    const raw = masked.slice(m.index, end + 1);
+    tagRe.lastIndex = end + 1;
+
+    // 1. role="alert" paired with aria-live (causes double-speaking in iOS VoiceOver)
+    if (/\brole\s*=\s*(?:["']alert["']|\{\s*["']alert["']\s*\})/i.test(raw) && /\baria-live\s*=/i.test(raw)) {
+      add('alert-with-aria-live', 'P1', 4, lineOf(text, m.index), raw.replace(/\s+/g, ' '),
+        'Remove aria-live from elements with role="alert"; pairing them causes double-speaking in iOS VoiceOver.');
+    }
+
+    // 2. Clickable <div> or <span> without semantics or keyboard access
+    if (tag === 'div' || tag === 'span') {
+      const clickMatch = /\b(?:onClick|onclick|@click|v-on:click|on:click|x-on:click|phx-click|wire:click)\s*=\s*(\{[^}]*\}|"[^"]*"|'[^']*')/i.exec(raw);
+      if (clickMatch) {
+        const handlerBody = clickMatch[1] || '';
+        const isStopPropOnly = /stopPropagation\s*\(\s*\)/.test(handlerBody) && !/[;{}]/.test(handlerBody.replace(/^\{\s*|\s*\}$/g, '').replace(/[a-zA-Z0-9_$.]+\.stopPropagation\s*\(\s*\)/, '').replace(/(?:\([^)]*\)|[a-zA-Z_$][a-zA-Z0-9_$]*)\s*=>\s*/, '').trim());
+        const hasSemantics = /\brole\s*=/i.test(raw)
+          || /\btabindex\s*=/i.test(raw)
+          || /\baria-hidden\s*=\s*(?:["']true["']|\{\s*true\s*\})/i.test(raw)
+          || /\b(?:onKeyDown|onKeyUp|onKeyPress|onkeydown|onkeyup|@keydown|v-on:keydown|on:keydown)\s*=/i.test(raw);
+        if (!hasSemantics && !isStopPropOnly) {
+          add('div-as-link-or-button', 'P1', 4, lineOf(text, m.index), raw.replace(/\s+/g, ' '),
+            'Use a native <button type="button"> or <a href="..."> instead of a clickable <div>/<span> (or add role, tabIndex={0}, and Enter/Space keyboard support for composite widgets).');
+        }
+      }
+    }
+
+    // 3. Tooltip on native disabled <button> (unreachable by keyboard/touch users)
+    if (tag === 'button') {
+      const isNativeDisabled = /(?<![a-zA-Z0-9_-])disabled(?:\s*=\s*(?:["'](?:true|disabled|)["']|\{\s*(?!false\s*\})[^}]+\})|(?=[\s/>]))/i.test(raw);
+      const hasTooltipAttr = /\b(?:title|data-tooltip|data-tip|data-tooltip-content)\s*=\s*(?:["'][^"']+["']|\{[^}]+\})/i.test(raw);
+      if (isNativeDisabled && hasTooltipAttr) {
+        add('disabled-button-tooltip', 'P2', 2, lineOf(text, m.index), raw.replace(/\s+/g, ' '),
+          'Do not attach tooltips to native disabled buttons (invisible to keyboard/touch); use aria-disabled="true" or explain the precondition inline.');
+      }
+    }
+
+    // 4. Mobile Safari input auto-zoom risk via Tailwind unprefixed text-xs / text-sm on editable fields
+    if ((tag === 'input' || tag === 'select' || tag === 'textarea') && !nonZoomInputAttrRe.test(raw)) {
+      const blocks = extractClassBlocks(raw);
+      for (const block of blocks) {
+        const sub16Tok = block.tokens.find((tok) => /^(?:text-(?:xs|sm)|text-\[(?:[0-9]|1[0-5])(?:\.\d+)?px\])$/.test(tok.value));
+        const hasSafeMobileOverride = block.tokens.some((tok) => /^(?:text-(?:base|lg|xl|2xl)|text-\[(?:1[6-9]|[2-9]\d)(?:\.\d+)?px\])$/.test(tok.value));
+        if (sub16Tok && !hasSafeMobileOverride) {
+          add('mobile-input-zoom-risk', 'P1', 4, lineOf(text, m.index), `${tag} class "${sub16Tok.value}"`,
+            'Use >=16px (text-base or max(16px, 1em)) on mobile inputs to prevent iOS Safari auto-zoom without setting maximum-scale=1.');
+          break;
+        }
+      }
+    }
+  }
+}
+
+function scanBfcacheUnload(masked, text, ext, add) {
+  const webScriptExts = new Set(['.js', '.jsx', '.ts', '.tsx', '.vue', '.svelte', '.astro', '.html']);
+  if (!webScriptExts.has(ext)) return;
+  const re = /\baddEventListener\s*\(\s*['"]unload['"]|\b(?:window|self|globalThis)\.onunload\s*=|<body\b[^>]*\bonunload\s*=/g;
+  let m;
+  while ((m = re.exec(masked))) {
+    add('bfcache-unload-listener', 'P1', 4, lineOf(text, m.index), m[0].replace(/\s+/g, ' '),
+      'Replace unload listeners with pagehide or visibilitychange; unload handlers disqualify pages from Back/Forward Cache (bfcache).');
+  }
+}
+
 function scanFile(file, root) {
   const text = fs.readFileSync(file, 'utf8');
   const ext = path.extname(file);
@@ -984,6 +1085,7 @@ function scanFile(file, root) {
   scanImportantSprawl(file, text, add);
   scanImeEnterGuard(masked, text, ext, add);
   scanMv3RemoteCode(file, masked, text, ext, add);
+  scanBfcacheUnload(masked, text, ext, add);
 
   // Focus scan is heuristic; live keyboard testing remains authoritative.
   let cssMotionMatch = null;
@@ -996,6 +1098,14 @@ function scanFile(file, root) {
     scanRules(maskedSegment, segment.offset, maskedSegment.text, (selectorText, decls, location, contexts) => {
       const lastFirst = [...decls].reverse();
       const declaration = (property) => lastFirst.find((decl) => property.test(decl.prop));
+      if (!location.inDesktopMedia && selectorTargetsEditableField(selectorText)) {
+        const fontSize = declaration(/^font-size$/);
+        if (fontSize && isSub16pxFontSize(fontSize.value)) {
+          add('mobile-input-zoom-risk', 'P1', 4, lineOf(text, location.bodyIndex + fontSize.offset),
+            `${selectorText} { font-size: ${fontSize.value} }`,
+            'Use font-size >= 16px (or max(16px, 1em)) on mobile inputs to prevent iOS Safari auto-zoom without setting maximum-scale=1.');
+        }
+      }
       const clip = declaration(/^(?:-webkit-)?background-clip$/);
       const background = declaration(/^background(?:-image)?$/);
       const color = declaration(/^(?:color|-webkit-text-fill-color)$/);
@@ -1079,6 +1189,7 @@ function scanFile(file, root) {
 
     scanPlaceholderLabels(masked, add);
     scanEmptyHandlers(masked, text, add);
+    scanInteractiveMarkupGuards(masked, text, add);
   }
 
   const hasThrottledRepaint = ext === '.rs' && /\brequest_repaint_after\b/.test(masked);
