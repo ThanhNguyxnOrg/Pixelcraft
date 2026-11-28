@@ -48,6 +48,23 @@ Verify the micro-physical details that separate studio software from fragile pro
 
 ---
 
+## 3b. Mandatory "Break UI" Stress-Test Pass
+
+Never sign off a screen tested only with tidy 2-word labels and 3 sample items. Deliberately try to break the rendered surface (`pixelcraft-visual-qa`) across every applicable stress vector before closing polish:
+
+| Stress vector | Concrete test case | Pass bar | Severity if broken |
+|---|---|---|---|
+| **60-char unbroken strings** | Inject a 60+ character unbroken email, URL, token, or identifier (`very.long.unbroken.department.identifier@enterprise-tenant.example`) into headings, cards, table cells, and chips | Wraps cleanly (`overflow-wrap: anywhere`) or truncates with full-value inspection; zero grid track blowout or page horizontal scroll | `P1` (blocks task/overflow) / `P2` |
+| **Cardinality extremes (`0` / `1` / `500` items)** | Render every collection/list/grid/table with **`0`** items, **`1`** item, and **`500`** items | `0`: purposeful empty state + CTA; `1`: balanced geometry without awkward full-width stretch/orphan breakage; `500`: virtualized or paginated smoothly within frame/scroll budgets | `P1` (jank/blank screen) / `P2` |
+| **Broken & slow images** | Block image URLs (`404`/offline) and throttle media load | Explicit dimensions/aspect-ratio preserve zero CLS, clean fallback surface/alt text renders, no broken icon collapses card/hero hierarchy | `P1` / `P2` |
+| **3G / throttled network** | Throttle network to slow 3G during initial load, search, and form submit | Skeleton/progress renders immediately (`<= 100 ms`), text stays legible during font load, slow submits lock idempotently without duplicate mutations or dead spinners | `P1` / `P2` |
+| **`200%` text / page zoom** | Zoom to `200%` at desktop and smallest supported width | All primary controls remain visible, clickable, and readable with clean reflow and zero clipped text or colliding sticky bars (`WCAG 1.4.4`/`1.4.10`) | `P0` / `P1` |
+| **macOS `Show scroll bars: Always` *(Web)*** | Enable classic always-visible scrollbars (~15 px gutter) on scrollable panes, modals, tables, and sticky headers | Zero clipped right/end-edge controls, zero layout jump (`scrollbar-gutter: stable`), and zero spurious horizontal scrollbar | `P2` |
+| **`iOS Low Power Mode` *(Web)*** | Test ambient `<video autoplay muted loop playsinline>` when OS Low Power Mode suppresses autoplay | Crisp `poster` renders cleanly with zero broken native play-button overlays and zero uncaught `play()` promise console errors | `P2` |
+| **`0` runtime console warnings / errors** | Inspect DevTools Console / platform runtime log across full primary + recovery walkthrough | **`0`** uncaught exceptions, hydration mismatches, missing-key warnings, deprecation noise, CSP errors, or asset `404`s | `P1` (runtime error) / `P2` (warnings) |
+
+---
+
 ## 4. Stack-Neutral Engineering & Commercial Handoff
 
 Never sign off a build as studio-ready on visual appearance alone:
@@ -66,7 +83,7 @@ Never sign off a build as studio-ready on visual appearance alone:
 
 Never treat this document as passive reading. Before reporting completion:
 
-1. **Walk Sections 1–4 plus the active platform skill's `Pre-submit checklist` row-by-row** against the actual implementation and rendered captures.
+1. **Walk Sections 1–4 (including Section 3b `"Break UI"` Stress-Test Pass) plus the active platform skill's `Pre-submit checklist` row-by-row** against the actual implementation and rendered captures.
 2. **Execute every applicable deterministic scan, build gate, and acceptance manifest check:**
    - `node <pixelcraft-review>/scripts/slop-scan.mjs <target> --fail-on p2`
    - `node <pixelcraft-visual-qa>/scripts/check-contrast.mjs <tokens-or-css>` (plus `check-email.mjs`, `check-tui.mjs`, `check-pdf.mjs` where surface matches)

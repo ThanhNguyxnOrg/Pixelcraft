@@ -353,6 +353,56 @@ try {
   assert.equal(JSON.parse(exceedsPass.stdout).grade, 'EXCEEDS_STUDIO');
   console.log('ok 6 - check-acceptance.mjs enforces all 14 platform checklists, Rule #0.3 rendered-evidence law, waivers, and 3-tier Studio grading');
 
+  // 7. Hybrid Weighted 100-Point Rubric (25/25/20/15/15) + Hard-Floor Lock & --require-rubric
+  const missingRubric = runAcc([accPath, '--require-rubric', '--json']);
+  assert.equal(missingRubric.status, 1, '--require-rubric must fail when rubric scores are unpopulated');
+  assert.ok(JSON.parse(missingRubric.stdout).issues.some((i) => i.rule === 'invalid-rubric-score'));
+
+  // Weighted score 84.5 (GOOD, <90) must FAIL even when all hard-floor rows pass
+  manifest.rubric = {
+    visualAndMotion: { weight: 25, score: 85, notes: 'Clean layout, minor exit timing drift' },
+    uxAndResponsive: { weight: 25, score: 88, notes: 'All flows work across breakpoints' },
+    performanceAndA11y: { weight: 20, score: 82, notes: 'LCP borderline on slow 4G' },
+    codeQuality: { weight: 15, score: 84, notes: 'Strict checks pass' },
+    seoSecurityContent: { weight: 15, score: 82, notes: 'Meta tags complete' },
+  };
+  fs.writeFileSync(accPath, JSON.stringify(manifest, null, 2));
+  const goodBelow90 = runAcc([accPath, '--require-rubric', '--json']);
+  assert.equal(goodBelow90.status, 1, 'weighted score <90 must fail Studio bar');
+  const goodBelowJson = JSON.parse(goodBelow90.stdout);
+  assert.equal(goodBelowJson.grade, 'FAIL');
+  assert.equal(goodBelowJson.rubric.weightedScore, 84.6);
+  assert.equal(goodBelowJson.rubric.band, 'GOOD');
+  assert.ok(goodBelowJson.issues.some((i) => i.rule === 'rubric-below-studio-bar'));
+
+  // Weighted score >= 90 (94.0, STUDIO_10K_PLUS) WITH a Rule #0.3 hard-floor failure must STILL FAIL!
+  manifest.rubric = {
+    visualAndMotion: 94,
+    uxAndResponsive: 96,
+    performanceAndA11y: 92,
+    codeQuality: 94,
+    seoSecurityContent: 94,
+  };
+  manifest.baseline['A4-accessibility-floor'].label = 'static';
+  fs.writeFileSync(accPath, JSON.stringify(manifest, null, 2));
+  const floorLocked = runAcc([accPath, '--require-rubric', '--json']);
+  assert.equal(floorLocked.status, 1, 'hard-floor violation must override >=90 weighted rubric score');
+  const floorLockedJson = JSON.parse(floorLocked.stdout);
+  assert.equal(floorLockedJson.grade, 'FAIL');
+  assert.equal(floorLockedJson.rubric.weightedScore, 94.1);
+  assert.equal(floorLockedJson.rubric.band, 'STUDIO_10K_PLUS');
+
+  // Fix hard-floor violation -> >=90 + 0 issues + exceeds -> EXCEEDS_STUDIO (exit 0)
+  manifest.baseline['A4-accessibility-floor'].label = 'rendered';
+  fs.writeFileSync(accPath, JSON.stringify(manifest, null, 2));
+  const fullRubricPass = runAcc([accPath, '--require-rubric', '--json']);
+  assert.equal(fullRubricPass.status, 0, fullRubricPass.stderr || fullRubricPass.stdout);
+  const fullRubricJson = JSON.parse(fullRubricPass.stdout);
+  assert.equal(fullRubricJson.grade, 'EXCEEDS_STUDIO');
+  assert.equal(fullRubricJson.rubric.weightedScore, 94.1);
+  assert.equal(fullRubricJson.rubric.band, 'STUDIO_10K_PLUS');
+  console.log('ok 7 - check-acceptance.mjs enforces Hybrid Weighted 100-Point Rubric (25/25/20/15/15) + Hard-Floor Lock and --require-rubric');
+
   console.log('cross-platform QA CLI tests passed');
 } finally {
   fs.rmSync(tmp, { recursive: true, force: true });

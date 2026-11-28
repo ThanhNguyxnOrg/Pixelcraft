@@ -34,6 +34,48 @@ Modern HTML eliminates whole classes of brittle ARIA focus-trap and state-sync b
 | tree view | hierarchical roles/states; arrow/expand/collapse/typeahead behavior; selection vs expansion distinct | chevron only mouse; nested levels flatten visually for assistive tech |
 | drag/drop | drag state plus keyboard/single-pointer alternative; drop target descriptors; cancel behavior | dragging is sole path; target size/precision too demanding; no announcement of result |
 
+## Real-world screen reader, live-region, and semantic traps
+
+Automated accessibility scanners routinely report `0` issues on interfaces that are completely silent, garbled, or broken in real screen readers. Apply these rules across platforms (HTML/DOM examples below are web translations; use native equivalents such as `UIAccessibility.post` on iOS or live-region / announcement semantics on Android):
+
+### Live regions & `document.ariaNotify()` (web progressive enhancement)
+
+- **Pre-mount live regions before text changes:** live regions (`role="status"` / `aria-live="polite"` on web; persistent announcement nodes in cross-platform UI trees) **MUST already be mounted in the DOM/tree *before* message text is injected or updated**. Conditionally mounting container + message together (e.g., `{count && <div role="status">{count} results</div>}`) stays completely silent in screen readers while automated scanners report `0` issues.
+- **Hide visually with clip-based `sr-only`, never `display: none` or `hidden`:** hiding a live region with `display: none`, `visibility: hidden`, or the HTML `hidden` attribute removes it from the accessibility tree so updates are never announced.
+- **Never combine `aria-live` with `role="alert"` (web):** `role="alert"` already implies `aria-live="assertive"` and `aria-atomic="true"`; adding an explicit `aria-live` attribute alongside `role="alert"` causes double-speaking in iOS VoiceOver.
+- **Progressively enhance with `document.ariaNotify()` (Baseline 2026, web):** on web runtimes supporting `document.ariaNotify(message, { priority })`, prefer it for imperative status announcements to avoid DOM-mutation timing bugs, while keeping a pre-mounted live-region fallback for older browsers and assistive technologies:
+
+```js
+// Web progressive enhancement: ariaNotify (Baseline 2026) + pre-mounted live-region fallback
+function announceStatus(message, { priority = 'normal', fallbackRegion } = {}) {
+  if (typeof document.ariaNotify === 'function') {
+    document.ariaNotify(message, { priority });
+    return;
+  }
+  if (!fallbackRegion) return;
+  fallbackRegion.textContent = '';
+  requestAnimationFrame(() => { fallbackRegion.textContent = message; });
+}
+```
+
+### Focus vs. Announce decision table
+
+| Dynamic interaction | Focus behavior | Announcement / status behavior | Never do |
+|---|---|---|---|
+| **Filter-as-you-type** | Keep focus inside the filter input | Tell users upfront (`"Results filter as you type"`) and announce a debounced count (`"12 results"`) via a pre-mounted polite status region or `ariaNotify` | Never put `aria-live` on the entire results list (causes noisy re-reading on every keystroke) |
+| **Explicit Search submit** | Move focus deliberately to the results heading (`tabindex="-1"` on web or platform focus target) that states the result count (`"18 results for 'invoices'"`) | Focused heading announces context and count cleanly | Never leave focus stranded on the submit button with silent below-fold updates |
+| **`"Load more"` button** (especially final page when button disappears) | Move focus to the **first newly loaded item** (or appended batch heading) *before* removing the `"Load more"` button | Announce loaded count (`"Loaded 10 more items, 30 of 30 shown"`) | Never remove the focused `"Load more"` button before relocating focus |
+| **Deleting a list / table item** | Move focus deterministically to the **next item**, **previous item** (if deleting the last row), or **list heading / empty-state action** (if deleting the final item) | Announce deletion (`"Deleted 'Q3 Draft'"` + undo cue if reversible) | Never let focus drop to `<body>` or reset to top of screen |
+
+### Split-text animation & semantic HTML traps
+
+- **Split-text animation screen-reader guard:** animated headlines split into per-word or per-character `<span>`s (web) or separate animated text runs (native) cause screen readers to spell or pause awkwardly across every fragment. Mark the split visual spans `aria-hidden="true"` (web) / exclude from accessibility tree (native) and render **one intact `sr-only` / accessible text node** with the complete string inside the heading.
+- **Semantic HTML traps (web translations):**
+  - Always use real `<a href="...">` for navigation links and real `<img>` (with meaningful or empty `alt=""`) for images—never click-handled `<div>`/`<span>` links or CSS `background-image` for meaningful visual content.
+  - Never add `role="grid"` to a data `<table>` solely to make rows clickable—`role="grid"` forces 2D spreadsheet arrow-key interaction and breaks standard table reading; instead place a real link/button inside the primary cell (or use a stretched-link pattern).
+  - Never wrap `<figure>` inside `<a>` (breaks phrasing/grouping semantics across browsers and screen readers); place the link on the title, image, or inside `<figcaption>`.
+  - Watch CSS `display: flex`, `display: grid`, or `display: contents` on `<table>`, `<tr>`, `<td>`, `<th>`, or lists (`<ul>`/`<ol>`), which strips native table/list semantics in Safari/WebKit's accessibility tree; preserve native table `display` values or verify WebKit AX roles explicitly.
+
 ## Implementation checklist
 
 For each composite widget:

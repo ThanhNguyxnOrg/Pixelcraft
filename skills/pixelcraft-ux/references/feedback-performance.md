@@ -42,6 +42,17 @@ Optimistic updates improve perceived speed only when reconciliation is race-safe
 - **Preserve user edits on failure:** if an optimistic edit rolls back, do not wipe what the user typed—restore the previous committed value clearly OR keep the failed draft editable with a one-click Retry and an explicit notice explaining what failed.
 - **Guard double-submit & idempotency:** disable duplicate dispatch with an idempotency key while keeping keyboard focus intact.
 
+## Peak-end confirmation, toast timers, and rage-click prevention
+
+- **Peak-end inline `success` state:** for frequent low-stakes completions (copy, save, bookmark, toggle, inline edit), show a crisp inline `✓` confirmation right at the trigger control (`"Copied ✓"`, `"Saved ✓"`) without jarring page navigation or modal interruption, then settle cleanly back to the resting label while keeping control width stable.
+- **Zero rage-clicking:** prevent repeated frustrated taps/clicks caused by ambiguous affordances or silent latency:
+  - Distinguish interactive controls unambiguously from static badges, chips, or cards (clear hit area, hover/focus/pressed cues, and platform cursor/elevation semantics).
+  - Render instant press/pending feedback within `≤ 100 ms` and lock duplicate dispatch via idempotency while preserving keyboard focus so slow responses never appear dead.
+- **Toast auto-dismiss & stacked hover ergonomics:**
+  - **Pause auto-dismiss timers whenever the tab/window is hidden or backgrounded** (e.g., `visibilitychange` / `document.hidden` on web, or app foreground/background lifecycle hooks on native mobile/desktop) as well as while hovered or keyboard-focused, so users returning to the app never miss transient confirmations or undo windows.
+  - **Bridge hover gaps between stacked toasts** (use inner padding or a contiguous hit-bridge wrapper rather than dead pointer margins between toast cards) so moving the pointer from one toast to the next does not resume dismissal or collapse the stack mid-travel.
+- **Confirmation pages & completion receipts:** for significant submissions (orders, bookings, applications, support tickets), end on a dedicated confirmation state that displays a durable **reference number**, concise summary of what succeeded, and an explicit **"What happens next"** block (expected timeline, notification channel, and next useful action)—never a bare `"Done"` or `"Success"` dead end.
+
 ## Destructive feedback and perceived performance
 
 - Use **undo** instead of confirmation whenever reversal is cheap and reliable (`Deleted "Q3 Draft" · Undo` toast with generous timeout and keyboard access). Reserve modal confirmation for irreversible, high-cost, ambiguous, or externally visible destruction.

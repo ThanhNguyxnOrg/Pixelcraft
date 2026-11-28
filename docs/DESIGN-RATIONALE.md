@@ -186,6 +186,14 @@ Brand governance exists because generated imagery is not yet a usable identity s
 
 **Trade-off:** mandatory checklist execution, acceptance-manifest tracking, and rescan loops cost extra verification turns at the end of implementation. Pixelcraft accepts that cost because shipping after a single unverified pass defeats every upstream planning and craft rule.
 
+## Request modes, upfront edge cases, empirical craft, and client autonomy
+
+**Rule:** resolve the narrowest Request Mode (`Shape`, `Implement`, `Review`, `Copy`, `Harden`) before acting; capture concrete edge-case constraints (empty, singular/plural, long unbroken strings, offline, slow latency, permissions) upfront in `.pixelcraft/plan.md`; pair hard-floor pass/fail gates with an optional weighted 100-point Studio rubric (`25/25/20/15/15`, where hard-floor defects always lock failure regardless of score); enforce empirical form, checkout, anti-dark-pattern, screen-reader live-region, and browser-runtime hygiene (`bfcache`, `<head>` ordering, mobile input sizing, pre-mounted live regions, focus-on-delete/load-more, zero accessibility overlays); and deliver owner-editable architectures (`No Black-Box Build`) with explicit handover training and DIY-vs-engineering boundaries.
+
+**Why:** coding agents fail predictably in four recurring ways that generic polish advice misses: (1) mode creep—turning a read-only audit into silent code edits or treating shipped code as automatic precedent; (2) happy-path prompting—omitting edge cases until post-hoc review; (3) "passing" automated accessibility or visual checks while shipping silent dynamically-mounted live regions, double-speaking `role="alert"` + `aria-live`, keyboard-unreachable disabled tooltips, `unload` handlers that break back/forward cache, iOS input zoom traps, or deceptive cancellation mazes; and (4) fragile black-box handovers that leave non-technical owners unable to refresh content without breaking layouts.
+
+**Trade-off:** locking request modes, upfront edge-case specs, deterministic static rules, and client-autonomy handovers requires more deliberate planning and stricter verification boundaries. Pixelcraft accepts that discipline because durable product trust depends on both sub-pixel craft and honest, maintainable ownership after launch.
+
 ## Changing these rules
 
 Do not weaken a rule merely because a task is inconvenient. Change the rule when the underlying trade-off changed, when evidence shows the rule produces worse outcomes, or when a platform/standard changed. Record the reason in the commit and update affected skills, evals, and verification tooling together.

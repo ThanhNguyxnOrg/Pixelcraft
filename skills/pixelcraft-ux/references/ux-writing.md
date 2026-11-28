@@ -11,7 +11,16 @@ Evidence: empty-state/form guidance, concise copy practice, and mode-specific ex
 - Headings state the object or decision, not generic “Information”/“Details” when specificity is possible.
 - Front-load distinguishing words for scanning and truncation.
 - Do not blame users, expose internal exception text, or use fake warmth in high-stakes errors.
+- **Destructive CTA rule (`Verb + Noun`):** every destructive trigger or confirmation button MUST pair an explicit verb with the exact target noun (`Delete project`, `Remove member`, `Cancel subscription`, `Revoke API key`)—**NEVER** bare `Confirm`, `OK`, `Yes`, or an unqualified single verb (`Delete`, `Remove`, `Cancel`) where the affected object is ambiguous. Pair it with a neutral, unambiguous safe escape (`Keep subscription`, `Go back`).
+- **Zero confirmshaming copy:** never use guilt, sarcasm, or self-deprecation on decline or dismissal actions (never `"No thanks, I prefer losing money"` or `"I hate saving time"`). Keep decline labels neutral and factual (`"No thanks"`, `"Keep free plan"`, `"Continue without updates"`).
+- **Above-the-fold clarity (`What you do · Who it's for · Why it matters`):** on entry, onboarding, and landing surfaces, state in plain language before the first scroll **what the product does**, **who it is for**, and **why it matters (concrete user outcome)**.
 - **Ban 2025–2026 AI marketing copy clichés:** never write `supercharge`, `elevate`, `revolutionize`, `unlock`, `seamless`, `cutting-edge`, `next-gen`, `effortless`, `empower`, `streamline`, `all-in-one`, `reimagine`, `unleash`, `AI-powered`, `built for modern teams`, `delve`, `transform your`, or vague `"Get started"` / `"Learn more"` filler when a concrete domain outcome or action is knowable. Replace every buzzword with the verifiable user action, time/data unit, or domain object (e.g., `"Diff two Parquet schemas in 300ms"` instead of `"Effortlessly streamline your next-gen data workflow"`).
+
+| Copy category | Do | Don't |
+|---|---|---|
+| Destructive confirmation CTA | `Delete project`, `Remove member`, `Cancel subscription` | `Confirm`, `OK`, `Yes`, bare `Delete` |
+| Decline / dismiss action | `No thanks`, `Keep free plan`, `Not now` | `No thanks, I prefer losing money`, `Stay behind` |
+| Above-the-fold entry copy | `Diff two Parquet schemas in 300ms — for data engineers catching breaking pipeline changes before deploy` | `Supercharge your next-gen workflow with effortless synergy` |
 
 ## Error pattern
 

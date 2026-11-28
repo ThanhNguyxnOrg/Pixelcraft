@@ -409,8 +409,74 @@ final themeColor = Theme.of(context).colorScheme.primary;
   fs.writeFileSync(regularWeb, `<!doctype html><html lang="en"><head><title>Site</title><script src="https://plausible.io/js/script.js" defer></script></head><body><h1>Docs</h1></body></html>\n`);
   assert.deepEqual(runPath(regularWeb).findings, [], 'normal non-MV3 web page with deferred script should not trigger mv3-remote-script');
   console.log('ok 11 - ime-enter-without-composing, important-override-sprawl, and mv3-remote-script catch real defects with zero false positives');
+
+  // 12. Wave 3 high-precision rules: mobile-input-zoom-risk, div-as-link-or-button, disabled-button-tooltip, alert-with-aria-live, bfcache-unload-listener
+  const wave3BadCss = path.join(tmp, 'zoom-bad.css');
+  fs.writeFileSync(wave3BadCss, `input, select { font-size: 14px; }
+textarea { font-size: 0.875rem; }
+input[type="checkbox"] { font-size: 12px; }
+input::placeholder { font-size: 13px; }
+@media (min-width: 768px) {
+  input { font-size: 14px; }
+}
+`);
+  const zoomCssRes = runPath(wave3BadCss);
+  assert.deepEqual(zoomCssRes.findings.map(({ rule, line }) => [rule, line]), [
+    ['mobile-input-zoom-risk', 1],
+    ['mobile-input-zoom-risk', 2],
+  ], `expected only mobile editable fields <16px: ${JSON.stringify(zoomCssRes.findings)}`);
+
+  const wave3BadTsx = path.join(tmp, 'Wave3Bad.tsx');
+  fs.writeFileSync(wave3BadTsx, `export function Wave3Bad({ open, save }: { open: () => void; save: () => void }) {
+  window.addEventListener('unload', () => save());
+  return (
+    <div>
+      <div role="alert" aria-live="assertive">Payment failed</div>
+      <div onClick={open}>Clickable div</div>
+      <span onClick={open}>Clickable span</span>
+      <button disabled title="Complete required fields first">Submit</button>
+      <input aria-label="Phone" className="text-sm px-3" />
+    </div>
+  );
+}
+`);
+  const wave3BadRes = runPath(wave3BadTsx);
+  assert.deepEqual(
+    wave3BadRes.findings.map(({ rule, line }) => [rule, line]).sort((a, b) => a[1] - b[1]),
+    [
+      ['bfcache-unload-listener', 2],
+      ['alert-with-aria-live', 5],
+      ['div-as-link-or-button', 6],
+      ['div-as-link-or-button', 7],
+      ['disabled-button-tooltip', 8],
+      ['mobile-input-zoom-risk', 9],
+    ],
+    `unexpected Wave 3 findings: ${JSON.stringify(wave3BadRes.findings)}`,
+  );
+
+  const wave3GoodTsx = path.join(tmp, 'Wave3Good.tsx');
+  fs.writeFileSync(wave3GoodTsx, `export function Wave3Good({ open, save }: { open: () => void; save: () => void }) {
+  window.addEventListener('pagehide', () => save());
+  window.addEventListener('beforeunload', () => save());
+  return (
+    <div>
+      <div role="alert">Payment failed</div>
+      <div role="status" aria-live="polite">Saved</div>
+      <div role="button" tabIndex={0} onClick={open} onKeyDown={open}>Accessible composite</div>
+      <div onClick={(e) => e.stopPropagation()}>Modal surface</div>
+      <button aria-disabled="true" title="Complete required fields first">Submit</button>
+      <button disabled={false} title="Save changes">Save</button>
+      <input aria-label="Phone" className="text-base md:text-sm px-3" />
+      <input type="checkbox" aria-label="Agree" className="text-xs" />
+    </div>
+  );
+}
+`);
+  assert.deepEqual(runPath(wave3GoodTsx).findings, [], `clean Wave 3 component should have zero findings: ${JSON.stringify(runPath(wave3GoodTsx).findings)}`);
+  console.log('ok 12 - mobile-input-zoom-risk, div-as-link-or-button, disabled-button-tooltip, alert-with-aria-live, and bfcache-unload-listener catch real defects with zero false positives');
 } finally {
   fs.rmSync(tmp, { recursive: true, force: true });
 }
+
 
 

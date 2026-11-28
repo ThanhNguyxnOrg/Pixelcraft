@@ -188,11 +188,63 @@ Use real elements/classes and server/client state consistently: `hidden`, `disab
 
 Use one persistent `label`, correct `type`, `inputmode`, `autocomplete`, spellcheck/autocapitalize settings, constraint validation only where appropriate, and server error association through text near the field plus summary for complex forms. Never block paste.
 
+## Document `<head>` priority order (`capo.js` 11-tier rules)
+
+Order `<head>` elements by browser preload-scanner priority so critical metadata, connections, CSS, and LCP assets never queue behind metadata bloat:
+
+| Tier | Element class | Rule |
+|---:|---|---|
+| 1 | Pragma & core meta | `<meta charset="utf-8">` within the **first 1024 bytes**, followed immediately by `<meta name="viewport">`, `<base>`, and CSP `<meta http-equiv>` |
+| 2 | Document title | `<title>` |
+| 3 | Critical origins & LCP preload | `<link rel="preconnect" crossorigin>` for critical origins and `<link rel="preload" fetchpriority="high">` for hero LCP image/font |
+| 4 | Async scripts | `<script async>` (only when genuinely independent of DOM/CSS) |
+| 5 | `@import` styles | Avoid CSS `@import` chains in production; bundle or use `<link rel="stylesheet">` |
+| 6 | Synchronous scripts | Avoid blocking `<script>` except tiny inline theme/consent-default scripts that prevent flash/CLS |
+| 7 | Synchronous CSS | `<link rel="stylesheet">` and critical inline `<style>` |
+| 8 | Standard preload | `<link rel="preload">` and `<link rel="modulepreload">` |
+| 9 | Deferred & module scripts | `<script defer>` and `<script type="module">` |
+| 10 | Speculative navigation | `<link rel="prefetch">`, `<link rel="dns-prefetch">`, and `<script type="speculationrules">` |
+| 11 | Metadata & icons (last) | `<meta name="description">`, Open Graph / Twitter tags, JSON-LD, `<link rel="canonical">`, `theme-color`, favicons, and `manifest.webmanifest` |
+
+## Cross-browser CSS, touch, Safari & pointer hygiene
+
+- **iOS Safari input auto-zoom prevention**: keep `<input>`, `<select>`, and `<textarea>` at **`font-size: max(16px, 1em)`** (`>= 16px` computed on mobile viewports) so tapping a field never triggers Safari viewport zoom. **Never** suppress zoom with `maximum-scale=1` or `user-scalable=no` in `<meta name="viewport">` (WCAG 1.4.4 violation).
+- **Touch & hover discipline**: wrap hover-only visual effects in **`@media (hover: hover) and (pointer: fine)`** so touch taps do not leave stuck hover highlights, and set **`touch-action: manipulation`** on interactive controls (`a`, `button`, `summary`, `[role="button"]`) to remove double-tap zoom delay while preserving pinch-zoom.
+- **Safari overscroll & dark-mode parity**: set the page canvas `background-color` on **`html`** (not only `body`) so Safari rubber-band overscroll never flashes white; declare `color-scheme: light dark` alongside `<meta name="theme-color" media="(prefers-color-scheme: light)" ...>` and `(prefers-color-scheme: dark)` for Safari/mobile chrome parity; and set explicit **`background-color` and `color`** on native `<select>` and `<option>` elements so Windows Dark Mode never renders unreadable white-on-white option menus.
+- **Safari SVG transform fix**: Safari mishandles `transform-origin` on directly transformed inner SVG primitives (`<path>`, `<circle>`, `<rect>`). Wrap animated or transformed SVG shapes in a **`<g>`** group with `transform-box: fill-box; transform-origin: center;`.
+- **Typography, selection & focus-ring hygiene**: style **`::selection`** with accessible contrast and reset **`-webkit-text-fill-color: currentColor`** inside `::selection` so gradient `background-clip: text` headings stay legible when selected; apply **`-webkit-text-size-adjust: 100%`** on `html` to prevent iOS landscape font inflation; set **`-webkit-font-smoothing: antialiased`** on the root layout container (not ad-hoc on fragments) so macOS portals, dialogs, and tooltips match page glyph weight; and ensure `:focus-visible` rings match container `border-radius` (`outline` follows `border-radius` in modern browsers; keep `outline-offset` consistent).
+- **Pointer, menu & drag hygiene**: open dropdown and context menus on **`pointerdown`/`mousedown`** for crisp response (keeping keyboard `Enter`/`Space`/`ArrowDown` parity); eliminate pointer **dead zones** between a trigger and its menu/hit area (bridge gaps with transparent padding or Safe-Triangle corridors); put **`pointer-events: none`** on decorative glow, noise, and gradient overlay layers so they never intercept clicks; and during active drag interactions apply **`user-select: none`** on the drag container plus **`inert`** on background/non-drop regions so accidental text selection or background focus cannot occur.
+
+```css
+html {
+  color-scheme: light dark;
+  background-color: var(--semantic-color-background);
+  -webkit-text-size-adjust: 100%;
+  -webkit-font-smoothing: antialiased;
+}
+
+input, select, textarea { font-size: max(16px, 1em); }
+select, select option { background-color: var(--semantic-color-surface); color: var(--semantic-color-foreground); }
+a, button, summary, [role="button"] { touch-action: manipulation; }
+
+@media (hover: hover) and (pointer: fine) {
+  .card-action:hover { background-color: var(--semantic-color-surface-hover); }
+}
+
+.icon-svg g.spin-target { transform-box: fill-box; transform-origin: center; }
+::selection { background: var(--semantic-color-selection-bg); color: var(--semantic-color-selection-fg); -webkit-text-fill-color: currentColor; }
+.decorative-glow { pointer-events: none; }
+```
+
 ## Do/don't pairs
 
 | Do | Don't |
 |---|---|
 | `<button type="button">Save draft</button>` | `<div onclick="save()">Save draft</div>` |
+| Order `<head>` by the 11-tier `capo.js` priority (`charset` < 1024 B → `title` → `preconnect`/LCP preload → CSS → `defer`/`module` → OG/favicons last) | Place Open Graph tags, JSON-LD, and favicons above critical CSS or `preconnect` links |
+| Set `font-size: max(16px, 1em)` on inputs and wrap hover styles in `@media (hover: hover) and (pointer: fine)` | Add `maximum-scale=1` to stop iOS zoom or leave sticky hover styles firing on touch taps |
+| Set `html` background, light/dark `theme-color`, and explicit `select`/`option` colors; wrap transformed SVG shapes in `<g>` with `transform-box: fill-box` | Style only `body` background (white Safari overscroll), leave Windows dark `<select>` unstyled, or transform raw SVG `<path>` elements |
+| Reset `-webkit-text-fill-color` inside `::selection`, put `pointer-events: none` on decorative overlays, and use `user-select: none` + `inert` during drag | Leave gradient text invisible when selected, let glow overlays swallow clicks, or highlight background text mid-drag |
 | Render `<a class="skip-link" href="#main-content">` first in `<body>` and order CSS via `@layer` | Force keyboard users through 25 nav links or fight specificity with `!important` |
 | Self-host `<= 2–3` subsetted `.woff2` files with `@font-face` `size-adjust` / `ascent-override` | Load 6 unsubsetted Google Font weights that shift layout on swap |
 | Ship branded `404`/`500` recovery routes and `@media print` rules for receipts/articles/docs | Leave raw stack traces/framework `404`s or print dark-mode navbars over invoices |
@@ -204,7 +256,7 @@ Use one persistent `label`, correct `type`, `inputmode`, `autocomplete`, spellch
 
 ## Known traps
 
-`100vh` on mobile browsers, missing `margin: 0` on anchored `[popover]`, sticky/fixed chrome obscuring focus, unguarded `appearance: base-select` without checking older browser fallback, specificity wars solved better by `@layer`, missing `Skip to main content` link, broken dark-mode printouts, autofocus as a substitute for flow design, duplicated IDs from reused fragments, logical/physical mismatch in charts and media controls.
+`100vh` on mobile browsers, `< 16px` mobile inputs triggering iOS Safari zoom (or `maximum-scale=1` breaking WCAG 1.4.4), unguarded `:hover` sticking on touchscreens, missing `html` background / `theme-color` causing Safari rubber-band flash, unstyled `<select>`/`<option>` turning unreadable in Windows Dark Mode, Safari SVG transform drift without `<g>` + `transform-box: fill-box`, invisible selected gradient text missing `-webkit-text-fill-color` reset, decorative overlays blocking clicks without `pointer-events: none`, missing `margin: 0` on anchored `[popover]`, sticky/fixed chrome obscuring focus, unguarded `appearance: base-select` without checking older browser fallback, specificity wars solved better by `@layer`, missing `Skip to main content` link, broken dark-mode printouts, autofocus as a substitute for flow design, duplicated IDs from reused fragments, logical/physical mismatch in charts and media controls.
 
 ## Verification commands
 

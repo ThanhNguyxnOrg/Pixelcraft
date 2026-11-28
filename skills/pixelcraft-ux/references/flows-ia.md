@@ -22,10 +22,20 @@ Remove or automate steps before optimizing their visual design. Smart defaults m
 ## Flow shape
 
 - Count real decision/action steps, not screen count. A one-screen overloaded form can be worse than a short sequence.
+- **Design connected multi-page journeys with obvious next steps:** link adjacent pages and workflow stages into a coherent path so every view makes the next logical action unmistakable and eliminates decision paralysis—avoid isolated dead-end views or competing unranked primary actions.
+- **Prefer inline disclosure before escalating to a modal; forbid nested modals:** reveal secondary details, quick edits, and optional inputs inline (expandable section, disclosure panel, or contextual side sheet) before interrupting flow with a modal dialog. **Never stack a modal on top of another modal**—replace the step within the single active dialog or return to the underlying surface.
 - Keep depth shallow for high-frequency tasks; use progressive disclosure only when the hidden choice is genuinely secondary.
 - Preserve orientation: current position, progress certainty, completion consequence, escape/back behavior.
 - Branch only when answers change later questions. Do not gate optional enhancement behind mandatory account creation or irrelevant choices.
-- End with confirmation that states what happened, what happens next, and the useful next action—not a dead end.
+- End with confirmation that states a reference identifier (when applicable), what happened, what happens next, and the useful next action—not a dead end.
+
+## Anti-dark-pattern flow rules
+
+| Pattern | Required ethical flow | Forbidden dark pattern |
+|---|---|---|
+| **Consent & opt-in choices** | **Symmetric prominence for Accept vs. Reject**—equal button weight, contrast, size, and tap/click count on the first layer | Highlighting "Accept all" as a high-contrast button while burying "Reject" behind muted text links or a multi-click settings drawer |
+| **Cancellation & opt-out** | **Same-channel cancellation as easy as signup**—comparable step count and direct discoverability in account/billing settings | Roach Motel mazes: online 2-click signup paired with phone-only cancellation, support-ticket gates, or 5-step retention gauntlets |
+| **Optional add-ons & upgrades** | All optional extras (warranties, insurance, donations, marketing, paid add-ons) start unchecked and require affirmative selection | Pre-checked add-on boxes, sneak-into-basket items, or disguised upgrade buttons styled like "Continue" |
 
 ## IA checks
 

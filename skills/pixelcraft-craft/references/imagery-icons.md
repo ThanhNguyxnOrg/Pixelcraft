@@ -10,6 +10,10 @@
 - Provide meaningful alternative text or mark imagery decorative according to platform practice.
 - Optimize dimensions/format/loading priority; reserve space to prevent layout shift.
 - Account for localization and cultural context: gestures, clothing, symbols, maps, flags, food, skin representation, religious material, and color meaning are not neutral.
+- **Frame photos & avatars with a `1px` `10%` inset outline:** light-edged screenshots, white-background product photos, and dark-edged avatars bleed invisibly into matching surfaces without a hairline boundary. Apply a `1px` inset outline at `10%` contrast so edges stay crisp without shifting layout box dimensions:
+  - **Web (light / dark):** `outline: 1px solid rgb(0 0 0 / 0.1); outline-offset: -1px;` on light surfaces and `outline: 1px solid rgb(255 255 255 / 0.1); outline-offset: -1px;` on dark surfaces (use a clipped inner ring overlay if rounded corners require pixel-tight radius matching).
+  - **Native equivalents:** SwiftUI `.overlay(shape.strokeBorder(.primary.opacity(0.1), lineWidth: 1))`; Jetpack Compose `Modifier.clip(shape).border(1.dp, outlineColor.copy(alpha = 0.10f), shape)`; Flutter foreground `DecoratedBox` with `Border.all(color: outline.withOpacity(0.10), width: 1)`.
+- **Purposeful brand-aligned graphics with zero decorative visual noise:** break long walls of text with graphics that genuinely orient, explain, or prove a claim (annotated product crops, workflow/architecture diagrams, real UI previews, specimen callouts, before/after evidence) rendered in the brand's visual language. Delete filler visuals—floating orbs, abstract blobs, generic stock illustrations beside every paragraph, or decorative gradient cards that add scroll height without communicating information.
 
 ## Iconography
 

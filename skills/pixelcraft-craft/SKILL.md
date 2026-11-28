@@ -12,12 +12,12 @@ Craft is controlled decision-making under constraints. Apply the committed direc
 
 ## References
 
-- Read [references/typography.md](references/typography.md) when selecting type (`≤ 2` families + `1` mono), setting `45–75ch` prose measure, enforcing cross-platform tabular numerals (`B6`) and `U+2212` minus, or handling script fallbacks.
-- Read [references/color.md](references/color.md) when building OKLCH ramps, semantic roles, dark-surface `+5–8%` lightness steps & `1px` specular edges (`B4`), vibrancy fallbacks, or checking WCAG + APCA contrast.
+- Read [references/typography.md](references/typography.md) when selecting type (`≤ 2` families + `1` mono), setting `45–75ch` prose measure, preventing hover/selected `font-weight` jitter, enforcing tabular numerals (`B6`), `U+2212` minus, and real typographic punctuation (`“ ”`, `…`, `–`, `×`, `&nbsp;`), or handling script fallbacks.
+- Read [references/color.md](references/color.md) when building OKLCH ramps, deliberate restrained palettes, dark-surface `+5–8%` lightness steps & `1px` specular edges (`B4`), hue-tinted shadow-ring edges, `5–10%` anti-banding noise/grain, vibrancy fallbacks, or checking WCAG + APCA contrast.
 - Read [references/layout.md](references/layout.md) when designing grids, optical icon centroids & concentric corner radii (`B2`), invisible hit-slop, Safe Triangle submenus & slider pointer capture (`B5`), or responsive adaptation.
 - Read [references/layout-quality.md](references/layout-quality.md) before accepting a layout or judging rendered spacing/complexity.
-- Read [references/motion.md](references/motion.md) when calibrating motion by action frequency & warm tooltip chains (`B1`), origin-aware `0.95→1.0` scaling & faster exits (`B3`), damped springs, or reduced-motion paths.
-- Read [references/imagery-icons.md](references/imagery-icons.md) when using photography, illustration, generated media, diagrams, or unified icon systems.
+- Read [references/motion.md](references/motion.md) when calibrating motion via the Delight-Impact Curve & instant subsequent tooltips (`B1`), spinner anti-flicker, press compression & icon cross-fade, subtle exits (`B3`), interruptible Apple Gesture Physics, 3-state flicker-free theme switching, or reduced-motion paths.
+- Read [references/imagery-icons.md](references/imagery-icons.md) when framing media with `1px` `10%` inset outlines, using purposeful brand-aligned graphics without decorative noise, or building unified icon systems.
 
 ## Operating rules
 
@@ -34,12 +34,12 @@ Craft is controlled decision-making under constraints. Apply the committed direc
 
 | Law | Mandatory micro-craft bar | Reference |
 |---|---|---|
-| **`B1` Frequency-calibrated motion** | `0–100ms` high-frequency actions (`0ms` key-repeat & warm tooltip chains), `150–220ms` drawers/modals, `300–500ms` non-blocking expressive moments | `references/motion.md` |
+| **`B1` Frequency & Delight-Impact Curve** | `0` animation on `100+/day` & keyboard-initiated actions (`0ms` instant subsequent tooltips `data-instant`); `150–300ms` spinner delay + `300–500ms` hold preserving width; delight reserved for rare ceremonial moments | `references/motion.md` |
 | **`B2` Optical alignment & concentric radii** | `+1–2` unit optical centroid offset on asymmetric glyphs (play, chevron, arrow), concentric radii (`R_outer = R_inner + padding`, clamped `≥ 0`), balanced vertical text padding | `references/layout.md` |
-| **`B3` Origin-aware & asymmetric overlays** | Subtle `0.95 → 1.0` scale anchored to trigger origin (never `0 → 1` center balloon), faster exit (`100–130ms`) than enter (`160–200ms`), non-bouncy springs (`ζ ≥ 0.85`) | `references/motion.md` |
-| **`B4` Dark-surface luminance & edges** | Elevate dark layers via `+5% to +8%` OKLCH `L` steps (never `#000000` drop shadows), `1px` top/inner specular edge (`7–12%` white), lifted/desaturated accents, vibrancy + opaque reduced-transparency fallback | `references/color.md` |
-| **`B5` Forgiving pointer & touch mechanics** | `+6–10` unit invisible hit-slop around compact `24–28` unit icons, Safe Triangle diagonal submenu corridor (or `120–180ms` grace), pointer capture on sliders/splitters + `Shift`/arrow fine-step | `references/layout.md` |
-| **`B6` Tabular numerals & true minus** | Cross-platform tabular figures (`tabular-nums` / `.monospacedDigit()` / `"tnum"` / `FontFeature.tabularFigures()`) on every counter/timer/price/table column + `U+2212` `−` | `references/typography.md` |
+| **`B3` Tactile physics, subtle exits & theme switch** | Trigger-anchored `0.95→1.0` overlays, lighter partial-travel exits (`100–130ms`), press compression (`scale(0.97)`), icon scale+blur cross-fade, interruptible live-value Apple Gesture Physics (independent X/Y springs, velocity blending, rubber-band, `>0.11` momentum dismiss), flicker-free 3-state theme switching | `references/motion.md` |
+| **`B4` Luminance elevation, shadow-rings & grain** | Dark `+5–8%` OKLCH `L` steps & `1px` specular edges (`7–12%` white), hue-tinted shadow-ring edges (`1px` ring + contact + ambient), `5–10%` static anti-banding noise on large dark/subtle gradients, `1px` `10%` inset photo/avatar outlines, deliberate color restraint, opaque reduced-transparency fallback | `references/color.md` |
+| **`B5` Forgiving pointer & touch mechanics** | `+6–10` unit invisible hit-slop around compact `24–28` unit icons, Safe Triangle diagonal submenu corridor (or `120–180ms` grace), pointer capture + multi-touch guard on drags/sliders + `Shift`/arrow fine-step | `references/layout.md` |
+| **`B6` Tabular numerals, stable weights & typography** | Cross-platform tabular figures (`tnum`) on counters/timers/prices/tables, zero hover/selected `font-weight` layout jitter, and true glyphs (`−` `U+2212`, `“ ”`, `…`, `–`, `×`, `&nbsp;` for units/shortcuts) | `references/typography.md` |
 
 ## Anti-slop craft guard
 
@@ -49,10 +49,10 @@ Craft is controlled decision-making under constraints. Apply the committed direc
 
 ## Pre-submit checklist
 
-- [ ] First fixation point and 5-second scan path are established by scale, position, spacing, and contrast (`≤ 2` font families + `1` mono; `45–75ch` prose measure).
+- [ ] First fixation point and 5-second scan path are established by scale, position, spacing, and contrast (`≤ 2` font families + `1` mono; `45–75ch` prose measure; deliberate color restraint).
 - [ ] Exactly one subject-derived signature element carries expression; surrounding chrome and unified icon stroke/corner language stay quiet for the mode.
 - [ ] All color, type, spacing, elevation, and motion decisions map to semantic roles/tokens—zero untouched starter defaults or arbitrary raw-value sprawl.
-- [ ] Invisible Craft `B1–B6` verified: frequency-calibrated timing & warm tooltips, optical icon centroids & concentric radii, trigger-anchored `0.95→1.0` overlays with faster exits, dark `+5–8%` lightness steps & `1px` specular edges, invisible hit-slop + Safe Triangle + pointer capture, and tabular numerals + `U+2212` minus.
+- [ ] Invisible Craft `B1–B6` verified: Delight-Impact timing, spinner anti-flicker & `data-instant` tooltips; optical centroids & concentric radii; press compression, subtle exits, interruptible Gesture Physics & flicker-free 3-state theme switching; dark elevation, hue-tinted shadow-rings, anti-banding grain & `1px` `10%` inset media outlines; hit-slop, Safe Triangle & pointer capture; tabular numerals, stable interactive weights & true punctuation.
 - [ ] Composition, type measure, and density adapt cleanly across narrow, wide, text-scaled (`200%`), RTL, dark/light, reduced-motion, and reduced-transparency states.
-- [ ] Imagery and icons share one coherent system with verified commercial provenance (real, licensed, generated, or visibly marked user-requested placeholder).
+- [ ] Purposeful brand-aligned imagery and unified icons break walls of text with zero decorative visual noise and verified commercial provenance (real, licensed, generated, or visibly marked user-requested placeholder).
 - [ ] Every visual-craft claim is labeled with its actual evidence (`rendered`, `static`, `model-judgment`, or `not-checked`).

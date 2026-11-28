@@ -17,7 +17,11 @@ Distinguish where the tool executes when assigning Pixelcraft evidence labels:
 | `eslint-plugin-jsx-a11y` / static scanners | `static` | missing `alt`/labels, click-on-div without keyboard handler, banned patterns at edit time | computed contrast, CSS hiding/occlusion, runtime focus management |
 | Accessibility Inspector (Xcode) / Accessibility Scanner (Android) | `rendered` (automated subset) | native accessibility tree, touch target size, label/trait audits | real VoiceOver/TalkBack task completion |
 
-Automated zero means “no detected violations in scanned scope,” never “accessible.”
+Automated zero means “no detected violations in scanned scope,” never “accessible.” Empirical **W3C ACT** rule-mapping shows automated scanners cover only **~31% of WCAG 2.2 A/AA success criteria**—they systematically miss conditionally mounted live-region silence, focus loss on delete or `"Load more"`, logical focus order, Focus Not Obscured (`2.4.11`), single-pointer drag alternatives (`2.5.7`), split-text screen-reader fragmentation, and end-to-end keyboard task completion. This directly reinforces **Golden Evidence Rule (`Rule #0.3`)**: never count `static` linters or automated-only scan zeros as a `pass` for interactive or assistive accessibility requirements; pair them with manual rendered checks or record the unchecked manual scope honestly as `not-checked`.
+
+## Forbidden shortcut: accessibility overlay widgets
+
+**Never install, recommend, or accept third-party Accessibility Overlay widgets** (`accessiBe`, `AudioEye`, `UserWay`, or similar injected toolbar scripts) as a substitute for source-level remediation. Overlays cannot repair broken DOM/tree semantics, unmounted live regions, focus traps, form error associations, or composite widget contracts; they frequently conflict with users' own assistive technology and confer zero conformance under WCAG 2.2 AA, EAA/`EN 301 549`, or ADA Title II. Remediate every defect directly in source markup, design tokens, and interaction code.
 
 ## Manual protocol
 

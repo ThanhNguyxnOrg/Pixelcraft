@@ -76,6 +76,23 @@ Strongest evidence for behavior:
 
 Never escalate a screenshot reading into task-completion evidence.
 
+## "Break UI" stress-test & resilience verification matrix
+
+Execute these adversarial verification checks alongside primary user tasks before declaring a surface verified (label any unavailable OS/hardware check `not-checked` honestly):
+
+| Check | Scope | How to exercise | Required pass evidence |
+|---|---|---|---|
+| **60-char unbroken strings** | All surfaces | Feed a 60+ char unbroken email, URL, or ID into cards, headings, badges, and table cells | Clean wrap or controlled truncation; zero horizontal overflow or layout blowout (`rendered`) |
+| **`0` / `1` / `500` items** | All surfaces | Render every list, table, feed, and grid at `0`, `1`, and `500` records | Purposeful empty CTA (`0`), balanced single-item layout (`1`), smooth virtualized/paginated scroll (`500`) (`rendered`) |
+| **Broken & slow images** | All surfaces | Abort image requests (`404`/offline) and throttle media fetches | Stable explicit geometry (zero CLS), graceful fallback/alt presentation, primary task unobstructed (`rendered`) |
+| **3G throttled network** | Web & networked apps | Throttle network to slow 3G across initial render, search, and mutation submits | Immediate pending/skeleton feedback (`<= 100 ms`), idempotent submit lock, clean timeout/retry recovery (`rendered`) |
+| **`200%` text / page zoom** | All scalable surfaces | Test at `200%` zoom across desktop and smallest supported viewport | Zero clipped primary controls, zero colliding sticky bars, readable reflow (`rendered`) |
+| **`0` runtime console warnings** | All surfaces | Monitor DevTools Console / platform runtime log throughout the full task run | Zero uncaught exceptions, hydration mismatches, missing-key warnings, deprecations, or asset `404`s (`rendered`) |
+| **macOS `Show scroll bars: Always`** | Web *(macOS)* | Enable classic always-visible scrollbars (~15 px) on scrollable panes, modals, tables, and sticky bars | Zero clipped end-edge controls, stable gutter (`scrollbar-gutter: stable`), no spurious horizontal scrollbar (`rendered` or `not-checked`) |
+| **`iOS Low Power Mode`** | Web *(iOS)* | Test ambient `<video autoplay muted loop playsinline>` when OS Low Power Mode blocks autoplay | Crisp `poster` displayed cleanly with zero broken native play-button overlay or uncaught `play()` rejection (`rendered` or `not-checked`) |
+| **Chrome DevTools `bfcache`** | Web | Open `DevTools → Application → Back/forward cache → Test back/forward cache` on primary routes | Page restores cleanly from `bfcache` on non-sensitive routes; zero `unload` listener or stray `no-store` blockers (`rendered`) |
+| **Extension-free profiling** | Web | Disable all browser extensions (clean incognito/guest profile or clean headless run) before Lighthouse/CWV/trace capture | Measurements free of extension-injected DOM/JS noise (`rendered`) |
+
 ## Lightweight two-width evidence floor
 
 For a narrow review outside the finish gate, capture at least one desktop width and one narrow mobile width such as 390 px. Compare hierarchy, measure, navigation availability, clipping, touch target spacing, and whether the signature composition survives or intentionally degrades. If only one width is captured, mark responsive behavior `not-checked`. For a new or materially changed flow, use the full width matrix in [finish-gate.md](finish-gate.md).

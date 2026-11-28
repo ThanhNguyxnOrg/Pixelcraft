@@ -18,6 +18,18 @@ The floor is non-negotiable unless the user explicitly waives a scoped item. It 
   - zero unapproved 3-item hardcoded mock arrays masquerading as live or persisted data.
 - User-requested placeholders, explicit test fixtures, and intentional UI display truncation are not defects; visibly label any requested demo/fixture data and never present it as live production truth.
 
+### Instant trust litmus & anti-dark-pattern floor
+
+- **Above-the-fold `What · Who · Why` & zero "DIY energy":** on Persuade, landing, storefront, and onboarding entry surfaces, a first-time viewer must grasp **What** the offering is, **Who** it is for, and **Why** it is credible within the initial viewport without scrolling—paired with one unmistakable primary CTA and cohesive studio craft (no mismatched spacing, raw template seams, broken alignment, or unverified claims that trigger immediate distrust).
+- **Anti-dark-pattern & legal-ethical floor** (aligned with **EU DSA Art. 25**, **US ROSCA**, and **US/California ARL**):
+
+| Requirement | Mandatory behavior | Forbidden dark pattern |
+|---|---|---|
+| **Symmetric consent & choice prominence** | "Reject all", "Decline", and "Keep free plan" match "Accept all" / "Upgrade" in visual weight, contrast, tap/click depth, and placement | Burying opt-out inside nested drawers, low-contrast ghost text, or extra confirmation screens |
+| **Same-channel cancellation** | Canceling a subscription, revoking consent, or deleting an account works in the same surface/channel used to sign up with comparable step count | One-click online signup paired with forced phone calls, live-chat queues, or support tickets to cancel |
+| **Zero deceptive coercion** | State real inventory, deadlines, pricing, and neutral decline copy ("Not now", "No thanks") plainly before commitment | Confirmshaming ("No thanks, I prefer losing money"), resetting countdowns, fake scarcity/social-proof popups, drip fees at final step |
+| **Honest defaults & billing clarity** | Unchecked optional add-ons/marketing opt-ins by default; total recurring price, renewal cadence, and trial-conversion terms visible upfront | Pre-checked upsells, bundled insurance/newsletter opt-ins, or hidden auto-renewal terms |
+
 ## 2. Accessibility (`A4`)
 
 - Use real interactive semantics before adding roles or keyboard handlers.
@@ -77,10 +89,13 @@ The floor is non-negotiable unless the user explicitly waives a scoped item. It 
 
 - Zero dead interactive controls: every visible button, menu item, command, shortcut, toggle, or link executes wired behavior across supported input paths (never a no-op callback, unbound command, or placeholder target).
 - Strict compiler, type, analyzer, and linter checks pass cleanly for the active language and toolchain without blanket rule suppressions.
+- **Zero runtime console/log warnings or errors:** primary flows, state transitions, and responsive/theme switches emit **zero uncaught exceptions, zero runtime console/log errors, and zero framework/hydration/layout warnings** across the target runtime (browser console, mobile logcat/Console, desktop stderr, or TUI logs). Fix root causes; never silence errors with empty catch blocks or muted loggers.
+- **Unused dependency, dead-code & orphan-asset cleanup:** prune unused packages, unreferenced modules/exports, dead files, and orphan media before release using the active stack's native tool (e.g., `knip`/`depcheck`, `cargo udeps`, `go mod tidy`, `deptry`/`vulture`, `dart analyze`, Gradle/Xcode unused-resource analyzers, or equivalent).
 - **Clean dependency vulnerability audit & reproducible `< 10 minute` setup**: committed lockfiles/toolchain pins pass the active ecosystem's dependency vulnerability audit (`0` unaddressed critical/high advisories), paired with a documented configuration template and single-command bootstrap + verification path.
 - **Staging isolated from production**: staging/preview environments use separate credentials, databases, storage buckets, and payment/messaging sandboxes so QA never mutates live customer state.
 - Isolated component or screen state previews exist where the target stack supports them, covering non-happy-path states.
 - Zero hardcoded secrets, private API keys, signing credentials, or privileged tokens in client-visible source, bundles, binaries, or debug output.
+- **Client Autonomy (`No Black-Box Build`) & handover training boundaries:** never trap owners behind undocumented build magic or code-only routine copy edits. Separate **owner-editable content** (copy, pricing, locales, media, CMS/structured data guarded by schema and length/aspect constraints so edits cannot break layout) from **engineering-owned boundaries** (layout architecture, tokens, auth/security, build/deploy pipeline), and deliver a concise runbook or short handover walkthrough covering routine updates, staging preview, rollback, and engineering escalation triggers.
 - Verified commercial licenses for all shipped fonts, icon sets, imagery, 3D/audio media, and restricted packages, paired with clean owner-level transfer boundaries (domains, store accounts, analytics/error DSNs, signing keys, billing) and an explicit **30–90 day defect-warranty / severity-triage handoff note** for commercial deliveries.
 
 ## 9. Verifiability & Golden Evidence Rule (`Rule #0.3`)

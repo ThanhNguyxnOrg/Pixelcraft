@@ -26,6 +26,18 @@ Never override a user or project decision because it resembles a common pattern.
 
 When the user asks to implement an approved design, do **not** run divergence or change visual direction. Route through `pixelcraft-handoff` to preserve layout, hierarchy, token/color/type decisions, interaction meaning, and accessibility while translating into the actual stack. Divergence applies only to undecided parts: missing states/breakpoints/behavior, token or accessibility gaps, and regions explicitly classified as inspiration rather than specification.
 
+## Request modes
+
+Resolve the **narrowest** mode from the user's verb before acting; a URL, path, or screenshot identifies scope without authorizing edits. Treat shipped code as evidence of what exists, not automatic precedent when it violates the brief or floor.
+
+| Mode | Trigger verbs | Permitted action & hard boundary |
+|---|---|---|
+| **Shape** | brainstorm, plan, explore, wireframe, spec | Produce `.pixelcraft/plan.md`, directions, wireframes, or specs; **do not** edit production UI files until approved. |
+| **Implement** | build, create, add, redesign, migrate | Run the full applicable Pixelcraft loop and deliver code verified through Phase 5. |
+| **Review** | audit, critique, review, inspect, score | Inspect code/renders and deliver evidence-labeled findings via `pixelcraft-review`; **do not** edit files unless asked. |
+| **Copy** | rewrite, tighten copy, localize, microcopy | Update visible copy/strings/locales only; **do not** redesign layout, tokens, or component architecture. |
+| **Harden** | fix, polish, debug, a11y/perf pass, secure | Repair defects, edge cases, contrast, performance, or runtime errors while preserving approved IA and visual direction. |
+
 ## Iron laws and rationalization table
 
 | Excuse the agent is tempted to use | Required reality |
@@ -118,16 +130,16 @@ Use `pixelcraft-craft` for motion design intent; `pixelcraft-web` for browser im
 
 The full floor in `references/floor.md` is normative. At minimum:
 
-- truthfulness & completeness: no invented facts, metrics, logos, or testimonials; zero `// TODO`, zero ellipsis truncation, zero no-op handlers/commands/links, zero unapproved mock arrays posing as live data;
+- truthfulness, trust & completeness: above-the-fold `What · Who · Why` clarity with zero "DIY energy"; anti-dark-pattern floor (symmetric accept/reject, same-channel cancellation, zero confirmshaming/false urgency/pre-checked add-ons per EU DSA Art. 25 / US ROSCA / ARL); no invented facts, metrics, logos, or testimonials; zero `// TODO`, zero ellipsis truncation, zero no-op handlers/commands/links, zero unapproved mock arrays posing as live data;
 - accessibility: native semantic controls, persistent names/labels, visible & unobscured keyboard/focus path (`WCAG 2.4.11`), contrast floor, reduced-motion & reduced-transparency paths, text scaling/reflow, no color-only meaning, plus `EAA`/`EN 301 549` statement readiness where applicable;
 - interaction & invisible craft: frequency-calibrated timing, origin-aware overlays, optical alignment, forgiving hit-slop, tabular numerals, cancellation/undo/escape, no conflicting gestures, complete states;
 - adaptation: restructure across sizes, orientations, input modalities, and platform idioms;
 - localization: `+30–40%` prose and `+50–100%` short-label expansion, logical directionality, `Unicode NFC` diacritic & font-glyph integrity, active `IME` `Enter`-commit safety, locale formatting;
 - performance: instant orientation, stable layout, asset budgets, nonblocking interaction;
-- robustness: zero/one/many/long/missing/error/offline/permission/interruption/concurrency/AI-streaming states;
+- robustness: zero/one/many/long/missing/error/offline/permission/interruption/concurrency/AI-streaming states (`Break UI` edge-case coverage);
 - coherence: semantic tokens and consistent hierarchy, affordances, motion, iconography, and copy;
 - distinctiveness: at least one deliberate subject-specific commitment when mode permits;
-- engineering & handoff hygiene: strict compiler/type/analyzer checks for the active language, clean ecosystem dependency vulnerability audit alongside lockfiles, staging separated from production, `< 10m` clean-clone setup, isolated state previews where supported, zero client-exposed secrets, verified commercial font/icon/media licenses, owner-level account/key handoff, and 30–90 day defect-warranty triage handoff note;
+- engineering & handoff hygiene: strict compiler/type/analyzer checks, zero runtime console/log warnings or errors, unused dependency/dead-code cleanup, clean vulnerability audit alongside lockfiles, staging separated from production, `< 10m` clean-clone setup, isolated state previews where supported, zero client-exposed secrets, **Client Autonomy (`No Black-Box Build`)** & handover training boundaries, verified commercial licenses, owner-level account/key handoff, and 30–90 day defect-warranty triage handoff note;
 - verifiability: no claim without an evidence label (`references/surface-acceptance.md` covers the 12-row Surface Matrix and 3-tier Studio verdict).
 
 The floor never mandates a hero, card, palette, typeface, border radius, shadow, layout shape, or visual movement.
@@ -146,10 +158,10 @@ The floor never mandates a hero, card, palette, typeface, border radius, shadow,
 
 ## Pre-submit checklist
 
-- [ ] planning mode selected honestly (`Grill-Me` / `Fast Confirm` / `Direct Execution`), repo inspected first, and `.pixelcraft/acceptance.json` initialized (`check-acceptance.mjs --init <platform>`) with agreed numeric/device thresholds;
+- [ ] narrowest **Request Mode** (`Shape` / `Implement` / `Review` / `Copy` / `Harden`) and planning mode (`Grill-Me` / `Fast Confirm` / `Direct Execution`) selected honestly, repo inspected first, and `.pixelcraft/acceptance.json` initialized (`check-acceptance.mjs --init <platform>`) with agreed numeric/device thresholds;
 - [ ] lazy stack defaults rejected and complex UI capabilities routed to native primitives or purpose-built libraries;
 - [ ] pre-code Design Approval gate met for greenfield/redesign/undecided scope (or approved design preserved via `pixelcraft-handoff`);
-- [ ] zero `// TODO`, zero ellipsis stubs, zero dead controls/handlers, zero unwired mobile navigation, zero client secrets, zero unapproved fake proof/mocks;
-- [ ] mandatory floor (`A1–A8`: a11y, `<=100ms`/`>1s`/`>10s` latency ladder, states, adaptation, `+50–100%` short-label i18n & `IME`/`NFC` safety, invisible craft, tokens, strict language & dependency vulnerability checks, staging separation, license & 30–90d warranty handoff) applied natively;
+- [ ] zero `// TODO`, zero ellipsis stubs, zero dead controls/handlers, zero unwired mobile navigation, zero client secrets, zero unapproved fake proof/mocks, zero runtime console/log errors;
+- [ ] mandatory floor (`A1–A8`: trust & anti-dark-pattern floor, a11y, `<=100ms`/`>1s`/`>10s` latency ladder, `Break UI` states, adaptation, `+50–100%` short-label i18n & `IME`/`NFC` safety, invisible craft, tokens, strict language/unused-dep/vulnerability checks, staging separation, Client Autonomy, license & 30–90d warranty handoff) applied natively;
 - [ ] **Completion & Scan-Until-Clean `<HARD-GATE>` passed:** every applicable checklist (`floor.md`, active platform `Pre-submit checklist`, and `pixelcraft-review` `polish.md`) walked item-by-item, and `slop-scan.mjs --fail-on p2`, applicable `check-*` CLIs, compiler/type/linter/test suites, `finish-gate.mjs`, and `check-acceptance.mjs .pixelcraft/acceptance.json` re-run after fixes until `0` `fail`/`pending` rows remain (enforcing **Rule #0.3**);
 - [ ] final response reports the 3-tier Studio verdict (`PASS_STUDIO_10K_20K` / `EXCEEDS_STUDIO` / `PENDING_RENDERED_ENV`, never `FAIL`), selected direction, executed scan commands + exit codes, 12-row Surface Matrix, `not-checked`/`waived` items, and open risks.
