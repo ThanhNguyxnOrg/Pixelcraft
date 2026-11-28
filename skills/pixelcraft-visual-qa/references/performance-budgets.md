@@ -9,9 +9,9 @@ Budgets are user-experience constraints, not score chasing. Set them during plan
 | LCP | ≤ 2.5 s at p75 | largest contentful paint / perceived loading |
 | INP | ≤ 200 ms at p75 | interaction responsiveness |
 | CLS | ≤ 0.1 at p75 | visual stability |
-| **Lighthouse (3-run median)** | **Perf ≥ 90, A11y ≥ 95, BP ≥ 95, SEO ≥ 95** | **3-run median under 4G throttling on both mobile and desktop for every primary template** (with real tags active) |
+| **Lighthouse (3-run median)** | **Perf ≥ 90, A11y ≥ 95, BP ≥ 95, SEO ≥ 95** | **3-run median under 4G throttling on both mobile and desktop for every primary template** (with real tags active and **all browser extensions disabled**) |
 
-Use field data when available. Lighthouse/WebPageTest/local tracing are lab `rendered` evidence (never `static`—**Rule #0.3**). Always capture a **Network waterfall on the heaviest page** alongside the 3-run Lighthouse medians and cross-browser/device verification (`Chrome`, `Firefox`, `Edge`, `Safari macOS`, real `Safari iOS`, `Chrome Android`).
+Use field data when available. Lighthouse/WebPageTest/local tracing are lab `rendered` evidence (never `static`—**Rule #0.3**). **Always disable all browser extensions** before running Lighthouse, Core Web Vitals, or Performance panel profiling (use a clean incognito/guest profile or clean headless browser with extensions disabled)—extensions inject DOM nodes, content scripts, and network observers that distort timing, CLS, and memory scores. Always capture a **Network waterfall on the heaviest page** alongside the 3-run Lighthouse medians and cross-browser/device verification (`Chrome`, `Firefox`, `Edge`, `Safari macOS`, real `Safari iOS`, `Chrome Android`).
 
 ## Interaction and frame budgets
 
@@ -38,7 +38,9 @@ Fonts: subset and limit families/weights; use `font-display` appropriate to cont
 
 ## Measurement commands and signals
 
-- Browser: Performance panel, **3-run median Lighthouse** (4G throttled mobile + desktop per primary template), **Network waterfall capture on the heaviest page**, `performance.measure`, **INP** 3-phase breakdown (input delay + processing + presentation delay), **Long Animation Frames (`long-animation-frame` / LoAF)** on scroll/drag for script-level jank attribution, coverage, and bundle analyzer.
+- Browser *(clean profile — all browser extensions disabled)*: Performance panel, **3-run median Lighthouse** (4G throttled mobile + desktop per primary template), **Network waterfall capture on the heaviest page**, `performance.measure`, **INP** 3-phase breakdown (input delay + processing + presentation delay), **Long Animation Frames (`long-animation-frame` / LoAF)** on scroll/drag for script-level jank attribution, **`0` DevTools Console warnings/errors**, coverage, and bundle analyzer.
+- **`bfcache` (Back/Forward Cache) eligibility check *(Web)***: open **Chrome DevTools → Application → Back/forward cache → Test back/forward cache** on primary public/content routes and verify successful restoration (`rendered`) with zero `unload` listener or unnecessary `Cache-Control: no-store` blockers (reserve `no-store` strictly for sensitive auth/checkout pages; close sockets/locks on `pagehide` and restore on `pageshow` when `event.persisted`).
+- **Low-power & throttled resilience *(Web)***: verify `3G` throttled loading and **`iOS Low Power Mode`** (ambient `<video autoplay>` pauses cleanly on its `poster` without broken play overlays or uncaught `play()` rejections) alongside **macOS `Show scroll bars: Always`** layout stability.
 - Responsiveness engineering: break up long main-thread work with `scheduler.yield()` (fallback `setTimeout(..., 0)`) so user input paints within `≤ 200 ms`; on multi-page sites, evaluate the **Speculation Rules API** (`prefetch`/`prerender` with `eagerness: "moderate"`) for near-instant navigation while respecting data-saver and auth/logout exclusions.
 
 ```js

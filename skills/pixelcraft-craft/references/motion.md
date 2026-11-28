@@ -6,35 +6,71 @@ Evidence base: usability research, platform motion/accessibility guidance, rende
 
 Motion earns its cost only when it acknowledges input, shows causality, preserves orientation, communicates progress/state, or creates the direction's single signature moment. Apple gives the same constraint: purposeful, brief, precise, optional motion—not motion for its own sake. Showcase spectacle is not permission to sacrifice usability; celebrated interfaces are still wrong when motion blocks comprehension, control, or access.
 
-## B1 — Frequency-calibrated motion & warm tooltip chains
+## B1 — Frequency-calibrated motion, Delight-Impact Curve & instant subsequent tooltips
 
-Calibrate animation duration inversely to daily action frequency—high-repetition controls must never pay ceremonial animation tax:
+Calibrate animation duration inversely to daily action frequency using the **Delight-Impact Curve**—high-repetition controls must never pay ceremonial animation tax:
+
+- **Delight-Impact Curve:** reserve deliberate delight, character, and expressive choreography for **rare or ceremonial moments** (`≤ 1–3×/session`: first-run onboarding, security/verification completion, milestone/empty-state moments). Keep **`100+/day` high-frequency actions and keyboard-initiated actions at `0` animation** (`0ms`) so power users feel immediate, zero-latency control.
 
 | Frequency tier | Typical interactions | Duration budget | Required behavior |
 |---|---|---|---|
-| **High frequency** (`50–100+×/day`) | command palettes, context/dropdown menus, tab/row/cell selection, keyboard list traversal, warm tooltips | **`0–100ms`** (`0ms` on key-repeat / TUI cell step) | Instant acknowledgment; zero stagger or decorative entrance delay; hold-key repeat runs at `0ms` |
-| **Warm tooltip chain** | sweeping pointer/focus across sibling toolbar icons or table headers | `300–500ms` cold open (`~100ms` fade) → **`0ms` delay & `0ms` fade** while warm | Once one tooltip in a group opens, sibling tooltips open immediately with zero fade until pointer leaves the group (`~300–400ms` cooldown) |
+| **High frequency & keyboard** (`100+×/day`) | command palettes, keyboard-initiated shortcuts/navigation, context/dropdown menus, tab/row/cell selection, key-repeat | **`0ms`** (`0–100ms` max for pointer-only subtle state feedback) | Instant acknowledgment; zero stagger or decorative entrance delay; keyboard-initiated actions and key-repeat stay at `0` animation |
+| **Instant subsequent tooltips (`data-instant`)** | sweeping pointer/focus across sibling toolbar icons or table headers | `300–500ms` cold open (`~100ms` fade) → **`0ms` delay & `0ms` transition** while warm | Once one tooltip in a group is open, mark subsequent tooltips instant (e.g., `data-instant` with `transition-duration: 0ms` on web, or shared warm-group state in SwiftUI/Compose/Desktop) until pointer/focus leaves the group (`~300–400ms` cooldown) |
 | **Medium frequency** (`5–30×/day`) | drawers, side sheets, modal dialogs, inspector panes, accordion disclosures | **`150–220ms`** | Snappy deceleration or critically damped spring; retargetable mid-flight without queuing |
-| **Low frequency / expressive** (`≤ 1–3×/session`) | first-run onboarding, signature hero reveal, milestone confirmation | **`300–500ms`** | Never block pointer, scroll, or keyboard input; user can click or navigate through immediately |
+| **Rare / ceremonial delight** (`≤ 1–3×/session`) | onboarding completion, security/passkey confirmation, milestone or empty-state reveal | **`300–500ms`** | Never block pointer, scroll, or keyboard input; user can click or navigate through immediately |
 | **Rendering & concurrency** | all interactive and choreographed layers | compositor-only (`transform`, `opacity`) | Normally 1 primary + at most 2 supporting motions; ban `transition: all`, layout/paint thrashing, and idle loops in Operate/Read |
 
 Tokenize semantic durations and physics (`motion.instant`, `motion.fast`, `motion.panel.enter`, `motion.panel.exit`, `motion.spring.operational`) rather than scattering raw milliseconds.
 
-## B3 — Origin-aware scaling, asymmetric open/close & damped springs
+## B3 — Origin-aware scaling, subtle asymmetric exits & damped springs
 
-Overlays and interactive surfaces must preserve spatial causality and dismiss without drag:
+Overlays and interactive surfaces must preserve spatial causality and dismiss without visual drag:
 
 1. **Subtle trigger-anchored scale (`0.95 → 1.0`, never `0 → 1` center balloon):** popovers, context menus, combobox lists, and contextual sheets enter from **`scale(0.95)`–`scale(0.97)` to `1.0`** paired with opacity, anchored to the trigger's attachment corner or edge—never zooming from `0` or expanding from viewport center when opened by a corner button.
-2. **Asymmetric enter vs exit duration:** closing transitions run **faster than opening (`~100–130ms` exit vs `~160–200ms` enter)** using a brisk exit curve (`ease-in` or tight spring) so dismissing menus, modals, and sheets gets out of the user's way immediately.
+2. **Asymmetric & subtle exit animations:** closing transitions run **faster (`~100–130ms` exit vs `~160–200ms` enter)** AND **lighter** than entrances—use **partial travel** (e.g., `25–50%` of enter offset, `4–8px`, rather than a full-distance jarring slide-out) combined with opacity fade and optional subtle `blur(1–2px)` (omitting blur under Reduced Motion or constrained GPUs) so dismissing overlays dissolves cleanly out of the user's way.
 3. **Velocity-preserving, non-rubbery operational springs (`ζ ≥ 0.85`):** gesture-driven sheets, swipeable cards, and pan-to-dismiss overlays inherit release velocity via spring physics without cartoonish overshoot (damping ratio `ζ ≥ 0.85`—critically or near-critically damped—in Operate/Read UI; degrade to brief opacity crossfades under Reduced Motion).
 
 | Platform | Trigger-origin anchor idiom | Asymmetric timing / operational spring (`ζ ≥ 0.85`) |
 |---|---|---|
-| **Web CSS / Popover** | `transform-origin: var(--popover-origin, top start)` (or CSS Anchor Positioning edge) + `scale(0.96)` | Enter `180ms` `ease-out` / spring `linear()`; exit `115ms` `ease-in` |
+| **Web CSS / Popover** | `transform-origin: var(--popover-origin, top start)` (or CSS Anchor Positioning edge) + `scale(0.96)` | Enter `180ms` `ease-out` / spring `linear()`; subtle exit `115ms` `ease-in` (partial travel + opacity) |
 | **SwiftUI / AppKit** | `.popover(attachmentAnchor: .rect(.bounds))` or `.scaleEffect(open ? 1 : 0.96, anchor: .topLeading)` | `.spring(duration: 0.2, bounce: 0.0)` (enter) / `.easeIn(duration: 0.12)` (exit) |
 | **Jetpack Compose** | `scaleIn(initialScale = 0.95f, transformOrigin = TransformOrigin(0f, 0f))` | `tween(180, FastOutSlowInEasing)` enter / `tween(115, FastOutLinearInEasing)` exit; `Spring.DampingRatioNoBouncy` |
 | **Flutter** | `ScaleTransition` / `Transform.scale` with `alignment: AlignmentDirectional.topStart` | `SpringDescription.withDampingRatio(mass: 1, stiffness: 500, ratio: 0.9)` or `duration: 180ms` / `reverseDuration: 115ms` |
 | **Desktop / Game UI** | Anchor popup rect to widget `mapToGlobal` trigger edge (Qt/WinUI/Slint/UMG); scale `0.96 → 1.0` | `160–180ms` enter, `100–120ms` exit; instant `0ms` in TUI |
+
+## Tactile micro-feedback & spinner anti-flicker
+
+| Pattern | Concrete rule | Cross-platform guardrails |
+|---|---|---|
+| **Press compression** | Scale tactile buttons, pills, and pressable cards to **`scale(0.97)`** over **`100–160ms ease-out`** on pointer/touch down, releasing immediately on pointer-up or cancel | CSS `:active` transform; SwiftUI `ButtonStyle` `.scaleEffect(isPressed ? 0.97 : 1)`; Compose `collectIsPressedAsState()`; Flutter `AnimatedScale`. Skip scale on inline prose links; replace with instant tone/border feedback under Reduced Motion. |
+| **In-place icon swap cross-fade** | When an icon toggles state in place (copy → check, play → pause, show → hide, sort), cross-fade outgoing and incoming icons over **`150–200ms`** using opacity + slight **`scale` (`0.85 ↔ 1.0`)** + subtle **`blur(1–2px)`** inside one fixed bounding box | Overlap both icons in the same layout cell so button dimensions never shift. Fall back to instant swap or opacity-only crossfade under Reduced Motion. |
+| **Spinner anti-flicker** | (1) Wait **`150–300ms`** before showing a spinner so fast responses never flash; (2) once shown, hold for a **`300–500ms` minimum** before clearing so the indicator never blinks for a single frame; (3) **preserve button label & width** so entering/leaving loading causes zero horizontal layout jump | Keep the label in flow at `opacity: 0` (or reserve exact `min-width` / grid overlay slot) while centering the spinner over it; disable duplicate submission while maintaining accessible busy state (`aria-busy` / native status announcement). |
+
+## Interruptible motion, Apple Gesture Physics & choreography discipline
+
+Every gesture-driven or multi-step transition must stay physically coherent and responsive on every frame:
+
+| Rule | Mandatory behavior | Anti-pattern to reject |
+|---|---|---|
+| **Live presentation-value interruption** | On interruption or mid-flight retargeting, start the new animation from the **current live presentation value** (`CALayer.presentation()`, SwiftUI/Compose `Animatable` value, Web Animations `commitStyles()` / active spring state)—never the previous logical target | Snapping to the old target before reversing or restarting from `0` |
+| **Never lock input during transition** | Keep pointer, touch, scroll, and keyboard active while panels, sheets, drawers, or route transitions run | Disabling clicks (`pointer-events: none`) or ignoring swipes until `onTransitionEnd` fires |
+| **Velocity blending on gesture reversal** | Preserve and smoothly blend incoming velocity into the reversed spring when a user changes drag direction mid-motion | Hard-cutting velocity to `0` ("brick wall" stop) on direction reversal |
+| **Independent X and Y springs** | Decompose 2D drags (PIP windows, draggable cards, freeform sheets) into **independent X and Y springs** so diagonal throws curve naturally along each axis's momentum | Single scalar progress interpolation that forces unnatural straight-line snaps |
+| **Momentum-based dismissal (`velocity > 0.11`)** | Dismiss swipeable sheets, toasts, and drawers from release velocity (**`velocity > 0.11`**, e.g., `> 0.11 px/ms` ≈ `110 px/s` or platform velocity projection) even below 50% drag distance; snap back smoothly on slow releases | Requiring users to drag past 50% height/width despite a brisk flick |
+| **Pointer capture & multi-touch guard** | Acquire pointer capture (`setPointerCapture` / native exclusive gesture recognizer) on drag start and ignore secondary pointers (**multi-touch guard**) during an active single-pointer drag | Losing the drag when the pointer leaves the handle or teleporting on an accidental second finger |
+| **Rubber-band damping at boundaries** | Apply asymptotic resistance at overscroll, sheet, or slider limits (e.g., `offset = limit * (1 - 1 / (1 + x / limit))`) | Hard abrupt stops or linear unbounded stretch past the limit |
+| **Pause off-screen loops** | Automatically pause ambient, shader, media, or ticker loops when outside the viewport (`IntersectionObserver` / native visibility lifecycle) or when the window/tab is backgrounded | Burning CPU/GPU/battery on hidden or scrolled-away loops |
+| **Storyboard `TIMING` comment block** | For multi-step choreography (`≥ 3` orchestrated beats), place a structured `TIMING` comment block right above the animation listing each beat (`t=0ms`, `t=80ms`, `t=180ms`), duration, easing, and reduced-motion collapse | Scattering undocumented magic `delay` numbers across separate components |
+| **Zero inherited CSS variable churn in drag/scroll loops** | Inside high-frequency drag or scroll handlers, update the moving target's compositor `transform` directly (or use a leaf-scoped `@property` with `inherits: false`) | Updating inherited parent/root CSS variables (`--scroll-y`, `--drag-x` on `:root` or ancestor wrappers) every frame, triggering full-subtree style recalc storms |
+
+## 3-state theme switching (`System` / `Light` / `Dark`)
+
+Implement theme switching cleanly across web, desktop, and mobile surfaces without boot flashes or transition waves:
+
+1. **Three explicit states with `System` default:** expose **`System` (default)**, **`Light`**, and **`Dark`**. When `System` is selected, react live to OS appearance changes (`matchMedia('(prefers-color-scheme: dark)')`, SwiftUI/AppKit `colorScheme`, Android `uiMode`, desktop OS theme events).
+2. **Pre-first-paint resolution (zero white flash):** resolve stored preference + system scheme **before first paint** (small synchronous boot script in `<head>` setting the root theme attribute + `color-scheme` on web; native window/splash appearance configuration before initial reveal on desktop/mobile).
+3. **Brief transition suppression during switch (zero color-ripple wave):** disable transitions globally for the switch frame (e.g., toggle `[data-theme-switching]` applying `transition: none !important` across `*`, flush layout/paint, then remove on the next frame, or batch native appearance invalidation) so cards, borders, and text swap in lockstep instead of rippling at mismatched transition speeds.
+4. **Cross-tab & cross-window sync:** broadcast preference writes immediately across open tabs or windows (`storage` event / `BroadcastChannel` on web; shared preference store / IPC notification on desktop and mobile).
 
 ## Concentric geometry and translucent materials
 

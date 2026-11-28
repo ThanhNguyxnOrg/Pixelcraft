@@ -52,7 +52,7 @@ WCAG 2.2 AA is Pixelcraft's mandatory engineering floor (not legal certification
 
 ## Automatic failures to scan/fix
 
-`outline:none` without replacement, positive tabindex, placeholder-as-label, missing form label, mouse-only handlers, blocked paste, disabled zoom, color-only state, missing reduced-motion path, focus removed/unmanaged in dialogs, keyboard-inaccessible drag/drop/menu/grid, target padding counted as visual target when hit box is smaller.
+`outline:none` without replacement, positive tabindex, placeholder-as-label, missing form label, mouse-only handlers, blocked paste, disabled zoom, color-only state, missing reduced-motion path, focus removed/unmanaged in dialogs, keyboard-inaccessible drag/drop/menu/grid, target padding counted as visual target when hit box is smaller, and **third-party Accessibility Overlay widgets (`accessiBe`, `AudioEye`, etc.)** shipped in place of source-level remediation (overlays are strictly forbidden as a compliance substitute—fix semantics, contrast, focus, and interaction contracts in source code).
 
 ## WCAG 2.2 addition test matrix
 
@@ -65,7 +65,7 @@ WCAG 2.2 AA is Pixelcraft's mandatory engineering floor (not legal certification
 | redundant entry | complete multi-step form/process and induce validation/server errors | previously supplied information is retained or selectable; no unnecessary retyping | essential/security/revalidation exceptions must be explicit and justified |
 | accessible authentication | attempt login/recovery with password manager/paste/passkey/biometric/magic-link paths where supported | no cognitive memory test, puzzle, or transcription-only requirement blocks authentication | object recognition/manual transcription may be permitted only through specified alternative/mechanism; verify actual path |
 
-Run these tests in the actual rendering/input context. A static line of code is not proof when sticky elements, viewport occlusion, scaling, hit slop, or asynchronous validation determine the outcome.
+Run these tests in the actual rendering/input context. Under empirical **W3C ACT** coverage, automated scanners detect only **~31% of WCAG 2.2 A/AA criteria** and miss conditionally mounted live-region silence, focus loss on delete/`"Load more"`, sticky occlusion (`2.4.11`), drag alternatives (`2.5.7`), and real keyboard/screen-reader flows—directly reinforcing **Golden Evidence Rule (`Rule #0.3`)** that static or automated-only checks never prove interactive or assistive compliance.
 
 ## Manual verification scripts
 

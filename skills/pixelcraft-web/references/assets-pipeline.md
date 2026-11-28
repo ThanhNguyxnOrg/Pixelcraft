@@ -1,6 +1,36 @@
-# 3D asset pipeline
+# Web and 3D asset pipeline
 
-## Preferred delivery path
+## Web favicons, critical origins, ambient loops & brand logo shortcut
+
+- **Complete Favicon suite (with dark-mode SVG)**: ship a clean, minimal multi-platform icon set rather than 20 obsolete tags:
+  - `/favicon.ico` (`32×32` fallback for legacy crawlers/tools),
+  - `/icon.svg` with an embedded `@media (prefers-color-scheme: dark)` rule inside `<svg>` so browser tabs adapt cleanly to light and dark chrome,
+  - `/apple-touch-icon.png` (`180×180` opaque PNG with safe padding),
+  - `/manifest.webmanifest` declaring `192×192` and `512×512` (standard + `maskable`) PNG icons.
+- **Preconnect critical origins**: add `<link rel="preconnect" href="https://..." crossorigin>` (in tier 3 of the `capo.js` `<head>` order, `<= 2–4` origins) **only** for origins required immediately above the fold (CDN media host, critical API, or self-hosted asset origin). Never scatter speculative `preconnect` tags for deferred analytics or chat embeds.
+- **Prefer muted `<video>` over animated GIFs**: replace multi-megabyte animated GIFs with muted **`<video autoplay muted loop playsinline poster="...">`** encoded in H.264/MP4 + VP9/AV1 WebM (often 5×–10× smaller with higher frame quality). Always pair with a crisp `poster` (for `iOS Low Power Mode` and `prefers-reduced-motion`) and a WCAG 2.2.2 Pause control when looping > 5s (`accessibility-performance.md`).
+- **Right-click brand logo shortcut (when a Brand Assets / Press page exists)**: on marketing, product, and docs sites that publish official brand marks, intercept `contextmenu` on the navbar brand logo to offer a compact menu (`Copy logo SVG`, `Download brand kit`, `Open Brand Assets page`) while keeping normal left-click navigation to `/` and keyboard focus completely intact.
+
+```html
+<!-- Adaptive dark-mode SVG favicon + complete suite -->
+<link rel="icon" href="/favicon.ico" sizes="32x32" />
+<link rel="icon" href="/icon.svg" type="image/svg+xml" />
+<link rel="apple-touch-icon" href="/apple-touch-icon.png" />
+<link rel="manifest" href="/manifest.webmanifest" />
+```
+
+```svg
+<!-- /icon.svg: adapts automatically to browser tab theme -->
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 32 32">
+  <style>
+    path { fill: #111318; }
+    @media (prefers-color-scheme: dark) { path { fill: #f5f7fa; } }
+  </style>
+  <path d="M6 6h20v20H6z" />
+</svg>
+```
+
+## 3D asset delivery path
 
 1. Author or obtain assets with clear provenance and license.
 2. Export GLB/glTF containing only required meshes, materials, animations, and texture sets.

@@ -110,11 +110,22 @@ export async function saveProfile(_prev: unknown, formData: FormData) {
 - **Synchronous submit lock & idempotent create/pay mutations**: guard `onSubmit` with a synchronous ref lock (`submittingRef.current = true` before the first `await`) plus `aria-busy="true"` and an `Idempotency-Key` header on create/billing mutations ([auth-and-checkout-ui.md](auth-and-checkout-ui.md)) so rapid double-Enter or double-click never creates duplicate records.
 - **Autosave & `401` session-expiry draft preservation**: debounce draft writes to `IndexedDB`/Dexie (or `sessionStorage` for tiny non-sensitive payloads), snapshot dirty form values immediately if a submit fails with `401 Unauthorized` prior to re-authentication, clear the draft on confirmed `2xx` persistence, and offer explicit `Restore draft` / `Discard` recovery on return.
 
+## Web platform input, dark-mode, disabled-control & XSS hygiene
+
+- **Mobile Safari zoom & touch-device focus**: enforce `font-size: max(16px, 1em)` (`>= 16px`) on `<input>`, `<select>`, and `<textarea>` so iOS Safari does not auto-zoom on tap (never block pinch-zoom with `maximum-scale=1`), and **never apply `autofocus` on touch devices** (`pointer: coarse`)—auto-opening the virtual keyboard on route entry obscures the page and hijacks scroll.
+- **IME / autocorrect trailing whitespace & `spellcheck="false"`**: mobile autocorrect and IME commits routinely append trailing spaces to email, coupon, username, and verification-code fields. Trim leading/trailing whitespace in schema parsing (`z.string().trim()`) or on `blur`/`submit`—never strip spaces mid-keystroke or during active IME composition (`event.isComposing`). Set `spellcheck="false"` (and `autoCapitalize="none"` where appropriate) on email, username, URL, code, and API token inputs.
+- **Windows Dark Mode `<select>` legibility**: set explicit `background-color` and `color` tokens on both native `<select>` and `<option>` elements so Windows Dark Mode popup lists never render white text on a white menu background.
+- **Never attach hover tooltips to native `disabled` buttons**: browsers suppress pointer events on `disabled` controls and keyboard `Tab` skips them entirely, hiding the reason an action is unavailable. Either keep the button focusable with `aria-disabled="true"` (blocking activation in the handler and linking the explanation via `aria-describedby`) or render the requirement inline adjacent to the button.
+- **XSS sanitization on rendered user HTML**: rely on strict framework text escaping by default; whenever user-authored rich text or HTML must render via `dangerouslySetInnerHTML` / `v-html` / `{@html}` / `innerHTML`, sanitize it first with **`DOMPurify`** (or a server-side allowlist sanitizer) with a strict allowed tag/attribute policy and `CSP`.
+
 ## Do/don't pairs
 
 | Do | Don't |
 |---|---|
 | Gate `role="alert"` on `isTouched \|\| isSubmitted` and bind `aria-describedby` to the error ID | Fire `onChange` errors on keystroke 1 or leave errors unlinked from the input |
+| Keep `<input>`/`<select>`/`<textarea>` at `>= 16px`, omit `autofocus` on touch devices, trim on blur/submit, and set `spellcheck="false"` on email/code/tokens | Trigger iOS zoom with `14px` inputs, pop mobile keyboards on load, reject trailing autocorrect spaces, or red-underline API keys |
+| Set explicit `background-color`/`color` on `<select>`/`<option>` and use `aria-disabled="true"` + inline/linked reason instead of disabled-button tooltips | Leave `<select>` unreadable in Windows Dark Mode or hide critical requirements inside hover tooltips on `disabled` buttons |
+| Escape user strings by default and sanitize any rendered HTML through `DOMPurify` | Inject unsanitized user content into `dangerouslySetInnerHTML`, `v-html`, `{@html}`, or `innerHTML` |
 | Key `useFieldArray` rows by generated `field.key` / `field.id` (`keyName: 'key'` if records have `id`) | Key repeatable form rows by array `index` (corrupts values on delete/reorder) |
 | Match Zod v4 with `z.email()`, `@hookform/resolvers` v5+, and `@conform-to/zod/v4` | Mix Zod v4 schemas into outdated Zod v3 resolver subpaths |
 | Share one Standard Schema between client form validation and server action/endpoint | Duplicate regexes manually in client inputs and backend handlers |

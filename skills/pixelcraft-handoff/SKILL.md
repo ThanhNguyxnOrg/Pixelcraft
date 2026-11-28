@@ -14,7 +14,7 @@ Design handoff is translation under uncertainty, not screenshot copying. Visual 
 
 ## References
 
-- Read [references/design-translation.md](references/design-translation.md) for the translation contract, evidence hierarchy, component reuse, token mapping, stack-specific translation, missing states, `< 10m` clean-clone setup, license/account ownership handoff, and the visual-qa fidelity loop.
+- Read [references/design-translation.md](references/design-translation.md) for the translation contract, evidence hierarchy, component reuse, token mapping, stack-specific translation, missing states, `< 10m` clean-clone setup, license/account ownership handoff, **Client Autonomy (`No Black-Box Build`)**, handover training & support boundaries, and the visual-qa fidelity loop.
 - Read [references/motion-handoff.md](references/motion-handoff.md) when a design/prototype includes triggers, timing, easing, stagger, interruption, focus, or reduced-motion behavior.
 - Read [references/fidelity-tolerance.md](references/fidelity-tolerance.md) before declaring acceptance tolerance, freezing fixtures, or interpreting visual diffs.
 
@@ -25,7 +25,7 @@ Design handoff is translation under uncertainty, not screenshot copying. Visual 
 3. **Gather structured evidence.** Prefer semantic variables, component metadata, variants, constraints, comments, and production mappings over screenshot inference; use screenshots as visual evidence rather than sole truth.
 4. **Map before generating.** Match elements to existing components, variables, assets, and platform primitives. Resolve missing hover/focus/disabled/loading/empty/error/overflow/localization/`IME` states or label them assumptions.
 5. **Translate idiomatically.** Map design variables into semantic project tokens through `pixelcraft-tokens`; implement in the actual target stack with stack-native isolated state previews (`#Preview`, `@Preview`, Widgetbook, QML/TUI fixtures, or component stories) rather than copying generated markup or absolute geometry.
-6. **Verify fidelity & commercial handoff readiness.** Hand off rendered evidence to `pixelcraft-visual-qa` for screenshot/crop/overlay/diff comparison within declared tolerance; verify `< 10m` clean-clone setup, commercial asset license manifest, owner-level account/key boundaries, and post-launch regression baselines.
+6. **Verify fidelity, client autonomy & commercial handoff readiness.** Hand off rendered evidence to `pixelcraft-visual-qa` for screenshot/crop/overlay/diff comparison within declared tolerance; verify `< 10m` clean-clone setup, non-fragile owner-editable architecture (`No Black-Box Build`), practical handover training + owner-vs-engineering responsibility matrix, commercial asset license manifest, owner-level account/key boundaries, lock-in-free warranty/maintenance terms, and post-launch regression baselines.
 
 ## Non-negotiable rules
 
@@ -37,6 +37,7 @@ Design handoff is translation under uncertainty, not screenshot copying. Visual 
 | ambiguity | unknown interaction/state/token meaning is a question or explicit assumption—not silent invention. |
 | fidelity | visual similarity never excuses broken keyboard behavior, contrast, overflow, empty/error/loading states, or content scaling. |
 | privacy/security & ownership | zero hardcoded secrets; client/owner holds root billing & admin for DNS, store accounts, analytics/error DSNs, and signing keys; commercial licenses verified for fonts/icons/media. |
+| client autonomy & handover | **No Black-Box Build**: structure content/config so non-technical owners can safely add pages and update copy/services without breaking layout; include practical handover training (walkthrough/docs), an explicit owner-vs-engineering responsibility matrix, and transparent post-launch warranty/maintenance terms with zero hidden lock-in. |
 | anti-slop | do not flatten design into static absolute positioning, rasterize text, copy placeholder copy, or mimic visual noise without semantic structure. |
 
 ## Pre-submit checklist
@@ -45,6 +46,8 @@ Design handoff is translation under uncertainty, not screenshot copying. Visual 
 - [ ] existing component/token reuse decisions and semantic variable/mode mappings are documented;
 - [ ] missing hover/focus/disabled/loading/error/empty/overflow/`IME` states are resolved (with stack-native isolated previews where supported) or labeled assumptions;
 - [ ] reproducible `< 10m` clean-clone setup (lockfile, `.env.example`/config stub, strict active-language checks) verified;
+- [ ] **Client Autonomy (`No Black-Box Build`)**: routine copy, service, media, and page additions live in guardrailed, owner-editable schemas/content models that cannot break layout;
+- [ ] **Handover training & support boundaries**: recorded walkthrough/playbook, explicit owner-vs-engineering responsibility matrix, and transparent post-launch warranty/maintenance terms without hidden lock-in delivered;
 - [ ] commercial license manifest (fonts, icon packs, stock/3D/audio rights) and owner-level account/key transfer boundaries (DNS, Store accounts, DSNs, signing certs) documented;
 - [ ] rendered output compared at target sizes via `pixelcraft-visual-qa` with frozen post-launch regression baseline and declared region tolerances;
 - [ ] intentional deviations and residual uncertainty are reported with honest evidence labels.

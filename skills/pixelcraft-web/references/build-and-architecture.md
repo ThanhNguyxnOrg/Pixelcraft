@@ -183,7 +183,19 @@ Ship these baseline HTTP security headers on every HTML response (via edge middl
 - **`Strict-Transport-Security`**: `max-age=63072000; includeSubDomains; preload`.
 - **`X-Content-Type-Options`**: `nosniff`.
 - **`Referrer-Policy`**: `strict-origin-when-cross-origin`.
-- **`Permissions-Policy`**: `camera=(), microphone=(), geolocation=(), payment=(self)` (enable capabilities only on routes that use them).
+- **`Permissions-Policy`**: `camera=(), microphone=(), geolocation=(), payment=(self), unload=()` (enable capabilities only on routes that use them; `unload=()` blocks third-party scripts from registering `bfcache`-breaking `unload` listeners).
+
+## Runtime hygiene: `bfcache`, zero console warnings, dead code & mutation speed
+
+- **`bfcache` (Back/Forward Cache) eligibility**: instant browser back/forward restores cut navigation latency to near zero and protect LCP/INP.
+  - Register **zero `unload` listeners** anywhere in app or third-party code—use **`pagehide`** and **`visibilitychange`** (with `navigator.sendBeacon`) instead, and send `Permissions-Policy: unload=()` where compatible.
+  - Reserve **`Cache-Control: no-store`** strictly for sensitive authenticated/checkout/financial pages; use `no-cache` or `max-age=0` on ordinary public/content pages so `bfcache` stays eligible.
+  - Close open `WebSocket`s, `IndexedDB` transactions, Web Locks, and broadcast/media streams in `pagehide`, and reconnect/refresh stale UI in `pageshow` when **`event.persisted === true`**.
+  - Verify in **Chrome DevTools → Application → Back/forward cache → Test back/forward cache** (`rendered`).
+- **Zero DevTools Console warnings or errors**: production and preview builds must emit **0** uncaught errors, React/Vue/Svelte hydration mismatches, deprecation warnings, duplicate-key warnings, CSP violations, or missing-asset `404`s during normal navigation and primary flows.
+- **Unused dependencies & dead-code cleanup**: run **`knip`** or **`depcheck`** (or the active backend/frontend language's dead-code analyzer) before release to purge unused packages, orphan modules, and unreferenced exports.
+- **Avoid tree-shaking-hostile barrel icon imports**: never pull an entire icon suite into the initial bundle through unoptimized barrel re-exports (`import * as Icons` or framework bundlers that fail to tree-shake a massive barrel). Prefer direct icon imports (`lucide-react/icons/...`), compiler `optimizePackageImports` rules, or a static SVG symbol sprite.
+- **`< 500 ms` mutation round-trips with optimistic/pending feedback**: engineer common create/update/toggle mutations to complete in **`< 500 ms`** at p75, acknowledge every trigger visually within `<= 100 ms` via optimistic UI or localized pending indicators, and roll back cleanly with preserved input if the server rejects.
 
 ## Technical SEO, redesign migration & AI/social unfurl readiness
 
@@ -198,6 +210,9 @@ Ship these baseline HTTP security headers on every HTML response (via edge middl
 |---|---|
 | Use `oxc` and `build.rolldownOptions` on Vite 8+ | Copy legacy `esbuild` / `optimizeDeps.esbuildOptions` snippets into Vite 8 configs |
 | Mark `react` / `react-dom` as `singleton: true` in Module Federation | Load duplicate React runtimes across host and remote containers |
+| Use `pagehide` / `visibilitychange`, `Permissions-Policy: unload=()`, `max-age=0`/`no-cache` on ordinary routes, and restore on `pageshow` (`event.persisted`) | Attach `unload` listeners or broadcast `Cache-Control: no-store` globally, killing `bfcache` |
+| Keep DevTools Console at `0` warnings/errors, prune dead code/deps with `knip`/`depcheck`, and use tree-shakeable icon imports | Ship hydration warnings, stale packages, or barrel icon imports that bloat initial JS |
+| Target `< 500 ms` p75 mutation round-trips with immediate (`<= 100 ms`) optimistic/pending feedback and safe rollback | Leave buttons unresponsive during multi-second network mutations |
 | Gate 3rd-party pixels/chat behind Zaraz/Partytown, click-to-load facades, and fixed Consent Mode v2 UI | Load GTM, Intercom, and YouTube iframes synchronously on `<head>` or push layout down with a late cookie bar |
 | Serve `immutable` cache headers on hashed assets, `private, no-store` on auth routes, CSP/HSTS/`nosniff`, PR previews, and a rollback plan | Cache personalized responses at the CDN edge or ship production changes without preview isolation and rollback |
 | Ship a tested legacy `301` redirect map, `/llms.txt`, and `1200×630` HTTPS PNG/JPEG `og:image` tags | Drop old indexed URLs to `404` on redesign or use relative/WebP/SVG `og:image` URLs that break in Zalo/Slack |
@@ -208,8 +223,9 @@ Ship these baseline HTTP security headers on every HTML response (via edge middl
 
 ```sh
 npm run build
+npx knip
 npx lighthouse http://localhost:4173 --preset=perf --form-factor=mobile
 npx lighthouse http://localhost:4173 --preset=desktop
 ```
 
-Inspect generated bundle chunks against surface-class JS+CSS budgets, HTTP response/security/cache headers, `sitemap.xml`/`robots.txt`/`llms.txt`, PR preview/rollback config, and `301` redirect rules (`static`), and verify **3-run median** post-tag Lighthouse scores (`Perf >= 90`, `A11y/BP/SEO >= 95` on mobile + desktop per primary template), CWV (`LCP < 2.5s`, `INP < 200ms`, `CLS < 0.1`), `LoAF` scroll/drag traces, heaviest-page Network waterfall, and deliverable captures across **`Chrome`, `Firefox`, `Edge`, `Safari macOS`, real `Safari iOS`, and `Chrome Android`** (`rendered`).
+Inspect generated bundle chunks against surface-class JS+CSS budgets, unused deps/dead code (`knip`/`depcheck`), HTTP response/security/cache headers, `sitemap.xml`/`robots.txt`/`llms.txt`, PR preview/rollback config, and `301` redirect rules (`static`), and verify **3-run median** post-tag Lighthouse scores (with **all browser extensions disabled**; `Perf >= 90`, `A11y/BP/SEO >= 95` on mobile + desktop per primary template), CWV (`LCP < 2.5s`, `INP < 200ms`, `CLS < 0.1`), **Chrome DevTools → Application → Back/forward cache (`bfcache`)**, **`0` Console warnings/errors**, `LoAF` scroll/drag traces, heaviest-page Network waterfall, and deliverable captures across **`Chrome`, `Firefox`, `Edge`, `Safari macOS`, real `Safari iOS`, and `Chrome Android`** (`rendered`).

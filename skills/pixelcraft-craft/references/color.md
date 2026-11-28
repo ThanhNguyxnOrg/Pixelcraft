@@ -57,6 +57,15 @@ Never build dark mode by mechanically inverting light tokens or dropping `#00000
 
 Honor `prefers-contrast`, `forced-colors`, and platform high-contrast modes; never strip system-controlled boundaries.
 
+### Multi-layer hue-tinted shadow-ring edges & anti-banding grain
+
+Replace flat gray borders, muddy `#000000` drop shadows, and banded 8-bit gradients with surface-aware depth and dithering:
+
+| Craft technique | Concrete specification | Cross-platform idioms |
+|---|---|---|
+| **Multi-layer hue-tinted shadow-ring edge** | Combine 3 tuned layers instead of a single generic shadow: (1) a **`1px` subtle ring** defining the edge across light or tinted backgrounds; (2) a **crisp contact shadow** directly beneath the container; and (3) a **soft ambient shadow** tinted with the canvas/surface hue (never neutral `#000` black over warm or cool light surfaces, which reads dirty gray). | **Web:** `box-shadow: 0 0 0 1px oklch(0.24 0.02 250 / 8%), 0 1px 2px -0.5px oklch(0.22 0.03 250 / 10%), 0 10px 24px -6px oklch(0.22 0.04 250 / 12%);`<br>**SwiftUI:** `.overlay(shape.strokeBorder(tint.opacity(0.08), lineWidth: 1))` + tight & wide `.shadow(color: tint.opacity(...))`<br>**Compose / Flutter:** `1.dp`/`1` ring border + tinted `ambientColor`/`spotColor` or layered `BoxShadow` |
+| **`5–10%` static anti-banding noise/grain** | Wide dark or low-contrast gradients visibly band on 8-bit displays. Overlay **`5–10%` opacity static fine-grain noise** (dither) on large dark or subtle gradient surfaces to eliminate color banding cleanly. Never animate grain per frame; cache a small seamless tile or static shader dither so GPU cost stays near zero. | **Web:** small seamless tile PNG/WebP or statically rasterized SVG `feTurbulence` pseudo-element at `opacity: 0.05–0.10; pointer-events: none;`<br>**Native / Game:** pre-baked tileable noise texture or single-pass blue-noise/dither fragment shader |
+
 ### CSS Color 5, wide-gamut P3, and `forced-colors` idioms
 
 On modern web surfaces, derive state colors and modes systematically while keeping sRGB and Windows High Contrast (`forced-colors`) intact:
@@ -116,10 +125,11 @@ Color meanings are locale/domain dependent. Validate finance gain/loss, mourning
 
 Reject the palette if removing the subject makes the same choices equally plausible for a bank, game, clinic, and AI chatbot. Also reject it if the only novelty is hue: composition, type, material, and motion must participate in the direction.
 
-## Rendered palette inventory
+## Deliberate color restraint & rendered palette inventory
 
-After rendering, inventory quantized background and ink colors weighted by visible area. Separate intentional semantic colors from image pixels, antialiasing noise, shadows, charts, media, and third-party content. In the live corpus the median rendered inventory contained approximately **6–7 distinct quantized color groups**, with the upper quartile near **9**; light and dark surfaces were both common. Treat this only as calibration for how restrained strong work can remain despite rich media.
+- **Fewer colors used with conviction:** commit to a tight semantic palette (typically one neutral surface family, one ink family, and one decisive accent, reserving semantic status hues strictly for actual states) and spend chroma where attention and action genuinely belong. Adding extra decorative colors dilutes primary CTA prominence, multiplies light/dark contrast failures, and signals indecisive styling.
+- **Rendered inventory:** after rendering, inventory quantized background and ink colors weighted by visible area. Separate intentional semantic colors from image pixels, antialiasing noise, shadows, charts, media, and third-party content. In the live corpus the median rendered inventory contained approximately **6–7 distinct quantized color groups**, with the upper quartile near **9**; light and dark surfaces were both common. Treat this only as calibration for how restrained strong work can remain despite rich media.
 
-Record palette posture numerically in the direction card: base surface count, ink levels, semantic accent count, state/data colors, exceptions, and mode-specific substitutions. A typical restrained posture is one background family, one ink family, and one or two semantic accents—focused product and developer-tool surfaces often hold to **2–4 active color groups** in the initial viewport—though subject matter may justify more. Reject accent proliferation when each addition does not have a semantic role, state pair, contrast evidence, and token owner.
+Record palette posture numerically in the direction card: base surface count, ink levels, semantic accent count, state/data colors, exceptions, and mode-specific substitutions. Focused product and developer-tool surfaces often hold to **2–4 active color groups** in the initial viewport—though subject matter may justify more. Reject accent proliferation when each addition does not have a semantic role, state pair, contrast evidence, and token owner.
 
 Audit muted and translucent inks explicitly: secondary labels, timestamps, placeholders, and reduced-opacity captions are the most common real-world contrast failures even on otherwise high-contrast pages. Always verify final composited contrast (including element and ancestor `opacity`) in both light and dark modes.

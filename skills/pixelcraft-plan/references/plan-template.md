@@ -4,6 +4,7 @@
 # Pixelcraft plan
 
 ## Mode and scope
+- Request mode: Shape | Implement | Review | Copy | Harden (narrowest verb-resolved scope & hard edit boundaries):
 - Planning mode: brownfield / greenfield / hybrid
 - Task route: new project / extend existing product / edit or fix / redesign or rebuild / behavior-preserving refactor
 - Task:
@@ -25,13 +26,22 @@
 - Trigger or reason deep discovery was unnecessary:
 - Business KPIs & 1–2 primary CTAs:
 - 5-second hierarchy goal (what first-time viewers grasp & where they act):
-- Content & CMS ownership (source of truth, post-launch editor workflow, localization ownership):
+- Content & CMS ownership (source of truth, post-launch editor workflow, localization ownership — see Client Autonomy table below):
 - Target regulatory & store regime (App Store, Google Play, Chrome `MV3`, EU `EAA` / `EN 301 549`, Steam Deck/Console `TRC`, Print `PDF/X-4`, Bulk Email `RFC 8058`, or N/A):
 - Anti-goals & hate-list (rejected competitor tropes / visual or UX patterns):
 - Material decisions resolved (user-selected / recommendation accepted / repository-constrained):
 - Assumptions and their consequences:
 - Unresolved decisions, owner, and next check:
 - Approval boundary/status (including Design Approval `<HARD-GATE>` status):
+
+## Client autonomy & editable content boundaries (No Black-Box Build)
+Define what non-technical owners can safely edit without breaking layout vs what requires engineering:
+
+| Content / surface area | Editable by (`owner` / `engineering-only`) | Source & edit mechanism (CMS / structured data / config / code) | Layout-safety guardrails (max length, aspect ratio, schema, staging preview) |
+|---|---|---|---|
+|  |  |  |  |
+
+- Handover & training boundary (runbook / short walkthrough covering routine edits, staging preview, rollback, and engineering escalation):
 
 ## Stack decision
 - Chosen stack:
@@ -88,8 +98,21 @@ List every complex UI capability in scope (rich text, code editor, node graph, m
 ## UX work required
 - Flows to design:
 - State matrices required:
-- Accessibility/legal floor specifics (including sticky-chrome focus & `EAA` statement if applicable):
+- Accessibility/legal floor specifics (including sticky-chrome focus, anti-dark-pattern floor & `EAA` statement if applicable):
 - Localization scope (`+30–40%` prose / `+50–100%` short-label expansion, `IME`, RTL):
+
+### Upfront Edge-Case Spec (define BEFORE coding)
+Lock non-happy-path behavior before implementation so components are never built happy-path-only:
+
+| Edge case | Concrete behavior, copy/fallback & layout rule | Verification method (`rendered` / `static`) |
+|---|---|---|
+| Empty (first-use & no-results) |  |  |
+| Singular vs plural counts (`0`, `1`, `2+`, `999+`) |  |  |
+| Long & unbroken strings / URLs / names (`+50–100%` labels) |  |  |
+| Missing, slow, or corrupt media/avatars |  |  |
+| Offline & network/API failure (preserving dirty input) |  |  |
+| Latency (`> 300 ms` spinner delay/hold, `> 1 s` progress, `> 10 s` cancel) |  |  |
+| Permission, auth expiry & role constraints |  |  |
 
 ## Adaptive UI by device or window class
 | Class, sample size/aspect, input | Navigation, density, controls and reach | Task/data/state to preserve | Runtime, acceptance check, evidence/status |

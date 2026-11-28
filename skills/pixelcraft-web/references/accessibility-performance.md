@@ -36,6 +36,9 @@ Pair these concrete browser media rules with [media-players.md](media-players.md
 
 - Record media transfer size, codec/decode cost, analyser/visualizer update rate, GPU frame time, memory, and device tier separately (`rendered`).
 - Lazy-load below-fold media (`preload="none"` / `IntersectionObserver`), pause playback when offscreen or `document.hidden`, avoid per-frame allocations in audio visualizers, and test on mid-tier mobile or throttled network profiles (or mark device profiling `not-checked`).
+- **iOS Low Power Mode (`<video autoplay>`)**: iOS Low Power Mode suppresses autoplay on ambient/decorative `<video autoplay muted loop playsinline>`. Always supply a matching high-contrast `poster`, catch rejected `video.play()` promises cleanly (zero uncaught promise console errors), and ensure no stray native play-button overlay breaks hero composition when autoplay is blocked.
+- **macOS `Show scroll bars: Always`**: verify scrolling regions, sticky headers, horizontal trays, and dialogs with classic always-visible scrollbars enabled (`scrollbar-gutter: stable` where appropriate) so ~15 px scrollbars never clip text or trigger unexpected horizontal overflow.
+- **Clean profiling & runtime checks**: disable all browser extensions before Lighthouse/CWV/trace profiling, verify `0` DevTools Console warnings/errors during playback/interaction, and confirm `bfcache` eligibility (`Application → Back/forward cache`) when media/listeners pause cleanly on `pagehide`.
 
 Official guidance:
 - WCAG 2.2: https://www.w3.org/TR/WCAG22/

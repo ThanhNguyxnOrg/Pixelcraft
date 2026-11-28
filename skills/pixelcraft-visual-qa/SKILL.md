@@ -51,7 +51,8 @@ Choose rows relevant to the surface; do not claim rows skipped without saying so
 | motion/input | reduced motion, keyboard/controller/touch focus, pointer size or D-pad where applicable |
 | state | loading, empty, error, long content, offline/permission when relevant |
 | locale | expansion/contraction, RTL, non-Latin scripts when in scope |
-| capability | zoom/text scaling, magnification, image blocking, reduced data, degraded color/unicode |
+| capability | zoom/text scaling (`200%`), magnification, image blocking, reduced data/`3G`, degraded color/unicode |
+| stress (`Break UI`) | `60`-char unbroken strings/emails, `0`/`1`/`500` items, broken/slow media, `0` runtime console warnings; *(Web)* macOS `Show scroll bars: Always`, `iOS Low Power Mode` video poster fallback, Chrome DevTools `bfcache` (`Application → Back/forward cache`) |
 
 ## Browser quick path
 
@@ -73,6 +74,7 @@ For local files, the built-in server defaults to the file's own directory. Pass 
 
 ## Hard rules
 
+- Disable all browser extensions (use a clean incognito/guest profile or clean headless run) before Lighthouse, Core Web Vitals, or performance profiling—extensions inject DOM/JS and distort scores.
 - Do not use browser emulation as proof of physical-device behavior; label it emulation.
 - Do not hide overflow-x globally to silence a capture finding.
 - Do not lower text contrast, shrink type below platform norms, or truncate essential content to fit a screenshot.
@@ -87,10 +89,10 @@ For local files, the built-in server defaults to the file's own directory. Pass 
 - [ ] actual surface rendered in the target runtime or the closest explicitly labeled emulation;
 - [ ] required breakpoints/orientations/safe areas captured;
 - [ ] light/dark and reduced-motion behavior inspected where applicable;
-- [ ] primary empty/loading/error/long-content states inspected;
+- [ ] primary empty/loading/error/long-content states and **`Break UI` stress-test** (`60`-char unbroken strings, `0/1/500` items, broken/slow images, `3G`, `200%` zoom, `0` runtime console warnings; *(Web)* macOS `Show scroll bars: Always` & `iOS Low Power Mode`) inspected or labeled `not-checked`;
 - [ ] primary task/recovery path executed with expected end state evidence where feasible;
 - [ ] no unintended horizontal overflow, clipped essential text, overlap, or off-viewport controls;
 - [ ] contrast/legibility checked in context, including disabled and focus states;
-- [ ] performance budget measured or explicitly marked `not-checked`;
+- [ ] performance budget measured **with all browser extensions disabled** plus *(Web)* **Chrome DevTools `Application → Back/forward cache` (`bfcache`)** eligibility verified, or explicitly marked `not-checked`;
 - [ ] reproducible failures were repaired and rerun, or explicitly remain open;
 - [ ] report distinguishes `rendered`, `static`, `model-judgment`, `not-checked`, and `waived`.

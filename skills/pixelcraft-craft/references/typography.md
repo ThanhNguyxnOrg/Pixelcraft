@@ -62,6 +62,22 @@ Proportional digits (`1` narrower than `8`) make live counters, timers, prices, 
 | **Flutter** | `TextStyle(fontFeatures: const [FontFeature.tabularFigures()])` (`dart:ui`) |
 | **Desktop / Game / TUI** | Qt `QFont::setTag("tnum")` (`QFont::Tag("tnum")`), WinUI/WPF `Typography.NumeralAlignment="Tabular"`, Slint/Godot/Unity SDF OpenType `tnum` or fixed-advance digit kerning; TUI cells are intrinsically monospace |
 
+### Stable interactive weights & real typographic punctuation
+
+- **Never change `font-weight` on hover, focus, or active/selected states:** toggling `font-weight` (e.g., `400 → 600` on nav tabs, sidebar links, segmented controls, or table headers) changes glyph advance widths and causes neighboring items to jitter horizontally.
+  - **Do:** signal interactive or selected state with ink contrast/color, background pill, indicator bar/underline, or a variable typeface's width-invariant **`GRAD` (grade)** axis (`font-variation-settings: "GRAD" 50`). If bold selected labels are explicitly required, reserve the bold advance width upfront (e.g., hidden bold sizer copy occupying the same grid cell) so sibling geometry shifts by `0px`.
+  - **Don't:** switch `font-weight: 400` ↔ `600`/`700` directly on inline/row controls without reserved width.
+- **Use real typographic characters & non-breaking spaces in user-facing UI copy** (keep straight ASCII inside code blocks, CLI flags, and tolerant input parsers):
+
+| Role | Use (typographic) | Avoid (typewriter ASCII) | Rule & examples |
+|---|---|---|---|
+| **Curly quotes & apostrophes** | `“ ”` (`U+201C`/`U+201D`), `‘ ’` (`U+2018`/`U+2019`) | `" "` / `' '` in UI prose | Follow locale quotation conventions (`« »`, `„ “`, `「 」` outside English); keep straight quotes in code/CLI syntax |
+| **True ellipsis** | `…` (`U+2026`) | `...` (three dots) | Progressive states (`Saving…`), dialog-opening menu items (`Export…`), and explicit UI truncation |
+| **Ranges & spans** | En-dash `–` (`U+2013`) | `-` hyphen | Numeric, date, and time ranges (`10–20 ms`, `Mon–Fri`, `2024–2026`) |
+| **Dimensions & multipliers** | Multiplication `×` (`U+00D7`) | lowercase `x` | Resolutions, grid dimensions, zoom scales (`1200×630`, `44×44 pt`, `2×`) |
+| **Negative values** | True minus `−` (`U+2212`) | `-` (`U+002D`) | Currency deltas, coordinates, temperatures (`−$42.00`, `−3.4%`) |
+| **Non-breaking spaces** | `&nbsp;` / `U+00A0` | breaking space | Bind numbers to units and shortcut chords so they never split across line wraps (`10&nbsp;MB`, `24&nbsp;px`, `⌘&nbsp;+&nbsp;K`, `Ctrl&nbsp;+&nbsp;S`) |
+
 ### Modern web typographic controls
 
 Apply modern CSS typographic primitives progressively without breaking non-Latin scripts or CLS budgets:
