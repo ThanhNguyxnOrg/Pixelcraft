@@ -5,6 +5,7 @@
 
 ## Mode and scope
 - Planning mode: brownfield / greenfield / hybrid
+- Workflow track: Code-First | Mockup-First (visual mockup generation before coding → `pixelcraft-handoff` `image-to-code`; note image-gen tool availability):
 - Task route: new project / extend existing product / edit or fix / redesign or rebuild / behavior-preserving refactor
 - Task:
 - Date/agent:

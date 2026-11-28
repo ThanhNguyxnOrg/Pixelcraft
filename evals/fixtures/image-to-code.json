@@ -1,0 +1,65 @@
+{
+  "schemaVersion": 1,
+  "id": "image-to-code",
+  "skill": "pixelcraft-handoff",
+  "title": "Translate an approved AI-generated UI mockup or raster screenshot via divide-and-conquer Layout Tree, artifact stripping, contrast repair, and vision-guided self-correction",
+  "contextSnapshot": {
+    "surface": "responsive web dashboard translated from an approved desktop PNG mockup",
+    "platform": "web (React/Next.js or target stack) with existing semantic tokens",
+    "mode": "Operate",
+    "states": ["desktop 1440x900", "mobile 390x844", "loading", "empty", "error", "keyboard focus"],
+    "constraints": [
+      "no Figma/Penpot vector metadata available",
+      "AI mockup contains minor garbled micro-text, fake macOS window dots, and low-contrast muted caption",
+      "must preserve approved visual hierarchy while passing WCAG AA and responsive reflow"
+    ]
+  },
+  "prompt": "Implement this approved UI mockup PNG into our React + TypeScript app with faithful layout and palette while ensuring full accessibility, responsive mobile support, and real data states.",
+  "expectedRouting": [
+    "pixelcraft-handoff",
+    "references/image-to-code.md",
+    "references/fidelity-tolerance.md",
+    "pixelcraft-tokens",
+    "pixelcraft-visual-qa"
+  ],
+  "forbiddenBehaviors": [
+    "dumps the entire screenshot into a single monolithic pass emitting position: absolute divs with hardcoded pixel coordinates",
+    "copies garbled AI micro-text, fake browser/OS window chrome, or low-contrast 2.4:1 mockup captions verbatim",
+    "replaces vector icons with blurry cropped raster fragments or emojis instead of one coherent icon library",
+    "ships only the desktop happy path shown in the mockup while omitting mobile restructuring and empty/loading/error states",
+    "claims visual parity with the mockup using static code reading instead of rendered comparison"
+  ],
+  "rubricDimensions": [
+    {
+      "dimension": "divide-and-conquer layout tree and artifact stripping",
+      "pass": "classifies image provenance, strips fake device/browser chrome and AI artifacts, and writes a hierarchical Layout Tree (shell, bands, flex/grid containers, repeating data components) before coding",
+      "fail": "translates the full image monotonically into flat absolute positioning or copy-pasted static cards"
+    },
+    {
+      "dimension": "semantic token extraction and contrast floor override",
+      "pass": "extracts colors and spacing into semantic tokens via pixelcraft-tokens, checks contrast, fixes failing mockup contrast rather than copying broken text, and maps icons to one coherent vector set",
+      "fail": "scatters raw sampled hex values or faithfully copies illegible low-contrast text from the image"
+    },
+    {
+      "dimension": "non-visual inference and vision-guided self-correction",
+      "pass": "infers native interactive semantics, mobile 390x844 restructuring, full state matrix, and runs rendered comparison with targeted branch patching (max 3 rounds) via pixelcraft-visual-qa",
+      "fail": "omits mobile/error/keyboard states or claims visual match without rendered comparison"
+    }
+  ],
+  "negativeControls": [
+    {
+      "name": "monolithic-absolute-screenshot-clone",
+      "input": "a full-page desktop PNG mockup with a fixed sidebar, 4 KPI cards, and a table",
+      "mustNot": "emit absolute pixel-positioned divs or duplicate 4 hardcoded card blocks instead of a semantic grid/flex layout tree with data-driven components"
+    },
+    {
+      "name": "faithful-broken-contrast-and-gibberish",
+      "input": "an approved AI-generated mockup with 2.3:1 light-gray helper text and misspelled table badge",
+      "mustNot": "preserve failing contrast or misspelled AI text in the name of pixel fidelity"
+    }
+  ],
+  "baseline": {
+    "withoutSkill": "generates one monolithic JSX file with raw hex codes, hardcoded absolute/fixed widths, copied AI text typos, missing mobile nav, and claims it matches the image without rendering",
+    "withSkill": "runs the 6-stage Image-to-Code pipeline: strips AI artifacts, writes a Layout Tree Spec, extracts WCAG-passing semantic tokens, infers mobile/state/a11y behavior, and closes the loop with rendered crop comparison and targeted branch patches"
+  }
+}

@@ -12,7 +12,8 @@ Do not collapse all visuals into “the design.” Record each artifact independ
 | unapproved/exploratory Figma | candidate or inspiration | do not implement literally until approval state is resolved |
 | screenshot of desired result | specification only for visible/static aspects | missing states/behavior remain assumptions |
 | screenshot of existing UI | evidence of current behavior | inventory before redesign; do not confuse with desired direction |
-| sketch/mockup/image-model board | inspiration unless user says approved | extract constraints/motifs; divergence may still be required |
+| approved AI-generated UI mockup (Mockup-First) | specification for layout, hierarchy, palette posture, and visual rhythm | route through `pixelcraft-handoff` (`image-to-code`): strip AI artifacts, decompose into semantic Layout Tree, verify WCAG contrast, infer missing states/breakpoints |
+| sketch/mockup/image-model board (unapproved) | inspiration unless user says approved | extract constraints/motifs; divergence may still be required |
 | brand guidelines/tokens/assets | constraint or authority | preserve within stated scope; verify version and usage rights |
 | competitor/reference site/app | inspiration only unless explicitly approved as specification | analyze mechanisms; never copy protected/unique design |
 | existing production component library | implementation authority | reuse before redesign |

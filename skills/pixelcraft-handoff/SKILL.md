@@ -1,6 +1,6 @@
 ---
 name: pixelcraft-handoff
-description: Translates approved designs, Figma MCP context, Code Connect bindings, Dev Mode specs, Penpot files, screenshots, mockups, and motion handoff prototypes into faithful implementation without losing existing architecture. Use for design-to-code translation, variable-to-token mapping, existing-component reuse, missing-state resolution, cross-stack implementation, ambiguity handling, and visual-fidelity checking with pixelcraft-visual-qa.
+description: Translates approved designs, Figma MCP context, Code Connect bindings, Dev Mode specs, Penpot files, screenshots, approved AI-generated UI mockups (Mockup-First image-to-code), wireframes, and motion handoff prototypes into faithful, idiomatic implementation without losing existing architecture. Use for design-to-code, image-to-code, mockup-to-code, screenshot-to-code, variable-to-token mapping, existing-component reuse, missing-state resolution, cross-stack implementation, ambiguity handling, and visual-fidelity checking with pixelcraft-visual-qa.
 license: MIT
 metadata:
   version: 0.1.0
@@ -15,6 +15,7 @@ Design handoff is translation under uncertainty, not screenshot copying. Visual 
 ## References
 
 - Read [references/design-translation.md](references/design-translation.md) for the translation contract, evidence hierarchy, component reuse, token mapping, stack-specific translation, missing states, `< 10m` clean-clone setup, license/account ownership handoff, and the visual-qa fidelity loop.
+- Read [references/image-to-code.md](references/image-to-code.md) whenever the primary input is a **raster image**—an approved AI-generated UI mockup (Mockup-First track), product screenshot, static PNG/JPEG export, or hand wireframe without Figma/Penpot vector metadata (6-stage divide-and-conquer Layout Tree decomposition, AI-artifact stripping, semantic token/contrast extraction, icon/copy de-hallucination, state/responsive inference, and vision-guided self-correction).
 - Read [references/motion-handoff.md](references/motion-handoff.md) when a design/prototype includes triggers, timing, easing, stagger, interruption, focus, or reduced-motion behavior.
 - Read [references/fidelity-tolerance.md](references/fidelity-tolerance.md) before declaring acceptance tolerance, freezing fixtures, or interpreting visual diffs.
 
