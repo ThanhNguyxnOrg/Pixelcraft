@@ -29,9 +29,9 @@ The agent researches discoverable facts; the user owns priorities, anti-goals, p
 For **new products, new multi-screen features, or undecided redesigns**, do **not** write implementation code until the user approves the committed design proposal:
 
 1. Present 2–3 materially different direction options (leading with your `(Recommended)` choice and evidence-backed trade-offs),
-2. Include a compact **ASCII structural skeleton** and **real-copy headline/primary action draft** for each option (not vague adjectives),
+2. Include a compact **ASCII structural skeleton** and **real-copy headline/primary action draft** for each option (not vague adjectives)—and on the **Mockup-First** workflow track (when image generation is available), generate and present **orthographic UI mockup images** for the top 2–3 options so the user approves visually before coding,
 3. State the **stack and sub-stack capability library choices** (rejecting lazy defaults and DIY substitutes), and
-4. Wait for user confirmation (or explicit approval of one option / hybrid) before entering **Phase 4 (Build)**.
+4. Wait for user confirmation (or explicit approval of one option / mockup / hybrid) before entering **Phase 4 (Build)**. When a visual mockup is approved on the Mockup-First track, route it through `pixelcraft-handoff` (`image-to-code`) into Build.
 
 Bypass this `<HARD-GATE>` **only** when the user explicitly says to decide and build directly without stopping, or when an already-approved design / narrow fix puts the task in **Direct Execution**.
 

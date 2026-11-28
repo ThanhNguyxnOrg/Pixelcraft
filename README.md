@@ -6,7 +6,7 @@
   <a href="https://github.com/ThanhNguyxnOrg/Pixelcraft/actions/workflows/validate.yml"><img src="https://github.com/ThanhNguyxnOrg/Pixelcraft/actions/workflows/validate.yml/badge.svg" alt="CI Validate" /></a>
   <a href="LICENSE"><img src="https://img.shields.io/badge/license-MIT-blue.svg" alt="MIT License" /></a>
   <img src="https://img.shields.io/badge/skills-26-00b894.svg" alt="26 Skills" />
-  <img src="https://img.shields.io/badge/references-247-0984e3.svg" alt="247 References" />
+  <img src="https://img.shields.io/badge/references-249-0984e3.svg" alt="249 References" />
   <img src="https://img.shields.io/badge/QA_%26_token_CLIs-10-6c5ce7.svg" alt="10 Zero-Dependency CLIs" />
   <img src="https://img.shields.io/badge/node-%3E%3D18-339933.svg" alt="Node >= 18" />
   <a href="https://thanhnguyxnorg.github.io/Pixelcraft/"><img src="https://img.shields.io/badge/showcase-live_site-111827.svg" alt="Live Showcase" /></a>
@@ -217,7 +217,7 @@ node bin/pixelcraft.mjs remove <skill> --agent claude    # uninstall selected sk
 npm run validate               # validate 26 skills, frontmatter, links, headings, routing sync & evals
 npm run sync:docs              # auto-sync live counts & versions across README, docs, and manifests
 npm test                       # run full validator, doc-sync check, distribution, installer, adapter, token, QA & slop-scan tests
-npm run eval:offline           # run deterministic offline routing & fixture contract checks (72 JSON fixtures)
+npm run eval:offline           # run deterministic offline routing & fixture contract checks (74 JSON fixtures)
 npm --prefix website test      # verify showcase sync, 6-exhibit gallery scores & website/src slop-scan === 0
 ```
 
@@ -230,8 +230,8 @@ bin/                         zero-dependency Node CLI (add, list, doctor, remove
 install.sh                   curl/bash installer (no Node required; pin with --ref <tag|sha>)
 install.ps1                  PowerShell installer (no Node required; pin with -Ref <tag|sha>)
 scripts/                     validator, adapter & ZIP builders, offline eval runner, and contract tests
-skills/                      26 self-contained Agent Skills (247 reference docs, 10 zero-dep CLIs)
-evals/                       26 behavioral eval guides + 72 machine-readable JSON fixtures
+skills/                      26 self-contained Agent Skills (249 reference docs, 10 zero-dep CLIs)
+evals/                       26 behavioral eval guides + 74 machine-readable JSON fixtures
 website/                     7-section React/Vite/Tailwind showcase + 22-exhibit multi-stack gallery
 assets/                      brand artwork, banner, and icons
 docs/ARCHITECTURE.md         system architecture and loop contract
@@ -251,7 +251,7 @@ gemini-extension.json        Gemini CLI extension manifest (+ GEMINI.md context 
 
 ## Roadmap
 
-- Live multi-model benchmark runner layered on top of the shipped 72-fixture offline harness (`npm run eval:offline`);
+- Live multi-model benchmark runner layered on top of the shipped 74-fixture offline harness (`npm run eval:offline`);
 - Native CI visual-regression fixtures for desktop (Qt/Slint), mobile (SwiftUI/Compose), and game UI engines alongside the 22 showcase exhibits;
 - Expanded DTCG Resolver alias/theme compilation and Figma Code Connect bridge examples;
 - Optional localized contributor guides while preserving machine-readable English skill instructions.

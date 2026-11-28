@@ -1,0 +1,64 @@
+{
+  "schemaVersion": 1,
+  "id": "mockup-first-workflow",
+  "skill": "pixelcraft-direction",
+  "title": "Run Mockup-First visual divergence during planning/direction, enforce orthographic anti-slop prompts and user approval gate, then hand off to image-to-code",
+  "contextSnapshot": {
+    "surface": "greenfield flagship product landing and workspace preview",
+    "platform": "web (stack chosen in pixelcraft-plan)",
+    "mode": "Persuade",
+    "states": ["plan workflow-track choice", "2-3 contrasting orthographic UI mockups", "user approval hard-gate", "handoff to pixelcraft-handoff image-to-code"],
+    "constraints": [
+      "image-generation tool availability must be checked before promising Mockup-First",
+      "mockups must be flat orthographic full-bleed captures with quoted real copy and zero leaked rejected concepts",
+      "no implementation code before explicit mockup approval"
+    ]
+  },
+  "prompt": "We are launching a new acoustic studio booking platform and want to see visual UI mockup options first so we can pick the look before you build the site.",
+  "expectedRouting": [
+    "pixelcraft-plan",
+    "pixelcraft-direction",
+    "references/mockup-first-generation.md",
+    "pixelcraft-handoff",
+    "references/image-to-code.md"
+  ],
+  "forbiddenBehaviors": [
+    "jumps straight into writing frontend code without generating and getting approval on visual mockups",
+    "generates tilted 3D laptop/phone perspective shots with fake macOS browser chrome instead of flat orthographic UI captures",
+    "leaks rejected visual concepts or slop tropes inside the image-generation prompt or uses lorem ipsum instead of quoted real copy",
+    "promises Mockup-First silently when no image-generation tool is available instead of stating the fallback cleanly"
+  ],
+  "rubricDimensions": [
+    {
+      "dimension": "workflow track selection and capability check",
+      "pass": "records Mockup-First in .pixelcraft/plan.md, verifies image-generation availability (or communicates a clean Code-First / user-upload fallback), and converts contrasting Direction Cards into visual options",
+      "fail": "ignores the Mockup-First request or pretends to generate images without checking tool availability"
+    },
+    {
+      "dimension": "orthographic prompt hygiene and anti-slop self-critique",
+      "pass": "uses flat full-bleed orthographic framing, literal layout geometry, explicit palette/surface roles, exact quoted real copy, zero leaked rejected concepts, and discards slop-collapsed outputs before showing the user",
+      "fail": "prompts with vague mood adjectives, tilted 3D device frames, or unquoted placeholder text"
+    },
+    {
+      "dimension": "approval hard-gate and image-to-code handoff",
+      "pass": "pauses for explicit user approval on the generated mockups, records the approved mockup path/authority in .pixelcraft/plan.md, and routes directly into pixelcraft-handoff references/image-to-code.md",
+      "fail": "builds code before approval or discards the approved mockup instead of running Image-to-Code translation"
+    }
+  ],
+  "negativeControls": [
+    {
+      "name": "tilted-3d-dribbble-shot",
+      "input": "a Mockup-First prompt for a desktop web app",
+      "mustNot": "generate a floating 3D angled laptop on a purple gradient backdrop with browser window chrome"
+    },
+    {
+      "name": "premature-code-before-mockup-approval",
+      "input": "user asks to compare visual mockup options before coding",
+      "mustNot": "scaffold production UI files before the user approves a visual mockup"
+    }
+  ],
+  "baseline": {
+    "withoutSkill": "either skips mockups and writes generic code immediately, or generates a tilted Dribbble-style 3D mockup with garbled lorem ipsum and ignores it during coding",
+    "withSkill": "locks Mockup-First in plan.md, generates 2-3 flat orthographic UI mockups with quoted real copy, pauses at the visual approval hard-gate, and routes the approved mockup into pixelcraft-handoff image-to-code"
+  }
+}

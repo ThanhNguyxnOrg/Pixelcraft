@@ -56,8 +56,9 @@ DO NOT write implementation code until the user approves a direction.
 Present the top **2–3 contrasting directions** clearly:
 
 1. Show each direction's ambition tier, anti-references inverted, ASCII structural skeleton, real-copy lead draft, signature element, and stack/library impact.
-2. Mark one pick clearly as **(Recommended)** with evidence-backed trade-offs (never "because it looks cleaner").
-3. Ask the user to approve one direction, request a deliberate hybrid (written explicitly into the direction card), or redirect.
+2. On the **Mockup-First** workflow track (when image generation is available; see `references/mockup-first-generation.md`), generate and present **orthographic UI mockup images** for the top 2–3 directions alongside their summaries so the user approves visually before coding, then hand the approved mockup directly to `pixelcraft-handoff` (`image-to-code`). On **Code-First**, proceed from the approved direction card + ASCII skeleton.
+3. Mark one pick clearly as **(Recommended)** with evidence-backed trade-offs (never "because it looks cleaner").
+4. Ask the user to approve one direction/mockup, request a deliberate hybrid or targeted visual refinement, or redirect.
 
 **Only bypass this `<HARD-GATE>` when:**
 - the user explicitly instructs you to decide and build directly without pausing, OR

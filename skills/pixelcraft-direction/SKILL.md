@@ -13,6 +13,7 @@ Divergence is a procedure, not a mood. Never ask for “the best design” in on
 ## References
 
 - Read [references/creative-brainstorming.md](references/creative-brainstorming.md) before pitching directions on any greenfield, redesign, or undecided surface (3-Tier Ambition Pitch, Ideation Operators, ASCII structural proof, Design Approval `<HARD-GATE>`, and feedback loop to `pixelcraft-plan`).
+- Read [references/mockup-first-generation.md](references/mockup-first-generation.md) when `.pixelcraft/plan.md` selects the **Mockup-First** workflow track (or the user wants generated visual UI mockups to compare and approve before `pixelcraft-handoff` `image-to-code`).
 - Read [references/movements.md](references/movements.md) when selecting or translating a design movement/aesthetic.
 - Read [references/composition-library.md](references/composition-library.md) when choosing the structural composition/grid or when hero-plus-cards feels like the default answer.
 - Read [references/slop-fingerprints.md](references/slop-fingerprints.md) before proposing directions and again before finalizing one.
